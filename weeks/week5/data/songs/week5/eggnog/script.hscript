@@ -1,0 +1,24 @@
+function create()
+{
+	game.doNextSongTrans = true;
+	if (PlayState.inStoryMode)
+		game.canEndSong = false;
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		var blackScreen = new FlxSprite(-200, -200).makeGraphic(Std.int(FlxG.width * 2), Std.int(FlxG.height * 2), FlxColor.BLACK);
+		game.add(blackScreen);
+		blackScreen.scrollFactor.set();
+		game.camHUD.visible = false;
+		FlxG.sound.play(Paths.sound('week5/Lights_Shut_off'));
+
+		new FlxTimer().start(2, function(tmr)
+		{
+			game.canEndSong = true;
+			game.endSong();
+		});
+	}
+}

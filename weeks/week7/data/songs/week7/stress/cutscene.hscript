@@ -1,0 +1,169 @@
+cutsceneFunctions = [
+	[4.6, function() { applyCensor(150, 170, 0.2); }],
+	[15.1, function() {
+		game.camFollow.x += 200;
+		game.camFollow.y -= 170;
+		FlxTween.tween(FlxG.camera, {zoom: FlxG.camera.zoom * 1.3}, 2.1, { ease: FlxEase.quadInOut });
+
+		cutsceneGroup.remove(cutsceneGf);
+		cutsceneGfDemon.alpha = 1;
+		game.hscriptIdExec("week7Cutscene", "goSprite", [cutsceneGfDemon, 15.1]);
+	}],
+	[17.3, function() {
+		cutsceneGroup.remove(cutsceneGfDemon);
+		cutscenePico.visible = true;
+		game.hscriptIdExec("week7Cutscene", "goAtlas", [cutscenePico, 17.3]);
+		FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
+		FlxG.camera.zoom = 0.8;
+
+		cutsceneGroupFront.remove(cutsceneBf);
+		game.player1.visible = true;
+		game.player1.playAnim("bfCatch");
+	}],
+	[18.5, function() {
+		game.player1.playAnim("idle");
+	}],
+	[19.6, function() {
+		cutsceneGroupFront.remove(cutsceneTankman);
+		cutsceneTankman2.visible = true;
+		game.hscriptIdExec("week7Cutscene", "goAtlas", [cutsceneTankman2, 19.6]);
+	}],
+	[20.3, function() {
+		game.camFollow.x -= 80;
+		game.camFollow.y += 180;
+	}],
+	[25.1, function() { applyCensor(120, 150, 0.9); }],
+	[30.7, function() { applyCensor(210, 190, 0.4); }],
+	[31.5, function() {
+		game.camFollow.x += 400;
+		game.camFollow.y += 150;
+		FlxG.camera.zoom = game.camZoom * 1.4;
+		FlxTween.tween(FlxG.camera, {zoom: FlxG.camera.zoom + 0.1}, 0.5, {ease: FlxEase.elasticOut});
+		game.snapCamera();
+		game.player1.playAnim('singUPmiss');
+		game.player1.animation.finishCallback = function(animFinish)
+		{
+			game.camFollow.x -= 400;
+			game.camFollow.y -= 150;
+			FlxG.camera.zoom /= 1.4;
+			game.snapCamera();
+
+			game.player1.animation.finishCallback = null;
+
+			game.player1.playAnim("idle");
+			game.player1.animation.finish();
+			game.stage.pieces["tank3"].visible = true;
+		};
+	}],
+	[33.8, function() { applyCensor(150, 170, 0.6); }]
+];
+
+
+
+function create()
+{
+	Paths.cacheGraphic("week7/gfDemon");
+	Paths.cacheGraphic("week7/picoKill/spritemap1");
+	Paths.cacheGraphic("week7/thisIsWar/spritemap1");
+	Paths.cacheGraphic("week7/angryLittleFriend/spritemap1");
+	if (!Options.options.naughtiness)
+		Paths.cacheGraphic("week7/censor");
+
+	cutsceneGroup = game.stage.pieces["cutsceneGroup"];
+	cutsceneGroupFront = game.stage.pieces["cutsceneGroupFront"];
+
+	cutsceneAudio = (Options.options.naughtiness ? "week7/stressCutscene" : "week7/song3censor");
+	stressCutscene = null;
+}
+
+function startCountdown()
+{
+	game.stage.pieces["tank3"].visible = false;
+	cutsceneGroup.scrollFactor.set(0.95, 0.95);
+	if (!game.canStartCountdown)
+	{
+		game.hscriptIdExec("week7Cutscene", "initCutscene", []);
+		game.player1.visible = false;
+		game.player2.visible = false;
+		game.gf.visible = false;
+
+		FlxG.sound.cache(Paths.sound(cutsceneAudio));
+
+		cutsceneBf = new Character(game.stage.stageData.characters[0].position[0], game.stage.stageData.characters[0].position[1], "bf", true);
+		cutsceneGroupFront.add(cutsceneBf);
+
+		cutsceneGf = new Character(game.stage.stageData.characters[2].position[0], game.stage.stageData.characters[2].position[1], "gf-tankmen");
+		cutsceneGroup.add(cutsceneGf);
+
+		new FlxTimer().start(0.65, function(tmr) { cutsceneGf.dance(); }, 15 / 0.65);
+
+		cutsceneGfDemon = new AnimatedSprite(cutsceneGf.x, cutsceneGf.y, Paths.sparrow("week7/gfDemon"));
+		cutsceneGfDemon.animation.addByPrefix('go', '', 24, false);
+		cutsceneGfDemon.addOffsets('go', [221, 455]);
+		cutsceneGfDemon.alpha /= 10000;
+		cutsceneGroup.add(cutsceneGfDemon);
+
+		cutscenePico = new FlxAnimate(game.gf.x + 140, game.gf.y + 440, Paths.atlas("week7/picoKill"));
+		cutscenePico.anim.addBySymbol('go', 'Pico Saves them sequence', 0, 0, 24);
+		cutscenePico.visible = false;
+		cutsceneGroup.add(cutscenePico);
+
+		cutsceneTankman = new FlxAnimate(game.player2.x + 420, game.player2.y + 220, Paths.atlas("week7/thisIsWar"));
+		cutsceneTankman.anim.addBySymbol('go', 'TANK TALK 3 P1 UNCUT', 0, 0, 24);
+		cutsceneGroupFront.add(cutsceneTankman);
+
+		cutsceneTankman2 = new FlxAnimate(game.player2.x + 420, game.player2.y + 220, Paths.atlas("week7/angryLittleFriend"));
+		cutsceneTankman2.anim.addBySymbol('go', 'TANK TALK 3 P2 UNCUT', 0, 0, 24);
+		cutsceneTankman2.visible = false;
+		cutsceneGroupFront.add(cutsceneTankman2);
+
+		censor = new AnimatedSprite(0, 0, Paths.sparrow("week7/censor"));
+		censor.animation.addByPrefix('censor', 'mouth censor', 24);
+		censor.animation.play('censor');
+		cutsceneGroupFront.add(censor);
+		censor.visible = false;
+
+		stressCutscene = new FlxSound().loadEmbedded(Paths.sound(cutsceneAudio), false, true);
+		FlxG.sound.list.add(stressCutscene);
+		stressCutscene.onComplete = function() {
+			cutsceneGroupFront.remove(cutsceneTankman2);
+			game.player2.visible = true;
+			game.hscriptIdExec("week7Cutscene", "endCutscene", []);
+		}
+
+		game.camFollow.setPosition(game.gf.x + 350, game.gf.y + 560);
+		game.snapCamera();
+		FlxG.camera.zoom = game.camZoom * 1.15;
+		game.camFollow.x -= 200;
+
+		new FlxTimer().start(0.1, function(tmr)
+		{
+			stressCutscene.play();
+			game.hscriptIdExec("week7Cutscene", "startCutscene", [cutsceneFunctions]);
+			game.hscriptIdExec("week7Cutscene", "setupAudioSync", [stressCutscene]);
+			game.hscriptIdExec("week7Cutscene", "goAtlas", [cutsceneTankman, 0]);
+		});
+	}
+}
+
+function update(elapsed)
+{
+	if (stressCutscene != null && stressCutscene.playing)
+	{
+		if (cutscenePico.anim.curFrame >= cutscenePico.anim.frameLength - 1)
+		{
+			cutsceneGroup.remove(cutscenePico);
+			game.gf.visible = true;
+		}
+	}
+}
+
+function applyCensor(xx, yy, len)
+{
+	if (!Options.options.naughtiness)
+	{
+		censor.visible = true;
+		censor.setPosition(game.player2.x + xx, game.player2.y + yy);
+		new FlxTimer().start(len, function(tmr) { censor.visible = false; });
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"assets": [
+		["default", 1, 1],
+		["defaultEnd", 1, 1]
+	],
+	"antialias": true,
+	"scale": -1,
+	"animations":
+	[
+		{"name": "hold", "indices": [0], "fps": 24, "loop": false},
+		{"name": "holdEnd", "asset": 1, "indices": [0], "fps": 24, "loop": false}
+	],
+	"slots": [
+		{"color": "roll", "angle": 0}
+	],
+	"colors": [
+		{"color": "roll", "holdAnim": "hold", "endAnim": "holdEnd", "angle": 0}
+	]
+}

@@ -1,0 +1,78 @@
+function new(char)
+{
+	data = Paths.json("portraits/" + char);
+	this.frames = Paths.sparrow("portraits/" + data.asset);
+	this.x = data.position[0];
+	this.y = data.position[1];
+	if (Reflect.hasField(data, "scale"))
+	{
+		this.scale.x = data.scale[0];
+		this.scale.y = data.scale[1];
+	}
+	this.flipX = data.flip;
+	this.alpha = 0;
+
+	for (a in data.animations)
+	{
+		this.animation.addByPrefix(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
+		this.addOffsets(a.name + "Idle", a.idle.offsets);
+		if (Reflect.hasField(a, "talk"))
+		{
+			this.animation.addByPrefix(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
+			this.addOffsets(a.name + "Talk", a.talk.offsets);
+		}
+	}
+
+	firstAnim = data.animations[0].name + "Idle";
+	this.animation.play(firstAnim);
+
+	right = false;
+}
+
+function enter(fromRight)
+{
+	if (fromRight != right)
+	{
+		this.animation.play(firstAnim);
+		this.flip();
+		right = fromRight;
+	}
+
+	FlxTween.completeTweensOf(this);
+	if (right)
+	{
+		this.x = FlxG.width - this.width - data.position[0];
+		this.x += 400;
+		this.alpha = 0;
+		FlxTween.tween(this, {x: FlxG.width - this.width - data.position[0], alpha: 1}, 0.3, {ease: FlxEase.sineOut});
+	}
+	else
+	{
+		this.x = data.position[0];
+		this.x -= 400;
+		this.alpha = 0;
+		FlxTween.tween(this, {x: data.position[0], alpha: 1}, 0.3, {ease: FlxEase.sineOut});
+	}
+}
+
+function exit()
+{
+	FlxTween.completeTweensOf(this);
+	if (right)
+		FlxTween.tween(this, {x: this.x + 400, alpha: 0}, 0.3, {ease: FlxEase.sineIn});
+	else
+		FlxTween.tween(this, {x: this.x - 400, alpha: 0}, 0.3, {ease: FlxEase.sineIn});
+}
+
+function playTalk(anim)
+{
+	if (this.animOffsets.exists(anim + "Talk"))
+		this.animation.play(anim + "Talk");
+	else
+		this.animation.play(anim + "Idle");
+}
+
+function playIdle(anim)
+{
+	this.animation.play(anim + "Idle");
+}

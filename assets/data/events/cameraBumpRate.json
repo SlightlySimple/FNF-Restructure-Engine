@@ -1,0 +1,15 @@
+{
+	"parameters":
+	[
+		{
+			"id": "rate",
+			"label": "Camera Bump Rate",
+			"type": "stepper",
+			"defaultValue": 4,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.25,
+			"decimals": 2
+		}
+	]
+}

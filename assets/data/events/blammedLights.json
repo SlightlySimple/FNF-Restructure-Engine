@@ -1,0 +1,18 @@
+{
+	"parameters":
+	[
+		{
+			"id": "enabled",
+			"label": "Enabled",
+			"type": "checkbox",
+			"defaultValue": true
+		},
+		{
+			"id": "color",
+			"label": "Color",
+			"type": "dropdown",
+			"defaultValue": "random",
+			"options": ["blue", "green", "pink", "red", "orange", "random"]
+		}
+	]
+}

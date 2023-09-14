@@ -1,0 +1,23 @@
+{
+	"parameters":
+	[
+		{
+			"id": "id",
+			"label": "Script ID",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "variable",
+			"label": "Variable",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "value",
+			"label": "Value",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

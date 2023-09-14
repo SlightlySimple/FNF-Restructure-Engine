@@ -1,0 +1,35 @@
+{
+	"parameters":
+	[
+		{
+			"id": "mainZoom",
+			"label": "Main Cam Zoom",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": -2,
+			"max": 2,
+			"increment": 0.01,
+			"decimals": 3
+		},
+		{
+			"id": "hudZoom",
+			"label": "Hud Cam Zoom",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": -2,
+			"max": 2,
+			"increment": 0.01,
+			"decimals": 3
+		},
+		{
+			"id": "time",
+			"label": "Time Multiplier",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": 0.01,
+			"max": 10,
+			"increment": 0.01,
+			"decimals": 2
+		}
+	]
+}

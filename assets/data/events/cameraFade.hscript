@@ -1,0 +1,26 @@
+function create()
+{
+	for (e in game.songData.events)
+	{
+		if (e.type == "cameraFade" && e.parameters.init)
+			eventGo(e);
+	}
+}
+
+function onEvent(event)
+{
+	if (!event.parameters.init)
+		eventGo(event);
+}
+
+function eventGo(event)
+{
+	var cam = null;
+	switch (event.parameters.camera)
+	{
+		case "main": cam = FlxG.camera;
+		case "hud": cam = game.camHUD;
+	}
+
+	cam.fade(FlxColor.fromRGB(Std.int(event.parameters.r), Std.int(event.parameters.g), Std.int(event.parameters.b), Std.int(event.parameters.alpha)), event.parameters.duration, event.parameters.reverse, null, true);
+}

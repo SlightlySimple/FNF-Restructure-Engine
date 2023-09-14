@@ -1,0 +1,87 @@
+{
+	"label": "#optionsCatColors",
+	"contents": [
+		{
+			"type": "label",
+			"label": "#optionsSubcatUI"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameHealthBarL",
+			"description": "#optionsDescHealthBarL",
+			"variable": "healthBarColorL",
+			"defValue": "RED"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameHealthBarR",
+			"description": "#optionsDescHealthBarR",
+			"variable": "healthBarColorR",
+			"defValue": "LIME"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameProgressBarL",
+			"description": "#optionsDescProgressBarL",
+			"variable": "progressBarColorL",
+			"defValue": "LIME"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameProgressBarR",
+			"description": "#optionsDescProgressBarR",
+			"variable": "progressBarColorR",
+			"defValue": "BLACK"
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatJudgements"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorMV",
+			"description": "#optionsDescJudgementColorMV",
+			"variable": "colorMV",
+			"defValue": "CYAN"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorSK",
+			"description": "#optionsDescJudgementColorSK",
+			"variable": "colorSK",
+			"defValue": "LIME"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorGD",
+			"description": "#optionsDescJudgementColorGD",
+			"variable": "colorGD",
+			"defValue": "GREEN"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorBD",
+			"description": "#optionsDescJudgementColorBD",
+			"variable": "colorBD",
+			"defValue": "RED"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorSH",
+			"description": "#optionsDescJudgementColorSH",
+			"variable": "colorSH",
+			"defValue": "0xFF800000"
+		},
+		{
+			"type": "color",
+			"label": "#optionsNameJudgementColorMS",
+			"description": "#optionsDescJudgementColorMS",
+			"variable": "colorMS",
+			"defValue": "WHITE"
+		}
+	]
+}

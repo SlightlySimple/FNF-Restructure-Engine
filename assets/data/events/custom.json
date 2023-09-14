@@ -1,0 +1,11 @@
+{
+	"parameters":
+	[
+		{
+			"id": "type",
+			"label": "Event Name",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

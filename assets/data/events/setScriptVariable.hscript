@@ -1,0 +1,18 @@
+function onEvent(event)
+{
+	game.hscriptIdSet(event.parameters.id, event.parameters.variable, analyzeValue(event.parameters.value));
+}
+
+function analyzeValue(val)
+{
+	if (Std.parseFloat(val) != null)
+		return Std.parseFloat(val);
+
+	if (val == "true")
+		return true;
+
+	if (val == "false")
+		return false;
+
+	return val;
+}

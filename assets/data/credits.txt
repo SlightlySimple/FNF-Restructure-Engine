@@ -1,0 +1,12 @@
+!bg ui/menuBGBlue
+!page base
+FRIDAY NIGHT FUNKIN
+ninjamuffin99|Friday Night Funkin Programmer|https://twitter.com/ninja_muffin99
+PhantomArcade|Friday Night Funkin Artist/Animator|https://twitter.com/PhantomArcade3K
+kawaisprite|Friday Night Funkin Musician|https://twitter.com/kawaisprite
+evilsk8er|Friday Night Funkin Artist|https://twitter.com/evilsk8r
+
+RESTRUCTURE ENGINE
+SlightlySimple|Engine Developer|https://twitter.com/DevSlightly
+DotWith & Cheemsandfriends|FlxAnimate Extension|https://github.com/Dot-Stuff/flxanimate
+PolybiusProxy|hxCodec Extension|https://github.com/KadeDev/Friday-Night-Funkin-Mp4-Video-Support

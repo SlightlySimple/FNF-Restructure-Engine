@@ -1,0 +1,39 @@
+{
+	"countdownSounds":
+	[
+		"intro3",
+		"intro2",
+		"intro1",
+		"introGo"
+	],
+	"countdown":
+	[
+		{},
+		{"asset": "ready"},
+		{"asset": "set"},
+		{"asset": "go"}
+	],
+	"judgements":
+	[
+		{"asset": "shit", "scale": [0.7, 0.7]},
+		{"asset": "bad", "scale": [0.7, 0.7]},
+		{"asset": "good", "scale": [0.7, 0.7]},
+		{"asset": "sick", "scale": [0.7, 0.7]},
+		{"asset": "marvelous", "scale": [0.7, 0.7]}
+	],
+	"combo": {"asset": "combo", "scale": [0.7, 0.7]},
+	"numbers":
+	[
+		{"asset": "num0", "scale": [0.5, 0.5]},
+		{"asset": "num1", "scale": [0.5, 0.5]},
+		{"asset": "num2", "scale": [0.5, 0.5]},
+		{"asset": "num3", "scale": [0.5, 0.5]},
+		{"asset": "num4", "scale": [0.5, 0.5]},
+		{"asset": "num5", "scale": [0.5, 0.5]},
+		{"asset": "num6", "scale": [0.5, 0.5]},
+		{"asset": "num7", "scale": [0.5, 0.5]},
+		{"asset": "num8", "scale": [0.5, 0.5]},
+		{"asset": "num9", "scale": [0.5, 0.5]}
+	],
+	"antialias": true
+}

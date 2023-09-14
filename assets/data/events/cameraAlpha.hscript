@@ -1,0 +1,32 @@
+function create()
+{
+	for (e in game.songData.events)
+	{
+		if (e.type == "cameraAlpha" && e.parameters.init)
+			eventGo(e);
+	}
+}
+
+function onEvent(event)
+{
+	if (!event.parameters.init)
+		eventGo(event);
+}
+
+function eventGo(event)
+{
+	var cam = null;
+	switch (event.parameters.camera)
+	{
+		case "main": cam = FlxG.camera;
+		case "hud": cam = game.camHUD;
+	}
+
+	if (cam != null)
+	{
+		if (event.parameters.time > 0)
+			FlxTween.tween(cam, {alpha: event.parameters.alpha}, event.parameters.time);
+		else
+			cam.alpha = event.parameters.alpha;
+	}
+}

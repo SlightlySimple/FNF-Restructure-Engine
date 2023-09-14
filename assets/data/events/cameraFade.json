@@ -1,0 +1,63 @@
+{
+	"parameters":
+	[
+		{
+			"id": "camera",
+			"label": "Camera",
+			"type": "dropdown",
+			"defaultValue": "main",
+			"options": ["main", "hud"]
+		},
+		{
+			"id": "r",
+			"label": "Color",
+			"type": "color",
+			"defaultValue": 255
+		},
+		{
+			"id": "g",
+			"label": "",
+			"type": "invis",
+			"defaultValue": 255
+		},
+		{
+			"id": "b",
+			"label": "",
+			"type": "invis",
+			"defaultValue": 255
+		},
+		{
+			"id": "alpha",
+			"label": "Alpha",
+			"type": "stepper",
+			"defaultValue": 255,
+			"min": 0,
+			"max": 255,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "duration",
+			"label": "Duration (Seconds)",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.1,
+			"decimals": 3
+		},
+		{
+			"id": "reverse",
+			"label": "Fade Out",
+			"type": "checkbox",
+			"defaultValue": false
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"type": "checkbox",
+			"defaultValue": false
+		}
+	]
+}

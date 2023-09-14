@@ -1,0 +1,346 @@
+import menus.EditorMenuState;
+import FileBrowser;
+import funkui.IsolatedTabMenu;
+import funkui.TabGroup;
+import funkui.Checkbox;
+import funkui.DropdownMenu;
+import funkui.InputText;
+import funkui.Label;
+import funkui.Stepper;
+import funkui.TextButton;
+
+curCharacter = "";
+
+function create()
+{
+	var state = FlxG.state;
+	var bg = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
+	state.add(bg);
+
+	dialogueData = [{character: "bf", expression: "normal", text: "", right: true, mood: "normal", rate: 0.04, music: ["none", 1, 0]}];
+	line = 0;
+
+
+
+	box = new AnimatedSprite(60, 350, Paths.sparrow("ui/speech_bubble_talking"));
+
+	box.animation.addByPrefix("normal", "speech bubble normal0", 24);
+	box.animation.addByPrefix("angry", "AHH speech bubble", 24);
+	box.addOffsets("angry", [30, 70]);
+
+	box.animation.play("normal", true);
+	state.add(box);
+
+	port = null;
+
+	diaText = new TypedAlphabet(140, 465, "", "default", Std.int(FlxG.width * 0.8), true, 0.8);
+	state.add(diaText);
+	updateDialogue();
+
+	lineText = new FlxText(30, 30, 0, "", 24);
+	lineText.font = "VCR OSD Mono";
+	lineText.borderColor = FlxColor.BLACK;
+	lineText.borderStyle = OUTLINE;
+	state.add(lineText);
+	updateLineText();
+
+
+
+	tabMenu = new IsolatedTabMenu(FlxG.width / 2 - 125, 80, 250, 340);
+	state.add(tabMenu);
+
+	var tabGroup = new TabGroup();
+
+	var saveButton = new TextButton(10, 10, 115, 20, "Save");
+	saveButton.onClicked = save;
+	tabGroup.add(saveButton);
+
+	var loadButton = new TextButton(saveButton.x + 115, saveButton.y, 115, 20, "Load");
+	loadButton.onClicked = load;
+	tabGroup.add(loadButton);
+
+	var addLine = new TextButton(10, saveButton.y + 30, 115, 20, "Add Line");
+	addLine.onClicked = function() {
+		var newLine = Reflect.copy(dialogueData[line]);
+		newLine.music = [].concat(dialogueData[line].music);
+		dialogueData.insert(line+1, newLine);
+		changeLine(1);
+	};
+	tabGroup.add(addLine);
+
+	var removeLine = new TextButton(addLine.x + 115, addLine.y, 115, 20, "Remove Ln");
+	removeLine.onClicked = function() {
+		if (dialogueData.length > 1)
+		{
+			dialogueData.splice(line, 1);
+			if (line > 0)
+				changeLine(-1);
+			else
+				changeLine(0);
+		}
+	};
+	tabGroup.add(removeLine);
+
+	diaLine = new InputText(10, addLine.y + 40);
+	diaLine.callback = function(text, action) {
+		dialogueData[line].text = text;
+		updateDialogue();
+		diaText.skip();
+	}
+	tabGroup.add(diaLine);
+	var diaLineLabel = new Label("Dialogue Line:", diaLine);
+	tabGroup.add(diaLineLabel);
+
+	var characterList = Paths.listFilesSub("data/portraits/", ".json");
+	characterDropdown = new DropdownMenu(10, diaLine.y + 40, 230, 20, dialogueData[line].character, characterList);
+	characterDropdown.onChanged = function() {
+		dialogueData[line].character = characterDropdown.value;
+		updatePort();
+	};
+	tabGroup.add(characterDropdown);
+	var characterDropdownLabel = new Label("Character:", characterDropdown);
+	tabGroup.add(characterDropdownLabel);
+
+	expressionDropdown = new DropdownMenu(10, characterDropdown.y + 40, 230, 20, dialogueData[line].expression, []);
+	expressionDropdown.onChanged = function() {
+		dialogueData[line].expression = expressionDropdown.value;
+		updatePort();
+	};
+	tabGroup.add(expressionDropdown);
+	var expressionDropdownLabel = new Label("Expression:", expressionDropdown);
+	tabGroup.add(expressionDropdownLabel);
+	updatePort();
+
+	moodDropdown = new DropdownMenu(10, expressionDropdown.y + 40, 115, 20, dialogueData[line].mood, ["normal", "angry"]);
+	moodDropdown.onChanged = function() {
+		dialogueData[line].mood = moodDropdown.value;
+		updateBox();
+	};
+	tabGroup.add(moodDropdown);
+	var moodDropdownLabel = new Label("Box Style:", moodDropdown);
+	tabGroup.add(moodDropdownLabel);
+
+	rateStepper = new Stepper(moodDropdown.x + 115, moodDropdown.y, 115, 20, dialogueData[line].rate, 0.01, 0, 9999, 3);
+	rateStepper.onChanged = function() {
+		dialogueData[line].rate = rateStepper.value;
+		updateDialogue();
+	};
+	tabGroup.add(rateStepper);
+	var rateStepperLabel = new Label("Text Rate:", rateStepper);
+	tabGroup.add(rateStepperLabel);
+
+	rightCheckbox = new Checkbox(10, moodDropdown.y + 30, 20, 20, "Right");
+	rightCheckbox.checked = dialogueData[line].right;
+	rightCheckbox.onClicked = function() {
+		dialogueData[line].right = rightCheckbox.checked;
+		updateBox();
+		updatePort();
+	};
+	tabGroup.add(rightCheckbox);
+
+	var musicList = Paths.listFilesSub("music/", ".ogg");
+	musicList.unshift("none");
+	musicDropdown = new DropdownMenu(10, rightCheckbox.y + 40, 230, 20, dialogueData[line].music[0], musicList);
+	musicDropdown.onChanged = function() {
+		dialogueData[line].music[0] = musicDropdown.value;
+	}
+	tabGroup.add(musicDropdown);
+	var musicDropdownLabel = new Label("Music:", musicDropdown);
+	tabGroup.add(musicDropdownLabel);
+
+	musicVolumeStepper = new Stepper(10, musicDropdown.y + 40, 115, 20, dialogueData[line].music[1], 0.05, 0, 1, 3);
+	musicVolumeStepper.onChanged = function() {
+		dialogueData[line].music[1] = musicVolumeStepper.value;
+	}
+	tabGroup.add(musicVolumeStepper);
+	var musicVolumeLabel = new Label("Volume:", musicVolumeStepper);
+	tabGroup.add(musicVolumeLabel);
+
+	musicTimeStepper = new Stepper(musicVolumeStepper.x + 115, musicVolumeStepper.y, 115, 20, dialogueData[line].music[2], 0.05, 0, 9999, 3);
+	musicTimeStepper.onChanged = function() {
+		dialogueData[line].music[2] = musicTimeStepper.value;
+	}
+	tabGroup.add(musicTimeStepper);
+	var musicTimeLabel = new Label("Fade Time:", musicTimeStepper);
+	tabGroup.add(musicTimeLabel);
+
+	tabMenu.addGroup(tabGroup);
+}
+
+function update(elapsed)
+{
+	if (FlxG.keys.justPressed.LEFT)
+		changeLine(-1);
+
+	if (FlxG.keys.justPressed.RIGHT)
+		changeLine(1);
+
+	if (FlxG.keys.justPressed.ESCAPE)
+		FlxG.switchState(new EditorMenuState());
+}
+
+function updateLineText()
+{
+	lineText.text = "Line " + Std.string(line+1) + "/" + Std.string(dialogueData.length) + "\nUse LEFT and RIGHT to cycle through dialogue";
+}
+
+function updateDialogue()
+{
+	diaText.resetText(dialogueData[line].text);
+	diaText.start(dialogueData[line].rate, true);
+}
+
+function updatePort()
+{
+	var state = FlxG.state;
+	if (curCharacter != dialogueData[line].character)
+	{
+		if (port != null)
+		{
+			state.remove(port);
+			port.destroy();
+		}
+		port = new DialoguePort(dialogueData[line].character);
+		state.insert(state.members.indexOf(box), port);
+		port.execFunc("enter", [dialogueData[line].right]);
+		FlxTween.completeTweensOf(port);
+
+		curCharacter = dialogueData[line].character;
+		var data = port.getVar("data");
+
+		var expList = [];
+		for (a in data.animations)
+			expList.push(a.name);
+
+		expressionDropdown.valueList = expList;
+		if (!expList.contains(dialogueData[line].expression))
+		{
+			dialogueData[line].expression = expList[0];
+			expressionDropdown.value = expList[0];
+		}
+	}
+	port.execFunc("playIdle", [dialogueData[line].expression]);
+}
+
+function updateBox()
+{
+	if (box.flipX == dialogueData[line].right)
+	{
+		box.animation.play("normal", true);
+		box.flip();
+
+		port.execFunc("enter", [dialogueData[line].right]);
+		FlxTween.completeTweensOf(port);
+	}
+	box.animation.play(dialogueData[line].mood);
+}
+
+function changeLine(direction)
+{
+	line += direction;
+	if (line < 0)
+		line = dialogueData.length - 1;
+	if (line >= dialogueData.length)
+		line = 0;
+
+	diaLine.text = dialogueData[line].text;
+	characterDropdown.value = dialogueData[line].character;
+	expressionDropdown.value = dialogueData[line].expression;
+	moodDropdown.value = dialogueData[line].mood;
+	rateStepper.value = dialogueData[line].rate;
+	rightCheckbox.checked = dialogueData[line].right;
+	musicDropdown.value = dialogueData[line].music[0];
+	musicVolumeStepper.value = dialogueData[line].music[1];
+	musicTimeStepper.value = dialogueData[line].music[2];
+
+	updateLineText();
+	updateDialogue();
+	updateBox();
+	updatePort();
+}
+
+
+
+function save()
+{
+	var data = [];
+
+	var music = "none";
+	var right = true;
+	var rate = 0.04;
+	var mood = "normal";
+	for (l in dialogueData)
+	{
+		if (l.music[0] != music)
+		{
+			data.push("!setting::music::" + l.music[0] + "::" + Std.string(l.music[1]) + "::" + Std.string(l.music[2]));
+			music = l.music[0];
+		}
+
+		if (l.right != right)
+		{
+			data.push("!setting::flip");
+			right = l.right;
+		}
+
+		if (l.rate != rate)
+		{
+			data.push("!setting::rate::" + Std.string(l.rate));
+			rate = l.rate;
+		}
+
+		if (l.mood != mood)
+		{
+			data.push("!setting::mood::" + l.mood);
+			mood = l.mood;
+		}
+		data.push(l.character + "::" + l.expression + "::" + l.text);
+	}
+
+	var file = new FileBrowser();
+	file.save("dialogue.txt", data.join("\n"));
+}
+
+function load()
+{
+	var file = new FileBrowser();
+	file.loadCallback = function(fullPath) {
+		var dialogueArray = StringTools.replace(fullPath,'\\','/').split('/');
+		while (dialogueArray[0] != "data")
+			dialogueArray.remove(dialogueArray[0]);
+		dialogueArray.remove(dialogueArray[0]);
+
+		var dialogueFile = dialogueArray.join("/").split('.txt')[0];
+		var dialogueLines = StringTools.replace(Paths.text(dialogueFile),"\r","").split("\n");
+
+
+
+		dialogueData = [];
+		var music = ["none", 1, 0];
+		var right = true;
+		var rate = 0.04;
+		var mood = "normal";
+		for (l in dialogueLines)
+		{
+			var diaSplit = l.split("::");
+			var curCharacter = diaSplit[0];
+
+			if (curCharacter == "!setting")
+			{
+				switch (diaSplit[1])
+				{
+					case "music": music = [diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4])];
+					case "mood": mood = diaSplit[2];
+					case "flip": right = !right;
+					case "rate": rate = Std.parseFloat(diaSplit[2]);
+				}
+			}
+			else
+				dialogueData.push({character: curCharacter, expression: diaSplit[1], text: diaSplit[2], right: right, mood: mood, rate: rate, music: [].concat(music)});
+		}
+
+		line = 0;
+		changeLine(0);
+	}
+	file.load("TXT", "txt");
+}

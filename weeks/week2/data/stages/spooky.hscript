@@ -1,0 +1,26 @@
+var lightningStrikeBeat = 0;
+var lightningOffset = 8;
+
+function create()
+{
+	FlxG.sound.cache(Paths.sound("week2/thunder_1"));
+	FlxG.sound.cache(Paths.sound("week2/thunder_2"));
+}
+
+function lightningStrikeShit()
+{
+	FlxG.sound.play(Paths.sound("week2/thunder_" + Std.string(FlxG.random.int(1, 2))));
+	stage.pieces.get("halloween_bg").animation.play('lightning');
+
+	lightningStrikeBeat = game.curBeat;
+	lightningOffset = FlxG.random.int(8, 24);
+
+	game.player1.playAnim('scared', true);
+	game.gf.playAnim('scared', true);
+}
+
+function beatHit()
+{
+	if (Options.options.distractions && FlxG.random.bool(10) && game.curBeat > lightningStrikeBeat + lightningOffset)
+		lightningStrikeShit();
+}

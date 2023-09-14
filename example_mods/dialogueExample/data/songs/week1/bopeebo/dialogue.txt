@@ -1,0 +1,9 @@
+!setting::flip
+!setting::mood::angry
+dad::angry::HEY!
+!setting::mood::normal
+dad::normal::You think you can just sing with my daughter like that?
+dad::normal::If you want to date her...
+dad::normal::You're going to have to go through ME first!
+!setting::flip
+bf::normal::Brep bop

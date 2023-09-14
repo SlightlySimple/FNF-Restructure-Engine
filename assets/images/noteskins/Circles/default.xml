@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="default.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="blue confirm0000" x="237" y="239" width="230" height="230"/>
+	<SubTexture name="blue confirm0001" x="472" y="239" width="230" height="230"/>
+	<SubTexture name="blue confirm0002" x="237" y="474" width="230" height="230"/>
+	<SubTexture name="blue confirm0003" x="237" y="474" width="230" height="230"/>
+	<SubTexture name="blue press0000" x="632" y="705" width="151" height="151"/>
+	<SubTexture name="blue press0001" x="632" y="705" width="151" height="151"/>
+	<SubTexture name="blue press0002" x="788" y="705" width="151" height="151"/>
+	<SubTexture name="blue press0003" x="788" y="705" width="151" height="151"/>
+	<SubTexture name="green confirm0000" x="0" y="0" width="234" height="234"/>
+	<SubTexture name="green confirm0001" x="239" y="0" width="234" height="234"/>
+	<SubTexture name="green confirm0002" x="478" y="0" width="234" height="234"/>
+	<SubTexture name="green confirm0003" x="478" y="0" width="234" height="234"/>
+	<SubTexture name="green press0000" x="0" y="707" width="151" height="151"/>
+	<SubTexture name="green press0001" x="0" y="707" width="151" height="151"/>
+	<SubTexture name="green press0002" x="156" y="709" width="151" height="151"/>
+	<SubTexture name="green press0003" x="156" y="709" width="151" height="151"/>
+	<SubTexture name="purple confirm0000" x="717" y="0" width="232" height="232"/>
+	<SubTexture name="purple confirm0001" x="717" y="237" width="232" height="232"/>
+	<SubTexture name="purple confirm0002" x="0" y="239" width="232" height="232"/>
+	<SubTexture name="purple confirm0003" x="0" y="239" width="232" height="232"/>
+	<SubTexture name="purple press0000" x="312" y="709" width="151" height="151"/>
+	<SubTexture name="purple press0001" x="312" y="709" width="151" height="151"/>
+	<SubTexture name="purple press0002" x="632" y="861" width="151" height="151"/>
+	<SubTexture name="purple press0003" x="632" y="861" width="151" height="151"/>
+	<SubTexture name="red confirm0000" x="472" y="474" width="226" height="226"/>
+	<SubTexture name="red confirm0001" x="703" y="474" width="226" height="226"/>
+	<SubTexture name="red confirm0002" x="0" y="476" width="226" height="226"/>
+	<SubTexture name="red confirm0003" x="0" y="476" width="226" height="226"/>
+	<SubTexture name="red press0000" x="788" y="861" width="151" height="151"/>
+	<SubTexture name="red press0001" x="788" y="861" width="151" height="151"/>
+	<SubTexture name="red press0002" x="0" y="863" width="151" height="151"/>
+	<SubTexture name="red press0003" x="0" y="863" width="151" height="151"/>
+	<SubTexture name="slot0000" x="472" y="705" width="155" height="155"/>
+</TextureAtlas>

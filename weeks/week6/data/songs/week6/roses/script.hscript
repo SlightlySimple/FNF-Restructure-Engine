@@ -1,0 +1,17 @@
+function create()
+{
+	game.doNextSongTrans = true;
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		FlxG.sound.play(Paths.sound("week6/ANGRY_TEXT_BOX"));
+
+		new FlxTimer().start(2, function(tmr)
+		{
+			game.add(new W6DialogueBox(PlayState.storyWeekName));
+		});
+	}
+}

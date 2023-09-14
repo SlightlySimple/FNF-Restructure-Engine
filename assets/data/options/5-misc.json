@@ -1,0 +1,50 @@
+{
+	"label": "#optionsCatMisc",
+	"contents": [
+		{
+			"type": "bool",
+			"label": "#optionsNameNaughtiness",
+			"description": "#optionsDescNaughtiness",
+			"variable": "naughtiness",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameAutoPause",
+			"description": "#optionsDescAutoPause",
+			"variable": "autoPause",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameAutoMute",
+			"description": "#optionsDescAutoMute",
+			"variable": "autoMute",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameCompactJsons",
+			"description": "#optionsDescCompactJsons",
+			"variable": "compactJsons",
+			"defValue": true
+		},
+		{
+			"type": "int",
+			"label": "#optionsNameAutosaveSecs",
+			"description": "#optionsDescAutosaveSecs",
+			"variable": "autosaveSecs",
+			"range": [0, 120],
+			"changeValue": 1,
+			"scrollSpeed": 0.05,
+			"defValue": 60
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameChartInfo",
+			"description": "#optionsDescChartInfo",
+			"variable": "chartInfo",
+			"defValue": true
+		}
+	]
+}

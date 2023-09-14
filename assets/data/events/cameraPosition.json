@@ -1,0 +1,38 @@
+{
+	"parameters":
+	[
+		{
+			"id": "allow",
+			"label": "Allow Position",
+			"type": "checkbox",
+			"defaultValue": true
+		},
+		{
+			"id": "x",
+			"label": "X",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": -99999,
+			"max": 99999,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "y",
+			"label": "Y",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": -99999,
+			"max": 99999,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "mode",
+			"label": "Relative To",
+			"type": "dropdown",
+			"defaultValue": "absolute",
+			"options": ["absolute", "player1", "player2", "gf"]
+		}
+	]
+}

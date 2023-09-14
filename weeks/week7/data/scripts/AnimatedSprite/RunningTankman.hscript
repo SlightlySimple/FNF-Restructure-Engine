@@ -1,0 +1,50 @@
+tankSpeed = 0.7;
+goingRight = false;
+strumTime = 0;
+
+function new(x, y)
+{
+	this.x = x;
+	this.y = y;
+
+	this.frames = Paths.sparrow("week7/tankmanKilled1" + (Options.options.naughtiness ? "" : "noBlood"));
+	this.animation.addByPrefix("run", "tankman running", 24);
+	this.animation.addByPrefix("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
+	this.animation.play("run");
+	this.animation.curAnim.curFrame = FlxG.random.int(0, this.animation.curAnim.frames.length - 1);
+}
+
+function revive()
+{
+	this.animation.addByPrefix("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
+	this.animation.play("run");
+	this.animation.curAnim.curFrame = FlxG.random.int(0, this.animation.curAnim.frames.length - 1);
+}
+
+function reset(xx, yy, r)
+{
+	this.setPosition(xx, yy);
+	goingRight = r;
+	endingOffset = FlxG.random.float(50, 200);
+	tankSpeed = FlxG.random.float(0.6, 1);
+	this.flipX = goingRight;
+	if (goingRight)
+		this.addOffsets("shot", [300, 200]);
+}
+
+function update(elapsed)
+{
+	if (this.animation.curAnim.name == "run")
+	{
+		if (goingRight)
+			this.x = (FlxG.width * 0.02 - endingOffset) + (Conductor.songPosition - strumTime) * tankSpeed;
+		else
+			this.x = (FlxG.width * 0.74 + endingOffset) - (Conductor.songPosition - strumTime) * tankSpeed;
+	}
+
+	if (Conductor.songPosition >= strumTime)
+		this.animation.play("shot");
+
+	if (this.animation.curAnim.name == 'shot' && this.animation.curAnim.curFrame >= this.animation.curAnim.frames.length - 1)
+		this.kill();
+}

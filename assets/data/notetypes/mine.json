@@ -1,0 +1,13 @@
+{
+	"noteskinOverride": "Mine",
+	"hitSound": "ANGRY",
+	"p1ShouldMiss": true,
+	"p2ShouldMiss": true,
+	"noSustains": true,
+	"alwaysSplash": true,
+	"healthValues":
+	{
+		"judgements": [-15, -15, -15, 0, 0],
+		"miss": 0
+	}
+}

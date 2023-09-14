@@ -1,0 +1,7 @@
+function create()
+{
+	if (game.notetypeSingers.exists("gfSing"))
+		game.notetypeSingers["gfSing"].push(game.gf);
+	else
+		game.notetypeSingers["gfSing"] = [game.gf];
+}

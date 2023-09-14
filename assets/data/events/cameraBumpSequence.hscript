@@ -1,0 +1,16 @@
+function onEvent(event)
+{
+	game.camBumpSequence = [];
+	for (v in event.parameters.sequence.split(","))
+	{
+		if (StringTools.trim(v) == "1")
+			game.camBumpSequence.push(true);
+		else
+			game.camBumpSequence.push(false);
+		if (!event.parameters.steps)
+		{
+			for (i in 0...3)
+				game.camBumpSequence.push(false);
+		}
+	}
+}

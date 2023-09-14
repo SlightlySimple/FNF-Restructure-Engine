@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="hand0.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="click0000" x="0" y="0" width="249" height="144"/>
+	<SubTexture name="click0001" x="0" y="0" width="249" height="144"/>
+	<SubTexture name="click0002" x="249" y="0" width="249" height="144"/>
+	<SubTexture name="click0003" x="0" y="144" width="249" height="144"/>
+	<SubTexture name="enter0000" x="249" y="144" width="249" height="144"/>
+	<SubTexture name="enter0001" x="0" y="288" width="249" height="144"/>
+	<SubTexture name="enter0002" x="0" y="288" width="249" height="144"/>
+	<SubTexture name="enter0003" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0004" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0005" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0006" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0007" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0008" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0009" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0010" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0011" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0012" x="249" y="288" width="249" height="144"/>
+	<SubTexture name="enter0013" x="249" y="288" width="249" height="144"/>
+</TextureAtlas>

@@ -1,0 +1,55 @@
+function onEvent(event)
+{
+	var side = Std.int(event.parameters.strumline);
+	if (side < game.noteType.length)
+	{
+		if (side < 0)
+		{
+			for (i in 0...game.noteType.length)
+				game.noteType[i] = event.parameters.type;
+		}
+		else
+			game.noteType[side] = event.parameters.type;
+
+		var validColumns:Array<Int> = [];
+
+		if (side >= 0)
+		{
+			var div = game.uniqueDivisions[side];
+			for (i in 0...game.songData.columnDivisions.length)
+			{
+				if (game.songData.columnDivisions[i] == div)
+					validColumns.push(i);
+			}
+		}
+		else
+		{
+			for (i in 0...game.songData.columnDivisions.length)
+				validColumns.push(i);
+		}
+
+		game.strumNotes.forEachAlive(function(note)
+			{
+				if (validColumns.contains(note.column))
+					note.onNotetypeChanged(event.parameters.type);
+			}
+		);
+
+		game.notes.forEachAlive(function(note)
+			{
+				if (validColumns.contains(note.column))
+					note.onNotetypeChanged(event.parameters.type);
+			}
+		);
+
+		game.sustainNotes.forEachAlive(function(note)
+			{
+				if (validColumns.contains(note.column))
+				{
+					note.y = 0;
+					note.onNotetypeChanged(event.parameters.type);
+				}
+			}
+		);
+	}
+}

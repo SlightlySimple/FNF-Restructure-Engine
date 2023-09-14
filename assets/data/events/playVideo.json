@@ -1,0 +1,11 @@
+{
+	"parameters":
+	[
+		{
+			"id": "video",
+			"label": "Video",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

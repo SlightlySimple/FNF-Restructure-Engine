@@ -1,0 +1,24 @@
+function onEvent(event)
+{
+	if (game.hscriptExists("EVENT_subtitle"))
+	{
+		var subtitles = game.hscriptIdGet("EVENT_subtitle", "subtitles");
+		subtitles.color = FlxColor.fromRGB(Std.int(event.parameters.r), Std.int(event.parameters.g), Std.int(event.parameters.b), 255);
+
+		if (event.parameters.font == "")
+			subtitles.font = "VCR OSD Mono";
+		else
+			subtitles.font = Paths.font(event.parameters.font);
+
+		if (event.parameters.size > 0)
+			subtitles.size = event.parameters.size;
+		else
+			subtitles.size = 32;
+
+		if (event.parameters.width > 0)
+			subtitles.fieldWidth = event.parameters.width;
+		else
+			subtitles.fieldWidth = FlxG.width - 400;
+		subtitles.screenCenter(X);
+	}
+}

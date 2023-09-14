@@ -1,0 +1,4 @@
+// This list can be appended to with mods to exempt certain characters and stages from showing up in the Freeplay Sandbox
+characters/bf-dead
+characters/bf-pixel-dead
+characters/bf-holding-gf-dead

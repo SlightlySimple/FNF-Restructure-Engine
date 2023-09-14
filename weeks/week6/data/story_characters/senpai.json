@@ -1,0 +1,1 @@
+{"asset":"Senpai","position":[45,40],"scale":[0.9,0.9],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Senpai Dance","name":"idle"}]}

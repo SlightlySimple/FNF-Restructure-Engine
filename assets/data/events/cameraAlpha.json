@@ -1,0 +1,39 @@
+{
+	"parameters":
+	[
+		{
+			"id": "camera",
+			"label": "Camera",
+			"type": "dropdown",
+			"defaultValue": "main",
+			"options": ["main", "hud"]
+		},
+		{
+			"id": "alpha",
+			"label": "Opacity",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 1,
+			"increment": 0.05,
+			"decimals": 3
+		},
+		{
+			"id": "time",
+			"label": "Time (Seconds)",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.1,
+			"decimals": 3
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"type": "checkbox",
+			"defaultValue": false
+		}
+	]
+}

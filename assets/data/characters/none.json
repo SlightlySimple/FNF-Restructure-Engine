@@ -1,0 +1,11 @@
+{
+	"asset": "",
+	"position": [0, 0],
+	"camPosition": [0, 0],
+	"scale": [1, 1],
+	"antialias": false,
+	"animations": [],
+	"firstAnimation": "",
+	"flip": false,
+	"facing": "center"
+}

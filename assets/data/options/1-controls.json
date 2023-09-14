@@ -1,0 +1,187 @@
+{
+	"label": "#optionsCatControls",
+	"contents": [
+		{
+			"type": "label",
+			"label": "#optionsSubcatNotes"
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameLeft",
+			"description": "",
+			"variable": "note_left",
+			"defValue": ["A", "LEFT"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameDown",
+			"description": "",
+			"variable": "note_down",
+			"defValue": ["S", "DOWN"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameUp",
+			"description": "",
+			"variable": "note_up",
+			"defValue": ["W", "UP"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameRight",
+			"description": "",
+			"variable": "note_right",
+			"defValue": ["D", "RIGHT"]
+		},
+		{
+			"type": "testKeybinds",
+			"label": "#optionsNameTestKeybinds",
+			"description": "#optionsDescTestKeybinds",
+			"variable": "default",
+			"options": ["note_left", "note_down", "note_up", "note_right"]
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatUIControls"
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameLeft",
+			"description": "",
+			"variable": "ui_left",
+			"defValue": ["A", "LEFT"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameDown",
+			"description": "",
+			"variable": "ui_down",
+			"defValue": ["S", "DOWN"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameUp",
+			"description": "",
+			"variable": "ui_up",
+			"defValue": ["W", "UP"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameRight",
+			"description": "",
+			"variable": "ui_right",
+			"defValue": ["D", "RIGHT"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameAccept",
+			"description": "",
+			"variable": "ui_accept",
+			"defValue": ["ENTER", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameBack",
+			"description": "",
+			"variable": "ui_back",
+			"defValue": ["ESCAPE", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameVolUp",
+			"description": "",
+			"variable": "vol_up",
+			"defValue": ["PLUS", "NUMPADPLUS"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameVolDown",
+			"description": "",
+			"variable": "vol_down",
+			"defValue": ["MINUS", "NUMPADMINUS"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameVolMute",
+			"description": "",
+			"variable": "mute",
+			"defValue": ["ZERO", "NUMPADZERO"]
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatOtherGame"
+		},
+		{
+			"type": "control",
+			"label": "#optionsNamePause",
+			"description": "",
+			"variable": "pause",
+			"defValue": ["ESCAPE", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameRestart",
+			"description": "",
+			"variable": "restart",
+			"defValue": ["FIVE", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameSkipIntro",
+			"description": "",
+			"variable": "introSkip",
+			"defValue": ["SPACE", "NONE"]
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatOtherMenu"
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameFullscreen",
+			"description": "",
+			"variable": "fullscreen",
+			"defValue": ["F", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameScreenshot",
+			"description": "",
+			"variable": "screenshot",
+			"defValue": ["F1", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameReset",
+			"description": "",
+			"variable": "ui_reset",
+			"defValue": ["R", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameEditors",
+			"description": "",
+			"variable": "editorMenu",
+			"defValue": ["E", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#optionsNameSandbox",
+			"description": "",
+			"variable": "sandbox",
+			"defValue": ["CONTROL", "NONE"]
+		}
+	]
+}

@@ -1,0 +1,5 @@
+function create()
+{
+	evilTrail = new FlxTrail(thisChar, null, 4, 24, 0.3, 0.069);
+	game.insert(game.members.indexOf(thisChar), evilTrail);
+}

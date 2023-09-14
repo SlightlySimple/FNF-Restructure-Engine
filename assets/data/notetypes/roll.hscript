@@ -1,0 +1,45 @@
+function create()
+{
+	sustainTimers = [];
+	for (note in game.notesSpawn)
+	{
+		if (note.type == "roll" && note.sustainLength > 0)
+			sustainTimers.push([note.strumTime, note.column, 0]);
+	}
+}
+
+function onSustainSpawned(note)
+{
+	if (note.noteType == "roll")
+		note.hitLimit *= 2.5;
+}
+
+function update(elapsed)
+{
+	game.sustainNotes.forEachAlive(function(note) {
+		if (note.noteType == "roll" && !PlayState.botplay)
+		{
+			var matchingTimer = null;
+			for (t in sustainTimers)
+			{
+				if (t[0] == note.strumTime && t[1] == note.column)
+					matchingTimer = t;
+			}
+
+			if (matchingTimer != null)
+			{
+				if (note.isBeingHit)
+				{
+					for (s in note.singers)
+						s.playAnim(note.hitAnim);
+
+					matchingTimer[2] += elapsed * 1000;
+					if (matchingTimer[2] >= note.hitLimit && !note.missed)
+						game.sustainMissed(note);
+				}
+				else
+					matchingTimer[2] = 0;
+			}
+		}
+	});
+}

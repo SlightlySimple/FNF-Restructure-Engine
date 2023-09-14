@@ -1,0 +1,8 @@
+// Week name
+"week1"				"DADDY DEAREST"
+
+// Song names
+"tutorial/tutorial"	"Tutorial"
+"week1/bopeebo"		"Bopeebo"
+"week1/fresh"		"Fresh"
+"week1/dadbattle"	"Dadbattle"

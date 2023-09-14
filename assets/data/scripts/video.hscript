@@ -1,0 +1,44 @@
+videoPlaying = false;
+lastAutoProceed = true;
+lastVidName = "";
+
+function update(elapsed)
+{
+	if (FlxG.keys.justPressed.BACKSPACE && videoPlaying)
+		video.onVLCComplete();
+}
+
+function onEndVideo()
+{
+	videoPlaying = false;
+	game.remove(black);
+	if (lastAutoProceed)
+	{
+		if (game.endingSong)
+		{
+			game.canEndSong = true;
+			game.endSong();
+		}
+		else
+		{
+			game.canStartCountdown = true;
+			game.startCountdown();
+		}
+	}
+	else
+		game.hscriptExec("onVideoFinished", [lastVidName]);
+}
+
+function playVideo(vidName, autoProceed)
+{
+	lastAutoProceed = autoProceed;
+	lastVidName = vidName;
+
+	black = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+	black.cameras = [game.camHUD];
+	game.add(black);
+
+	videoPlaying = true;
+	video = new MP4Handler();
+	video.playMP4(Paths.video(vidName), onEndVideo);
+}

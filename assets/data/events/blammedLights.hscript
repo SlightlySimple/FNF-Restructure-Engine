@@ -1,0 +1,75 @@
+lightsOn = false;
+lightColor = "blue";
+allColors = ["blue", "green", "pink", "red", "orange"];
+allColorIndexes = [0xFF31A2FD, 0xFF31FD8C, 0xFFF794F7, 0xFFF96D63, 0xFFFBA633];
+allWindows = [];
+
+function create()
+{
+	for (i in 0...5)
+	{
+		if (game.stage.pieces.exists("win" + Std.string(i)))
+			allWindows.push(game.stage.pieces.get("win" + Std.string(i)));
+	}
+}
+
+function onEvent(event)
+{
+	var chars = [];
+	for (m in game.members)
+	{
+		if (Std.isOfType(m, Character))
+			chars.push(m);
+	}
+
+	if (event.parameters.enabled)
+	{
+		if (allColors.contains(event.parameters.color))
+			lightColor = event.parameters.color;
+		else
+		{
+			if (lightsOn)
+				lightColor = allColors[FlxG.random.int(0, allColors.length - 1, [allColors.indexOf(lightColor)])];
+			else
+				lightColor = allColors[FlxG.random.int(0, allColors.length - 1)];
+		}
+
+		var colorIndex = allColors.indexOf(lightColor);
+
+		if (lightsOn)
+		{
+			for (c in chars)
+				c.color = allColorIndexes[colorIndex];
+		}
+		else
+		{
+			game.forEachAlive(function(m) {
+				if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m))
+					FlxTween.color(m, 1, FlxColor.WHITE, FlxColor.BLACK, { ease: FlxEase.quadInOut } );
+			});
+
+			for (c in chars)
+				FlxTween.color(c, 1, FlxColor.WHITE, allColorIndexes[colorIndex], { ease: FlxEase.quadInOut } );
+
+			lightsOn = true;
+		}
+
+		for (w in allWindows)
+			w.visible = false;
+
+		if (colorIndex < allWindows.length)
+			allWindows[colorIndex].visible = true;
+	}
+	else if (lightsOn)
+	{
+		game.forEachAlive(function(m) {
+			if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m))
+				FlxTween.color(m, 1, FlxColor.BLACK, FlxColor.WHITE, { ease: FlxEase.quadInOut } );
+		});
+
+		for (c in chars)
+			FlxTween.color(c, 1, c.color, FlxColor.WHITE, { ease: FlxEase.quadInOut } );
+
+		lightsOn = false;
+	}
+}

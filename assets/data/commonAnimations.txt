@@ -1,0 +1,14 @@
+idle
+danceLeft
+danceRight
+singLEFT
+singDOWN
+singUP
+singRIGHT
+singLEFTmiss
+singDOWNmiss
+singUPmiss
+singRIGHTmiss
+firstDeath
+deathLoop
+deathConfirm

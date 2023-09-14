@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="tankmanKilled1noBlood.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="John Shot 1 NO BLOOD0000" x="0" y="2155" width="751" height="513" frameX="0" frameY="-68" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0001" x="2701" y="2096" width="803" height="616" frameX="-108" frameY="-2" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0002" x="1803" y="2135" width="811" height="603" frameX="-100" frameY="-15" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0003" x="3220" y="623" width="839" height="607" frameX="-156" frameY="-14" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0004" x="1803" y="1552" width="896" height="581" frameX="-99" frameY="-40" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0005" x="3134" y="0" width="913" height="621" frameX="-134" frameY="0" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0006" x="2701" y="1552" width="935" height="542" frameX="-112" frameY="-79" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0007" x="3638" y="1232" width="427" height="609" frameX="-223" frameY="-15" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0008" x="3506" y="2096" width="534" height="467" frameX="-116" frameY="-157" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0009" x="3506" y="2565" width="521" height="467" frameX="-129" frameY="-157" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0010" x="3506" y="2565" width="521" height="467" frameX="-129" frameY="-157" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0011" x="1553" y="2740" width="459" height="491" frameX="-191" frameY="-133" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0012" x="0" y="0" width="0" height="0" frameX="1358" frameY="314" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0013" x="1553" y="2740" width="459" height="491" frameX="-191" frameY="-133" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0014" x="0" y="0" width="0" height="0" frameX="1358" frameY="314" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0015" x="1553" y="2740" width="459" height="491" frameX="-191" frameY="-133" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0016" x="0" y="0" width="0" height="0" frameX="1358" frameY="314" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0017" x="1553" y="2740" width="459" height="491" frameX="-191" frameY="-133" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0018" x="0" y="0" width="0" height="0" frameX="1358" frameY="314" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 1 NO BLOOD0019" x="887" y="2148" width="742" height="555" frameX="-114" frameY="-38" frameWidth="1050" frameHeight="625"/>
+	<SubTexture name="John Shot 2 NO BLOOD0000" x="2616" y="2714" width="597" height="430" frameX="-243" frameY="-213" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0001" x="0" y="1526" width="885" height="627" frameX="-216" frameY="-48" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0002" x="887" y="1552" width="914" height="594" frameX="-187" frameY="-81" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0003" x="1106" y="827" width="1055" height="723" frameX="-149" frameY="-65" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0004" x="2163" y="827" width="1055" height="723" frameX="-149" frameY="-65" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0005" x="2125" y="0" width="1007" height="825" frameX="-200" frameY="0" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0006" x="1114" y="0" width="1009" height="825" frameX="-198" frameY="0" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0007" x="0" y="772" width="1104" height="752" frameX="-109" frameY="-41" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0008" x="0" y="0" width="1112" height="770" frameX="-109" frameY="-41" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0009" x="0" y="2670" width="768" height="493" frameX="-13" frameY="-177" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0010" x="0" y="2670" width="768" height="493" frameX="-13" frameY="-177" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0011" x="770" y="2705" width="781" height="463" frameX="0" frameY="-207" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0012" x="0" y="0" width="0" height="0" frameX="1706" frameY="294" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0013" x="770" y="2705" width="781" height="463" frameX="0" frameY="-207" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0014" x="0" y="0" width="0" height="0" frameX="1706" frameY="294" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0015" x="770" y="2705" width="781" height="463" frameX="0" frameY="-207" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0016" x="0" y="0" width="0" height="0" frameX="1706" frameY="294" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0017" x="770" y="2705" width="781" height="463" frameX="0" frameY="-207" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="John Shot 2 NO BLOOD0018" x="0" y="0" width="0" height="0" frameX="1706" frameY="294" frameWidth="1221" frameHeight="825"/>
+	<SubTexture name="tankman running0000" x="3215" y="3034" width="503" height="412" frameX="0" frameY="-10" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0001" x="3215" y="3034" width="503" height="412" frameX="0" frameY="-10" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0002" x="3215" y="3034" width="503" height="412" frameX="0" frameY="-10" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0003" x="2014" y="2740" width="502" height="416" frameX="-3" frameY="-12" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0004" x="2014" y="2740" width="502" height="416" frameX="-3" frameY="-12" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0005" x="2518" y="3146" width="434" height="426" frameX="-8" frameY="-51" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0006" x="2518" y="3146" width="434" height="426" frameX="-8" frameY="-51" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0007" x="2014" y="3158" width="358" height="429" frameX="-116" frameY="0" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0008" x="2014" y="3158" width="358" height="429" frameX="-116" frameY="0" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0009" x="2014" y="3158" width="358" height="429" frameX="-116" frameY="0" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0010" x="3720" y="3034" width="366" height="427" frameX="-105" frameY="-7" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0011" x="3720" y="3034" width="366" height="427" frameX="-105" frameY="-7" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0012" x="0" y="3165" width="262" height="415" frameX="-144" frameY="-64" frameWidth="505" frameHeight="479"/>
+	<SubTexture name="tankman running0013" x="0" y="3165" width="262" height="415" frameX="-144" frameY="-64" frameWidth="505" frameHeight="479"/>
+</TextureAtlas>

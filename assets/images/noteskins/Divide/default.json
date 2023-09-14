@@ -1,0 +1,71 @@
+{
+	"assets": [
+		["default"],
+		["defaultNotes", 4, 1],
+		["defaultSustains", 4, 1],
+		["defaultSustainEnds", 4, 1]
+	],
+	"antialias": true,
+	"scale": 0.7,
+	"noteSize": 112,
+	"animations":
+	[
+		{"name": "static", "prefix": "slot", "fps": 24, "loop": false},
+		{"name": "pressPURPLE", "prefix": "purple press", "fps": 24, "loop": false},
+		{"name": "pressBLUE", "prefix": "blue press", "fps": 24, "loop": false},
+		{"name": "pressGREEN", "prefix": "green press", "fps": 24, "loop": false},
+		{"name": "pressRED", "prefix": "red press", "fps": 24, "loop": false},
+		{"name": "confirmPURPLE", "prefix": "purple confirm", "fps": 24, "loop": false},
+		{"name": "confirmBLUE", "prefix": "blue confirm", "fps": 24, "loop": false},
+		{"name": "confirmGREEN", "prefix": "green confirm", "fps": 24, "loop": false},
+		{"name": "confirmRED", "prefix": "red confirm", "fps": 24, "loop": false},
+		{"name": "notePURPLE", "asset": 1, "indices": [0], "fps": 24, "loop": false},
+		{"name": "noteBLUE", "asset": 1, "indices": [1], "fps": 24, "loop": false},
+		{"name": "noteGREEN", "asset": 1, "indices": [2], "fps": 24, "loop": false},
+		{"name": "noteRED", "asset": 1, "indices": [3], "fps": 24, "loop": false},
+		{"name": "holdPURPLE", "asset": 2, "indices": [0], "fps": 24, "loop": false},
+		{"name": "holdBLUE", "asset": 2, "indices": [1], "fps": 24, "loop": false},
+		{"name": "holdGREEN", "asset": 2, "indices": [2], "fps": 24, "loop": false},
+		{"name": "holdRED", "asset": 2, "indices": [3], "fps": 24, "loop": false},
+		{"name": "holdEndPURPLE", "asset": 3, "indices": [0], "fps": 24, "loop": false},
+		{"name": "holdEndBLUE", "asset": 3, "indices": [1], "fps": 24, "loop": false},
+		{"name": "holdEndGREEN", "asset": 3, "indices": [2], "fps": 24, "loop": false},
+		{"name": "holdEndRED", "asset": 3, "indices": [3], "fps": 24, "loop": false},
+		{"name": "splashPURPLE1", "prefix": "note impact 1 purple", "fps": 24, "loop": false},
+		{"name": "splashPURPLE2", "prefix": "note impact 2 purple", "fps": 24, "loop": false},
+		{"name": "splashBLUE1", "prefix": "note impact 1  blue", "fps": 24, "loop": false},
+		{"name": "splashBLUE2", "prefix": "note impact 2 blue", "fps": 24, "loop": false},
+		{"name": "splashGREEN1", "prefix": "note impact 1 green", "fps": 24, "loop": false},
+		{"name": "splashGREEN2", "prefix": "note impact 2 green", "fps": 24, "loop": false},
+		{"name": "splashRED1", "prefix": "note impact 1 red", "fps": 24, "loop": false},
+		{"name": "splashRED2", "prefix": "note impact 2 red", "fps": 24, "loop": false}
+	],
+	"slots": [
+		{"color": "purple", "staticAnim": "static", "pressAnim": "pressPURPLE", "angle": 0, "unbakedAngle": 270},
+		{"color": "blue", "staticAnim": "static", "pressAnim": "pressBLUE", "angle": 0, "unbakedAngle": 180},
+		{"color": "green", "staticAnim": "static", "pressAnim": "pressGREEN", "angle": 0, "unbakedAngle": 0},
+		{"color": "red", "staticAnim": "static", "pressAnim": "pressRED", "angle": 0, "unbakedAngle": 90}
+	],
+	"colors": [
+		{"color": "purple", "noteAnim": "notePURPLE", "holdAnim": "holdPURPLE", "endAnim": "holdEndPURPLE", "slotAnim": "confirmPURPLE", "angle": 0},
+		{"color": "blue", "noteAnim": "noteBLUE", "holdAnim": "holdBLUE", "endAnim": "holdEndBLUE", "slotAnim": "confirmBLUE", "angle": 0},
+		{"color": "green", "noteAnim": "noteGREEN", "holdAnim": "holdGREEN", "endAnim": "holdEndGREEN", "slotAnim": "confirmGREEN", "angle": 0},
+		{"color": "red", "noteAnim": "noteRED", "holdAnim": "holdRED", "endAnim": "holdEndRED", "slotAnim": "confirmRED", "angle": 0}
+	],
+	"quantization": [
+		{"beat": 4, "color": "red"},
+		{"beat": 8, "color": "blue"},
+		{"beat": 12, "color": "purple"},
+		{"beat": 16, "color": "green"},
+		{"beat": 24, "color": "purple"},
+		{"beat": 32, "color": "purple"}
+	],
+	"allowSplashes": true,
+	"splashAsset": "noteSplashes",
+	"splashColors": [
+		{"color": "purple", "alpha": 0.6, "anims": ["splashPURPLE1", "splashPURPLE2"]},
+		{"color": "blue", "alpha": 0.6, "anims": ["splashBLUE1", "splashBLUE2"]},
+		{"color": "green", "alpha": 0.6, "anims": ["splashGREEN1", "splashGREEN2"]},
+		{"color": "red", "alpha": 0.6, "anims": ["splashRED1", "splashRED2"]}
+	]
+}

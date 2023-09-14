@@ -1,0 +1,42 @@
+!ChartEditor
+1-8: Add/Delete Note
+Hold while scrolling to create a hold note
+You can also right click a note to delete it
+Left click a note to select it
+Click and drag to select multiple notes
+Click and drag selected notes to move them
+Delete Key: Delete all selected notes
+Ctrl+C: Copy selected notes
+Ctrl+V: Paste notes
+Ctrl+B: Align selected notes to snap size
+Hover over a note to see it's type
+Ctrl+T: Change type of selected notes
+Up Arrow/Down Arrow: Change section
+Space: Play/Pause song
+Enter: Play one note
+A/S: Increase/Decrease Snap
+Z/X: Increase/Decrease Zoom
+Ctrl+S: Save Chart
+
+!StageEditor
+Left Click: Move Current Piece/Character
+Arrow Keys: Precisely Move Current Piece/Character
+Right Click: Move Camera
+Delete Key: Delete Current Piece
+Mouse Wheel: Camera Zoom
+Click on the piece names in the top-right corner to select the piece
+Ctrl-Arrow Keys: Move Piece List
+Ctrl+S: Save Stage
+
+!CharacterEditor
+Left Click: Move Character
+Shift-Left Click: Move Animation Offset
+Arrow Keys: Precisely Move Character
+Shift-Arrow Keys: Precisely Move Animation Offset
+Right Click: Move Camera
+Delete Key: Delete Current Animation
+Mouse Wheel: Camera Zoom
+Click on the animation names in the top-right corner to play the animation
+Right click them to play the animation for the ghost
+Ctrl-Arrow Keys: Move Animation List
+Ctrl+S: Save Character

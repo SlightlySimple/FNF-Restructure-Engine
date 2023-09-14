@@ -1,0 +1,99 @@
+function convertEvent(type, param1, param2)
+{
+	switch (type)
+	{
+		case "Hey!":
+		if (getPlayer(param1, 0) != "")
+			return { type: "characterPlayAnim", parameters: {id: getPlayer(param1, 0), anim: (getPlayer(param1, 0) == "gf" ? "cheer" : "hey")} };
+		return [{ type: "characterPlayAnim", parameters: {id: "player1", anim: "hey"} }, { type: "characterPlayAnim", parameters: {id: "gf", anim: "cheer"} }];
+		case "Set GF Speed": return { type: "characterDanceSpeed", parameters: {id: "gf", speed: parseFloat(param1, 1)} };
+		case "Blammed Lights": return { type: "blammedLights", parameters: {enabled: parseInt(param1, 6) != 0, color: blammedLightsColor(parseInt(param1, 6))} };
+		case "Add Camera Zoom": return { type: "cameraBump", parameters: {mainZoom: parseFloat(param1, 0), hudZoom: parseFloat(param2, 0), time: 1} };
+		case "Play Animation": return { type: "characterPlayAnim", parameters: {id: getPlayer(param2, 1), anim: param1} };
+		case "Camera Follow Pos": return { type: "cameraPosition", parameters: {allow: (param1 != "" || param2 != ""), x: parseInt(param1, 0), y: parseInt(param2, 0), mode: "absolute"} };
+		case "Alt Idle Animation": return { type: "characterDanceSettings", parameters: {id: getPlayer(param1, 1), canDance: true, idleSuffix: param2} };
+		case "Screen Shake":
+			var retArray = [];
+			if (StringTools.trim(param1) != "")
+			{
+				var paramSplit = param1.split(",");
+				retArray.push({ type: "cameraShake", parameters: {camera: "main", intensity: parseFloat(paramSplit[0], 0), duration: parseFloat(paramSplit[1], 0)} });
+			}
+			if (StringTools.trim(param2) != "")
+			{
+				var paramSplit = param2.split(",");
+				retArray.push({ type: "cameraShake", parameters: {camera: "hud", intensity: parseFloat(paramSplit[0], 0), duration: parseFloat(paramSplit[1], 0)} });
+			}
+			if (retArray.length > 0)
+				return retArray;
+		case "Change Character": return { type: "characterSwitch", parameters: {id: getPlayer(param1, 2), character: getCharacter(param2)} };
+	}
+	return null;
+}
+
+function getPlayer(source, method)
+{
+	switch (method)
+	{
+		case 0:
+			if (["bf", "boyfriend", "0"].contains(source.toLowerCase()))
+				return "player1";
+			else if (["gf", "girlfriend", "1"].contains(source.toLowerCase()))
+				return "gf";
+			else
+				return "";
+
+		case 1:
+			if (["bf", "boyfriend", "1"].contains(source.toLowerCase()))
+				return "player1";
+			else if (["gf", "girlfriend", "2"].contains(source.toLowerCase()))
+				return "gf";
+
+		case 2:
+			if (["bf", "boyfriend", "0"].contains(source.toLowerCase()))
+				return "player1";
+			else if (["gf", "girlfriend", "2"].contains(source.toLowerCase()))
+				return "gf";
+	}
+	return "player2";
+}
+
+function getCharacter(source)
+{
+	if (!Paths.jsonExists("characters/" + source))
+	{
+		for (f in Paths.listFilesSub("data/characters/", ".json"))
+		{
+			if (f.indexOf("/") > -1 && f.split("/")[f.split("/").length-1] == source)
+				return f;
+		}
+	}
+	return source;
+}
+
+function parseFloat(value, def)
+{
+	if (StringTools.trim(value) != "")
+		return Std.parseFloat(value);
+	return def;
+}
+
+function parseInt(value, def)
+{
+	if (StringTools.trim(value) != "")
+		return Std.parseInt(value);
+	return def;
+}
+
+function blammedLightsColor(index)
+{
+	switch (index)
+	{
+		case 1: return "blue";
+		case 2: return "green";
+		case 3: return "pink";
+		case 4: return "red";
+		case 5: return "orange";
+	}
+	return "random";
+}

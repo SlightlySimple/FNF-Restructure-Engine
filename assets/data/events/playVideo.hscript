@@ -1,0 +1,63 @@
+function create()
+{
+	video = new MP4Handler();
+	videoSprite = new FlxSprite();
+	videoSprite.cameras = [game.camOther];
+	videoSprite.alpha = 0.001;
+	game.add(videoSprite);
+	videoStartTime = 0;
+
+	var vids = [];
+
+	for (e in game.songData.events)
+	{
+		if (e.type == "playVideo" && !vids.contains(e.parameters.video))
+			vids.push(e.parameters.video);
+	}
+
+	for (v in vids)
+	{
+		video.playMP4(Paths.video(v), onEndVideo, videoSprite);
+		video.onVLCComplete();
+	}
+}
+
+function onEndVideo()
+{
+	videoSprite.alpha = 0.001;
+}
+
+function onEvent(event)
+{
+	videoSprite.alpha = 1;
+	videoStartTime = event.time;
+	video.playMP4(Paths.video(event.parameters.video), onEndVideo, videoSprite);
+}
+
+function update(elapsed)
+{
+	if (videoSprite.alpha > 0.001)
+	{
+		var time = MP4Handler.vlcBitmap.getTime() + videoStartTime;
+		var length = MP4Handler.vlcBitmap.length;
+		if (Math.abs(game.tracks[0].time - time) > 350)
+		{
+			if (game.tracks[0].time - videoStartTime >= length)
+				video.onVLCComplete();
+			else
+				MP4Handler.vlcBitmap.seek((game.tracks[0].time - videoStartTime) / length);
+		}
+	}
+}
+
+function pauseCreate()
+{
+	if (videoSprite.alpha > 0.001)
+		MP4Handler.vlcBitmap.pause();
+}
+
+function pauseResume()
+{
+	if (videoSprite.alpha > 0.001)
+		MP4Handler.vlcBitmap.resume();
+}

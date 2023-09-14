@@ -1,0 +1,5 @@
+function onNoteSpawned(note)
+{
+	if (note.noteType == "noAnimation")
+		note.singers = [];
+}

@@ -1,0 +1,249 @@
+{
+	"label": "#optionsCatGameplay",
+	"contents": [
+		{
+			"type": "label",
+			"label": "#optionsSubcatNotes"
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameOffset",
+			"description": "#optionsDescOffset",
+			"variable": "offset",
+			"range": [-2000, 2000],
+			"changeValue": 1,
+			"scrollSpeed": 0.02,
+			"defValue": 0
+		},
+		{
+			"type": "choicesPopulate",
+			"label": "#optionsNameNoteskin",
+			"description": "#optionsDescNoteskin",
+			"variable": "noteskin",
+			"defValue": "Arrows"
+		},
+		{
+			"type": "noteColors",
+			"label": "#optionsNameNoteColors",
+			"description": "#optionsDescNoteColors",
+			"variable": "default"
+		},
+		{
+			"type": "choicesPopulate",
+			"label": "#optionsNameHitSound",
+			"description": "#optionsDescHitSound",
+			"variable": "hitsound",
+			"defValue": "None"
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameHitVolume",
+			"description": "#optionsDescHitVolume",
+			"variable": "hitvolume",
+			"range": [0, 1],
+			"changeValue": 0.05,
+			"scrollSpeed": 0.05,
+			"defValue": 1
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameMissVolume",
+			"description": "#optionsDescMissVolume",
+			"variable": "missvolume",
+			"range": [0, 1],
+			"changeValue": 0.05,
+			"scrollSpeed": 0.05,
+			"defValue": 1
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameScrollSpeed",
+			"description": "#optionsDescScrollSpeed",
+			"variable": "scrollSpeed",
+			"range": [0.5, 5],
+			"changeValue": 0.05,
+			"scrollSpeed": 0.05,
+			"defValue": 1
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameScrollType",
+			"description": "#optionsDescScrollType",
+			"variable": "scrollSpeedType",
+			"options": ["#optionsChoiceScrollType1", "#optionsChoiceScrollType2"],
+			"defValue": 1
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameQuantizaton",
+			"description": "#optionsDescQuantizaton",
+			"variable": "quantization",
+			"options": ["#optionsChoiceQuantizaton1", "#optionsChoiceQuantizaton2"],
+			"defValue": false
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameMirror",
+			"description": "#optionsDescMirror",
+			"variable": "mirrorMode",
+			"defValue": false
+		},
+		{
+			"type": "percent",
+			"label": "#optionsNameNoteScale",
+			"description": "#optionsDescNoteScale",
+			"variable": "noteScale",
+			"range": [0.05, 2],
+			"changeValue": 0.05,
+			"scrollSpeed": 0.15,
+			"defValue": 1
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatStrumline"
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameDownscroll",
+			"description": "#optionsDescDownscroll",
+			"variable": "downscroll",
+			"options": ["#optionsChoiceDownscroll1", "#optionsChoiceDownscroll2"],
+			"defValue": false
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameFlipSustains",
+			"description": "#optionsDescFlipSustains",
+			"variable": "flipSustains",
+			"defValue": false
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameMiddlescroll",
+			"description": "#optionsDescMiddlescroll",
+			"variable": "middlescroll",
+			"defValue": false
+		},
+		{
+			"type": "percent",
+			"label": "#optionsNameLaneOpacity",
+			"description": "#optionsDescLaneOpacity",
+			"variable": "laneOpacity",
+			"range": [0, 1],
+			"changeValue": 0.05,
+			"scrollSpeed": 0.15,
+			"defValue": 0
+		},
+		{
+			"type": "int",
+			"label": "#optionsNameLaneWidth",
+			"description": "#optionsDescLaneWidth",
+			"variable": "laneBorder",
+			"range": [0, 50],
+			"changeValue": 1,
+			"scrollSpeed": 0.15,
+			"defValue": 25
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatJudgements"
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameJudgementMV",
+			"description": "#optionsDescJudgementMV",
+			"variable": "msMV",
+			"range": [0, 22.5],
+			"changeValue": 0.5,
+			"scrollSpeed": 0.1,
+			"defValue": 22.5
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameJudgementSK",
+			"description": "#optionsDescJudgementSK",
+			"variable": "msSK",
+			"range": [22.5, 45],
+			"changeValue": 0.5,
+			"scrollSpeed": 0.1,
+			"defValue": 45
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameJudgementGD",
+			"description": "#optionsDescJudgementGD",
+			"variable": "msGD",
+			"range": [45, 90],
+			"changeValue": 0.5,
+			"scrollSpeed": 0.1,
+			"defValue": 90
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameJudgementBD",
+			"description": "#optionsDescJudgementBD",
+			"variable": "msBD",
+			"range": [90, 135],
+			"changeValue": 0.5,
+			"scrollSpeed": 0.1,
+			"defValue": 135
+		},
+		{
+			"type": "float",
+			"label": "#optionsNameJudgementSH",
+			"description": "#optionsDescJudgementSH",
+			"variable": "msSH",
+			"range": [135, 180],
+			"changeValue": 0.5,
+			"scrollSpeed": 0.1,
+			"defValue": 180
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatOther"
+		},
+		{
+			"type": "int",
+			"label": "#optionsNameFPS",
+			"description": "#optionsDescFPS",
+			"variable": "framerate",
+			"range": [1, 999],
+			"changeValue": 1,
+			"scrollSpeed": 0.02,
+			"defValue": 120
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameDistractions",
+			"description": "#optionsDescDistractions",
+			"variable": "distractions",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameInstantRetry",
+			"description": "#optionsDescInstantRetry",
+			"variable": "instantRetry",
+			"defValue": false
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameBotplay",
+			"description": "#optionsDescBotplay",
+			"variable": "botplay",
+			"defValue": false
+		}
+	]
+}

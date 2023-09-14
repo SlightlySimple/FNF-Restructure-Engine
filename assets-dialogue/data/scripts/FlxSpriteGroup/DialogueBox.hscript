@@ -1,0 +1,221 @@
+doingDialogue = false;
+myDia = "";
+
+defaultSound = "dialogueTick";
+clickSound = "ui/cancelMenu";
+
+curCharacter = "";
+prevCharacter = "";
+curMood = "normal";
+prevMood = "";
+
+dialogueList = [];
+dialogueProgress = 0;
+
+right = true;
+rate = 0.04;
+music = null;
+
+function new(dialogue)
+{
+	this.cameras = [game.camOther];
+
+	myDia = dialogue;
+	var diaDirectory = "songs/"+PlayState.songId+"/"+dialogue;
+	if (!Paths.exists("data/" + diaDirectory + ".txt"))
+		diaDirectory = dialogue;
+	var allDialogue = Paths.text(diaDirectory);
+	dialogueList = Util.splitFile(allDialogue);
+	doingDialogue = true;
+
+	bgFade = new FlxSprite(-200, -200).makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.WHITE);
+	bgFade.alpha = 0;
+	FlxTween.tween(bgFade, {alpha: 0.5}, 0.8);
+	this.add(bgFade);
+
+	box = new AnimatedSprite(60, 350, Paths.sparrow("ui/speech_bubble_talking"));
+
+	box.animation.addByPrefix("normalOpen", "Speech Bubble Normal Open", 24, false);
+	box.animation.addByPrefix("normal", "speech bubble normal0", 24);
+	box.animation.addByPrefix("angryOpen", "speech bubble loud open", 24, false);
+	box.animation.addByPrefix("angry", "AHH speech bubble", 24);
+	box.addOffsets("normalOpen", [60, 0]);
+	box.addOffsets("angryOpen", [30, 70]);
+	box.addOffsets("angry", [30, 70]);
+
+	box.animation.finishCallback = function(anim) {
+		if (StringTools.endsWith(anim, "Open"))
+			box.animation.play(anim.substr(0, anim.length - 4));
+	}
+
+	bksp = new AnimatedSprite(FlxG.width * 0.65, 30, Paths.sparrow("ui/backspace"));
+	bksp.animation.addByPrefix("idle", "backspace to exit0", 24);
+	bksp.animation.addByPrefix("press", "backspace PRESSED", 24, false);
+	bksp.addOffsets("press", [30, 45]);
+	bksp.animation.play("idle");
+	this.add(bksp);
+
+	ports = new StringMap();
+	portNames = [];
+	for (d in dialogueList)
+	{
+		var diaSplit = d.split("::");
+		if (diaSplit[0] != "!setting" && !portNames.contains(diaSplit[0]))
+			portNames.push(diaSplit[0]);
+	}
+
+	for (p in portNames)
+	{
+		var port = new DialoguePort(p);
+		this.add(port);
+		ports[p] = port;
+	}
+
+	this.add(box);
+
+	diaText = new TypedAlphabet(140, 465, "", "default", Std.int(FlxG.width * 0.8), true, 0.8);
+	diaText.sounds = [FlxG.sound.load(Paths.sound(defaultSound), 0.6)];
+	this.add(diaText);
+
+	continueDialogue();
+}
+
+function update(elapsed)
+{
+	if (doingDialogue)
+	{
+		if (FlxG.keys.justPressed.BACKSPACE)
+		{
+			if (dialogueProgress+1 < dialogueList.length)
+			{
+				for (i in dialogueProgress+1...dialogueList.length)
+				{
+					game.hscriptExec("onDialogueLine", [myDia, i]);
+					game.hscriptExec("onDialogueLineShown", [myDia, i]);
+				}
+			}
+			FlxG.sound.play(Paths.sound(clickSound), 0.8);
+			bksp.animation.play("press");
+			bksp.animation.finishCallback = function(anim) { this.remove(bksp); }
+			endDialogue();
+		}
+		else if (FlxG.keys.justPressed.ANY)
+		{
+			FlxG.sound.play(Paths.sound(clickSound), 0.8);
+			if (!diaText.paused)
+				diaText.skip();
+			else if (dialogueProgress + 1 >= dialogueList.length)
+				endDialogue();
+			else
+			{
+				dialogueProgress++;
+				continueDialogue();
+			}
+		}
+	}
+}
+
+function continueDialogue()
+{
+	var diaSplit = dialogueList[dialogueProgress].split("::");
+	curCharacter = diaSplit[0];
+
+	if (curCharacter == "!setting")
+	{
+		switch (diaSplit[1])
+		{
+			case "music": playMusic(diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4]));
+			case "bgColor": bgFade.makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.fromString(diaSplit[2]));
+			case "mood": curMood = diaSplit[2];
+			case "flip": box.animation.play("normal", true); box.flip(); prevMood = ""; right = !right;
+			case "rate": rate = Std.parseFloat(diaSplit[2]);
+		}
+		dialogueProgress++;
+		continueDialogue();
+	}
+	else
+	{
+		if (curCharacter != prevCharacter || curMood != prevMood)
+		{
+			box.animation.play(curMood + "Open", true);
+			prevMood = curMood;
+		}
+
+		if (curCharacter != prevCharacter)
+		{
+			if (ports.exists(prevCharacter))
+				ports[prevCharacter].execFunc("exit", []);
+			ports[curCharacter].execFunc("enter", [right]);
+
+			var charSounds = Paths.listFiles("sounds/portraits/" + curCharacter, ".ogg");
+			if (charSounds.length > 0)
+			{
+				diaText.sounds = [];
+				for (s in charSounds)
+					diaText.sounds.push(FlxG.sound.load(Paths.sound("portraits/" + curCharacter + "/" + s), 0.6));
+			}
+			else
+				diaText.sounds = [FlxG.sound.load(Paths.sound(defaultSound), 0.6)];
+		}
+		ports[curCharacter].execFunc("playTalk", [diaSplit[1]]);
+
+		diaText.resetText(diaSplit[2]);
+		diaText.start(rate, true);
+		game.hscriptExec("onDialogueLine", [myDia, dialogueProgress]);
+		diaText.completeCallback = function() { ports[curCharacter].execFunc("playIdle", [diaSplit[1]]); game.hscriptExec("onDialogueLineShown", [myDia, dialogueProgress]); }
+		prevCharacter = curCharacter;
+	}
+}
+
+function endDialogue()
+{
+	doingDialogue = false;
+
+	for (m in this.members)
+		FlxTween.tween(m, {alpha: 0}, 0.7);
+
+	if (music != null)
+		music.fadeOut(0.5, 0, function(twn) { music.stop(); music = null; });
+
+	new FlxTimer().start(0.7, function(tmr)
+	{
+		game.remove(this);
+		game.hscriptExec("onDialogueFinished", [myDia]);
+		this.kill();
+	});
+}
+
+function playMusic(track, volume, fadeTime)
+{
+	if (track == "none")
+	{
+		if (music != null)
+		{
+			if (fadeTime > 0)
+				music.fadeOut(fadeTime, 0, function(twn) { music.stop(); music = null; });
+			else
+			{
+				music.stop();
+				music = null;
+			}
+		}
+	}
+	else
+	{
+		if (music != null)
+		{
+			music.stop();
+			music = null;
+		}
+
+		music = new FlxSound().loadEmbedded(Paths.music(track), true, true);
+		FlxG.sound.list.add(music);
+		if (fadeTime > 0)
+			music.volume = 0;
+		else
+			music.volume = volume;
+		music.play();
+		if (fadeTime > 0)
+			music.fadeIn(fadeTime, 0, volume);
+	}
+}

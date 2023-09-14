@@ -1,0 +1,1 @@
+{"asset":"Spooky","position":[5,-65],"scale":[0.6,0.6],"danceSpeed":0.5,"firstAnimation":"danceLeft","flip":false,"antialias":true,"matchColor":true,"idles":["danceLeft","danceRight"],"animations":[{"offsets":[0,0],"prefix":"Spooky Dance","indices":[-1,0,7],"name":"danceLeft"},{"offsets":[0,0],"prefix":"Spooky Dance","indices":[-1,8,15],"name":"danceRight"}]}

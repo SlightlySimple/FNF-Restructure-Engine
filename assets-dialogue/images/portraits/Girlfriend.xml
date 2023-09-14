@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Girlfriend.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Happy0000" x="0" y="0" width="306" height="425"/>
+	<SubTexture name="Laugh0000" x="308" y="0" width="312" height="434"/>
+	<SubTexture name="Normal0000" x="622" y="0" width="293" height="415"/>
+	<SubTexture name="Sad0000" x="917" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0001" x="917" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0002" x="1210" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0003" x="1210" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0004" x="1503" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0005" x="1503" y="0" width="291" height="405"/>
+	<SubTexture name="Sad0006" x="0" y="436" width="291" height="405"/>
+	<SubTexture name="Sad0007" x="0" y="436" width="291" height="405"/>
+	<SubTexture name="Scared0000" x="293" y="436" width="310" height="394"/>
+	<SubTexture name="Scared0001" x="605" y="436" width="310" height="394"/>
+	<SubTexture name="Scared0002" x="917" y="436" width="310" height="394"/>
+	<SubTexture name="Scared0003" x="1229" y="436" width="310" height="394"/>
+	<SubTexture name="Wink0000" x="1541" y="436" width="303" height="411"/>
+</TextureAtlas>

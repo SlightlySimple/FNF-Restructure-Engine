@@ -1,0 +1,4 @@
+function onEvent(event)
+{
+	game.bumpCamera(event.parameters.mainZoom, event.parameters.hudZoom, event.parameters.time);
+}

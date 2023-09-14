@@ -1,0 +1,162 @@
+{
+	"label": "#optionsCatVisuals",
+	"contents": [
+		{
+			"type": "label",
+			"label": "#optionsSubcatGraphics"
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameAntialias",
+			"description": "#optionsDescAntialias",
+			"variable": "antialias",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameFlashing",
+			"description": "#optionsDescFlashing",
+			"variable": "flashingLights",
+			"defValue": true
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatUI"
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameFPSCounter",
+			"description": "#optionsDescFPSCounter",
+			"variable": "fps",
+			"defValue": true
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameCombo",
+			"description": "#optionsDescCombo",
+			"variable": "comboType",
+			"options": ["#optionsChoiceCombo1", "#optionsChoiceCombo2", "#optionsChoiceCombo3"],
+			"defValue": 2
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameComboAccumulate",
+			"description": "#optionsDescComboAccumulate",
+			"variable": "comboAccumulate",
+			"defValue": true
+		},
+		{
+			"type": "function",
+			"label": "#optionsNameComboPosition",
+			"description": "#optionsDescComboPosition",
+			"variable": "adjustComboPosition"
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameStrumline",
+			"description": "#optionsDescStrumline",
+			"variable": "strumAnims",
+			"options": ["#optionsChoiceStrumline1", "#optionsChoiceStrumline2", "#optionsChoiceStrumline3"],
+			"defValue": 2
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameSplashes",
+			"description": "#optionsDescSplashes",
+			"variable": "splashes",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameHealthBar",
+			"description": "#optionsDescHealthBar",
+			"variable": "healthBar",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameHealthIcons",
+			"description": "#optionsDescHealthIcons",
+			"variable": "healthIcons",
+			"defValue": true
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameProgressBar",
+			"description": "#optionsDescProgressBar",
+			"variable": "progressBar",
+			"options": ["#optionsChoiceProgressBar1", "#optionsChoiceProgressBar2", "#optionsChoiceProgressBar3"],
+			"defValue": 1
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameBPM",
+			"description": "#optionsDescBPM",
+			"variable": "bpmDisplay",
+			"defValue": true
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameScorePosition",
+			"description": "#optionsDescScorePosition",
+			"variable": "scorePos",
+			"options": ["#optionsChoiceScorePosition1", "#optionsChoiceScorePosition2", "#optionsChoiceScorePosition3"],
+			"defValue": 0
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameAccuracy",
+			"description": "#optionsDescAccuracy",
+			"variable": "accuracy",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameNPS",
+			"description": "#optionsDescNPS",
+			"variable": "nps",
+			"defValue": true
+		},
+		{
+			"type": "choices",
+			"label": "#optionsNameJudgements",
+			"description": "#optionsDescJudgements",
+			"variable": "judgementCounter",
+			"options": ["#optionsChoiceJudgements1", "#optionsChoiceJudgements2", "#optionsChoiceJudgements3"],
+			"defValue": 0
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameMS",
+			"description": "#optionsDescMS",
+			"variable": "msText",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameSubtitles",
+			"description": "#optionsDescSubtitles",
+			"variable": "subtitles",
+			"defValue": true
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
+			"type": "label",
+			"label": "#optionsSubcatOther"
+		},
+		{
+			"type": "bool",
+			"label": "#optionsNameCameraBump",
+			"description": "#optionsDescCameraBump",
+			"variable": "cameraBump",
+			"defValue": true
+		}
+	]
+}

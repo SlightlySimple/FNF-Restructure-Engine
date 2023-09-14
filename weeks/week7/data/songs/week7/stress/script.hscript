@@ -1,0 +1,5 @@
+function create()
+{
+	game.hscriptAdd("runningTankmen");
+	game.hscriptIdExec("runningTankmen", "create");
+}

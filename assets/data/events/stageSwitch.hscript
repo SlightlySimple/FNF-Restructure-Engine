@@ -1,0 +1,47 @@
+function create()
+{
+	allowed = false;
+	if (PlayState.inStoryMode || FreeplaySandbox.stage == "")
+		allowed = true;
+
+	if (allowed)
+	{
+		var stages = [];
+
+		for (e in game.songData.events)
+		{
+			if (e.type == "stageSwitch" && !stages.contains(e.parameters.stage))
+				stages.push(e.parameters.stage);
+		}
+
+		for (s in stages)
+		{
+			if (Paths.jsonExists("stages/" + s))
+			{
+				var curS = new Stage(s);
+				for (piece in curS.stageData.pieces)
+				{
+					if (piece.type != "group" && Paths.imageExists(Paths.resolveStageAsset(s, piece.asset)))
+						Paths.cacheGraphic(Paths.resolveStageAsset(s, piece.asset));
+				}
+			}
+		}
+	}
+}
+
+function onEvent(event)
+{
+	if (allowed && Paths.jsonExists("stages/" + event.parameters.stage))
+	{
+		game.changeStage(event.parameters.stage);
+		game.hscriptAdd('stage', 'data/' + game.stage.stageData.script, true);
+		game.hscriptIdSet('stage', 'stage', game.stage);
+		game.hscriptIdExec('stage', 'create', []);
+	}
+	else
+	{
+		game.camZoom = game.stage.stageData.camZoom;
+		FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
+		FlxTween.tween(FlxG.camera, {zoom: game.camZoom}, Conductor.beatLength / 1000, { ease: FlxEase.quadOut });
+	}
+}

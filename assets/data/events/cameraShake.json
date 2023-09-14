@@ -1,0 +1,33 @@
+{
+	"parameters":
+	[
+		{
+			"id": "camera",
+			"label": "Camera",
+			"type": "dropdown",
+			"defaultValue": "main",
+			"options": ["main", "hud"]
+		},
+		{
+			"id": "intensity",
+			"label": "Intensity",
+			"type": "stepper",
+			"defaultValue": 0.05,
+			"min": 0,
+			"max": 2,
+			"increment": 0.05,
+			"decimals": 3
+		},
+		{
+			"id": "duration",
+			"label": "Duration (Seconds)",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.1,
+			"decimals": 3
+		}
+	]
+}

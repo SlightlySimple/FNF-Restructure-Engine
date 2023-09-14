@@ -1,0 +1,8 @@
+function onEvent(event)
+{
+	switch (event.parameters.camera)
+	{
+		case "main": FlxG.camera.shake(event.parameters.intensity, event.parameters.duration);
+		case "hud": game.camHUD.shake(event.parameters.intensity, event.parameters.duration);
+	}
+}

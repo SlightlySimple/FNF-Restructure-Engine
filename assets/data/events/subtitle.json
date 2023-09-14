@@ -1,0 +1,11 @@
+{
+	"parameters":
+	[
+		{
+			"id": "text",
+			"label": "Subtitle Text",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

@@ -1,0 +1,43 @@
+function create()
+{
+	var state = FlxG.state;
+
+	logo = state.pieces["logo"];
+	gf = state.pieces["gfDanceTitle"];
+	titleEnter = state.pieces["titleEnter"];
+
+	colorswap = new ColorSwap();
+	logo.shader = colorswap.shader;
+	gf.shader = colorswap.shader;
+}
+
+function update(elapsed)
+{
+	if (Options.keyPressed("ui_left"))
+		colorswap.h -= elapsed * 0.1;
+
+	if (Options.keyPressed("ui_right"))
+		colorswap.h += elapsed * 0.1;
+}
+
+function beatHit()
+{
+	var state = FlxG.state;
+
+	logo.scale.x = 0.94;
+	logo.scale.y = 0.94;
+	new FlxTimer().start(0.05, function(tmr:FlxTimer)
+	{
+		logo.scale.x = 1;
+		logo.scale.y = 1;
+		FlxTween.tween(logo.scale, {x: 0.95, y: 0.95}, 0.15, {ease: FlxEase.quadOut});
+	});
+}
+
+function onPressedEnter()
+{
+	if (Options.options.flashingLights)
+		titleEnter.animation.play("press");
+	else
+		titleEnter.animation.play("pressNoFlash");
+}

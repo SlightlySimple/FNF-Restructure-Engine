@@ -1,0 +1,19 @@
+function onEvent(event)
+{
+	FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
+	switch (event.parameters.mode)
+	{
+		case "fromStage": game.camZoom = game.stage.stageData.camZoom + event.parameters.zoom;
+		case "fromCurrent": game.camZoom += event.parameters.zoom;
+		default:
+			if (event.parameters.zoom == 0)
+				game.camZoom = game.stage.stageData.camZoom;
+			else
+				game.camZoom = event.parameters.zoom;
+	}
+	if (game.camZoom <= 0)
+		game.camZoom = 0.001;
+	var twn = FlxTween.tween(FlxG.camera, {zoom: game.camZoom}, event.parameters.time, { ease: FlxEase.sineInOut });
+	twn._syncWithSong = true;
+	twn._startTime = event.time;
+}

@@ -1,0 +1,21 @@
+{
+	"parameters":
+	[
+		{
+			"id": "id",
+			"label": "Character",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"type": "label",
+			"label": "Character can be \"player1,\" \"player2,\" etc. for however many characters are in the chart, and can also be \"gf\""
+		},
+		{
+			"id": "anim",
+			"label": "Animation",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

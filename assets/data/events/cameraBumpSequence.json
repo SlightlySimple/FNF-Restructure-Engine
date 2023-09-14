@@ -1,0 +1,17 @@
+{
+	"parameters":
+	[
+		{
+			"id": "sequence",
+			"label": "Camera Bump Sequence",
+			"type": "string",
+			"defaultValue": "1,0,0,0"
+		},
+		{
+			"id": "steps",
+			"label": "Seq is in Steps",
+			"type": "checkbox",
+			"defaultValue": false
+		}
+	]
+}

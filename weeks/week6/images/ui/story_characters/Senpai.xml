@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Senpai.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Senpai Dance0000" x="0" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0001" x="0" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0002" x="338" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0003" x="338" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0004" x="676" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0005" x="676" y="0" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0006" x="0" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0007" x="0" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0008" x="338" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0009" x="338" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0010" x="338" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0011" x="338" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0012" x="338" y="290" width="336" height="288"/>
+	<SubTexture name="Senpai Dance0013" x="338" y="290" width="336" height="288"/>
+</TextureAtlas>

@@ -1,0 +1,27 @@
+function onEvent(event)
+{
+	if (event.parameters.allow)
+	{
+		game.overrideCamFocus = true;
+		switch (event.parameters.mode.toLowerCase())
+		{
+			case "player1":
+				game.camFollow.x = game.player1.getMidpoint().x + event.parameters.x;
+				game.camFollow.y = game.player1.getMidpoint().y + event.parameters.y;
+
+			case "player2":
+				game.camFollow.x = game.player2.getMidpoint().x + event.parameters.x;
+				game.camFollow.y = game.player2.getMidpoint().y + event.parameters.y;
+
+			case "gf":
+				game.camFollow.x = game.gf.getMidpoint().x + event.parameters.x;
+				game.camFollow.y = game.gf.getMidpoint().y + event.parameters.y;
+
+			default:
+				game.camFollow.x = event.parameters.x;
+				game.camFollow.y = event.parameters.y;
+		}
+	}
+	else
+		game.overrideCamFocus = false;
+}

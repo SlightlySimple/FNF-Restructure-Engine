@@ -1,0 +1,30 @@
+function onEvent(event)
+{
+	var char = game.allCharacters[getSlot(event.parameters.id.toLowerCase())];
+
+	if (char.isAtlas)
+		char.playAnim(event.parameters.anim, true, true);
+	else
+	{
+		var a = char.animation.getByName(event.parameters.anim);
+		if (a != null)
+		{
+			var desiredFrame = Std.int(Math.round((game.songProgress - event.time) * a.frameRate / 1000));
+			if (desiredFrame < a.frames.length)
+			{
+				char.playAnim(event.parameters.anim, true, true);
+				char.animation.curAnim.curFrame = desiredFrame;
+			}
+		}
+	}
+}
+
+function getSlot(str)
+{
+	if (StringTools.startsWith(str, "player") && Std.parseInt(str.substr("player".length)) - 1 < game.allCharacters.length)
+		return Std.parseInt(str.substr("player".length)) - 1;
+	if (str == "gf")
+		return 2;
+
+	return 0;
+}

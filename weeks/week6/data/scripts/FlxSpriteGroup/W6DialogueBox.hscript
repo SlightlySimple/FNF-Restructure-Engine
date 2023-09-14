@@ -1,0 +1,242 @@
+doingDialogue = false;
+assetDirectory = "week6";
+
+dialogueList = [];
+dialogueLine = "";
+dialogueProgress = 0;
+
+portLeft = [[-17, 0.18], [-10, 0.48], [-10, 0.48], [-7, 0.87], [-7, 0.87], [-6, 1]];
+portRight = [[14, 0.18], [7, 0.48], [7, 0.48], [1, 0.87], [1, 0.87], [0, 1]];
+portTimer = new FlxTimer();
+
+function image(dir)
+{
+	if (Paths.imageExists(assetDirectory + "/" + dir))
+		return Paths.image(assetDirectory + "/" + dir);
+	return Paths.image("week6/" + dir);
+}
+
+function sparrow(dir)
+{
+	if (Paths.sparrowExists(assetDirectory + "/" + dir))
+		return Paths.sparrow(assetDirectory + "/" + dir);
+	return Paths.sparrow("week6/" + dir);
+}
+
+function sparrowExists(dir)
+{
+	if (Paths.sparrowExists(assetDirectory + "/" + dir))
+		return true;
+	return Paths.sparrowExists("week6/" + dir);
+}
+
+function sound(dir)
+{
+	if (Paths.soundExists(assetDirectory + "/" + dir))
+		return Paths.sound(assetDirectory + "/" + dir);
+	return Paths.sound("week6/" + dir);
+}
+
+
+
+function new(dir)
+{
+	this.cameras = [game.camOther];
+
+	var allDialogue = Paths.text("songs/"+PlayState.songId+"/"+PlayState.songIdShort+"Dialogue");
+	dialogueList = Util.splitFile(allDialogue);
+	doingDialogue = true;
+	assetDirectory = dir;
+
+	bgFade = new FlxSprite().makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), 0xFFB3DFd8);
+	bgFade.alpha = 0;
+	this.add(bgFade);
+
+	new FlxTimer().start(0.83, function(tmr)
+	{
+		bgFade.alpha += (1 / 5) * 0.7;
+		if (bgFade.alpha > 0.7)
+			bgFade.alpha = 0.7;
+	}, 5);
+
+	box = new AnimatedSprite(0, 45, sparrow("boxes/dialogueBox0"));
+	if (sparrowExists("boxes/dialogueBox" + Std.string(PlayState.storyProgress)))
+		box.frames = sparrow("boxes/dialogueBox" + Std.string(PlayState.storyProgress));
+	box.animation.addByPrefix("open", "", 24, false);
+
+	if (PlayState.storyProgress == 2)
+	{
+		face = new FlxSprite(320, 170, image("portraits/spirit"));
+		face.scale.set(6, 6);
+	}
+
+	portraitLeft = new FlxSprite(0, 40, image("portraits/senpai"));
+	portraitLeft.scale.set(6 * 0.9, 6 * 0.9);
+	portraitLeft.updateHitbox();
+	portraitLeft.screenCenter(X);
+	if (PlayState.storyProgress != 1)
+		this.add(portraitLeft);
+	if (PlayState.storyProgress == 2)
+		this.add(face);
+	portraitLeft.visible = false;
+
+	portraitRight = new FlxSprite(0, 40, image("portraits/bf"));
+	portraitRight.scale.set(6 * 0.9, 6 * 0.9);
+	portraitRight.updateHitbox();
+	this.add(portraitRight);
+	portraitRight.visible = false;
+
+	box.animation.play("open");
+	box.scale.set(6 * 0.9, 6 * 0.9);
+	box.updateHitbox();
+	box.screenCenter(X);
+	this.add(box);
+
+	hand = new AnimatedSprite(box.x, box.y, sparrow("hands/hand0"));
+	if (sparrowExists("hands/hand" + Std.string(PlayState.storyProgress)))
+		hand.frames = sparrow("hands/hand" + Std.string(PlayState.storyProgress));
+	hand.animation.addByPrefix("enter", "enter", 24, false);
+	hand.animation.addByPrefix("click", "click", 24, false);
+	hand.scale.set(box.scale.x, box.scale.y);
+	hand.updateHitbox();
+	hand.visible = false;
+	hand.animation.finishCallback = function(name) {
+		if (name == 'click')
+			hand.visible = false;
+	}
+	this.add(hand);
+
+	diaText = new FlxTypeText(240, 500, Std.int(FlxG.width * 0.6), "", 32);
+	diaText.font = "Pixel Arial 11 Bold";
+	diaText.sounds = [FlxG.sound.load(sound('pixelText'), 0.6)];
+	if (PlayState.storyProgress != 2)
+	{
+		diaText.color = 0xFF3F2021;
+		diaText.borderStyle = SHADOW;
+		diaText.borderSize = 2;
+		diaText.borderColor = 0xFFD89494;
+	}
+	this.add(diaText);
+
+	skipText = new FlxText(FlxG.width * 0.9, 30, 0, "Press BACKSPACE to skip", 16);
+	skipText.font = "Pixel Arial 11 Bold";
+	skipText.x -= skipText.width;
+	if (PlayState.storyProgress != 2)
+	{
+		skipText.color = 0xFF3F2021;
+		skipText.borderStyle = SHADOW;
+		skipText.borderColor = 0xFFD89494;
+	}
+	this.add(skipText);
+
+	if (PlayState.storyProgress == 2)
+		portraitLeft.color = FlxColor.BLACK;
+
+	for (m in this.members)
+		m.antialiasing = false;
+
+	continueDialogue();
+}
+
+function update(elapsed)
+{
+	if (doingDialogue)
+	{
+		if (FlxG.keys.justPressed.BACKSPACE)
+		{
+			FlxG.sound.play(sound('clickText'), 0.8);
+			endDialogue();
+		}
+		else if (FlxG.keys.justPressed.ANY)
+		{
+			FlxG.sound.play(sound('clickText'), 0.8);
+			if (diaText.text.length < dialogueLine.length)
+				diaText.skip();
+			else if (dialogueProgress + 1 >= dialogueList.length)
+				endDialogue();
+			else
+			{
+				dialogueProgress++;
+				continueDialogue();
+			}
+		}
+	}
+}
+
+function continueDialogue()
+{
+	dialogueLine = dialogueList[dialogueProgress].split(":")[2];
+	diaText.resetText(dialogueLine);
+	diaText.start(0.04, true);
+	diaText.completeCallback = function() { hand.visible = true; hand.animation.play("enter", true); };
+	hand.animation.play("click", true);
+
+	var curCharacter = dialogueList[dialogueProgress].split(":")[1];
+	switch (curCharacter)
+	{
+		case 'dad':
+			portraitRight.visible = false;
+			if (!portraitLeft.visible)
+			{
+				portraitLeft.visible = true;
+				portraitLeft.x = portLeft[0][0] * 6 * 0.9;
+				portraitLeft.alpha = portLeft[0][1];
+				portTimer.cancel();
+				portTick = 0;
+				new FlxTimer().start(1 / 24, function(t) {
+					portTick++;
+					if (portTick < portLeft.length)
+					{
+						portraitLeft.x = portLeft[portTick][0] * 6 * 0.9;
+						portraitLeft.alpha = portLeft[portTick][1];
+					}
+				}, portLeft.length - 1);
+			}
+		case 'bf':
+			portraitLeft.visible = false;
+			if (!portraitRight.visible)
+			{
+				portraitRight.visible = true;
+				portraitRight.x = portRight[0][0] * 6 * 0.9;
+				portraitRight.alpha = portRight[0][1];
+				portTimer.cancel();
+				portTick = 0;
+				new FlxTimer().start(1 / 24, function(t) {
+					portTick++;
+					if (portTick < portRight.length)
+					{
+						portraitRight.x = portRight[portTick][0] * 6 * 0.9;
+						portraitRight.alpha = portRight[portTick][1];
+					}
+				}, portRight.length - 1);
+			}
+	}
+}
+
+function endDialogue()
+{
+	doingDialogue = false;
+	game.hscriptExec("onDialogueFinished", []);
+
+	this.remove(portraitLeft);
+	this.remove(portraitRight);
+	hand.animation.play("click", true);
+
+	new FlxTimer().start(0.2, function(tmr)
+	{
+		box.alpha -= 1 / 5;
+		bgFade.alpha -= 1 / 5 * 0.7;
+		diaText.alpha -= 1 / 5;
+		skipText.alpha -= 1 / 5;
+		if (PlayState.storyProgress == 2)
+			face.alpha -= 1 / 5;
+	}, 5);
+
+	new FlxTimer().start(1.2, function(tmr)
+	{
+		game.remove(this);
+		game.canStartCountdown = true;
+		game.startCountdown();
+		this.kill();
+	});
+}

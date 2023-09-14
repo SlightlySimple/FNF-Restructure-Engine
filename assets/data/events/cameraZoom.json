@@ -1,0 +1,37 @@
+{
+	"parameters":
+	[
+		{
+			"id": "zoom",
+			"label": "Camera Zoom",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": -9999,
+			"max": 9999,
+			"increment": 0.01,
+			"decimals": 3
+		},
+		{
+			"type": "label",
+			"label": "Set Camera Zoom to 0 to reset the zoom to default"
+		},
+		{
+			"id": "time",
+			"label": "Time (Seconds)",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0.01,
+			"max": 9999,
+			"increment": 0.01,
+			"decimals": 3
+		},
+		{
+			"id": "mode",
+			"label": "Mode",
+			"type": "dropdown",
+			"defaultValue": "absolute",
+			"options": ["absolute", "fromStage", "fromCurrent"]
+		}
+	]
+}

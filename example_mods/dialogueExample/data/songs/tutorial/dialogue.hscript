@@ -1,0 +1,40 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay && Paths.textExists("songs/" + PlayState.songId + "/dialogue"))
+		game.canStartCountdown = false;
+	if (PlayState.inStoryMode && Paths.textExists("songs/" + PlayState.songId + "/dialogueEnd"))
+		game.canEndSong = false;
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		game.camHUD.alpha = 0;
+		new FlxTimer().start(0.8, function(tmr) { game.add(new DialogueBox("dialogue")); });
+	}
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		FlxTween.tween(game.camHUD, {alpha: 0}, 0.5);
+		game.add(new DialogueBox("dialogueEnd"));
+	}
+}
+
+function onDialogueFinished(dialogue)
+{
+	FlxTween.tween(game.camHUD, {alpha: 1}, 0.5);
+	if (game.endingSong)
+	{
+		game.canEndSong = true;
+		game.endSong();
+	}
+	else
+	{
+		game.canStartCountdown = true;
+		game.startCountdown();
+	}
+}

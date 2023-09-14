@@ -1,0 +1,17 @@
+function create()
+{
+	for (i in 0...5)
+		stage.pieces.get("win" + Std.string(i)).visible = false;
+}
+
+function beatHit()
+{
+	if (game.curBeat % 4 == 0)
+	{
+		for (i in 0...5)
+			stage.pieces.get("win" + Std.string(i)).visible = false;
+
+		var curLight = FlxG.random.int(0, 4);
+		stage.pieces.get("win" + Std.string(curLight)).visible = true;
+	}
+}

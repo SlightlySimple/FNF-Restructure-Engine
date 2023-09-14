@@ -1,0 +1,28 @@
+voicelineSource = "";
+voicelineSubs = "";
+voicelineCount = 0;
+voicelineCensor = [];
+
+function gameOverMusicStarted()
+{
+	if (voicelineCount > 0)
+	{
+		var GSI = GameOverSubState.instance;
+		var randomCensor = (Options.options.naughtiness ? [] : voicelineCensor);
+		var gameOverLine = FlxG.random.int(1, voicelineCount, randomCensor);
+
+		subtitles = new FlxText(200, FlxG.height * 0.8, FlxG.width - 400, Lang.get(voicelineSubs+Std.string(gameOverLine)), 32);
+		subtitles.font = "VCR OSD Mono";
+		subtitles.borderColor = FlxColor.BLACK;
+		subtitles.borderStyle = FlxTextBorderStyle.OUTLINE;
+		subtitles.alignment = CENTER;
+		subtitles.cameras = [game.camOther];
+		if (Options.options.subtitles)
+			GSI.add(subtitles);
+
+		voiceLine = new FlxSound().loadEmbedded(Paths.sound(voicelineSource + Std.string(gameOverLine)), false, true, function() { subtitles.text = ''; if (FlxG.sound.music.playing) {FlxG.sound.music.fadeIn(4, 0.2, 1);} });
+		FlxG.sound.list.add(voiceLine);
+		voiceLine.play(true);
+		FlxG.sound.music.volume = 0.2;
+	}
+}

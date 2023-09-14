@@ -1,0 +1,7 @@
+static|basetype
+animated|basetype
+tiled|basetype
+group|basetype
+PhillyTrain|static
+LimoCar|static
+BackgroundTank|animated

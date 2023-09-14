@@ -1,0 +1,63 @@
+[
+	{
+		"type": "static",
+		"asset": "logo",
+		"position": [-150, -100],
+		"antialias": true
+	},
+	{
+		"type": "animated",
+		"asset": "gfDanceTitle",
+		"position": [512, 50],
+		"animations":
+		[
+			{
+				"name": "danceLeft",
+				"prefix": "gfDance",
+				"fps": 24,
+				"loop": false,
+				"indices": [-1, 0, 14]
+			},
+			{
+				"name": "danceRight",
+				"prefix": "gfDance",
+				"fps": 24,
+				"loop": false,
+				"indices": [-1, 15, 29]
+			}
+		],
+		"firstAnimation": "danceLeft",
+		"idles": ["danceLeft", "danceRight"],
+		"beatAnimationSpeed": 1,
+		"antialias": true
+	},
+	{
+		"type": "animated",
+		"asset": "titleEnter",
+		"position": [100, 576],
+		"animations":
+		[
+			{
+				"name": "idle",
+				"prefix": "Press Enter to Begin",
+				"fps": 24,
+				"loop": true
+			},
+			{
+				"name": "press",
+				"prefix": "ENTER PRESSED",
+				"fps": 24,
+				"loop": true
+			},
+			{
+				"name": "pressNoFlash",
+				"prefix": "ENTER PRESSED",
+				"fps": 24,
+				"loop": false,
+				"indices": [0, 1]
+			}
+		],
+		"firstAnimation": "idle",
+		"antialias": true
+	}
+]

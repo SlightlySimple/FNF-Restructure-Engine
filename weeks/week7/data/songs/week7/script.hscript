@@ -1,0 +1,6 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay)
+		game.canStartCountdown = false;
+	game.hscriptAdd("week7Cutscene");
+}

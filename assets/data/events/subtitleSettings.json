@@ -1,0 +1,53 @@
+{
+	"parameters":
+	[
+		{
+			"id": "r",
+			"label": "Color",
+			"type": "color",
+			"defaultValue": 255
+		},
+		{
+			"id": "g",
+			"label": "",
+			"type": "invis",
+			"defaultValue": 255
+		},
+		{
+			"id": "b",
+			"label": "",
+			"type": "invis",
+			"defaultValue": 255
+		},
+		{
+			"id": "font",
+			"label": "Font",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "size",
+			"label": "Size",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": 0,
+			"max": 9999,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "width",
+			"label": "Width",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": 0,
+			"max": 1280,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"type": "label",
+			"label": "All settings except color can be reset to default by either setting them to 0 or leaving them blank"
+		}
+	]
+}

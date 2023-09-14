@@ -1,0 +1,7 @@
+{
+	"license": "CC BY 4.0,MIT",
+	"title": "Dialogue Example",
+	"api_version": "0.1.0",
+	"mod_version": "1.0.0",
+	"description": "Sample mod to showcase Restructure Engine's dialogue system by adding dialogue to the Tutorial and Week 1"
+}

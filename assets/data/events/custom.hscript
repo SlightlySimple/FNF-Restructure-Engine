@@ -1,0 +1,4 @@
+function onEvent(event)
+{
+	game.hscriptExec("onCustomEvent", [event.parameters.type, event]);
+}

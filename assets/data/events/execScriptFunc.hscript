@@ -1,0 +1,26 @@
+function onEvent(event)
+{
+	game.hscriptIdExec(event.parameters.id, event.parameters.func, analyzeParams(event.parameters.params));
+}
+
+function analyzeParams(params)
+{
+	var paramArray = [];
+	for (p in params.split(","))
+		paramArray.push(analyzeValue(p));
+	return paramArray;
+}
+
+function analyzeValue(val)
+{
+	if (Std.parseFloat(val) != null)
+		return Std.parseFloat(val);
+
+	if (val == "true")
+		return true;
+
+	if (val == "false")
+		return false;
+
+	return val;
+}

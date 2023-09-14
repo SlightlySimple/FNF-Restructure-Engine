@@ -1,0 +1,11 @@
+{
+	"parameters":
+	[
+		{
+			"id": "sound",
+			"label": "Sound",
+			"type": "string",
+			"defaultValue": ""
+		}
+	]
+}

@@ -1,0 +1,4 @@
+function onEvent(event)
+{
+	game.camBumpRate = event.parameters.rate;
+}

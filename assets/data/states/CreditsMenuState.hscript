@@ -1,0 +1,191 @@
+function create()
+{
+	textBlocks = StringTools.replace(Paths.text('credits'), "\r", "").split("\n");
+
+	credPages = [];
+	for (t in textBlocks)
+	{
+		if (StringTools.startsWith(t, "!page ") && !credPages.contains(t.substr(6)))
+			credPages.push(t.substr(6));
+	}
+
+	if (static.credPage == null)
+		static.credPage = credPages[0];
+	credPage = credPages.indexOf(static.credPage);
+
+	var state = FlxG.state;
+
+	bg = new FlxSprite();
+	state.add(bg);
+
+	credText = new FlxSpriteGroup();
+	state.add(credText);
+	refreshCredText();
+
+	arrowLeft = new AnimatedSprite(0, 0, Paths.tiles("ui/arrow", 2, 1));
+	arrowLeft.animation.add('idle', [0]);
+	arrowLeft.animation.add('press', [1]);
+	arrowLeft.animation.play('idle');
+	arrowLeft.setPosition(15, (FlxG.height - arrowLeft.height) / 2);
+	arrowLeft.flipX = true;
+	if (credPages.length > 1)
+		state.add(arrowLeft);
+
+	arrowRight = new AnimatedSprite(0, 0, arrowLeft.frames);
+	arrowRight.animation.add('idle', [0]);
+	arrowRight.animation.add('press', [1]);
+	arrowRight.animation.play('idle');
+	arrowRight.setPosition(FlxG.width - arrowRight.width - 15, (FlxG.height - arrowRight.height) / 2);
+	if (credPages.length > 1)
+		state.add(arrowRight);
+
+	FlxG.mouse.visible = true;
+
+	nav = new UINumeralNavigation((credPages.length > 1 ? changePage : null), null, null, function() {
+		static.credPage = credPages[credPage];
+		FlxG.mouse.visible = false;
+		GotoMenu();
+	});
+	state.add(nav);
+}
+
+function refreshCredText()
+{
+	credText.forEachAlive(function(t) {
+		t.kill();
+		t.destroy();
+	});
+	credText.clear();
+
+	var textSplit = [];
+
+	var care = true;
+	for (t in textBlocks)
+	{
+		if (StringTools.startsWith(t, "!page "))
+			care = (t.substr(6) == credPages[credPage]);
+		else if (care && StringTools.startsWith(t, "!bg "))
+		{
+			if (Paths.imageExists(t.substr(4)))
+			{
+				bg.loadGraphic(Paths.image(t.substr(4)));
+				bg.setGraphicSize(Std.int(FlxG.width));
+				bg.updateHitbox();
+			}
+		}
+		else if (care && t != "")
+			textSplit.push(t.split("|"));
+	}
+
+	var txtY = 80;
+	credObjects = [];
+
+	for (t in textSplit)
+	{
+		var newCredObject = {line: null, isHyperlink: false, hyperlink: ''};
+		var textLine1 = new FlxText(80, txtY, 0, t[0], 36);
+		textLine1.font = "VCR OSD Mono";
+		textLine1.borderColor = FlxColor.BLACK;
+		textLine1.borderStyle = FlxTextBorderStyle.OUTLINE;
+		if (t.length <= 1)
+		{
+			textLine1.size = 48;
+			textLine1.screenCenter(X);
+		}
+		newCredObject.line = textLine1;
+		credText.add(textLine1);
+
+		if (t.length > 2)
+		{
+			newCredObject.isHyperlink = true;
+			newCredObject.hyperlink = t[2];
+			textLine1.color = 0xFFC0FFFF;
+		}
+
+		if (t.length > 1)
+		{
+			var textLine2 = new FlxText(FlxG.width - 80, txtY, FlxG.width * 0.6, t[1], 36);
+			textLine2.font = "VCR OSD Mono";
+			textLine2.alignment = RIGHT;
+			textLine2.x -= textLine2.width;
+			textLine2.borderColor = FlxColor.BLACK;
+			textLine2.borderStyle = FlxTextBorderStyle.OUTLINE;
+			credText.add(textLine2);
+			txtY += Std.int(Math.max(textLine1.height, textLine2.height) + 8);
+		}
+		else
+		{
+			txtY += Std.int(textLine1.height + 8);
+			if (textSplit.indexOf(t) > 0)
+			{
+				textLine1.y += 40;
+				txtY += 40;
+			}
+		}
+
+		credObjects.push(newCredObject);
+	}
+
+	maxHeight = Std.int(txtY + 120 - FlxG.height);
+	credText.y = Math.min(0, Math.max(-maxHeight, credText.y));
+}
+
+function update(elapsed)
+{
+	for (cred in credObjects)
+	{
+		if (cred.isHyperlink)
+		{
+			if (FlxG.mouse.overlaps(cred.line))
+			{
+				cred.line.color = 0xFF00C0FF;
+				if (FlxG.mouse.justPressed)
+					FlxG.openURL(cred.hyperlink);
+			}
+			else
+				cred.line.color = 0xFFC0FFFF;
+		}
+	}
+
+	if (credPages.length > 1)
+	{
+		if (Options.keyJustPressed("ui_right"))
+			arrowRight.animation.play("press");
+
+		if (Options.keyJustReleased("ui_right"))
+			arrowRight.animation.play("idle");
+
+		if (Options.keyJustPressed("ui_left"))
+			arrowLeft.animation.play("press");
+
+		if (Options.keyJustReleased("ui_left"))
+			arrowLeft.animation.play("idle");
+	}
+
+	var change = FlxG.mouse.wheel;
+	if (change == 0)
+	{
+		if (Options.keyJustPressed("ui_up"))
+			change = 1;
+
+		if (Options.keyJustPressed("ui_down"))
+			change = -1;
+	}
+
+	if (change != 0)
+	{
+		credText.y += change * 120;
+		credText.y = Math.min(0, Math.max(-maxHeight, credText.y));
+	}
+}
+
+function changePage(val)
+{
+	credPage += val;
+	if (credPage >= credPages.length)
+		credPage = 0;
+	if (credPage < 0)
+		credPage = credPages.length - 1;
+
+	refreshCredText();
+}

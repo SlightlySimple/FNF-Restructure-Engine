@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Boyfriend.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Angry0000" x="0" y="0" width="408" height="413"/>
+	<SubTexture name="Awkward0000" x="410" y="0" width="388" height="416"/>
+	<SubTexture name="Concerned0000" x="800" y="0" width="409" height="414"/>
+	<SubTexture name="Confident0000" x="1211" y="0" width="359" height="375"/>
+	<SubTexture name="Happy0000" x="1572" y="0" width="414" height="413"/>
+	<SubTexture name="Normal0000" x="0" y="418" width="409" height="414"/>
+	<SubTexture name="Sad0000" x="411" y="418" width="412" height="390"/>
+	<SubTexture name="Scared0000" x="825" y="418" width="408" height="407"/>
+	<SubTexture name="Scared0001" x="1235" y="418" width="408" height="407"/>
+</TextureAtlas>

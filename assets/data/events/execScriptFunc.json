@@ -1,0 +1,27 @@
+{
+	"parameters":
+	[
+		{
+			"id": "id",
+			"label": "Script ID",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "func",
+			"label": "Function",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "params",
+			"label": "Parameters",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"type": "label",
+			"label": "Parameters should be a comma-separated list such as \"1,2,3\""
+		}
+	]
+}

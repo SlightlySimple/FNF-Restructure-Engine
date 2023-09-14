@@ -1,0 +1,12 @@
+{
+	"parameters":
+	[
+		{
+			"id": "stage",
+			"label": "New Stage",
+			"type": "dropdownSpecial",
+			"defaultValue": "",
+			"options": ["stages"]
+		}
+	]
+}

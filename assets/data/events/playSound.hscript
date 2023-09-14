@@ -1,0 +1,22 @@
+function create()
+{
+	var sounds = [];
+
+	for (e in game.songData.events)
+	{
+		if (e.type == "playSound" && !sounds.contains(e.parameters.sound))
+			sounds.push(e.parameters.sound);
+	}
+
+	for (s in sounds)
+	{
+		if (Paths.soundExists(s))
+			FlxG.sound.cache(Paths.sound(s));
+	}
+}
+
+function onEvent(event)
+{
+	if (Paths.soundExists(event.parameters.sound))
+		FlxG.sound.play(Paths.sound(event.parameters.sound));
+}

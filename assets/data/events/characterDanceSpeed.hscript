@@ -1,0 +1,15 @@
+function onEvent(event)
+{
+	var char = game.allCharacters[getSlot(event.parameters.id.toLowerCase())];
+	char.danceSpeed = event.parameters.speed;
+}
+
+function getSlot(str)
+{
+	if (StringTools.startsWith(str, "player") && Std.parseInt(str.substr("player".length)) - 1 < game.allCharacters.length)
+		return Std.parseInt(str.substr("player".length)) - 1;
+	if (str == "gf")
+		return 2;
+
+	return 0;
+}

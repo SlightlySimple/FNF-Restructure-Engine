@@ -1,0 +1,39 @@
+{
+	"countdownSounds":
+	[
+		"intro3-pixel",
+		"intro2-pixel",
+		"intro1-pixel",
+		"introGo-pixel"
+	],
+	"countdown":
+	[
+		{},
+		{"asset": "ready-pixel", "scale": [6, 6]},
+		{"asset": "set-pixel", "scale": [6, 6]},
+		{"asset": "date-pixel", "scale": [6, 6]}
+	],
+	"judgements":
+	[
+		{"asset": "shit-pixel", "scale": [4.2, 4.2]},
+		{"asset": "bad-pixel", "scale": [4.2, 4.2]},
+		{"asset": "good-pixel", "scale": [4.2, 4.2]},
+		{"asset": "sick-pixel", "scale": [4.2, 4.2]},
+		{"asset": "marvelous-pixel", "scale": [4.2, 4.2]}
+	],
+	"combo": {"asset": "combo-pixel", "scale": [4.2, 4.2]},
+	"numbers":
+	[
+		{"asset": "num0-pixel", "scale": [6, 6]},
+		{"asset": "num1-pixel", "scale": [6, 6]},
+		{"asset": "num2-pixel", "scale": [6, 6]},
+		{"asset": "num3-pixel", "scale": [6, 6]},
+		{"asset": "num4-pixel", "scale": [6, 6]},
+		{"asset": "num5-pixel", "scale": [6, 6]},
+		{"asset": "num6-pixel", "scale": [6, 6]},
+		{"asset": "num7-pixel", "scale": [6, 6]},
+		{"asset": "num8-pixel", "scale": [6, 6]},
+		{"asset": "num9-pixel", "scale": [6, 6]}
+	],
+	"antialias": false
+}

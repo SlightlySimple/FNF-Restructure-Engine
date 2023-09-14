@@ -1,0 +1,82 @@
+function create()
+{
+	allowedSlots = [];
+	for (c in 0...game.allCharacters.length)
+	{
+		if (FreeplaySandbox.character(c) == "")
+			allowedSlots.push(c);
+	}
+
+	var chars = [];
+
+	for (e in game.songData.events)
+	{
+		if (e.type == "characterSwitch" && !chars.contains(e.parameters.character) && allowedSlots.contains(getSlot(e.parameters.id.toLowerCase())))
+			chars.push(e.parameters.character);
+	}
+
+	for (c in chars)
+	{
+		if (Paths.jsonExists("characters/" + c))
+		{
+			var curC = Character.parseCharacter(c);
+			var asset:String = curC.asset;
+			if (Paths.imageExists(asset))
+				Paths.cacheGraphic(asset);
+
+			if (Paths.imageExists("icons/" + curC.healthIcon))
+				Paths.cacheGraphic("icons/" + curC.healthIcon);
+			else if (Paths.imageExists("icons/icon-" + curC.healthIcon))
+				Paths.cacheGraphic("icons/icon-" + curC.healthIcon);
+		}
+	}
+}
+
+function getSlot(str)
+{
+	if (StringTools.startsWith(str, "player") && Std.parseInt(str.substr("player".length)) - 1 < game.allCharacters.length)
+		return Std.parseInt(str.substr("player".length)) - 1;
+	if (str == "gf")
+		return 2;
+
+	return 0;
+}
+
+function onEvent(event)
+{
+	var slot = getSlot(event.parameters.id.toLowerCase());
+	if (allowedSlots.contains(slot) && Paths.jsonExists("characters/" + event.parameters.character))
+	{
+		doSwitch(game.allCharacters[slot], event.parameters.character);
+		if (slot == 2)
+		{
+			game.hscriptAdd('gf', 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
+			game.hscriptIdExec('gf', 'create', []);
+		}
+		else
+		{
+			game.hscriptAdd('player' + Std.string(slot), 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
+			game.hscriptIdExec('player' + Std.string(slot), 'create', []);
+		}
+	}
+}
+
+function doSwitch(character, newChar)
+{
+	if (character.characterData.asset == "")
+		character.changeCharacter(newChar);
+	else
+	{
+		var prevAnim = character.curAnimName;
+		var prevFrame = character.curAnimFrame;
+		character.changeCharacter(newChar);
+		if (character.animData.exists(prevAnim))
+		{
+			character.playAnim(prevAnim, true, false, false);
+			if (character.myCharType == "atlas")
+				character.atlas.anim.curFrame = prevFrame;
+			else
+				character.animation.curAnim.curFrame = prevFrame;
+		}
+	}
+}

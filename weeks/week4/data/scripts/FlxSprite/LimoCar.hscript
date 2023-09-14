@@ -1,0 +1,39 @@
+fastCarCanDrive = true;
+
+function resetFastCar()
+{
+	this.x = -12600;
+	this.y = FlxG.random.int(140, 250);
+	this.velocity.x = 0;
+	fastCarCanDrive = true;
+}
+
+function fastCarDrive()
+{
+	FlxG.sound.play(Paths.sound("week4/carPass" + Std.string(FlxG.random.int(0, 1))), 0.7);
+
+	this.velocity.x = (FlxG.random.int(170, 220) / FlxG.elapsed) * 3;
+	fastCarCanDrive = false;
+	new FlxTimer().start(2, function(tmr:FlxTimer)
+	{
+		resetFastCar();
+	});
+}
+
+
+
+function new()
+{
+	resetFastCar();
+	FlxG.sound.cache(Paths.sound("week4/carPass0"));
+	FlxG.sound.cache(Paths.sound("week4/carPass1"));
+}
+
+function beatHit()
+{
+	if (Options.options.distractions)
+	{
+		if (FlxG.random.bool(10) && fastCarCanDrive)
+			fastCarDrive();
+	}
+}
