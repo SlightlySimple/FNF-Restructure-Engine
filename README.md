@@ -2,7 +2,6 @@
 This engine started as a self-test to see how far I could get coding a FNF engine from (mostly) scratch, and now it's something much bigger
 
 - GameBanana: https://gamebanana.com/mods/468646
-- Google Drive: https://drive.google.com/file/d/1z4x7d145mgOHZQJ9YPNsYVhjV53fUIgt/view
 
 ## Features
 - Not technically a mod of Base FNF, meaning a lot of accumulated clutter isn't present in the code
