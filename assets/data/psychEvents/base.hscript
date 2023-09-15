@@ -17,12 +17,12 @@ function convertEvent(type, param1, param2)
 			if (StringTools.trim(param1) != "")
 			{
 				var paramSplit = param1.split(",");
-				retArray.push({ type: "cameraShake", parameters: {camera: "main", intensity: parseFloat(paramSplit[0], 0), duration: parseFloat(paramSplit[1], 0)} });
+				retArray.push({ type: "cameraShake", parameters: {camera: "main", duration: parseFloat(paramSplit[0], 0), intensity: parseFloat(paramSplit[1], 0)} });
 			}
 			if (StringTools.trim(param2) != "")
 			{
 				var paramSplit = param2.split(",");
-				retArray.push({ type: "cameraShake", parameters: {camera: "hud", intensity: parseFloat(paramSplit[0], 0), duration: parseFloat(paramSplit[1], 0)} });
+				retArray.push({ type: "cameraShake", parameters: {camera: "hud", duration: parseFloat(paramSplit[0], 0), intensity: parseFloat(paramSplit[1], 0)} });
 			}
 			if (retArray.length > 0)
 				return retArray;

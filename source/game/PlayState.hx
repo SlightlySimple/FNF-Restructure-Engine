@@ -2198,7 +2198,11 @@ class PlayState extends MusicBeatState
 			var ratingPopup:RatingPopup = ratingPopups.recycle(RatingPopup);
 			ratingPopup.refresh(0, 4 - rating, songData.uiSkin, uiSkin);
 			if (!note.typeData.p1ShouldMiss)
-				ratingPopups.add(ratingPopup);
+			{
+				if (ratingPopups.members.contains(ratingPopup))
+					ratingPopups.remove(ratingPopup, true);
+				ratingPopups.insert(ratingPopups.members.length, ratingPopup);
+			}
 
 			var comboDigits:Array<Int> = [];
 			var combo:Int = scores.combo;
@@ -2210,12 +2214,14 @@ class PlayState extends MusicBeatState
 			while (comboDigits.length < 3)
 				comboDigits.unshift(0);
 
-			if (uiSkin.combo.asset != null)
+			if (Options.options.comboPopup && uiSkin.combo.asset != null)
 			{
 				var comboPopup:RatingPopup = ratingPopups.recycle(RatingPopup);
 				comboPopup.refresh(1, 0, songData.uiSkin, uiSkin);
 				comboPopup.x += (43 * comboDigits.length);
-				ratingPopups.add(comboPopup);
+				if (ratingPopups.members.contains(comboPopup))
+					ratingPopups.remove(comboPopup, true);
+				ratingPopups.insert(ratingPopups.members.length, comboPopup);
 			}
 
 			for (i in 0...comboDigits.length)
@@ -2223,7 +2229,9 @@ class PlayState extends MusicBeatState
 				var digit:RatingPopup = ratingPopups.recycle(RatingPopup);
 				digit.refresh(2, comboDigits[i], songData.uiSkin, uiSkin);
 				digit.x += (43 * i);
-				ratingPopups.add(digit);
+				if (ratingPopups.members.contains(digit))
+					ratingPopups.remove(digit, true);
+				ratingPopups.insert(ratingPopups.members.length, digit);
 			}
 		}
 

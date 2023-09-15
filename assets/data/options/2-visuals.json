@@ -44,6 +44,13 @@
 		},
 		{
 			"type": "bool",
+			"label": "#optionsNameComboPopup",
+			"description": "#optionsDescComboPopup",
+			"variable": "comboPopup",
+			"defValue": true
+		},
+		{
+			"type": "bool",
 			"label": "#optionsNameComboAccumulate",
 			"description": "#optionsDescComboAccumulate",
 			"variable": "comboAccumulate",

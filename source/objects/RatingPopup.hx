@@ -76,7 +76,12 @@ class RatingPopup extends FlxSprite
 		if (type < 3)
 		{
 			if (comboType == 2)
-				FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.beatLength * 2) / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+			{
+				if (type == 2)
+					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.beatLength * 2) / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+				else
+					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: Conductor.beatLength / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+			}
 			else
 			{
 				y += 15;

@@ -41,6 +41,8 @@
 "optionsDescFPSCounter"			"Display a counter for FPS and memory usage in the top left corner."
 "optionsNameCombo"				"Combo & Judgement Type"
 "optionsDescCombo"				"How to show the combo and judgement popups. \"Animated\" means they will spring up more and disappear slower."
+"optionsNameComboPopup"			"Combo Text"
+"optionsDescComboPopup"			"Whether to show the "Combo" text next to the number."
 "optionsNameComboAccumulate"	"Accumulate Combos & Judgements"
 "optionsDescComboAccumulate"	"Multiple combos and judgements will pile up. Unchecking this will make them disappear instantly each time a note is hit."
 "optionsChoiceCombo1"			"None"
