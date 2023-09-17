@@ -459,7 +459,13 @@ class ChartEditorState extends MusicBeatState
 		}
 		tabGroupSettings.add(testChartButton);
 
-		var clearNotesButton:TextButton = new TextButton(10, testChartButton.y + 40, 115, 20, "Notes");
+		var jumpToStart:TextButton = new TextButton(10, testChartButton.y + 30, 230, 20, "Jump to Start");
+		jumpToStart.onClicked = function() {
+			songProgress = 0;
+		}
+		tabGroupSettings.add(jumpToStart);
+
+		var clearNotesButton:TextButton = new TextButton(10, jumpToStart.y + 40, 115, 20, "Notes");
 		clearNotesButton.onClicked = function() {
 			var confirm:Confirm = new Confirm(300, 100, "Are you sure you want to delete all notes?\nThis can not be undone!", this);
 			confirm.yesFunc = function() {

@@ -52,6 +52,7 @@ import objects.Note;
 import objects.Stage;
 import objects.StrumNote;
 import scripting.HscriptSprite;
+import scripting.HscriptState;
 import shaders.ColorFade;
 import shaders.ColorInvert;
 import shaders.ColorSwap;
@@ -504,6 +505,7 @@ class HscriptHandler
 		interp.variables.set("PlayState", PlayState);
 		interp.variables.set("GameOverSubState", GameOverSubState);
 		interp.variables.set("HscriptState", HscriptState);
+		interp.variables.set("HscriptSubState", HscriptSubState);
 		interp.variables.set("curMenu", curMenu);
 		interp.variables.set("GotoMenu", GotoMenu);
 		interp.variables.set("MainMenuState", MainMenuState);

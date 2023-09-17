@@ -134,6 +134,21 @@ class ModMenuState extends MusicBeatState
 		modObjects = new FlxTypedSpriteGroup<ModObject>();
 		add(modObjects);
 
+		if (ModLoader.modList.length <= 0)
+		{
+			var noMods:FlxText = new FlxText(0, 0, FlxG.width - 300, Lang.get("#noMods", [Options.keyString("ui_back")]), 32);
+			noMods.font = "VCR OSD Mono";
+			noMods.alignment = CENTER;
+			noMods.borderStyle = OUTLINE;
+			noMods.borderSize = 2;
+			noMods.borderColor = FlxColor.BLACK;
+			noMods.screenCenter();
+			noMods.scrollFactor.set();
+			add(noMods);
+
+			return;
+		}
+
 		for (i in 0...ModLoader.modList.length)
 		{
 			var modObject:ModObject = new ModObject(30, 0, ModLoader.modList[i][0]);
@@ -165,7 +180,7 @@ class ModMenuState extends MusicBeatState
 		disclaimerBG.scrollFactor.set();
 		add(disclaimerBG);
 
-		var disclaimer:FlxText = new FlxText(disclaimerBG.x, disclaimerBG.y, Std.int(disclaimerBG.width), "Changes will only take effect when the game is restarted.", 24);
+		var disclaimer:FlxText = new FlxText(disclaimerBG.x, disclaimerBG.y, Std.int(disclaimerBG.width), Lang.get("#modsDisclaimer"), 24);
 		disclaimer.font = "VCR OSD Mono";
 		disclaimer.alignment = CENTER;
 		disclaimer.scrollFactor.set();
@@ -214,6 +229,18 @@ class ModMenuState extends MusicBeatState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		if (ModLoader.modList.length <= 0)
+		{
+			if (Options.keyJustPressed("ui_back"))
+			{
+				FlxG.mouse.visible = false;
+				FlxG.sound.play(Paths.sound("ui/cancelMenu"));
+				FlxG.switchState(new MainMenuState());
+			}
+
+			return;
+		}
 
 		if (grabbed)
 		{

@@ -42,6 +42,10 @@
 "fpSandboxReset"		"Reset"
 "fpSandboxExit"			"Exit"
 
+// Mods menu
+"noMods"				"No mods installed. Press %s1 to return to the main menu."
+"modsDisclaimer"		"Changes will only take effect when the game is restarted."
+
 // Options menu
 "optInGameNotice"			"Some options will require a song restart in order to take effect."
 "optKeybindTestNotice"		"You should be able to press all 4 buttons at the same time"
