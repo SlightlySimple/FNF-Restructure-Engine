@@ -22,13 +22,13 @@ function create()
 
 
 
-	box = new AnimatedSprite(60, 350, Paths.sparrow("ui/speech_bubble_talking"));
+	box = CreateSprite("ui/speech_bubble_talking", 60, 350);
 
-	box.animation.addByPrefix("normal", "speech bubble normal0", 24);
-	box.animation.addByPrefix("angry", "AHH speech bubble", 24);
+	box.addAnim("normal", "speech bubble normal0", 24);
+	box.addAnim("angry", "AHH speech bubble", 24);
 	box.addOffsets("angry", [30, 70]);
 
-	box.animation.play("normal", true);
+	box.playAnim("normal", true);
 	state.add(box);
 
 	port = null;
@@ -226,13 +226,13 @@ function updateBox()
 {
 	if (box.flipX == dialogueData[line].right)
 	{
-		box.animation.play("normal", true);
+		box.playAnim("normal", true);
 		box.flip();
 
 		port.execFunc("enter", [dialogueData[line].right]);
 		FlxTween.completeTweensOf(port);
 	}
-	box.animation.play(dialogueData[line].mood);
+	box.playAnim(dialogueData[line].mood);
 }
 
 function changeLine(direction)

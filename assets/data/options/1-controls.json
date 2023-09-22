@@ -2,6 +2,16 @@
 	"label": "#optionsCatControls",
 	"contents": [
 		{
+			"type": "function",
+			"label": "#optionsNameResetControls",
+			"description": "#optionsDescResetControls",
+			"variable": "resetControls"
+		},
+		{
+			"type": "label",
+			"label": ""
+		},
+		{
 			"type": "label",
 			"label": "#optionsSubcatNotes"
 		},

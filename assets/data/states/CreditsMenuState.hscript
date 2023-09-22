@@ -25,7 +25,7 @@ function create()
 	arrowLeft = new AnimatedSprite(0, 0, Paths.tiles("ui/arrow", 2, 1));
 	arrowLeft.animation.add('idle', [0]);
 	arrowLeft.animation.add('press', [1]);
-	arrowLeft.animation.play('idle');
+	arrowLeft.playAnim('idle');
 	arrowLeft.setPosition(15, (FlxG.height - arrowLeft.height) / 2);
 	arrowLeft.flipX = true;
 	if (credPages.length > 1)
@@ -34,7 +34,7 @@ function create()
 	arrowRight = new AnimatedSprite(0, 0, arrowLeft.frames);
 	arrowRight.animation.add('idle', [0]);
 	arrowRight.animation.add('press', [1]);
-	arrowRight.animation.play('idle');
+	arrowRight.playAnim('idle');
 	arrowRight.setPosition(FlxG.width - arrowRight.width - 15, (FlxG.height - arrowRight.height) / 2);
 	if (credPages.length > 1)
 		state.add(arrowRight);
@@ -150,16 +150,16 @@ function update(elapsed)
 	if (credPages.length > 1)
 	{
 		if (Options.keyJustPressed("ui_right"))
-			arrowRight.animation.play("press");
+			arrowRight.playAnim("press");
 
 		if (Options.keyJustReleased("ui_right"))
-			arrowRight.animation.play("idle");
+			arrowRight.playAnim("idle");
 
 		if (Options.keyJustPressed("ui_left"))
-			arrowLeft.animation.play("press");
+			arrowLeft.playAnim("press");
 
 		if (Options.keyJustReleased("ui_left"))
-			arrowLeft.animation.play("idle");
+			arrowLeft.playAnim("idle");
 	}
 
 	var change = FlxG.mouse.wheel;

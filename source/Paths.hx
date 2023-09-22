@@ -248,6 +248,19 @@ class Paths
 		return "assets/videos/" + path + ".mp4";
 	}
 
+	public static function lua(path:String):String
+	{
+		#if ALLOW_MODS
+		for (mod in ModLoader.modListLoaded)
+		{
+			if (FileSystem.exists("mods/" + mod + "/" + path + ".lua"))
+				return "mods/" + mod + "/" + path + ".lua";
+		}
+		#end
+
+		return "assets/" + path + ".lua";
+	}
+
 	public static function shader(path:String):String
 	{
 		return raw("shaders/" + path + ".frag");

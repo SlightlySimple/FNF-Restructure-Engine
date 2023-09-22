@@ -7,7 +7,7 @@ function startCountdown()
 {
 	if (!game.canStartCountdown)
 	{
-		FlxG.sound.play(Paths.sound("week6/ANGRY_TEXT_BOX"));
+		PlaySound("week6/ANGRY_TEXT_BOX");
 
 		new FlxTimer().start(2, function(tmr)
 		{

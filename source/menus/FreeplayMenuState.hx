@@ -444,6 +444,8 @@ class FreeplayMenuState extends MusicBeatState
 				reloadMenuStuff();
 			}
 		}, function() { FlxG.switchState(new MainMenuState()); }, changeCategory);
+		nav.leftClick = nav.accept;
+		nav.rightClick = nav.back;
 		add(nav);
 
 		nav2 = new UINumeralNavigation(changeDifficulty, changeSelection, function() {
@@ -478,6 +480,8 @@ class FreeplayMenuState extends MusicBeatState
 			remove(nav);
 			nav2.back = nav.back;
 		}
+		nav2.leftClick = nav2.accept;
+		nav2.rightClick = nav2.back;
 		reloadMenuStuff();
 	}
 

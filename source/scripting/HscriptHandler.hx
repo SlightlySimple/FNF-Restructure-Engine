@@ -426,6 +426,8 @@ class HscriptHandler
 		interp.variables.set("Lang", Lang);
 		interp.variables.set("Options", Options);
 		interp.variables.set("Util", Util);
+		interp.variables.set("CreateSprite", Util.CreateSprite);
+		interp.variables.set("PlaySound", Util.PlaySound);
 		interp.variables.set("FlxG", FlxG);
 		interp.variables.set("FlxG.random.bool", FlxG.random.bool);
 		interp.variables.set("FlxG.sound.cache", FlxG.sound.cache);
@@ -497,6 +499,7 @@ class HscriptHandler
 		interp.variables.set("HscriptSprite", HscriptSprite);
 		interp.variables.set("HscriptAnimatedSprite", HscriptAnimatedSprite);
 		interp.variables.set("HscriptSpriteGroup", HscriptSpriteGroup);
+		interp.variables.set("LuaModule", LuaModule);
 
 		interp.variables.set("Alphabet", Alphabet);
 		interp.variables.set("TypedAlphabet", TypedAlphabet);

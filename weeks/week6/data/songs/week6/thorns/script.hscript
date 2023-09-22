@@ -12,8 +12,8 @@ function startCountdown()
 		red.scrollFactor.set();
 		game.add(red);
 
-		var senpaiEvil = new AnimatedSprite(0, 0, Paths.sparrow('week6/senpaiCrazy'));
-		senpaiEvil.animation.addByPrefix('idle', 'Senpai Pre Explosion', 24, false);
+		var senpaiEvil = CreateSprite('week6/senpaiCrazy');
+		senpaiEvil.addAnim('idle', 'Senpai Pre Explosion', 24, false);
 		senpaiEvil.scale.set(6, 6);
 		senpaiEvil.antialiasing = false;
 		senpaiEvil.scrollFactor.set();
@@ -30,7 +30,7 @@ function startCountdown()
 				tmr.reset(0.3);
 			else
 			{
-				senpaiEvil.animation.play("idle");
+				senpaiEvil.playAnim("idle");
 				FlxG.sound.play(Paths.sound("week6/Senpai_Dies"), 1, false, null, true, function()
 				{
 					game.remove(senpaiEvil);

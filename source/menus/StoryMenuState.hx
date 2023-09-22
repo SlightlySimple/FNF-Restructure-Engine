@@ -454,6 +454,8 @@ class StoryMenuState extends MusicBeatState
 				reloadMenuStuff();
 			}
 		}, function() { FlxG.switchState(new MainMenuState()); }, changeCategory);
+		nav.leftClick = nav.accept;
+		nav.rightClick = nav.back;
 		add(nav);
 
 		nav2 = new UINumeralNavigation(changeDifficulty, changeSelection, function() {
@@ -473,6 +475,8 @@ class StoryMenuState extends MusicBeatState
 			reloadMenuStuff();
 		}, changeSelection);
 		nav2.uiSounds = [true, false, true];
+		nav2.leftClick = nav2.accept;
+		nav2.rightClick = nav2.back;
 		add(nav2);
 
 		if (categoriesList.length <= 1 || !navSwitch)

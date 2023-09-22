@@ -26,7 +26,7 @@ class Main extends Sprite
 
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
 
-		var game:FlxGame = new FlxGame(0, 0, InitState, 1, 120, 120, true, false);
+		var game:FlxGame = new FlxGame(0, 0, VersionCheckerState, 1, 120, 120, true, false);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, takeScreenshot);
 		@:privateAccess
 		game._customSoundTray = FunkSoundTray;

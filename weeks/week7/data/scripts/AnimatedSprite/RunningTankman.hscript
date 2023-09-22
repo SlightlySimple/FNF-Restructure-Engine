@@ -8,16 +8,16 @@ function new(x, y)
 	this.y = y;
 
 	this.frames = Paths.sparrow("week7/tankmanKilled1" + (Options.options.naughtiness ? "" : "noBlood"));
-	this.animation.addByPrefix("run", "tankman running", 24);
-	this.animation.addByPrefix("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
-	this.animation.play("run");
+	this.addAnim("run", "tankman running", 24);
+	this.addAnim("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
+	this.playAnim("run");
 	this.animation.curAnim.curFrame = FlxG.random.int(0, this.animation.curAnim.frames.length - 1);
 }
 
 function revive()
 {
-	this.animation.addByPrefix("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
-	this.animation.play("run");
+	this.addAnim("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
+	this.playAnim("run");
 	this.animation.curAnim.curFrame = FlxG.random.int(0, this.animation.curAnim.frames.length - 1);
 }
 
@@ -43,7 +43,7 @@ function update(elapsed)
 	}
 
 	if (Conductor.songPosition >= strumTime)
-		this.animation.play("shot");
+		this.playAnim("shot");
 
 	if (this.animation.curAnim.name == 'shot' && this.animation.curAnim.curFrame >= this.animation.curAnim.frames.length - 1)
 		this.kill();

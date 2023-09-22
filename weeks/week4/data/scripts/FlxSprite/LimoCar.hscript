@@ -10,7 +10,7 @@ function resetFastCar()
 
 function fastCarDrive()
 {
-	FlxG.sound.play(Paths.sound("week4/carPass" + Std.string(FlxG.random.int(0, 1))), 0.7);
+	PlaySound("week4/carPass" + Std.string(FlxG.random.int(0, 1)), 0.7);
 
 	this.velocity.x = (FlxG.random.int(170, 220) / FlxG.elapsed) * 3;
 	fastCarCanDrive = false;

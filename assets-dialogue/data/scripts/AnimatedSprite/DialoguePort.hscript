@@ -14,17 +14,17 @@ function new(char)
 
 	for (a in data.animations)
 	{
-		this.animation.addByPrefix(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
+		this.addAnim(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
 		this.addOffsets(a.name + "Idle", a.idle.offsets);
 		if (Reflect.hasField(a, "talk"))
 		{
-			this.animation.addByPrefix(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
+			this.addAnim(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
 			this.addOffsets(a.name + "Talk", a.talk.offsets);
 		}
 	}
 
 	firstAnim = data.animations[0].name + "Idle";
-	this.animation.play(firstAnim);
+	this.playAnim(firstAnim);
 
 	right = false;
 }
@@ -33,7 +33,7 @@ function enter(fromRight)
 {
 	if (fromRight != right)
 	{
-		this.animation.play(firstAnim);
+		this.playAnim(firstAnim);
 		this.flip();
 		right = fromRight;
 	}
@@ -67,12 +67,12 @@ function exit()
 function playTalk(anim)
 {
 	if (this.animOffsets.exists(anim + "Talk"))
-		this.animation.play(anim + "Talk");
+		this.playAnim(anim + "Talk");
 	else
-		this.animation.play(anim + "Idle");
+		this.playAnim(anim + "Idle");
 }
 
 function playIdle(anim)
 {
-	this.animation.play(anim + "Idle");
+	this.playAnim(anim + "Idle");
 }

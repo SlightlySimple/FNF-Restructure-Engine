@@ -3,6 +3,6 @@ function create()
 	if (game.stage.pieces.exists("bgFreaks"))
 	{
 		game.stage.pieces["bgFreaks"].idles = ["danceLeft-alt", "danceRight-alt"];
-		game.stage.pieces["bgFreaks"].animation.play("danceLeft-alt");
+		game.stage.pieces["bgFreaks"].playAnim("danceLeft-alt");
 	}
 }

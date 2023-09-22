@@ -12,8 +12,8 @@ portTimer = new FlxTimer();
 function image(dir)
 {
 	if (Paths.imageExists(assetDirectory + "/" + dir))
-		return Paths.image(assetDirectory + "/" + dir);
-	return Paths.image("week6/" + dir);
+		return assetDirectory + "/" + dir;
+	return "week6/" + dir;
 }
 
 function sparrow(dir)
@@ -33,8 +33,8 @@ function sparrowExists(dir)
 function sound(dir)
 {
 	if (Paths.soundExists(assetDirectory + "/" + dir))
-		return Paths.sound(assetDirectory + "/" + dir);
-	return Paths.sound("week6/" + dir);
+		return assetDirectory + "/" + dir;
+	return "week6/" + dir;
 }
 
 
@@ -59,18 +59,18 @@ function new(dir)
 			bgFade.alpha = 0.7;
 	}, 5);
 
-	box = new AnimatedSprite(0, 45, sparrow("boxes/dialogueBox0"));
+	box = CreateSprite(image("boxes/dialogueBox0"), 0, 45);
 	if (sparrowExists("boxes/dialogueBox" + Std.string(PlayState.storyProgress)))
 		box.frames = sparrow("boxes/dialogueBox" + Std.string(PlayState.storyProgress));
-	box.animation.addByPrefix("open", "", 24, false);
+	box.addAnim("open", "", 24, false);
 
 	if (PlayState.storyProgress == 2)
 	{
-		face = new FlxSprite(320, 170, image("portraits/spirit"));
+		face = CreateSprite(image("portraits/spirit"), 320, 170);
 		face.scale.set(6, 6);
 	}
 
-	portraitLeft = new FlxSprite(0, 40, image("portraits/senpai"));
+	portraitLeft = CreateSprite(image("portraits/senpai"), 0, 40);
 	portraitLeft.scale.set(6 * 0.9, 6 * 0.9);
 	portraitLeft.updateHitbox();
 	portraitLeft.screenCenter(X);
@@ -80,23 +80,23 @@ function new(dir)
 		this.add(face);
 	portraitLeft.visible = false;
 
-	portraitRight = new FlxSprite(0, 40, image("portraits/bf"));
+	portraitRight = CreateSprite(image("portraits/bf"), 0, 40);
 	portraitRight.scale.set(6 * 0.9, 6 * 0.9);
 	portraitRight.updateHitbox();
 	this.add(portraitRight);
 	portraitRight.visible = false;
 
-	box.animation.play("open");
+	box.playAnim("open");
 	box.scale.set(6 * 0.9, 6 * 0.9);
 	box.updateHitbox();
 	box.screenCenter(X);
 	this.add(box);
 
-	hand = new AnimatedSprite(box.x, box.y, sparrow("hands/hand0"));
+	hand = CreateSprite(image("hands/hand0"), box.x, box.y);
 	if (sparrowExists("hands/hand" + Std.string(PlayState.storyProgress)))
 		hand.frames = sparrow("hands/hand" + Std.string(PlayState.storyProgress));
-	hand.animation.addByPrefix("enter", "enter", 24, false);
-	hand.animation.addByPrefix("click", "click", 24, false);
+	hand.addAnim("enter", "enter", 24, false);
+	hand.addAnim("click", "click", 24, false);
 	hand.scale.set(box.scale.x, box.scale.y);
 	hand.updateHitbox();
 	hand.visible = false;
@@ -108,7 +108,7 @@ function new(dir)
 
 	diaText = new FlxTypeText(240, 500, Std.int(FlxG.width * 0.6), "", 32);
 	diaText.font = "Pixel Arial 11 Bold";
-	diaText.sounds = [FlxG.sound.load(sound('pixelText'), 0.6)];
+	diaText.sounds = [FlxG.sound.load(Paths.sound(sound('pixelText')), 0.6)];
 	if (PlayState.storyProgress != 2)
 	{
 		diaText.color = 0xFF3F2021;
@@ -144,12 +144,12 @@ function update(elapsed)
 	{
 		if (FlxG.keys.justPressed.BACKSPACE)
 		{
-			FlxG.sound.play(sound('clickText'), 0.8);
+			PlaySound(sound('clickText'), 0.8);
 			endDialogue();
 		}
 		else if (FlxG.keys.justPressed.ANY)
 		{
-			FlxG.sound.play(sound('clickText'), 0.8);
+			PlaySound(sound('clickText'), 0.8);
 			if (diaText.text.length < dialogueLine.length)
 				diaText.skip();
 			else if (dialogueProgress + 1 >= dialogueList.length)
@@ -168,8 +168,8 @@ function continueDialogue()
 	dialogueLine = dialogueList[dialogueProgress].split(":")[2];
 	diaText.resetText(dialogueLine);
 	diaText.start(0.04, true);
-	diaText.completeCallback = function() { hand.visible = true; hand.animation.play("enter", true); };
-	hand.animation.play("click", true);
+	diaText.completeCallback = function() { hand.visible = true; hand.playAnim("enter", true); };
+	hand.playAnim("click", true);
 
 	var curCharacter = dialogueList[dialogueProgress].split(":")[1];
 	switch (curCharacter)
@@ -220,7 +220,7 @@ function endDialogue()
 
 	this.remove(portraitLeft);
 	this.remove(portraitRight);
-	hand.animation.play("click", true);
+	hand.playAnim("click", true);
 
 	new FlxTimer().start(0.2, function(tmr)
 	{

@@ -32,9 +32,9 @@ function create()
 	state.add(infoText);
 	updateInfoText();
 
-	box = new AnimatedSprite(60, 350, Paths.sparrow("ui/speech_bubble_talking"));
-	box.animation.addByPrefix("normal", "speech bubble normal0", 24);
-	box.animation.play("normal");
+	box = CreateSprite("ui/speech_bubble_talking", 60, 350);
+	box.addAnim("normal", "speech bubble normal0", 24);
+	box.playAnim("normal");
 	box.flipX = true;
 	state.add(box);
 
@@ -137,14 +137,14 @@ function create()
 				curAnim = data.animations.length - 1;
 			}
 
-			portrait.animation.addByPrefix(newAnim.name + "Idle", newAnim.idle.prefix, newAnim.idle.fps, newAnim.idle.loop);
+			portrait.addAnim(newAnim.name + "Idle", newAnim.idle.prefix, newAnim.idle.fps, newAnim.idle.loop);
 			portrait.addOffsets(newAnim.name + "Idle", newAnim.idle.offsets);
 			if (Reflect.hasField(newAnim, "talk"))
 			{
-				portrait.animation.addByPrefix(newAnim.name + "Talk", newAnim.talk.prefix, newAnim.talk.fps, newAnim.talk.loop);
+				portrait.addAnim(newAnim.name + "Talk", newAnim.talk.prefix, newAnim.talk.fps, newAnim.talk.loop);
 				portrait.addOffsets(newAnim.name + "Talk", newAnim.talk.offsets);
 			}
-			portrait.animation.play(data.animations[curAnim].name + "Idle");
+			portrait.playAnim(data.animations[curAnim].name + "Idle");
 			refreshMenus();
 		}
 	}
@@ -153,14 +153,14 @@ function create()
 	var playIdleButton = new TextButton(10, addAnimButton.y + 30, 115, 20, "Play Idle");
 	playIdleButton.onClicked = function() {
 		if (data.animations.length > 0)
-			portrait.animation.play(data.animations[curAnim].name + "Idle");
+			portrait.playAnim(data.animations[curAnim].name + "Idle");
 	}
 	tabGroup.add(playIdleButton);
 
 	var playTalkButton = new TextButton(playIdleButton.x + 115, playIdleButton.y, 115, 20, "Play Talk");
 	playTalkButton.onClicked = function() {
 		if (data.animations.length > 0)
-			portrait.animation.play(data.animations[curAnim].name + "Talk");
+			portrait.playAnim(data.animations[curAnim].name + "Talk");
 	}
 	tabGroup.add(playTalkButton);
 
@@ -174,7 +174,7 @@ function create()
 				if (curAnim >= data.animations.length)
 					curAnim--;
 
-				portrait.animation.play(data.animations[curAnim].name + "Idle");
+				portrait.playAnim(data.animations[curAnim].name + "Idle");
 			}
 			refreshMenus();
 		}
@@ -195,14 +195,14 @@ function update(elapsed)
 				data.animations[curAnim].talk.offsets[0] -= Std.int(FlxG.mouse.drag.x);
 				data.animations[curAnim].talk.offsets[1] -= Std.int(FlxG.mouse.drag.y);
 				portrait.addOffsets(data.animations[curAnim].name + "Talk", data.animations[curAnim].talk.offsets);
-				portrait.animation.play(data.animations[curAnim].name + "Talk", true);
+				portrait.playAnim(data.animations[curAnim].name + "Talk", true);
 			}
 			else
 			{
 				data.animations[curAnim].idle.offsets[0] -= Std.int(FlxG.mouse.drag.x);
 				data.animations[curAnim].idle.offsets[1] -= Std.int(FlxG.mouse.drag.y);
 				portrait.addOffsets(data.animations[curAnim].name + "Idle", data.animations[curAnim].idle.offsets);
-				portrait.animation.play(data.animations[curAnim].name + "Idle", true);
+				portrait.playAnim(data.animations[curAnim].name + "Idle", true);
 			}
 		}
 		else
@@ -252,7 +252,7 @@ function update(elapsed)
 		if (curAnim < 0)
 			curAnim = data.animations.length - 1;
 
-		portrait.animation.play(data.animations[curAnim].name + "Idle");
+		portrait.playAnim(data.animations[curAnim].name + "Idle");
 		refreshMenus();
 	}
 
@@ -282,17 +282,17 @@ function refresh()
 
 	for (a in data.animations)
 	{
-		portrait.animation.addByPrefix(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
+		portrait.addAnim(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
 		portrait.addOffsets(a.name + "Idle", a.idle.offsets);
 		if (Reflect.hasField(a, "talk"))
 		{
-			portrait.animation.addByPrefix(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
+			portrait.addAnim(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
 			portrait.addOffsets(a.name + "Talk", a.talk.offsets);
 		}
 	}
 
 	if (data.animations.length > 0)
-		portrait.animation.play(data.animations[curAnim].name + "Idle");
+		portrait.playAnim(data.animations[curAnim].name + "Idle");
 }
 
 function refreshMenus()

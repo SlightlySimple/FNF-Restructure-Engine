@@ -13,7 +13,7 @@ function endSong()
 		game.add(blackScreen);
 		blackScreen.scrollFactor.set();
 		game.camHUD.visible = false;
-		FlxG.sound.play(Paths.sound('week5/Lights_Shut_off'));
+		PlaySound('week5/Lights_Shut_off');
 
 		new FlxTimer().start(2, function(tmr)
 		{

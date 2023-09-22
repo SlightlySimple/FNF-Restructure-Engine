@@ -5,7 +5,7 @@ cutsceneFunctions = [
 		game.camFollow.y += 100;
 	}],
 	[4.5, function() {
-		FlxG.sound.play(Paths.sound("week7/bfBeep"));
+		PlaySound("week7/bfBeep");
 		game.player1.playAnim("singUP");
 		new FlxTimer().start(0.5, function(tmr) { game.player1.playAnim("idle"); });
 	}],

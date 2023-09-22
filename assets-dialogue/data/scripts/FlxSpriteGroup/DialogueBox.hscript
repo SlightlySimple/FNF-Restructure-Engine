@@ -33,26 +33,26 @@ function new(dialogue)
 	FlxTween.tween(bgFade, {alpha: 0.5}, 0.8);
 	this.add(bgFade);
 
-	box = new AnimatedSprite(60, 350, Paths.sparrow("ui/speech_bubble_talking"));
+	box = CreateSprite("ui/speech_bubble_talking", 60, 350);
 
-	box.animation.addByPrefix("normalOpen", "Speech Bubble Normal Open", 24, false);
-	box.animation.addByPrefix("normal", "speech bubble normal0", 24);
-	box.animation.addByPrefix("angryOpen", "speech bubble loud open", 24, false);
-	box.animation.addByPrefix("angry", "AHH speech bubble", 24);
+	box.addAnim("normalOpen", "Speech Bubble Normal Open", 24, false);
+	box.addAnim("normal", "speech bubble normal0", 24);
+	box.addAnim("angryOpen", "speech bubble loud open", 24, false);
+	box.addAnim("angry", "AHH speech bubble", 24);
 	box.addOffsets("normalOpen", [60, 0]);
 	box.addOffsets("angryOpen", [30, 70]);
 	box.addOffsets("angry", [30, 70]);
 
 	box.animation.finishCallback = function(anim) {
 		if (StringTools.endsWith(anim, "Open"))
-			box.animation.play(anim.substr(0, anim.length - 4));
+			box.playAnim(anim.substr(0, anim.length - 4));
 	}
 
 	bksp = new AnimatedSprite(FlxG.width * 0.65, 30, Paths.sparrow("ui/backspace"));
-	bksp.animation.addByPrefix("idle", "backspace to exit0", 24);
-	bksp.animation.addByPrefix("press", "backspace PRESSED", 24, false);
+	bksp.addAnim("idle", "backspace to exit0", 24);
+	bksp.addAnim("press", "backspace PRESSED", 24, false);
 	bksp.addOffsets("press", [30, 45]);
-	bksp.animation.play("idle");
+	bksp.playAnim("idle");
 	this.add(bksp);
 
 	ports = new StringMap();
@@ -94,14 +94,14 @@ function update(elapsed)
 					game.hscriptExec("onDialogueLineShown", [myDia, i]);
 				}
 			}
-			FlxG.sound.play(Paths.sound(clickSound), 0.8);
-			bksp.animation.play("press");
+			PlaySound(clickSound, 0.8);
+			bksp.playAnim("press");
 			bksp.animation.finishCallback = function(anim) { this.remove(bksp); }
 			endDialogue();
 		}
 		else if (FlxG.keys.justPressed.ANY)
 		{
-			FlxG.sound.play(Paths.sound(clickSound), 0.8);
+			PlaySound(clickSound, 0.8);
 			if (!diaText.paused)
 				diaText.skip();
 			else if (dialogueProgress + 1 >= dialogueList.length)
@@ -127,7 +127,7 @@ function continueDialogue()
 			case "music": playMusic(diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4]));
 			case "bgColor": bgFade.makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.fromString(diaSplit[2]));
 			case "mood": curMood = diaSplit[2];
-			case "flip": box.animation.play("normal", true); box.flip(); prevMood = ""; right = !right;
+			case "flip": box.playAnim("normal", true); box.flip(); prevMood = ""; right = !right;
 			case "rate": rate = Std.parseFloat(diaSplit[2]);
 		}
 		dialogueProgress++;
@@ -137,7 +137,7 @@ function continueDialogue()
 	{
 		if (curCharacter != prevCharacter || curMood != prevMood)
 		{
-			box.animation.play(curMood + "Open", true);
+			box.playAnim(curMood + "Open", true);
 			prevMood = curMood;
 		}
 

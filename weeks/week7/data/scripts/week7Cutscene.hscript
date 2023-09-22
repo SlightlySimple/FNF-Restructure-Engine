@@ -72,7 +72,7 @@ function setupAudioSync(_audio)
 
 function goSprite(spr, time)
 {
-	spr.animation.play("go", true);
+	spr.playAnim("go", true);
 	syncedSprites.push([spr, time]);
 }
 

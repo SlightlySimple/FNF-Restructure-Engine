@@ -18,5 +18,5 @@ function create()
 function onEvent(event)
 {
 	if (Paths.soundExists(event.parameters.sound))
-		FlxG.sound.play(Paths.sound(event.parameters.sound));
+		PlaySound(event.parameters.sound);
 }

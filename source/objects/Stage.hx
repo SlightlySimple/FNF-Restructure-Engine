@@ -223,12 +223,7 @@ class Stage
 						for (anim in stagePiece.animations)
 						{
 							if (isSparrow)
-							{
-								if (anim.indices != null && anim.indices.length > 0)
-									aPiece.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
-								else
-									aPiece.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-							}
+								aPiece.addAnim(anim.name, anim.prefix, anim.fps, anim.loop, anim.indices);
 							else
 							{
 								if (anim.indices != null && anim.indices.length > 0)

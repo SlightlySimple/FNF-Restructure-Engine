@@ -9,8 +9,8 @@ function create()
 
 function lightningStrikeShit()
 {
-	FlxG.sound.play(Paths.sound("week2/thunder_" + Std.string(FlxG.random.int(1, 2))));
-	stage.pieces.get("halloween_bg").animation.play('lightning');
+	PlaySound("week2/thunder_" + Std.string(FlxG.random.int(1, 2)));
+	stage.pieces["halloween_bg"].playAnim('lightning');
 
 	lightningStrikeBeat = game.curBeat;
 	lightningOffset = FlxG.random.int(8, 24);

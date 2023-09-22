@@ -95,6 +95,19 @@ class AnimatedSprite extends FlxSprite
 		}
 	}
 
+	public function addAnim(name:String, prefix:String, fps:Int = 24, loop:Bool = true, ?indices:Array<Int> = null)
+	{
+		if (indices != null && indices.length > 0)
+			animation.addByIndices(name, prefix, indices, "", fps, loop);
+		else
+			animation.addByPrefix(name, prefix, fps, loop);
+	}
+
+	public function playAnim(name:String, force:Bool = false, reverse:Bool = false, frame:Int = 0)
+	{
+		animation.play(name, force, reverse, frame);
+	}
+
 	public function beatHit()
 	{
 	}

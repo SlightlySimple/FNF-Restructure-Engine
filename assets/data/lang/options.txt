@@ -1,5 +1,8 @@
 "optionsCatControls"		"Controls"
 
+"optionsNameResetControls"	"Reset Controls"
+"optionsDescResetControls"	"Reset all controls to their defaults (This cannot be undone!)"
+
 "optionsSubcatNotes"		"NOTES"
 "optionsNameLeft"			"Left"
 "optionsNameDown"			"Down"

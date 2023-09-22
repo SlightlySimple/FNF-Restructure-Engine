@@ -132,7 +132,8 @@ class PauseSubState extends FlxSubState
 				case "#pSaveChart": saveChart();
 			}
 			PlayState.instance.hscriptExec("pauseAccept", []);
-		});
+		}, null, changeSelection);
+		nav.leftClick = nav.accept;
 		add(nav);
 
 		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];

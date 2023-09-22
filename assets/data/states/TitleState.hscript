@@ -37,7 +37,7 @@ function beatHit()
 function onPressedEnter()
 {
 	if (Options.options.flashingLights)
-		titleEnter.animation.play("press");
+		titleEnter.playAnim("press");
 	else
-		titleEnter.animation.play("pressNoFlash");
+		titleEnter.playAnim("pressNoFlash");
 }

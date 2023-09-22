@@ -16,7 +16,7 @@ function startCountdown()
 		new FlxTimer().start(0.1, function(tmr)
 		{
 			game.remove(blackScreen);
-			FlxG.sound.play(Paths.sound('week5/Lights_Turn_On'));
+			PlaySound('week5/Lights_Turn_On');
 			game.camFollow.x = 540;
 			game.camFollow.y = -2050;
 			game.snapCamera();

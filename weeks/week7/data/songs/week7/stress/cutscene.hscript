@@ -97,8 +97,8 @@ function startCountdown()
 
 		new FlxTimer().start(0.65, function(tmr) { cutsceneGf.dance(); }, 15 / 0.65);
 
-		cutsceneGfDemon = new AnimatedSprite(cutsceneGf.x, cutsceneGf.y, Paths.sparrow("week7/gfDemon"));
-		cutsceneGfDemon.animation.addByPrefix('go', '', 24, false);
+		cutsceneGfDemon = CreateSprite("week7/gfDemon", cutsceneGf.x, cutsceneGf.y);
+		cutsceneGfDemon.addAnim('go', '', 24, false);
 		cutsceneGfDemon.addOffsets('go', [221, 455]);
 		cutsceneGfDemon.alpha /= 10000;
 		cutsceneGroup.add(cutsceneGfDemon);
@@ -117,9 +117,9 @@ function startCountdown()
 		cutsceneTankman2.visible = false;
 		cutsceneGroupFront.add(cutsceneTankman2);
 
-		censor = new AnimatedSprite(0, 0, Paths.sparrow("week7/censor"));
-		censor.animation.addByPrefix('censor', 'mouth censor', 24);
-		censor.animation.play('censor');
+		censor = CreateSprite("week7/censor");
+		censor.addAnim('censor', 'mouth censor', 24);
+		censor.playAnim('censor');
 		cutsceneGroupFront.add(censor);
 		censor.visible = false;
 

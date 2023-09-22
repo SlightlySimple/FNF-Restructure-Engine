@@ -15,13 +15,15 @@ class UINavigation extends FlxBasic
 	public var accept:Void->Void = null;
 	public var back:Void->Void = null;
 	public var scroll:Int->Void = null;
+	public var leftClick:Void->Void = null;
+	public var rightClick:Void->Void = null;
 
 	public var uiSounds:Array<Bool> = [true, true, true];
 	public var uiSoundFiles:Array<String> = ["ui/scrollMenu", "ui/confirmMenu", "ui/cancelMenu"];
 	public var locked(default, set):Bool = false;
 	var lockedFrames:Int = 0;
 
-	override public function new(?right:Void->Void = null, ?left:Void->Void = null, ?down:Void->Void = null, ?up:Void->Void = null, ?accept:Void->Void = null, ?back:Void->Void = null, ?scroll:Int->Void = null)
+	override public function new(?right:Void->Void = null, ?left:Void->Void = null, ?down:Void->Void = null, ?up:Void->Void = null, ?accept:Void->Void = null, ?back:Void->Void = null, ?scroll:Int->Void = null, ?leftClick:Void->Void = null, ?rightClick:Void->Void = null)
 	{
 		super();
 
@@ -32,6 +34,8 @@ class UINavigation extends FlxBasic
 		this.accept = accept;
 		this.back = back;
 		this.scroll = scroll;
+		this.leftClick = leftClick;
+		this.rightClick = rightClick;
 	}
 
 	override public function update(elapsed:Float)
@@ -94,6 +98,20 @@ class UINavigation extends FlxBasic
 				FlxG.sound.play(Paths.sound(uiSoundFiles[0]));
 			scroll(-FlxG.mouse.wheel);
 		}
+
+		if (leftClick != null && FlxG.mouse.justPressed)
+		{
+			if (uiSounds[1])
+				FlxG.sound.play(Paths.sound(uiSoundFiles[1]));
+			leftClick();
+		}
+
+		if (rightClick != null && FlxG.mouse.justPressedRight)
+		{
+			if (uiSounds[2])
+				FlxG.sound.play(Paths.sound(uiSoundFiles[2]));
+			rightClick();
+		}
 	}
 
 	public function set_locked(val:Bool):Bool
@@ -107,9 +125,9 @@ class UINavigation extends FlxBasic
 
 class UINumeralNavigation extends UINavigation
 {
-	override public function new(?rightleft:Int->Void = null, ?downup:Int->Void = null, ?accept:Void->Void = null, ?back:Void->Void = null, ?scroll:Int->Void = null)
+	override public function new(?rightleft:Int->Void = null, ?downup:Int->Void = null, ?accept:Void->Void = null, ?back:Void->Void = null, ?scroll:Int->Void = null, ?leftClick:Void->Void = null, ?rightClick:Void->Void = null)
 	{
-		super(null, null, null, null, accept, back, scroll);
+		super(null, null, null, null, accept, back, scroll, leftClick, rightClick);
 
 		if (rightleft != null)
 		{

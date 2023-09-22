@@ -229,14 +229,16 @@ class OptionsMenu extends FlxGroup
 				case 2: FlxG.save.data.setupOptions = true; FlxG.save.flush(); MusicBeatState.doTransIn = false; FlxG.switchState(new TitleState());
 				default: FlxG.switchState(new MainMenuState());
 			}
-		}, selectCat);
+		}, selectCat, function() {enterCat();});
+		nav.rightClick = nav.back;
 		add(nav);
 
 		nav2 = new UINumeralNavigation(changeCurrentOption, selectOption, doAcceptCurrentOption, function() {
 			exitCat();
 			Options.refreshSaveData();
-		}, selectOption);
+		}, selectOption, doAcceptCurrentOption);
 		nav2.uiSounds = [false, false, true];
+		nav2.rightClick = nav2.back;
 		nav2.locked = true;
 		add(nav2);
 	}
@@ -887,25 +889,30 @@ class OptionsMenu extends FlxGroup
 
 			case "control":
 				var keys:Array<FlxKey> = Reflect.getProperty(Options.options.keys, opt.variable);
+				var keyStrings:Array<String> = [keys[0].toString(), keys[1].toString()];
+				if (keys[0] == FlxKey.NONE)
+					keyStrings[0] = "None";
+				if (keys[1] == FlxKey.NONE)
+					keyStrings[1] = "None";
 				if (inCat && option == curOption)
 				{
 					if (secondColumn)
 					{
 						if (menuState == 1)
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keys[0].toString() + " | >   <";
+							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | >   <";
 						else
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keys[0].toString() + " | > " + keys[1].toString() + " <";
+							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | > " + keyStrings[1] + " <";
 					}
 					else
 					{
 						if (menuState == 1)
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   >   < | " + keys[1].toString();
+							optionsDisplay.members[option].text = Lang.get(opt.label) + "   >   < | " + keyStrings[1];
 						else
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   > " + keys[0].toString() + " < | " + keys[1].toString();
+							optionsDisplay.members[option].text = Lang.get(opt.label) + "   > " + keyStrings[0] + " < | " + keyStrings[1];
 					}
 				}
 				else
-					optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keys[0].toString() + " | " + keys[1].toString();
+					optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | " + keyStrings[1];
 
 			default: optionsDisplay.members[option].text = Lang.get(opt.label);
 		}
@@ -942,6 +949,41 @@ class OptionsMenu extends FlxGroup
 		cursLeft.visible = false;
 		cursRight.visible = false;
 		cursMenu.visible = false;
+	}
+
+	function resetControls()
+	{
+		FlxG.sound.play(Paths.sound("ui/confirmMenu"));
+
+		var cats:Array<OptionsMenuCategory> = Options.getOptionsData();
+		for (c in cats)
+		{
+			for (o in c.contents)
+			{
+				if (o.type == "control")
+				{
+					Reflect.setProperty(Options.options.keys, o.variable, [FlxKey.fromString(o.defValue[0]), FlxKey.fromString(o.defValue[1])]);
+
+					switch (o.variable)
+					{
+						case "vol_up":
+							FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
+						case "vol_down":
+							FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
+						case "mute":
+							FlxG.sound.muteKeys = Options.getKeys("mute");
+						case "screenshot":
+							Main.screenshotKeys = Options.getKeys("screenshot");
+					}
+				}
+			}
+		}
+
+		var i:Int = 0;
+		optionsDisplay.forEachAlive(function(txt:FlxText) {
+			updateOptionText(i);
+			i++;
+		});
 	}
 
 	var testBinds:Array<String> = [];

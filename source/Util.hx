@@ -1,7 +1,9 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import lime.app.Application;
+import objects.AnimatedSprite;
 
 using StringTools;
 
@@ -53,5 +55,19 @@ class Util
 			ret -= (max - min) + 1;
 
 		return ret;
+	}
+
+	public static function CreateSprite(asset:String, ?x:Float = 0, ?y:Float = 0):FlxSprite
+	{
+		if (Paths.sparrowExists(asset))
+			return new AnimatedSprite(x, y, Paths.sparrow(asset));
+
+		return new FlxSprite(x, y, Paths.image(asset));
+	}
+
+	public static function PlaySound(sound:String, ?volume:Float = 1.0)
+	{
+		if (Paths.soundExists(sound))
+			FlxG.sound.play(Paths.sound(sound), volume);
 	}
 }
