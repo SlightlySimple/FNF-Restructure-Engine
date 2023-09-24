@@ -416,6 +416,7 @@ class FlxLimb extends FlxAnim
 		yFlip = Settings.yFlip;
 		origin.set();
 		scrollFactor = Settings.scrollFactor;
+		cameras = Settings.cameras;
 	}
 	public override function drawComplex(camera:FlxCamera):Void
 	{

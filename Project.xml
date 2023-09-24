@@ -4,7 +4,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.1.0" company="slightlysimple" />
+	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.1.1" company="slightlysimple" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
@@ -36,6 +36,7 @@
 	<!--This all gets compiled into one folder in the actual game, this is just for organization and to make it easier to take this stuff out in mods-->
 	<!--I'd recommend making a similar folder for your own mod if you're recompiling the game-->
 	<assets path="assets-dialogue" rename="assets" />
+	<assets path="lua" rename="assets/lua" />
 	<assets path="weeks/week1" rename="assets" />
 	<assets path="weeks/week2" rename="assets" />
 	<assets path="weeks/week3" rename="assets" />

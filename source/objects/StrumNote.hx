@@ -32,7 +32,7 @@ class StrumNote extends FlxSprite
 	public var myH:Int = 0;
 	public var baseAngle:Int = 0;
 	public var unbakedAngle:Int = 0;
-	public var ang:Int = 0;
+	public var ang:Float = 0;
 	public var noteAng:Float = 0;
 	public var allowShader:Bool = true;
 
