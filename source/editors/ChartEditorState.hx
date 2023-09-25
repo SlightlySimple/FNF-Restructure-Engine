@@ -786,6 +786,7 @@ class ChartEditorState extends MusicBeatState
 		else
 		{
 			trackList = Paths.listFiles("songs/" + songId + "/", ".ogg");
+			trackList = trackList.concat(Paths.listFiles("data/songs/" + songId + "/", ".ogg"));
 			for (i in 0...trackList.length)
 				trackList[i] = trackList[i].toLowerCase();
 			if (trackList.length <= 0)

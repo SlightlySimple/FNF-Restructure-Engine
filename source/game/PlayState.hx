@@ -45,6 +45,7 @@ import menus.OptionsMenuState;
 import scripting.HscriptHandler;
 import scripting.HscriptSprite;
 import scripting.HscriptState;
+import scripting.LuaModule;
 
 using StringTools;
 
@@ -136,6 +137,7 @@ class PlayState extends MusicBeatState
 	public var gf:Character = null;
 
 	public var myScripts:Map<String, HscriptHandler>;
+	public var myLuaScripts:Map<String, LuaModule>;
 
 	public var numKeys:Int = 4;
 	public var keysArray:Array<Array<FlxKey>>;
@@ -605,6 +607,7 @@ class PlayState extends MusicBeatState
 		}
 
 		myScripts = new Map<String, HscriptHandler>();
+		myLuaScripts = new Map<String, LuaModule>();
 		var autorunScripts:Array<String> = Paths.listFiles('data/autorun/', '.hscript');
 		if (autorunScripts.length > 0)
 		{
@@ -728,7 +731,7 @@ class PlayState extends MusicBeatState
 						}
 						songProgress = tracks[0].time + totalOffset;
 						Conductor.songPosition = songProgress;
-						hscriptExec("skippedStart");
+						scriptExec("skippedStart");
 						correctTrackPitch();
 					}
 					if (tracks[0].time >= Conductor.timeFromBeat(songStartPos - 4))
@@ -779,7 +782,7 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 		scores.update(elapsed);
 
-		hscriptExec("update", [elapsed]);
+		scriptExec("update", [elapsed]);
 
 		if (songProgressBar.alpha == 0 && songProgressVisual >= 0 && songProgressVisual < songLengthVisual)
 		{
@@ -818,6 +821,7 @@ class PlayState extends MusicBeatState
 							newNote.singers = Reflect.copy(notetypeSingers[note.type]);
 						hscriptExec("onNoteSpawned", [newNote]);
 						notes.add(newNote);
+						luaExec("onNoteSpawned", [notes.members.indexOf(newNote)]);
 						if (note.sustainLength > 0 && !newNote.typeData.noSustains)
 						{
 							var susLength:Float = getScrollPosition(note.strumTime + note.sustainLength, 0, note.column) - getScrollPosition(note.strumTime, 0, note.column);
@@ -828,6 +832,7 @@ class PlayState extends MusicBeatState
 							newSustain.parent = newNote;
 							hscriptExec("onSustainSpawned", [newSustain, newNote]);
 							sustainNotes.add(newSustain);
+							luaExec("onSustainSpawned", [sustainNotes.members.indexOf(newSustain), notes.members.indexOf(newNote)]);
 						}
 						poppers.push(note);
 					}
@@ -1060,7 +1065,7 @@ class PlayState extends MusicBeatState
 		if (Options.keyJustPressed("restart"))
 			restartSong();
 
-		hscriptExec("updatePost", [elapsed]);
+		scriptExec("updatePost", [elapsed]);
 	}
 
 	public function snapCamera()
@@ -1374,6 +1379,7 @@ class PlayState extends MusicBeatState
 		{
 			GameOverSubState.character = strumNotes.members[playerColumns[0]].singers[0];
 			hscriptExec("gameOver", [GameOverSubState.character]);
+			luaExec("gameOver", [GameOverSubState.character.curCharacter]);
 			if (customGameOver)
 			{
 				notesSpawn = [];
@@ -1485,6 +1491,60 @@ class PlayState extends MusicBeatState
 		return null;
 	}
 
+	public function luaAdd(id:String, file:String):LuaModule
+	{
+		myLuaScripts[id] = new LuaModule(file);
+		return myLuaScripts[id];
+	}
+
+	public function luaRemove(id:String)
+	{
+		if (myLuaScripts.exists(id))
+			myLuaScripts.remove(id);
+	}
+
+	public function luaExists(id:String):Bool
+	{
+		return myLuaScripts.exists(id);
+	}
+
+	public function luaExec(func:String, ?args:Array<Dynamic> = null)
+	{
+		for (sc in myLuaScripts.iterator())
+			sc.exec(func, (args == null ? [] : args));
+	}
+
+	public function luaSet(vari:String, val:Dynamic)
+	{
+		for (sc in myLuaScripts.iterator())
+			sc.set(vari, val);
+	}
+
+	public function luaIdExec(id:String, func:String, ?args:Array<Dynamic> = null)
+	{
+		if (myLuaScripts.exists(id))
+			myLuaScripts.get(id).exec(func, (args == null ? [] : args));
+	}
+
+	public function luaIdSet(id:String, vari:String, val:Dynamic)
+	{
+		if (myLuaScripts.exists(id))
+			myLuaScripts[id].set(vari, val);
+	}
+
+	public function luaIdGet(id:String, vari:String):Dynamic
+	{
+		if (myLuaScripts.exists(id))
+			return myLuaScripts[id].get(vari);
+		return null;
+	}
+
+	public function scriptExec(func:String, ?args:Array<Dynamic> = null)
+	{
+		hscriptExec(func, args);
+		luaExec(func, args);
+	}
+
 	function allTracksOfType(types:Array<Int>):Array<FlxSound>
 	{
 		var returnArray:Array<FlxSound> = [];
@@ -1522,7 +1582,7 @@ class PlayState extends MusicBeatState
 			scoreTextArray.push(scores.rating);
 		}
 		scoreTxt.text = scoreTextArray.join(separator);
-		hscriptExec("updateScoreText", [scoreTxt.text, separator]);
+		scriptExec("updateScoreText", [scoreTxt.text, separator]);
 
 		if (scoreTxt.alignment != CENTER)
 		{
@@ -1599,6 +1659,7 @@ class PlayState extends MusicBeatState
 
 		hscriptIdExec(eventScript, "onEvent", [event]);
 		hscriptExec("onAnyEvent", [event]);
+		luaExec("onAnyEvent", [event.time, event.beat, event.type, event.parameters]);
 	}
 
 	public static var optionsMenuStatus:Int = 0;
@@ -1739,7 +1800,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		hscriptExec("stepHit", []);
+		scriptExec("stepHit");
 	}
 
 	override public function beatHit()
@@ -1789,7 +1850,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		hscriptExec("beatHit", []);
+		scriptExec("beatHit");
 	}
 
 	public var canStartCountdown:Bool = true;
@@ -1804,7 +1865,7 @@ class PlayState extends MusicBeatState
 		if (!countdownStarted)
 		{
 			if (!testingChart)
-				hscriptExec("startCountdown", []);
+				scriptExec("startCountdown");
 			if (canStartCountdown || testingChart)
 			{
 				countdownStarted = true;
@@ -1822,7 +1883,7 @@ class PlayState extends MusicBeatState
 						playSong();
 						countdownTimer = null;
 
-						hscriptExec("countdownTick", []);
+						scriptExec("countdownTick");
 					});
 				}
 				else
@@ -1858,7 +1919,7 @@ class PlayState extends MusicBeatState
 							countdownTimer = null;
 						}
 
-						hscriptExec("countdownTick", []);
+						scriptExec("countdownTick");
 						countdownProgress++;
 					}, 5);
 				}
@@ -1883,7 +1944,7 @@ class PlayState extends MusicBeatState
 		if (songData.artist != "")
 			songArtist = new SongArtist(songName, songData.artist);
 
-		hscriptExec("playSong", []);
+		scriptExec("playSong");
 	}
 
 	function correctTrackPitch()
@@ -1937,6 +1998,8 @@ class PlayState extends MusicBeatState
 
 		if (inStoryMode)
 		{
+			if (canSaveScore)
+				ScoreSystems.onWeekSongBeaten(scores);
 			if (PlayState.storyProgress + 1 >= storyWeek.length)
 			{
 				if (canSaveScore)
@@ -1950,7 +2013,7 @@ class PlayState extends MusicBeatState
 	public var doNextSongTrans:Bool = false;
 	public function endSong()
 	{
-		hscriptExec("endSong", []);
+		scriptExec("endSong");
 		if (canEndSong)
 		{
 			ResultsSubState.sideName = songData.columnDivisionNames[chartSide];
@@ -1958,7 +2021,6 @@ class PlayState extends MusicBeatState
 				gotoMenuState();
 			else if (inStoryMode)
 			{
-				ScoreSystems.onWeekSongBeaten(scores);
 				PlayState.storyProgress++;
 				if (PlayState.storyProgress >= storyWeek.length)
 				{
@@ -2015,7 +2077,7 @@ class PlayState extends MusicBeatState
 	public function gotoMenuState(?doHscript:Bool = true)
 	{
 		if (doHscript && !testingChart)
-			hscriptExec("gotoMenuState", []);
+			scriptExec("gotoMenuState");
 
 		if (testingChart)
 		{
@@ -2043,7 +2105,10 @@ class PlayState extends MusicBeatState
 	{
 		var _key:FlxKey = cast event.keyCode;
 		if (!paused)
+		{
 			hscriptExec("onKeyPressed", [_key]);
+			luaExec("onKeyPressed", [_key.toString()]);
+		}
 
 		if (paused || botplay || !countdownStarted || endingSong || suspendControls) return;
 
@@ -2080,7 +2145,7 @@ class PlayState extends MusicBeatState
 		);
 
 		if (note == null)
-			hscriptExec("noNoteHit", [hitNote]);
+			scriptExec("noNoteHit", [hitNote]);
 		else
 			noteHit(note);
 	}
@@ -2089,6 +2154,7 @@ class PlayState extends MusicBeatState
 	{
 		var _key:FlxKey = cast event.keyCode;
 		hscriptExec("onKeyReleased", [_key]);
+		luaExec("onKeyReleased", [_key.toString()]);
 
 		if (botplay || !countdownStarted) return;
 
@@ -2298,6 +2364,7 @@ class PlayState extends MusicBeatState
 		updateScoreText();
 
 		hscriptExec("noteMissed", [note]);
+		luaExec("noteMissed", [notes.members.indexOf(note)]);
 	}
 
 	function sustainMissed(note:SustainNote)
@@ -2324,6 +2391,7 @@ class PlayState extends MusicBeatState
 		updateScoreText();
 
 		hscriptExec("sustainMissed", [note]);
+		luaExec("noteMissed", [sustainNotes.members.indexOf(note)]);
 	}
 
 
@@ -2363,6 +2431,7 @@ class PlayState extends MusicBeatState
 			setTrackVolume([1, 2], vol);
 
 		hscriptExec("noteHit", [note]);
+		luaExec("noteHit", [notes.members.indexOf(note)]);
 
 		note.kill();
 		note.destroy();
@@ -2385,6 +2454,7 @@ class PlayState extends MusicBeatState
 			setTrackVolume([1, 2], 1);
 
 		hscriptExec("sustainHit", [note]);
+		luaExec("sustainHit", [sustainNotes.members.indexOf(note)]);
 
 		if (note.strumTime + note.sustainLength - songProgress <= 0)
 		{

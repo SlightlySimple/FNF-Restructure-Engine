@@ -22,7 +22,7 @@ class LuaModule
 		luaObjects[className] = obj;
 	}
 
-	public function new(file:String)
+	public function new(file:String, ?createFunc = "create")
 	{
 		state = LuaL.newstate();
 		LuaL.openlibs(state);
@@ -166,6 +166,11 @@ class LuaModule
 			return Paths.imagePath(path);
 		});
 
+		Lua_helper.add_callback(state, "PathsLua", function(path:String)
+		{
+			return Paths.lua(path);
+		});
+
 		Lua_helper.add_callback(state, "PathsIsSparrow", function(path:String)
 		{
 			return Paths.sparrowExists(path);
@@ -191,11 +196,20 @@ class LuaModule
 
 		script = file;
 		var status:Int = LuaL.dofile(state, Paths.lua(file));
+		if (createFunc != "")
+			exec(createFunc);
 	}
 
 	public function exec(func:String, ?args:Array<Dynamic> = null):Dynamic
 	{
 		Lua.getglobal(state, func);
+		var type:Int = Lua.type(state, -1);
+
+		if (type != Lua.LUA_TFUNCTION)
+		{
+			Lua.pop(state, 1);
+			return null;
+		}
 
 		if (args == null)
 			args = [];

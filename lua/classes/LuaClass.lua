@@ -12,3 +12,7 @@ function LuaClass(id)
 
 	return obj
 end
+
+function CreateLuaClass(id)
+	_G[id] = LuaClass(id)
+end

@@ -113,6 +113,11 @@ class WeekEditorState extends MusicBeatState
 			if (Paths.exists("songs/" + songFolder + "/Inst.ogg"))
 				allSongs.push(songFolder);
 		}
+		for (songFolder in Paths.listFilesSub("data/songs/", ""))
+		{
+			if (Paths.exists("data/songs/" + songFolder + "/Inst.ogg"))
+				allSongs.push(songFolder);
+		}
 		allIcons = HealthIcon.listIcons();
 		allIcons.unshift("none");
 

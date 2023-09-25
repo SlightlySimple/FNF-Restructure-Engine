@@ -106,6 +106,8 @@ class Paths
 
 	public static function song(path:String, file:String):String
 	{
+		if (exists("data/songs/" + path + "/" + file + ".ogg"))
+			return "assets/data/songs/" + path + "/" + file + ".ogg";
 		return "assets/songs/" + path + "/" + file + ".ogg";
 	}
 
@@ -313,7 +315,7 @@ class Paths
 
 	public static function songExists(path:String, file:String):Bool
 	{
-		return exists("songs/" + path + "/" + file + ".ogg");
+		return exists("data/songs/" + path + "/" + file + ".ogg") || exists("songs/" + path + "/" + file + ".ogg");
 	}
 
 	public static function sparrowExists(path:String):Bool
