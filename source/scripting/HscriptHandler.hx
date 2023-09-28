@@ -4,6 +4,8 @@ import flixel.FlxG;
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.FlxStrip;
+import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
 import flixel.group.FlxSpriteGroup;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxFilterFrames;
@@ -365,6 +367,27 @@ class HscriptHandler
 		return newCode;
 	}
 
+	public static function CreateStrip(x:Float, y:Float, vertices:Array<Float>, indices:Array<Int>, uvtData:Array<Float>):FlxStrip
+	{
+		var strip:FlxStrip = new FlxStrip(x, y);
+		strip.vertices = DrawData.ofArray(vertices);
+		strip.indices = DrawData.ofArray(indices);
+		strip.uvtData = DrawData.ofArray(uvtData);
+		return strip;
+	}
+
+	public static function ModifyStrip(strip:FlxStrip, mod:String, slot:Int, type:String, val:Float)
+	{
+		switch (type)
+		{
+			case "add":
+				strip.vertices[slot] += val;
+
+			default:
+				strip.vertices[slot] = val;
+		}
+	}
+
 	public function new(scriptFile:String)
 	{
 		script = scriptFile;
@@ -438,6 +461,8 @@ class HscriptHandler
 		interp.variables.set("FlxTypedSpriteGroup", FlxTypedSpriteGroup);
 		interp.variables.set("FlxFramesCollection", FlxFramesCollection);
 		interp.variables.set("FlxFilterFrames", FlxFilterFrames);
+		interp.variables.set("CreateStrip", CreateStrip);
+		interp.variables.set("ModifyStrip", ModifyStrip);
 		interp.variables.set("FlxSound", FlxSound);
 		interp.variables.set("FlxCamera", FlxCamera);
 		interp.variables.set("FlxCameraFollowStyle", FlxCameraFollowStyle);
