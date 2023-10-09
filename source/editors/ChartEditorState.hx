@@ -280,11 +280,13 @@ class ChartEditorState extends MusicBeatState
 				player2: TitleState.defaultVariables.player2,
 				player3: TitleState.defaultVariables.gf,
 				stage: TitleState.defaultVariables.stage,
-				tracks: [["inst", 0], ["voices", 1]],
+				tracks: [["inst", 0]],
 				notes: [{camOn: 1, lengthInSteps: 16, sectionNotes: []}],
 				eventFile: "_events",
 				events: []
 			}
+			if (Paths.songExists(songId, "voices"))
+				songData.tracks.push(["voices", 1]);
 			songData = Song.parseSongData(songData);
 			songFileShortened = songId;
 		}
@@ -2875,6 +2877,7 @@ class ChartEditorState extends MusicBeatState
 		"\nCurrent Section: " + Std.string(curSection+1) + "/" + Std.string(songData.notes.length) +
 		"\nCurrent Beat: " + Std.string(Math.round(songProgress / 4 * 1000) / 1000) +
 		"\nCurrent Step: " + Std.string(Math.round(songProgress * 1000) / 1000) +
+		"\nCurrent BPM: " + Std.string(Conductor.bpm) +
 		"\n\nZoom: " + Std.string(zoom) +
 		"\nSnap: " + Std.string(snap);
 		if (curNotetype != "")

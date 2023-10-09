@@ -266,8 +266,13 @@ class StoryMenuState extends MusicBeatState
 
 		for (s in wData.songs)
 		{
-			if (!Paths.exists("songs/" + s.songId + "/Inst.ogg") && Paths.exists("songs/" + id + "/" + s.songId + "/Inst.ogg"))
-				s.songId = id + "/" + s.songId;
+			if (!Paths.songExists(s.songId, "Inst"))
+			{
+				if (Paths.songExists(id + "/" + s.songId, "Inst"))
+					s.songId = id + "/" + s.songId;
+				else if (id.indexOf("/") > -1 && Paths.songExists(id.substr(0, id.lastIndexOf("/")+1) + s.songId, "Inst"))
+					s.songId = id.substr(0, id.lastIndexOf("/")+1) + s.songId;
+			}
 		}
 
 		if (!quick)
@@ -275,18 +280,23 @@ class StoryMenuState extends MusicBeatState
 			var iconList:Array<String> = null;
 			for (s in wData.songs)
 			{
-				if (!Paths.imageExists("icons/icon-" + s.icon))
+				if (!Paths.imageExists("icons/" + s.icon) && !Paths.imageExists("icons/icon-" + s.icon) && !Paths.jsonImagesExists("icons/" + s.icon) && !Paths.jsonImagesExists("icons/icon-" + s.icon))
 				{
-					if (iconList == null)
-						iconList = Paths.listFilesSub("images/icons/", ".png");
-					for (f in iconList)
+					if (id.indexOf("/") > -1 && Paths.iconExists(id.substr(0, id.lastIndexOf("/")+1) + s.icon))
+						s.icon = id.substr(0, id.lastIndexOf("/")+1) + s.icon;
+					else
 					{
-						if (f.indexOf("/") > -1)
+						if (iconList == null)
+							iconList = Paths.listFilesSub("images/icons/", ".png");
+						for (f in iconList)
 						{
-							if (f.split("/")[f.split("/").length-1] == s.icon)
-								s.icon = f;
-							else if (f.split("/")[f.split("/").length-1].split("icon-")[1] == s.icon)
-								s.icon = f.replace("icon-","");
+							if (f.indexOf("/") > -1)
+							{
+								if (f.split("/")[f.split("/").length-1] == s.icon)
+									s.icon = f;
+								else if (f.split("/")[f.split("/").length-1].split("icon-")[1] == s.icon)
+									s.icon = f.replace("icon-","");
+							}
 						}
 					}
 				}
@@ -413,7 +423,7 @@ class StoryMenuState extends MusicBeatState
 		categoriesList = [];
 		var possibleCats:Array<String> = [];
 		weekList = new Map<String, WeekData>();
-		for (file in Paths.listFilesAndMods("data/weeks/", ".json"))
+		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
 			var newWeek:WeekData = parseWeek(file[0], true);
 			if (newWeek.condition != "freeplayonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))
@@ -475,8 +485,6 @@ class StoryMenuState extends MusicBeatState
 			reloadMenuStuff();
 		}, changeSelection);
 		nav2.uiSounds = [true, false, true];
-		nav2.leftClick = nav2.accept;
-		nav2.rightClick = nav2.back;
 		add(nav2);
 
 		if (categoriesList.length <= 1 || !navSwitch)
@@ -485,6 +493,8 @@ class StoryMenuState extends MusicBeatState
 			remove(nav);
 			nav2.back = nav.back;
 		}
+		nav2.leftClick = nav2.accept;
+		nav2.rightClick = nav2.back;
 		reloadMenuStuff();
 
 		hscriptExec("create", []);
@@ -898,7 +908,7 @@ class StoryMenuState extends MusicBeatState
 
 	public static function unlockWeeks(weekBeaten:String)
 	{
-		var allWeeks:Array<String> = Paths.listFiles("data/weeks/", ".json");
+		var allWeeks:Array<String> = Paths.listFilesSub("data/weeks/", ".json");
 		for (w in allWeeks)
 		{
 			var weekStuff:WeekData = cast Paths.json("weeks/" + w);

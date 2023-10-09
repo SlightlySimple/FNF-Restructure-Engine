@@ -74,6 +74,7 @@ typedef StageData =
 {
 	var ?parent:String;
 	var ?script:String;
+	var ?searchDirs:Array<String>;
 	var characters:Array<StageCharacter>;
 	var camZoom:Null<Float>;
 	var camFollow:Array<Int>;
@@ -103,6 +104,7 @@ typedef StagePiece =
 	var ?scale:Array<Float>;
 	var ?align:String;
 	var ?scrollFactor:Array<Float>;
+	var ?flip:Array<Bool>;
 	var ?tile:Array<Bool>;
 	var ?visible:Null<Bool>;
 	var ?animations:Array<StageAnimation>;

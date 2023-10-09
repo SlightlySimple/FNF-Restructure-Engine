@@ -561,6 +561,63 @@ class Paths
 		return returnArray;
 	}
 
+	public static function listFilesAndModsSub(path:String, ext:String, ?chain:String = "", ?baseOnly:Bool = false, ?curMod:String = ""):Array<Array<String>>
+	{
+		var returnArray:Array<Array<String>> = [];
+
+		var baseArray:Array<Array<String>> = [];
+		if (FileSystem.isDirectory("assets/" + path) && (curMod == "" || baseOnly))
+		{
+			for (file in FileSystem.readDirectory("assets/" + path))
+			{
+				if ((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("assets/" + path + "/" + file)))
+				{
+					if (baseArray.filter(function(a) return a[0] == file.substr(0, file.length - ext.length)).length <= 0)
+						baseArray.push([chain + file.substr(0, file.length - ext.length), ""]);
+				}
+			}
+
+			for (dir in FileSystem.readDirectory("assets/" + path))
+			{
+				if (FileSystem.isDirectory("assets/" + path + "/" + dir))
+					baseArray = baseArray.concat(listFilesAndModsSub(path + "/" + dir, ext, chain + dir + "/", true));
+			}
+		}
+		baseArray.sort(listFilesAndModsSort);
+		returnArray = returnArray.concat(baseArray);
+
+		#if ALLOW_MODS
+		if (!baseOnly)
+		{
+			for (mod in ModLoader.modListLoaded)
+			{
+				var modArray:Array<Array<String>> = [];
+				if (FileSystem.isDirectory("mods/" + mod + "/" + path) && (curMod == "" || curMod == mod))
+				{
+					for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+					{
+						if ((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file)))
+						{
+							if (modArray.filter(function(a) return a[0] == file.substr(0, file.length - ext.length)).length <= 0 && returnArray.filter(function(a) return a[0] == file.substr(0, file.length - ext.length)).length <= 0)
+								modArray.push([chain + file.substr(0, file.length - ext.length), mod]);
+						}
+					}
+
+					for (dir in FileSystem.readDirectory("mods/" + mod + "/" + path))
+					{
+						if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + dir))
+							modArray = modArray.concat(listFilesAndModsSub(path + "/" + dir, ext, chain + dir + "/", mod));
+					}
+				}
+				modArray.sort(listFilesAndModsSort);
+				returnArray = returnArray.concat(modArray);
+			}
+		}
+		#end
+
+		return returnArray;
+	}
+
 	public static function listFilesFromMod(mod:String, path:String, ext:String):Array<String>
 	{
 		var returnArray:Array<String> = [];

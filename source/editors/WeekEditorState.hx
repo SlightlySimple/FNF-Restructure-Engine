@@ -228,7 +228,7 @@ class WeekEditorState extends MusicBeatState
 
 		if (weekData.weekToUnlock == null)
 			weekData.weekToUnlock = "";
-		var weekList:Array<String> = Paths.listFiles("data/weeks/", ".json");
+		var weekList:Array<String> = Paths.listFilesSub("data/weeks/", ".json");
 		weekList.unshift("");
 		var weekToUnlockDropdown:DropdownMenu = new DropdownMenu(10, startsLockedCheck.y + 40, 230, 20, weekData.weekToUnlock, weekList, true);
 		weekToUnlockDropdown.onChanged = function() {

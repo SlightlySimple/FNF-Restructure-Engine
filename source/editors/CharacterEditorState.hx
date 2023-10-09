@@ -524,10 +524,10 @@ class CharacterEditorState extends MusicBeatState
 		var charScaleLabel:Label = new Label("Scale:", charScaleX);
 		tabGroupProperties.add(charScaleLabel);
 
-		camPosX = new Stepper(10, charScaleX.y + 40, 115, 20, myCharacterData.camPosition[0], 10);
+		camPosX = new Stepper(10, charScaleX.y + 40, 115, 20, myCharacterData.camPosition[0], 5);
 		camPosX.onChanged = function() {myCharacterData.camPosition[0] = camPosX.valueInt;};
 		tabGroupProperties.add(camPosX);
-		camPosY = new Stepper(camPosX.x + 115, camPosX.y, 115, 20, myCharacterData.camPosition[1], 10);
+		camPosY = new Stepper(camPosX.x + 115, camPosX.y, 115, 20, myCharacterData.camPosition[1], 5);
 		camPosY.onChanged = function() {myCharacterData.camPosition[1] = camPosY.valueInt;};
 		tabGroupProperties.add(camPosY);
 		var camPosLabel:Label = new Label("Camera Position:", camPosX);
@@ -1034,6 +1034,45 @@ class CharacterEditorState extends MusicBeatState
 			refreshCharAnims();
 		}
 		tabGroupOffsets.add(offsetZero);
+
+		if (myCharType != "atlas")
+		{
+			var alignmentA:DropdownMenu = new DropdownMenu(10, offsetZero.y + 40, 115, 20, "left", ["left", "center", "right"]);
+			tabGroupOffsets.add(alignmentA);
+			var alignmentB:DropdownMenu = new DropdownMenu(alignmentA.x + 115, alignmentA.y, 115, 20, "top", ["top", "middle", "bottom"]);
+			tabGroupOffsets.add(alignmentB);
+			var alignmentLabel:Label = new Label("Alignment:", alignmentA);
+			tabGroupOffsets.add(alignmentLabel);
+
+			var generateOffsets:TextButton = new TextButton(10, alignmentA.y + 30, 230, 20, "Generate Offsets");
+			generateOffsets.onClicked = function() {
+				var prevAnim:Int = curCharAnim;
+				var offX:Int = myCharacterData.animations[curCharAnim].offsets[0];
+				var offY:Int = myCharacterData.animations[curCharAnim].offsets[1];
+				var offW:Int = myCharacter.frameWidth;
+				var offH:Int = myCharacter.frameHeight;
+				for (a in myCharacterData.animations)
+				{
+					playAnim(a.name, true);
+					switch (alignmentA.value)
+					{
+						case "left": a.offsets[0] = offX;
+						case "center": a.offsets[0] = Std.int((myCharacter.frameWidth - offW) / 2) + offX;
+						case "right": a.offsets[0] = Std.int(myCharacter.frameWidth - offW) + offX;
+					}
+					switch (alignmentB.value)
+					{
+						case "top": a.offsets[1] = offY;
+						case "middle": a.offsets[1] = Std.int((myCharacter.frameHeight - offH) / 2) + offY;
+						case "bottom": a.offsets[1] = Std.int(myCharacter.frameHeight - offH) + offY;
+					}
+				}
+
+				playAnim(myCharacterData.animations[prevAnim].name, true);
+				refreshCharAnims(true);
+			}
+			tabGroupOffsets.add(generateOffsets);
+		}
 
 		tabMenu.addGroup(tabGroupOffsets);
 

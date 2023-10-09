@@ -390,7 +390,7 @@ class FreeplayMenuState extends MusicBeatState
 		categoriesList = [];
 		var possibleCats:Array<String> = [];
 		weeks = new Map<String, WeekData>();
-		for (file in Paths.listFilesAndMods("data/weeks/", ".json"))
+		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
 			var newWeek:WeekData = StoryMenuState.parseWeek(file[0], true);
 			if (newWeek.condition != "storyonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))

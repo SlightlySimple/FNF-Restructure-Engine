@@ -487,10 +487,11 @@ class EditorMenuState extends MusicBeatState
 			Application.current.window.alert("The file you have selected is not a week.", "Alert");
 		else
 		{
-			while (jsonNameArray.length > 1)
+			while (jsonNameArray[0] != "weeks")
 				jsonNameArray.remove(jsonNameArray[0]);
+			jsonNameArray.remove(jsonNameArray[0]);
 
-			var finalJsonName = jsonNameArray[0].split('.json')[0];
+			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
 
 			WeekEditorState.newWeek = false;
 			WeekEditorState.curWeek = finalJsonName;

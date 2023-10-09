@@ -4,6 +4,8 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.addons.display.FlxBackdrop;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
@@ -34,7 +36,6 @@ class StageEditorState extends MusicBeatState
 {
 	public static var newStage:Bool = false;
 	public static var curStage:String = "";
-	var searchDir:String = "";
 
 	var myStage:Array<FlxSprite> = [];
 	var myStageGroup:FlxSpriteGroup;
@@ -82,6 +83,8 @@ class StageEditorState extends MusicBeatState
 	var imageDropdown:DropdownMenu;
 	var pieceScrollX:Stepper;
 	var pieceScrollY:Stepper;
+	var pieceFlipX:Checkbox;
+	var pieceFlipY:Checkbox;
 	var pieceVisible:Checkbox;
 	var pieceScaleX:Stepper;
 	var pieceScaleY:Stepper;
@@ -156,6 +159,7 @@ class StageEditorState extends MusicBeatState
 		{
 			stageData =
 			{
+				searchDirs: ["stages/" + curStage + "/"],
 				characters: [{position: [500, 0], camPosition: [0, 0], flip: true, scale: [1, 1], scrollFactor: [1, 1], layer: 2},
 				{position: [0, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [1, 1], layer: 1},
 				{position: [250, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [0.95, 0.95], layer: 0}],
@@ -164,17 +168,14 @@ class StageEditorState extends MusicBeatState
 				pixelPerfect: false,
 				pieces: []
 			}
+			if (curStage.indexOf("/") > -1)
+			{
+				var dir:String = curStage.substr(0, curStage.lastIndexOf("/")+1);
+				stageData.searchDirs.unshift(dir + "stages/" + curStage.replace(dir, "") + "/");
+			}
 		}
 		else
 			stageData = Stage.parseStage(curStage, Paths.json("stages/" + curStage));
-
-		searchDir = "stages/" + curStage + "/";
-		if (curStage.indexOf("/") > -1)
-		{
-			var dir:String = curStage.substr(0, curStage.lastIndexOf("/")+1);
-			if (Paths.listFiles("images/" + searchDir, ".png").length <= 0)
-				searchDir = dir + "stages/" + curStage.replace(dir, "") + "/";
-		}
 
 		camFollow.x = stageData.camFollow[0];
 		camFollow.y = stageData.camFollow[1];
@@ -264,6 +265,31 @@ class StageEditorState extends MusicBeatState
 		}
 		tabGroupSettings.add(pixelPerfectCheckbox);
 
+		var searchDirsInput:InputText = new InputText(10, pixelPerfectCheckbox.y + 40, 230);
+		searchDirsInput.focusGained = function() {
+			searchDirsInput.text = stageData.searchDirs.join(",");
+		}
+		searchDirsInput.focusLost = function() {
+			searchDirsInput.text = stageData.searchDirs.join(",");
+		}
+		searchDirsInput.callback = function(text:String, action:String) {
+			stageData.searchDirs = text.split(",");
+
+			if (stageData.searchDirs.length == 1 && stageData.searchDirs[0].trim() == "")
+				stageData.searchDirs = [];
+			else
+			{
+				for (i in 0...stageData.searchDirs.length)
+				{
+					if (!stageData.searchDirs[i].endsWith("/"))
+						stageData.searchDirs[i] += "/";
+				}
+			}
+		}
+		tabGroupSettings.add(searchDirsInput);
+		var searchDirsInputLabel:Label = new Label("Asset Directories:", searchDirsInput);
+		tabGroupSettings.add(searchDirsInputLabel);
+
 		var scriptList:Array<String> = [""];
 		for (s in Paths.listFilesSub("data/stages/", ".hscript"))
 			scriptList.push("stages/" + s);
@@ -272,7 +298,7 @@ class StageEditorState extends MusicBeatState
 
 		if (stageData.script == "stages/" + curStage)
 			stageData.script = "";
-		var scriptDropdown:DropdownMenu = new DropdownMenu(10, pixelPerfectCheckbox.y + 40, 230, 20, stageData.script, scriptList, true);
+		var scriptDropdown:DropdownMenu = new DropdownMenu(10, searchDirsInput.y + 40, 230, 20, stageData.script, scriptList, true);
 		scriptDropdown.onChanged = function() {
 			stageData.script = scriptDropdown.value;
 		};
@@ -473,7 +499,9 @@ class StageEditorState extends MusicBeatState
 		var typeLabel:Label = new Label("Type:", typeDropdown);
 		tabGroupPieces.add(typeLabel);
 
-		var imageList:Array<String> = Paths.listFiles("images/" + searchDir, ".png");
+		var imageList:Array<String> = [];
+		for (s in stageData.searchDirs)
+			imageList = imageList.concat(Paths.listFilesSub("images/" + s, ".png"));
 		imageDropdown = new DropdownMenu(10, typeDropdown.y + 40, 230, 20, imageList[0], imageList, true);
 		tabGroupPieces.add(imageDropdown);
 		var imageLabel:Label = new Label("Asset:", imageDropdown);
@@ -506,7 +534,15 @@ class StageEditorState extends MusicBeatState
 		pieceVisible.onClicked = updateCurrentPiece;
 		tabGroupProperties.add(pieceVisible);
 
-		pieceScaleX = new Stepper(10, pieceVisible.y + 40, 115, 20, 1, 0.05, 0, 9999, 3);
+		pieceFlipX = new Checkbox(10, pieceVisible.y + 30, "Flip X", false);
+		pieceFlipX.onClicked = updateCurrentPiece;
+		tabGroupProperties.add(pieceFlipX);
+
+		pieceFlipY = new Checkbox(pieceFlipX.x + 115, pieceFlipX.y, "Flip Y", false);
+		pieceFlipY.onClicked = updateCurrentPiece;
+		tabGroupProperties.add(pieceFlipY);
+
+		pieceScaleX = new Stepper(10, pieceFlipX.y + 40, 115, 20, 1, 0.05, 0, 9999, 3);
 		pieceScaleX.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceScaleX);
 		pieceScaleY = new Stepper(pieceScaleX.x + 115, pieceScaleX.y, 115, 20, 1, 0.05, 0, 9999, 3);
@@ -612,7 +648,7 @@ class StageEditorState extends MusicBeatState
 		{
 			if (stageData.pieces[curStagePiece].type == "animated")
 			{
-				if (!Paths.sparrowExists(searchDir + stageData.pieces[curStagePiece].asset) && animIndices.text.trim() == "")
+				if (!sparrowExists(stageData.pieces[curStagePiece].asset) && animIndices.text.trim() == "")
 					return;
 
 				var newAnim:StageAnimation =
@@ -646,7 +682,7 @@ class StageEditorState extends MusicBeatState
 				else
 					stageData.pieces[curStagePiece].animations.push(newAnim);
 
-				if (Paths.sparrowExists(searchDir + stageData.pieces[curStagePiece].asset))
+				if (sparrowExists(stageData.pieces[curStagePiece].asset))
 				{
 					if (newAnim.indices != null && newAnim.indices.length > 0)
 						myStage[curStagePiece].animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
@@ -962,7 +998,7 @@ class StageEditorState extends MusicBeatState
 			{
 				newPiece.animations = [];
 				newPiece.firstAnimation = "";
-				if (!Paths.sparrowExists(searchDir + newPiece.asset))
+				if (!sparrowExists(newPiece.asset))
 					newPiece.tileCount = [1, 1];
 			}
 
@@ -1018,6 +1054,11 @@ class StageEditorState extends MusicBeatState
 		else
 			Reflect.deleteField(piece, "scrollFactor");
 
+		if (pieceFlipX.checked || pieceFlipY.checked)
+			piece.flip = [pieceFlipX.checked, pieceFlipY.checked];
+		else
+			Reflect.deleteField(piece, "flip");
+
 		if (pieceAlpha.value != 1)
 			piece.alpha = pieceAlpha.value;
 		else
@@ -1033,7 +1074,7 @@ class StageEditorState extends MusicBeatState
 		else
 			Reflect.deleteField(piece, "tile");
 
-		if (piece.type == "animated" && !Paths.sparrowExists(searchDir + piece.asset))
+		if (piece.type == "animated" && !sparrowExists(piece.asset))
 			piece.tileCount = [pieceTileCountX.valueInt, pieceTileCountY.valueInt];
 		else
 			Reflect.deleteField(piece, "tileCount");
@@ -1164,7 +1205,7 @@ class StageEditorState extends MusicBeatState
 			pieceAntialias.visible = (stageData.pieces[curStagePiece].type != "group");
 			pieceTileX.visible = (stageData.pieces[curStagePiece].type == "tiled");
 			pieceTileY.visible = (stageData.pieces[curStagePiece].type == "tiled");
-			pieceTileCountX.visible = (stageData.pieces[curStagePiece].type == "animated" && !Paths.exists(searchDir + stageData.pieces[curStagePiece].asset));
+			pieceTileCountX.visible = (stageData.pieces[curStagePiece].type == "animated" && !sparrowExists(stageData.pieces[curStagePiece].asset));
 			pieceTileCountY.visible = pieceTileCountX.visible;
 			pieceAlpha.visible = (stageData.pieces[curStagePiece].type != "group");
 			pieceBlend.visible = (stageData.pieces[curStagePiece].type != "group");
@@ -1222,6 +1263,17 @@ class StageEditorState extends MusicBeatState
 			pieceScrollY.value = 1;
 		}
 
+		if (stageData.pieces[curStagePiece].flip != null && stageData.pieces[curStagePiece].flip.length == 2)
+		{
+			pieceFlipX.checked = stageData.pieces[curStagePiece].flip[0];
+			pieceFlipY.checked = stageData.pieces[curStagePiece].flip[1];
+		}
+		else
+		{
+			pieceFlipX.checked = false;
+			pieceFlipY.checked = false;
+		}
+
 		pieceLayer.value = stageData.pieces[curStagePiece].layer;
 
 		if (stageData.pieces[curStagePiece].visible == null)
@@ -1266,8 +1318,8 @@ class StageEditorState extends MusicBeatState
 	{
 		if (stageData.pieces.length > 0 && stageData.pieces[curStagePiece].type == "animated")
 		{
-			if (Paths.sparrowExists(searchDir + stageData.pieces[curStagePiece].asset))
-				animPrefixes.valueList = Paths.sparrowAnimations(searchDir + stageData.pieces[curStagePiece].asset);
+			if (sparrowExists(stageData.pieces[curStagePiece].asset))
+				animPrefixes.valueList = sparrowAnimations(stageData.pieces[curStagePiece].asset);
 			else
 				animPrefixes.valueList = [""];
 			if (stageData.pieces[curStagePiece].animations.length > 0)
@@ -1275,7 +1327,7 @@ class StageEditorState extends MusicBeatState
 				var pieceAnimList:Array<String> = [];
 				var animData:StageAnimation = null;
 
-				if (!Paths.sparrowExists(searchDir + stageData.pieces[curStagePiece].asset))
+				if (!sparrowExists(stageData.pieces[curStagePiece].asset))
 				{
 					for (anim in stageData.pieces[curStagePiece].animations)
 					{
@@ -1307,7 +1359,7 @@ class StageEditorState extends MusicBeatState
 					beatAnimSpeed.value = stageData.pieces[curStagePiece].beatAnimationSpeed;
 
 				animName.text = animData.name;
-				if (Paths.sparrowExists(searchDir + stageData.pieces[curStagePiece].asset))
+				if (sparrowExists(stageData.pieces[curStagePiece].asset))
 					animPrefix.text = animData.prefix;
 				else
 					animPrefix.text = "";
@@ -1363,7 +1415,7 @@ class StageEditorState extends MusicBeatState
 		var poppers:Array<StagePiece> = [];
 		for (i in 0...stageData.pieces.length)
 		{
-			if (stageData.pieces[i].type == "group" || Paths.imageExists(searchDir + stageData.pieces[i].asset))
+			if (stageData.pieces[i].type == "group" || imageExists(stageData.pieces[i].asset))
 				addToStage(i);
 			else
 				poppers.push(stageData.pieces[i]);
@@ -1426,19 +1478,19 @@ class StageEditorState extends MusicBeatState
 		switch (stagePiece.type)
 		{
 			case "static":
-				piece = new FlxSprite(Paths.image(searchDir + stagePiece.asset));
+				piece = new FlxSprite(image(stagePiece.asset));
 				piece.active = false;
 
 			case "animated":
 				var isSparrow:Bool = false;
 				var pieceFrames = null;
-				if (Paths.sparrowExists(searchDir + stagePiece.asset))
+				if (sparrowExists(stagePiece.asset))
 				{
-					pieceFrames = Paths.sparrow(searchDir + stagePiece.asset);
+					pieceFrames = sparrow(stagePiece.asset);
 					isSparrow = true;
 				}
 				else
-					pieceFrames = Paths.tiles(searchDir + stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
+					pieceFrames = tiles(stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
 
 				var aPiece:AnimatedSprite = new AnimatedSprite(pieceFrames);
 				var animList:Array<String> = [];
@@ -1467,7 +1519,7 @@ class StageEditorState extends MusicBeatState
 			case "tiled":
 				if (stagePiece.tile == null || stagePiece.tile.length != 2)
 					stagePiece.tile = [true, true];
-				piece = new FlxBackdrop(Paths.image(searchDir + stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1]);
+				piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1]);
 
 			case "group":
 				piece = new FlxSpriteGroup();
@@ -1503,6 +1555,14 @@ class StageEditorState extends MusicBeatState
 		else
 			piece.scrollFactor.set(1, 1);
 
+		if (stagePiece.flip != null && stagePiece.flip.length == 2)
+		{
+			piece.flipX = stagePiece.flip[0];
+			piece.flipY = stagePiece.flip[1];
+		}
+		else
+			piece.flipX = piece.flipY = false;
+
 		if (stagePiece.visible == null || stagePiece.visible == true)
 			piece.alpha = 1;
 		else
@@ -1518,8 +1578,8 @@ class StageEditorState extends MusicBeatState
 		else
 			piece.blend = "normal";
 
-		if (stagePiece.type == "animated" && !Paths.sparrowExists(searchDir + stagePiece.asset))
-			piece.frames = Paths.tiles(searchDir + stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
+		if (stagePiece.type == "animated" && !sparrowExists(stagePiece.asset))
+			piece.frames = tiles(stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
 
 		alignPiece(pieceId);
 	}
@@ -1633,6 +1693,66 @@ class StageEditorState extends MusicBeatState
 			pieceList.valueList = pieceValueList;
 	}
 
+	function image(asset:String):FlxGraphic
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.imageExists(s + asset))
+				return Paths.image(s + asset);
+		}
+		return null;
+	}
+
+	function imageExists(asset:String):Bool
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.imageExists(s + asset))
+				return true;
+		}
+		return false;
+	}
+
+	function sparrow(asset:String):FlxFramesCollection
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.sparrowExists(s + asset))
+				return Paths.sparrow(s + asset);
+		}
+		return null;
+	}
+
+	function sparrowExists(asset:String):Bool
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.sparrowExists(s + asset))
+				return true;
+		}
+		return false;
+	}
+
+	function sparrowAnimations(asset:String):Array<String>
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.sparrowExists(s + asset))
+				return Paths.sparrowAnimations(s + asset);
+		}
+		return [];
+	}
+
+	function tiles(asset:String, tilesX:Int, tilesY:Int):FlxFramesCollection
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.imageExists(s + asset))
+				return Paths.tiles(s + asset, tilesX, tilesY);
+		}
+		return null;
+	}
+
 
 
 	function saveStage()
@@ -1647,6 +1767,16 @@ class StageEditorState extends MusicBeatState
 
 		if (!saveData.pixelPerfect)
 			Reflect.deleteField(saveData, "pixelPerfect");
+
+		var searchDirs:Array<String> = saveData.searchDirs.copy();
+		searchDirs.remove("stages/" + curStage + "/");
+		if (curStage.indexOf("/") > -1)
+		{
+			var dir:String = curStage.substr(0, curStage.lastIndexOf("/")+1);
+			searchDirs.remove(dir + "stages/" + curStage.replace(dir, "") + "/");
+		}
+		if (searchDirs.length <= 0)
+			Reflect.deleteField(saveData, "searchDirs");
 
 		for (c in saveData.characters)
 		{

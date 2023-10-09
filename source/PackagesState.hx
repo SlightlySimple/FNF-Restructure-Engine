@@ -212,7 +212,9 @@ class PackagesState extends MusicBeatState
 			else
 			{
 				var packageData:ModPackage = cast haxe.Json.parse(File.getContent("packages/" + p + "/data.json"));
-				packageMap[p] = cast haxe.Json.parse(File.getContent("packages/" + p + "/data.json"));
+				if (FileSystem.exists("packages/" + p + "/description.txt"))
+					packageData.description = File.getContent("packages/" + p + "/description.txt").replace("\r","");
+				packageMap[p] = packageData;
 				if (packageData.appendTo != null && packageData.appendTo != "")
 					poppers.push(p);
 			}
