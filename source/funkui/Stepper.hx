@@ -6,6 +6,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
 
 import flixel.addons.ui.FlxUIInputText;
+import lime.system.Clipboard;
 
 class Stepper extends FlxSpriteGroup
 {
@@ -127,6 +128,20 @@ class Stepper extends FlxSpriteGroup
 					rePress = 0.01;
 					if (onChanged != null)
 						onChanged();
+			}
+		}
+
+		if (textObject.hasFocus && FlxG.keys.pressed.CONTROL)
+		{
+			if (FlxG.keys.justPressed.C)
+				Clipboard.text = textObject.text;
+
+			if (FlxG.keys.justPressed.V)
+			{
+				textObject.text = Clipboard.text;
+				textObject.caretIndex = Clipboard.text.length;
+				@:privateAccess
+				textObject.onChange("input");
 			}
 		}
 	}

@@ -638,4 +638,31 @@ class Paths
 
 		return returnArray;
 	}
+
+	public static function listFilesFromModSub(mod:String, path:String, ext:String, ?chain:String = ""):Array<String>
+	{
+		var returnArray:Array<String> = [];
+
+		#if ALLOW_MODS
+		var modArray:Array<String> = [];
+		if (FileSystem.isDirectory("mods/" + mod + "/" + path))
+		{
+			for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+			{
+				if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file))) && !returnArray.contains(file.substr(0, file.length - ext.length)))
+					modArray.push(chain + file.substr(0, file.length - ext.length));
+			}
+
+			for (dir in FileSystem.readDirectory("mods/" + mod + "/" + path))
+			{
+				if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + dir))
+					modArray = modArray.concat(listFilesFromModSub(mod, path + "/" + dir, ext, chain + dir + "/"));
+			}
+		}
+		modArray.sort(listFilesSort);
+		returnArray = returnArray.concat(modArray);
+		#end
+
+		return returnArray;
+	}
 }

@@ -85,6 +85,7 @@ class ResultsSubState extends FlxSubState
 	public static var healthData:Array<Array<Array<Float>>> = [];
 	var resultsStuff:Array<PlayResults> = [];
 	var camResults:FlxCamera;
+	var transitioning:Bool = false;
 
 	var songName:FlxText;
 	var hitGraph:FlxSprite;
@@ -221,8 +222,9 @@ class ResultsSubState extends FlxSubState
 				changeSelection(-1);
 		}
 
-		if (Options.keyJustPressed("ui_accept"))
+		if (Options.keyJustPressed("ui_accept") && !transitioning)
 		{
+			transitioning = true;
 			if (musicEnd != "")
 				FlxG.sound.play(Paths.music(musicEnd), 0.5);
 			stopMusic();

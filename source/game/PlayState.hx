@@ -187,6 +187,7 @@ class PlayState extends MusicBeatState
 		instance = this;
 		if (storyProgress == 0 || !inStoryMode)
 			botplay = Options.options.botplay;
+		SustainNote.noteGraphics.clear();
 
 		if (inStoryMode)
 			songId = storyWeek[storyProgress];
@@ -889,22 +890,7 @@ class PlayState extends MusicBeatState
 					note.angle = note.baseAngle + strumNotes.members[note.column].ang;
 
 				var noteHeight:Float = getScrollPosition(note.strumTime, songProgress, note.column);
-				if (note.calcX)
-				{
-					note.x = strumNotes.members[note.column].x - (Math.cos(note.noteAng * Math.PI / 180) * noteHeight);
-					if (note.modX != 0)
-						note.x += Math.cos((strumNotes.members[note.column].noteAng) * Math.PI / 180) * note.modX;
-					if (note.modY != 0)
-						note.x += Math.cos(note.noteAng * Math.PI / 180) * -note.modY;
-				}
-				if (note.calcY)
-				{
-					note.y = strumNotes.members[note.column].y - (Math.sin(note.noteAng * Math.PI / 180) * noteHeight);
-					if (note.modX != 0)
-						note.y += Math.sin((strumNotes.members[note.column].noteAng) * Math.PI / 180) * note.modX;
-					if (note.modY != 0)
-						note.y += Math.sin(note.noteAng * Math.PI / 180) * -note.modY;
-				}
+				note.calcPos(strumNotes.members[note.column], noteHeight);
 
 				if (noteModFunctions.length > 0)
 				{
@@ -964,29 +950,7 @@ class PlayState extends MusicBeatState
 				}
 
 				var noteHeight:Float = getScrollPosition(note.strumTime, songProgress, note.column);
-				var cX:Float = (strumNotes.members[note.column].x + strumNotes.members[note.column].myW / 2) - (Math.cos(note.noteAng * Math.PI / 180) * noteHeight);
-				var cY:Float = (strumNotes.members[note.column].y + strumNotes.members[note.column].myH / 2) - (Math.sin(note.noteAng * Math.PI / 180) * noteHeight);
-				if (note.parent != null && note.parent.alive)
-				{
-					cX = note.parent.getGraphicMidpoint().x - note.parent.offset.x;
-					cY = note.parent.getGraphicMidpoint().y - note.parent.offset.y;
-				}
-				if (note.calcX)
-				{
-					note.x = cX + (Math.sin(note.noteAng * Math.PI / 180) * (note.width / 2));
-					if (note.modX != 0)
-						note.x += Math.cos((strumNotes.members[note.column].noteAng) * Math.PI / 180) * note.modX;
-					if (note.modY != 0)
-						note.x += Math.cos(note.noteAng * Math.PI / 180) * -note.modY;
-				}
-				if (note.calcY)
-				{
-					note.y = cY - (Math.cos(note.noteAng * Math.PI / 180) * (note.width / 2));
-					if (note.modX != 0)
-						note.y += Math.sin((strumNotes.members[note.column].noteAng) * Math.PI / 180) * note.modX;
-					if (note.modY != 0)
-						note.y += Math.sin(note.noteAng * Math.PI / 180) * -note.modY;
-				}
+				note.calcPos(strumNotes.members[note.column], noteHeight);
 
 				if (sustainModFunctions.length > 0)
 				{

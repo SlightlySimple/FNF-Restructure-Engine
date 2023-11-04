@@ -1,0 +1,20 @@
+songArtist = null;
+
+function playSong()
+{
+	if (game.songArtist != null)
+	{
+		songArtist = game.songArtist;
+		FlxTween.cancelTweensOf(songArtist);
+		songArtist.x = -songArtist.width;
+	}
+}
+
+function onEvent(event)
+{
+	if (songArtist != null)
+	{
+		songArtist.doTween();
+		songArtist = null;
+	}
+}

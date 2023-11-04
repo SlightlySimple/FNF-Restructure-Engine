@@ -33,9 +33,9 @@ class ColorInvertShader extends FlxShader
         {
             vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
 
-            color[0] = (color[0] * (1 - (amount * color[3]))) + ((1 - color[0]) * (amount * color[3]));
-            color[1] = (color[1] * (1 - (amount * color[3]))) + ((1 - color[1]) * (amount * color[3]));
-            color[2] = (color[2] * (1 - (amount * color[3]))) + ((1 - color[2]) * (amount * color[3]));
+            color[0] = (color[0] * (1.0 - (amount * color[3]))) + ((1.0 - color[0]) * (amount * color[3]));
+            color[1] = (color[1] * (1.0 - (amount * color[3]))) + ((1.0 - color[1]) * (amount * color[3]));
+            color[2] = (color[2] * (1.0 - (amount * color[3]))) + ((1.0 - color[2]) * (amount * color[3]));
 
             gl_FragColor = color;
         }

@@ -61,6 +61,7 @@ class WeekEditorState extends MusicBeatState
 
 	var suspendControls:Bool = false;
 	var songDropdown:DropdownMenu;
+	var iconInput:InputText;
 	var iconDropdown:DropdownMenu;
 	var songTitle:InputText;
 	var songDiffs:InputText;
@@ -159,7 +160,7 @@ class WeekEditorState extends MusicBeatState
 
 
 
-		tabMenu = new TabMenu(50, 50, 250, 370, ["Settings", "Songs", "Story"]);
+		tabMenu = new TabMenu(50, 50, 250, 400, ["Settings", "Songs", "Story"]);
 		tabMenu.cameras = [camHUD];
 		tabMenu.onTabChanged = function() {
 			remove(settingsStuff);
@@ -256,7 +257,7 @@ class WeekEditorState extends MusicBeatState
 			if (weekData.songs.length > 0)
 				weekData.songs.push({songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]});
 			else
-				weekData.songs.push({songId: songDropdown.value, icon: iconDropdown.value, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]});
+				weekData.songs.push({songId: songDropdown.value, icon: iconInput.text, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]});
 			curSong = weekData.songs.length - 1;
 			refreshSongs();
 		}
@@ -331,7 +332,7 @@ class WeekEditorState extends MusicBeatState
 					if (Paths.iconExists(iconName))
 					{
 						weekData.songs[curSong].icon = iconName;
-						iconDropdown.value = iconName;
+						iconInput.text = iconName;
 					}
 				}
 				refreshSongs();
@@ -341,16 +342,39 @@ class WeekEditorState extends MusicBeatState
 		var songLabel:Label = new Label("Song ID:", songDropdown);
 		tabGroupSong.add(songLabel);
 
-		iconDropdown = new DropdownMenu(10, songDropdown.y + 40, 230, 20, allIcons[0], allIcons, true);
+		iconInput = new InputText(10, songDropdown.y + 40, 230);
+		iconInput.focusGained = function() {
+			suspendControls = true;
+			if (weekData.songs.length > 0)
+			{
+				if (weekData.songs[curSong].icon != null)
+					iconInput.text = weekData.songs[curSong].icon;
+				else
+					iconInput.text = "";
+			}
+		}
+		iconInput.focusLost = function() { suspendControls = false; refreshSongs(); }
+		iconInput.callback = function(text:String, action:String) {
+			if (weekData.songs.length > 0)
+			{
+				if (text.trim() != "" && Paths.iconExists(text))
+					weekData.songs[curSong].icon = text;
+				else
+					weekData.songs[curSong].icon = allIcons[0];
+			}
+		}
+		tabGroupSong.add(iconInput);
+		iconDropdown = new DropdownMenu(10, iconInput.y + 30, 230, 20, allIcons[0], allIcons, true);
 		iconDropdown.onChanged = function() {
 			if (weekData.songs.length > 0)
 			{
-				weekData.songs[curSong].icon = iconDropdown.value;
-				refreshSongs();
+				iconInput.text = iconDropdown.value;
+				iconInput.callback(iconInput.text, "");
+				iconInput.focusLost();
 			}
 		}
 		tabGroupSong.add(iconDropdown);
-		var iconLabel:Label = new Label("Icon:", iconDropdown);
+		var iconLabel:Label = new Label("Icon:", iconInput);
 		tabGroupSong.add(iconLabel);
 
 		songTitle = new InputText(10, iconDropdown.y + 40, 230);
@@ -368,7 +392,7 @@ class WeekEditorState extends MusicBeatState
 		songTitle.callback = function(text:String, action:String) {
 			if (weekData.songs.length > 0)
 			{
-				if (text != "")
+				if (text.trim() != "")
 					weekData.songs[curSong].title = text;
 				else if (Reflect.hasField(weekData.songs[curSong], "title"))
 					Reflect.deleteField(weekData.songs[curSong], "title");
@@ -683,9 +707,9 @@ class WeekEditorState extends MusicBeatState
 		if (weekData.songs.length > 0)
 		{
 			songDropdown.value = weekData.songs[curSong].songId;
-			iconDropdown.value = weekData.songs[curSong].icon;
 			if (fillInputText)
 			{
+				iconInput.focusGained();
 				songTitle.focusGained();
 				songDiffs.focusGained();
 				songCharLabels.focusGained();

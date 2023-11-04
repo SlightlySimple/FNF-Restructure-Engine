@@ -85,6 +85,8 @@ class CharacterEditorState extends MusicBeatState
 	var animPrefix:InputText;
 	var animPrefixDropdown:DropdownMenu = null;
 	var animIndices:InputText;
+	var animOffsetX:Stepper;
+	var animOffsetY:Stepper;
 	var animLooped:Checkbox;
 	var animFPS:Stepper;
 	var animLoopedFrames:Stepper;
@@ -211,7 +213,7 @@ class CharacterEditorState extends MusicBeatState
 
 
 
-		tabMenu = new IsolatedTabMenu(50, 50, 250, 500);
+		tabMenu = new IsolatedTabMenu(50, 50, 250, 530);
 		tabMenu.cameras = [camHUD];
 		add(tabMenu);
 		refreshCharAnims();
@@ -584,6 +586,21 @@ class CharacterEditorState extends MusicBeatState
 		var camTestDeadLabel:Label = new Label("Game Over:", camTestDeadButton);
 		tabGroupProperties.add(camTestDeadLabel);
 
+		var iconInput:InputText = new InputText(10, camTestDeadButton.y + 40, 230);
+		iconInput.focusGained = function() {
+			if (myCharacterData.icon != null)
+				iconInput.text = myCharacterData.icon;
+			else
+				iconInput.text = "";
+		}
+		iconInput.focusLost = function() {
+			if (iconInput.text.trim() != "" && Paths.iconExists(iconInput.text))
+				myCharacterData.icon = iconInput.text;
+			else
+				myCharacterData.icon = "";
+		}
+		tabGroupProperties.add(iconInput);
+
 		var iconList:Array<String> = HealthIcon.listIcons();
 		if (curCharacter.indexOf("/") > -1)
 		{
@@ -591,12 +608,13 @@ class CharacterEditorState extends MusicBeatState
 				iconList.push(curCharacter.substring(0, curCharacter.indexOf("/")+1) + i);
 		}
 		iconList.unshift("");
-		var iconDropdown:DropdownMenu = new DropdownMenu(10, camTestDeadButton.y + 40, 230, 20, myCharacterData.icon, iconList, true);
+		var iconDropdown:DropdownMenu = new DropdownMenu(10, iconInput.y + 30, 230, 20, myCharacterData.icon, iconList, true);
 		iconDropdown.onChanged = function() {
-			myCharacterData.icon = iconDropdown.value;
+			iconInput.text = iconDropdown.value;
+			iconInput.focusLost();
 		};
 		tabGroupProperties.add(iconDropdown);
-		var iconLabel:Label = new Label("Health Icon (Optional):", iconDropdown);
+		var iconLabel:Label = new Label("Health Icon (Optional):", iconInput);
 		tabGroupProperties.add(iconLabel);
 
 		var idlesInput:InputText = new InputText(10, iconDropdown.y + 40, 115);
@@ -770,7 +788,14 @@ class CharacterEditorState extends MusicBeatState
 			tabGroupAnims.add(rangeIndices);
 		}
 
-		animLooped = new Checkbox(10, (myCharType == "sparrow" ? animIndices.y + 70 : animIndices.y + 110), "Loop");
+		animOffsetX = new Stepper(10, (myCharType == "sparrow" ? animIndices.y + 70 : animIndices.y + 110), 115, 20, 0, 1);
+		tabGroupAnims.add(animOffsetX);
+		animOffsetY = new Stepper(animOffsetX.x + 115, animOffsetX.y, 115, 20, 0, 1);
+		tabGroupAnims.add(animOffsetY);
+		var animOffsetLabel:Label = new Label("Offsets:", animOffsetX);
+		tabGroupAnims.add(animOffsetLabel);
+
+		animLooped = new Checkbox(10, animOffsetX.y + 40, "Loop");
 		animLooped.checked = false;
 		tabGroupAnims.add(animLooped);
 
@@ -831,14 +856,8 @@ class CharacterEditorState extends MusicBeatState
 					loop: animLooped.checked,
 					loopedFrames: animLoopedFrames.valueInt,
 					sustainFrame: animSustainFrame.valueInt,
-					offsets: [0, 0]
+					offsets: [animOffsetX.valueInt, animOffsetY.valueInt]
 				};
-
-				if (curCharAnim > -1)
-				{
-					newAnim.offsets[0] = myCharacterData.animations[curCharAnim].offsets[0];
-					newAnim.offsets[1] = myCharacterData.animations[curCharAnim].offsets[1];
-				}
 
 				if (animIndices.text != "")
 				{
@@ -1035,9 +1054,25 @@ class CharacterEditorState extends MusicBeatState
 		}
 		tabGroupOffsets.add(offsetZero);
 
+		var offsetX:Stepper = new Stepper(10, offsetZero.y + 30, 115, 20);
+		tabGroupOffsets.add(offsetX);
+		var offsetY:Stepper = new Stepper(offsetX.x + 115, offsetX.y, 115, 20);
+		tabGroupOffsets.add(offsetY);
+
+		var offsetApply:TextButton = new TextButton(10, offsetX.y + 30, 230, 20, "Apply to animation");
+		offsetApply.onClicked = function() {
+			myCharacterData.animations[curCharAnim].offsets[0] = offsetX.valueInt;
+			myCharacterData.animations[curCharAnim].offsets[1] = offsetY.valueInt;
+
+			playAnim(myCharacterData.animations[curCharAnim].name, true);
+			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
+			refreshCharAnims();
+		}
+		tabGroupOffsets.add(offsetApply);
+
 		if (myCharType != "atlas")
 		{
-			var alignmentA:DropdownMenu = new DropdownMenu(10, offsetZero.y + 40, 115, 20, "left", ["left", "center", "right"]);
+			var alignmentA:DropdownMenu = new DropdownMenu(10, offsetApply.y + 40, 115, 20, "left", ["left", "center", "right"]);
 			tabGroupOffsets.add(alignmentA);
 			var alignmentB:DropdownMenu = new DropdownMenu(alignmentA.x + 115, alignmentA.y, 115, 20, "top", ["top", "middle", "bottom"]);
 			tabGroupOffsets.add(alignmentB);
@@ -1208,6 +1243,8 @@ class CharacterEditorState extends MusicBeatState
 							else
 								animIndices.text = "";
 							animLooped.checked = animData.loop;
+							animOffsetX.value = animData.offsets[0];
+							animOffsetY.value = animData.offsets[1];
 							animFPS.value = animData.fps;
 							animLoopedFrames.value = animData.loopedFrames;
 							animSustainFrame.value = animData.sustainFrame;

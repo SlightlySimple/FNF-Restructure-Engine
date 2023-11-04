@@ -146,7 +146,7 @@ class EditorMenuState extends MusicBeatState
 		validChars.push("-");
 		validChars.push("_");
 
-		tabMenu = new IsolatedTabMenu(0, 0, 400, 190);
+		tabMenu = new IsolatedTabMenu(0, 0, 400, 200);
 		tabMenu.screenCenter();
 		add(tabMenu);
 
@@ -167,10 +167,15 @@ class EditorMenuState extends MusicBeatState
 		var createDirsLabel:Label = new Label("Create Asset Folders", createDirs);
 		tabGroup.add(createDirsLabel);
 
-		var newModButton:TextButton = new TextButton(150, createDirs.y + 30, 100, 20, "Create");
+		var subDirInput:InputText = new InputText(10, createDirs.y + 40, 380);
+		tabGroup.add(subDirInput);
+		var subDirLabel:Label = new Label("Subfolder (Optional):", subDirInput);
+		tabGroup.add(subDirLabel);
+
+		var newModButton:TextButton = new TextButton(75, subDirInput.y + 30, 100, 20, "Create");
 		newModButton.onClicked = function()
 		{
-			if (modNameInput.text != "")
+			if (modNameInput.text.trim() != "")
 			{
 				var modFolderNameArray:Array<String> = modNameInput.text.replace("-", " ").replace(".", " ").replace("'", " ").replace("\"", " ").split(" ");
 				modFolderNameArray[0] = modFolderNameArray[0].toLowerCase();
@@ -188,18 +193,35 @@ class EditorMenuState extends MusicBeatState
 					var dirs:Array<String> = [""];
 					if (createDirs.valueInt > 0)
 					{
+						var subdir:String = "";
+						if (subDirInput.text.trim() != "")
+							subdir = "/" + subDirInput.text.toLowerCase().replace(" ","-");
 						dirs.push("/data");
 						dirs.push("/data/characters");
-						dirs.push("/data/songs");
-						dirs.push("/data/stages");
-						dirs.push("/data/weeks");
+						if (!dirs.contains("/data/characters"+subdir))
+							dirs.push("/data/characters"+subdir);
+						dirs.push("/data/songs"+subdir);
+						if (!dirs.contains("/data/songs"+subdir))
+							dirs.push("/data/songs"+subdir);
+						dirs.push("/data/stages"+subdir);
+						if (!dirs.contains("/data/stages"+subdir))
+							dirs.push("/data/stages"+subdir);
+						dirs.push("/data/weeks"+subdir);
+						if (!dirs.contains("/data/weeks"+subdir))
+							dirs.push("/data/weeks"+subdir);
 						dirs.push("/images");
-						dirs.push("/images/characters");
-						dirs.push("/images/icons");
-						dirs.push("/images/stages");
+						if (!dirs.contains("/images"+subdir))
+							dirs.push("/images"+subdir);
+						dirs.push("/images"+subdir+"/characters");
+						dirs.push("/images"+subdir+"/icons");
+						dirs.push("/images"+subdir+"/stages");
 						dirs.push("/images/ui");
 						dirs.push("/images/ui/weeks");
+						if (!dirs.contains("/images/ui/weeks"+subdir))
+							dirs.push("/images/ui/weeks"+subdir);
 						dirs.push("/songs");
+						if (!dirs.contains("/songs"+subdir))
+							dirs.push("/songs"+subdir);
 						if (createDirs.valueInt == 2)
 						{
 							dirs.push("/data/autorun");
@@ -232,7 +254,7 @@ class EditorMenuState extends MusicBeatState
 		};
 		tabGroup.add(newModButton);
 
-		var cancelButton:TextButton = new TextButton(150, newModButton.y + 30, 100, 20, "Cancel");
+		var cancelButton:TextButton = new TextButton(newModButton.x + 150, newModButton.y, 100, 20, "Cancel");
 		cancelButton.onClicked = function()
 		{
 			remove(tabMenu);
@@ -298,8 +320,8 @@ class EditorMenuState extends MusicBeatState
 		else
 		{
 			while (songNameArray[0] != "songs")
-				songNameArray.remove(songNameArray[0]);
-			songNameArray.remove(songNameArray[0]);
+				songNameArray.shift();
+			songNameArray.shift();
 			songNameArray.pop();
 
 			ChartEditorState.filename = "";

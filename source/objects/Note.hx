@@ -2,6 +2,7 @@ package objects;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxRect;
 import flixel.util.FlxColor;
@@ -45,19 +46,20 @@ class Note extends FlxSprite
 	public var animationSuffix:String = "";
 	public var singers:Array<Character> = [];
 
-	public var modX:Float = 0;
-	public var modY:Float = 0;
-
 	public static function getShader(col:String)
 	{
 		if (!Options.noteColorExists(col))
+			return null;
+
+		var colArray:Array<Dynamic> = Options.noteColor(col);
+		if (colArray[0] == 0 && colArray[1] == true && colArray[2] == 0 && colArray[3] == 0)
 			return null;
 
 		if (!cs.exists(col))
 		{
 			var colswap:ColorSwap = new ColorSwap();
 			colswap.setHSV(Options.noteColorArray(col));
-			colswap.hAdd = Options.noteColor(col)[1];
+			colswap.hAdd = colArray[1];
 			cs[col] = colswap;
 		}
 		return cs[col].shader;
@@ -157,10 +159,31 @@ class Note extends FlxSprite
 		offset.x -= (strum.myW - width) / 2;
 		offset.y -= (strum.myH - height) / 2;
 	}
+
+	public function calcPos(strum:StrumNote, h:Float)
+	{
+		var xoff:Float = 0;
+		var yoff:Float = 0;
+		switch (noteAng)
+		{
+			case 0: xoff = 1; yoff = 0;
+			case 90: xoff = 0; yoff = 1;
+			case 180: xoff = -1; yoff = 0;
+			case 270: xoff = 0; yoff = -1;
+			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
+		}
+
+		if (calcX)
+			x = strum.x - (xoff * h);
+		if (calcY)
+			y = strum.y - (yoff * h);
+	}
 }
 
 class SustainNote extends FlxSprite
 {
+	public static var noteGraphics:Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
+
 	public var strumTime:Float;
 	public var beat:Float;
 	public var column:Int;
@@ -199,9 +222,6 @@ class SustainNote extends FlxSprite
 	public var missAnim:String = "";
 	public var animationSuffix:String = "";
 	public var singers:Array<Character> = [];
-
-	public var modX:Float = 0;
-	public var modY:Float = 0;
 
 	override public function new(strumTime:Float, column:Int, sustainLength:Float, actualHeight:Float, ?noteType:String = "", ?noteskinType:String = "default", ?strumColumn:Null<Int> = null)
 	{
@@ -246,9 +266,9 @@ class SustainNote extends FlxSprite
 
 	public function rebuildSustain()
 	{
-		var key:String = actualHeight + ":SustainNote" + noteskinType + "-" + noteColor + "-" + noteShape;
-		if (FlxG.bitmap.get(key) != null)
-			loadGraphic(FlxG.bitmap.get(key));
+		var key:String = Std.int(actualHeight) + ":SustainNote" + noteskinType + "-" + noteColor + "-" + noteShape;
+		if (noteGraphics.exists(key))
+			frames = noteGraphics[key];
 		else
 		{
 			var sustainPiece:FlxSprite = new FlxSprite();
@@ -283,6 +303,8 @@ class SustainNote extends FlxSprite
 					stamp(sustainPiece, 0, yy);
 			}
 
+			noteGraphics[key] = frames;
+			FlxG.bitmap.get(key).destroyOnNoUse = false;
 			sustainPiece.kill();
 			sustainPiece.destroy();
 			sustainEnd.kill();
@@ -327,6 +349,32 @@ class SustainNote extends FlxSprite
 	{
 		hitAnim = strum.defaultCharAnims[0] + animationSuffix;
 		missAnim = strum.defaultCharAnims[1] + animationSuffix;
+	}
+
+	public function calcPos(strum:StrumNote, h:Float)
+	{
+		var xoff:Float = 0;
+		var yoff:Float = 0;
+		switch (noteAng)
+		{
+			case 0: xoff = 1; yoff = 0;
+			case 90: xoff = 0; yoff = 1;
+			case 180: xoff = -1; yoff = 0;
+			case 270: xoff = 0; yoff = -1;
+			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
+		}
+
+		var cX:Float = (strum.x + strum.myW / 2) - (xoff * h);
+		var cY:Float = (strum.y + strum.myH / 2) - (yoff * h);
+		if (parent != null && parent.alive)
+		{
+			cX = parent.getGraphicMidpoint().x - parent.offset.x;
+			cY = parent.getGraphicMidpoint().y - parent.offset.y;
+		}
+		if (calcX)
+			x = cX + (yoff * (width / 2));
+		if (calcY)
+			y = cY - (xoff * (width / 2));
 	}
 }
 

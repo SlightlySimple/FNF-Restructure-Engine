@@ -280,13 +280,13 @@ class ChartEditorState extends MusicBeatState
 				player2: TitleState.defaultVariables.player2,
 				player3: TitleState.defaultVariables.gf,
 				stage: TitleState.defaultVariables.stage,
-				tracks: [["inst", 0]],
+				tracks: [["Inst", 0]],
 				notes: [{camOn: 1, lengthInSteps: 16, sectionNotes: []}],
 				eventFile: "_events",
 				events: []
 			}
-			if (Paths.songExists(songId, "voices"))
-				songData.tracks.push(["voices", 1]);
+			if (Paths.songExists(songId, "Voices"))
+				songData.tracks.push(["Voices", 1]);
 			songData = Song.parseSongData(songData);
 			songFileShortened = songId;
 		}
@@ -789,8 +789,6 @@ class ChartEditorState extends MusicBeatState
 		{
 			trackList = Paths.listFiles("songs/" + songId + "/", ".ogg");
 			trackList = trackList.concat(Paths.listFiles("data/songs/" + songId + "/", ".ogg"));
-			for (i in 0...trackList.length)
-				trackList[i] = trackList[i].toLowerCase();
 			if (trackList.length <= 0)
 			{
 				Application.current.window.alert("The chart has no associated music files.\nCheck the folder \"songs/"+songId+"\" or create it if it doesn't exist", "Alert");
@@ -1876,6 +1874,13 @@ class ChartEditorState extends MusicBeatState
 				n[0] = Conductor.beatFromTime(n[0]);
 				n[0] = Math.round(n[0] * (snap / 4)) / (snap / 4);
 				n[0] = Conductor.timeFromBeat(n[0]);
+
+				if (n.length > 2)
+				{
+					n[2] = Conductor.beatFromTime(n[0] + n[2]);
+					n[2] = Math.round(n[2] * (snap / 4)) / (snap / 4);
+					n[2] = Conductor.timeFromBeat(n[2]) - n[0];
+				}
 			}
 
 			refreshNotes();
@@ -2331,7 +2336,7 @@ class ChartEditorState extends MusicBeatState
 		{
 			var newTrack:FlxSound = new FlxSound();
 			newTrack.makeEvent = false;
-			if (!trackList.contains(t[0].toLowerCase()))
+			if (trackList.filter(function(a) return a.toLowerCase() == t[0].toLowerCase()).length <= 0)
 				t[0] = trackList[0];
 			newTrack.loadEmbedded(Paths.song(songId, t[0]));
 			if (t[1] > 0)
@@ -3565,7 +3570,7 @@ class ChartEditorState extends MusicBeatState
 			for (n in s.sectionNotes)
 			{
 				var newN:Array<Dynamic> = [n[0], n[1]];
-				if (n.length > 2 && (n[2] != 0 || !songData.useBeats || n.length > 3))
+				if (n.length > 2 && (n[2] > 0 || !songData.useBeats || n.length > 3))
 					newN.push(n[2]);
 				if (songData.useBeats)
 				{

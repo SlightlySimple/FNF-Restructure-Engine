@@ -32,6 +32,11 @@ class SongArtist extends FlxSpriteGroup
 		}
 
 		x -= width;
+		doTween();
+	}
+
+	public function doTween()
+	{
 		FlxTween.tween(this, {x: 0}, 0.5, {ease: FlxEase.quintOut, onComplete: function(twn:FlxTween) {
 			new FlxTimer().start(3, function(tmr:FlxTimer) {
 				FlxTween.tween(this, {x: -width}, 0.5, {ease: FlxEase.quintIn, onComplete: function(twn:FlxTween) {

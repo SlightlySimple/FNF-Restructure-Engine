@@ -55,8 +55,8 @@ function onEvent(event)
 		}
 		else
 		{
-			game.hscriptAdd('player' + Std.string(slot), 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
-			game.hscriptIdExec('player' + Std.string(slot), 'create', []);
+			game.hscriptAdd('player' + Std.string(slot+1), 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
+			game.hscriptIdExec('player' + Std.string(slot+1), 'create', []);
 		}
 	}
 }

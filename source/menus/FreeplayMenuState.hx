@@ -405,6 +405,23 @@ class FreeplayMenuState extends MusicBeatState
 			}
 		}
 
+		for (file in Paths.listFilesAndModsSub("data/songs/", ".json"))
+		{
+			if (file[0].endsWith("/_auto"))
+			{
+				if (categories.exists(file[1]))
+				{
+					if (!categories.get(file[1]).contains("!AUTO"))
+						categories.get(file[1]).push("!AUTO");
+				}
+				else
+				{
+					categories.set(file[1], ["!AUTO"]);
+					possibleCats.push(file[1]);
+				}
+			}
+		}
+
 		#if ALLOW_SM
 		for (file in Paths.listFilesAndMods("sm/", ""))
 		{
@@ -578,10 +595,16 @@ class FreeplayMenuState extends MusicBeatState
 					return;
 				}
 
-				var weekNames:Array<String> = categories[category];
+				var weekNames:Array<String> = categories[category].copy();
 				if (!songLists.exists(category))
 					songLists[category] = [];
 				ArraySort.sort(weekNames, sortWeeks);
+				var hasAuto:Bool = false;
+				if (weekNames.contains("!AUTO"))
+				{
+					hasAuto = true;
+					weekNames.remove("!AUTO");
+				}
 				var hasSM:Bool = false;
 				if (weekNames.contains("!SM"))
 				{
@@ -633,6 +656,43 @@ class FreeplayMenuState extends MusicBeatState
 								songIcons.add(lock);
 							}
 							else
+							{
+								var icon:HealthIcon = new HealthIcon(Std.int(textButton.x + textButton.width + 85), Std.int(textButton.y + 45), song.icon);
+								icon.x -= icon.width / 2;
+								icon.y -= icon.height / 2;
+								songIcons.add(icon);
+							}
+							spot++;
+						}
+					}
+				}
+
+				if (hasAuto)
+				{
+					var autoFiles:Array<String> = Paths.listFilesFromModSub(category,"data/songs/",".json");
+
+					for (f in autoFiles)
+					{
+						if (f.endsWith("/_auto"))
+						{
+							var song:WeekSongData = cast Paths.json("songs/" + f);
+							song.songId = f.substr(0, f.lastIndexOf("/"));
+							if (song.difficulties == null || song.difficulties.length == 0)
+								song.difficulties = ["normal","hard","easy"];
+							if (song.characters == null)
+								song.characters = 3;
+							if (song.characterLabels == null || song.characterLabels.length < 3)
+								song.characterLabels = ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"];
+
+							songList.push(song);
+							songUnlocked.push(true);
+							artistList.push("");
+							if (spot >= songButtons.members.length)
+								songButtons.add(new Alphabet(Std.int((spot * 20) + 90), Std.int((spot * 1.3 * 120) + (FlxG.height * 0.48)), "", "bold", Std.int(FlxG.width * 0.9)));
+							var textButton:Alphabet = songButtons.members[spot];
+							textButton.text = Song.getSongName(song.songId, song.difficulties[0]);
+							textButton.setFont("bold");
+							if (song.icon != null)
 							{
 								var icon:HealthIcon = new HealthIcon(Std.int(textButton.x + textButton.width + 85), Std.int(textButton.y + 45), song.icon);
 								icon.x -= icon.width / 2;

@@ -72,7 +72,6 @@ typedef SongData =
 	var ?scrollSpeeds:Array<Array<Float>>;
 	var ?altSpeedCalc:Null<Bool>;
 	var ?eventFile:String;
-	var ?numKeys:Null<Int>;
 	var ?columnDivisions:Array<Int>;
 	var ?columnDivisionNames:Array<String>;
 	var ?allNotetypes:Array<String>;
@@ -652,17 +651,14 @@ class Song
 
 	public static function correctDivisions(data:SongData):SongData
 	{
-		if (data.numKeys == null || data.numKeys <= 0)
-			data.numKeys = 4;
-
 		if (data.columnDivisions == null)
 		{
 			data.columnDivisions = [];
-			var columns:Int = data.numKeys * 2;
+			var columns:Int = 8;
 
 			while (data.columnDivisions.length < columns)
 			{
-				if (data.columnDivisions.length >= data.numKeys)
+				if (data.columnDivisions.length >= columns / 2)
 					data.columnDivisions.push(0);
 				else
 					data.columnDivisions.push(1);
@@ -872,6 +868,8 @@ class Song
 					}
 				}
 			}
+			if (note[2] < 0)
+				note[2] = 0;
 
 			var noteStep:Float = timing.stepFromTime(note[0]);
 			var secIndex:Int = -1;

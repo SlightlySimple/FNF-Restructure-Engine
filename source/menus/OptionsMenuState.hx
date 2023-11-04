@@ -669,7 +669,10 @@ class OptionsMenu extends FlxGroup
 
 				setOptVal(curOption, opt.options[valInt]);
 				if (opt.variable == "noteskin")
+				{
 					Noteskins.noteskinName = Options.options.noteskin;
+					SustainNote.noteGraphics.clear();
+				}
 				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 
 			case "choices":
