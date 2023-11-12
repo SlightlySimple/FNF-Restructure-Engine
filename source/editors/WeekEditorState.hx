@@ -20,6 +20,7 @@ import haxe.Json;
 import lime.app.Application;
 
 import funkui.TabMenu;
+import funkui.ColorSwatch;
 import funkui.DropdownMenu;
 import funkui.TextButton;
 import funkui.InputText;
@@ -138,7 +139,7 @@ class WeekEditorState extends MusicBeatState
 		refreshWeekBanner();
 		storyStuff.add(banner);
 
-		weekName = new InputText(10, 10, FlxG.width - 20, "", 32);
+		weekName = new InputText(10, 10, FlxG.width - 20, weekData.title, 32);
 		weekName.alignment = RIGHT;
 		weekName.callback = function(text:String, action:String) {
 			weekData.title = text;
@@ -199,7 +200,10 @@ class WeekEditorState extends MusicBeatState
 		var conditionLabel:Label = new Label("Condition:", conditionDropdown);
 		tabGroupSettings.add(conditionLabel);
 
-		var diffs:InputText = new InputText(10, conditionDropdown.y + 40);
+		var diffsText:String = "";
+		if (weekData.difficulties != null && weekData.difficulties.length > 0)
+			diffsText = weekData.difficulties.join(",");
+		var diffs:InputText = new InputText(10, conditionDropdown.y + 40, diffsText);
 		diffs.forceCase = 2;
 		diffs.customFilterPattern = ~/[^a-zA-Z,]*/g;
 		diffs.focusGained = function() {
@@ -342,7 +346,10 @@ class WeekEditorState extends MusicBeatState
 		var songLabel:Label = new Label("Song ID:", songDropdown);
 		tabGroupSong.add(songLabel);
 
-		iconInput = new InputText(10, songDropdown.y + 40, 230);
+		var iconInputText = "";
+		if (weekData.songs.length > curSong && weekData.songs[curSong].icon != null)
+			iconInputText = weekData.songs[curSong].icon;
+		iconInput = new InputText(10, songDropdown.y + 40, iconInputText);
 		iconInput.focusGained = function() {
 			suspendControls = true;
 			if (weekData.songs.length > 0)
@@ -377,7 +384,10 @@ class WeekEditorState extends MusicBeatState
 		var iconLabel:Label = new Label("Icon:", iconInput);
 		tabGroupSong.add(iconLabel);
 
-		songTitle = new InputText(10, iconDropdown.y + 40, 230);
+		var songTitleText:String = "";
+		if (weekData.songs.length > curSong && weekData.songs[curSong].title != null)
+			songTitleText = weekData.songs[curSong].title;
+		songTitle = new InputText(10, iconDropdown.y + 40, songTitleText);
 		songTitle.focusGained = function() {
 			suspendControls = true;
 			if (weekData.songs.length > 0)
@@ -402,7 +412,10 @@ class WeekEditorState extends MusicBeatState
 		var songTitleLabel:Label = new Label("Title (Optional):", songTitle);
 		tabGroupSong.add(songTitleLabel);
 
-		songDiffs = new InputText(10, songTitle.y + 40, 230);
+		var songDiffsText:String = "";
+		if (weekData.songs.length > curSong && weekData.songs[curSong].difficulties != null && weekData.songs[curSong].difficulties.length > 0)
+			songDiffsText = weekData.songs[curSong].difficulties.join(",");
+		songDiffs = new InputText(10, songTitle.y + 40, songDiffsText);
 		songDiffs.forceCase = 2;
 		songDiffs.customFilterPattern = ~/[^a-zA-Z,]*/g;
 		songDiffs.focusGained = function() {
@@ -438,7 +451,19 @@ class WeekEditorState extends MusicBeatState
 		var songCharCountLabel:Label = new Label("Character Count:", songCharCount);
 		tabGroupSong.add(songCharCountLabel);
 
-		songCharLabels = new InputText(10, songCharCount.y + 40, 230);
+		var songCharLabelsText:String = "";
+		if (weekData.songs.length > curSong)
+		{
+			if (weekData.songs[curSong].characterLabels != null && weekData.songs[curSong].characterLabels.length > 0)
+			{
+				var cLabels:Array<String> = weekData.songs[curSong].characterLabels;
+				if (cLabels.length == 3 && cLabels[0] == "#fpSandboxCharacter0" && cLabels[1] == "#fpSandboxCharacter1" && cLabels[2] == "#fpSandboxCharacter2")
+					songCharLabelsText = "";
+				else
+					songCharLabelsText = weekData.songs[curSong].characterLabels.join(",");
+			}
+		}
+		songCharLabels = new InputText(10, songCharCount.y + 40, songCharLabelsText);
 		songCharLabels.focusGained = function() {
 			suspendControls = true;
 			if (weekData.songs.length > 0)

@@ -576,7 +576,7 @@ class ChartEditorState extends MusicBeatState
 
 		var tabGroupProperties = new TabGroup();
 
-		var songNameInput:InputText = new InputText(10, 20);
+		var songNameInput:InputText = new InputText(10, 20, songData.song);
 		songNameInput.focusGained = function() { songNameInput.text = songData.song; suspendControls = true; }
 		songNameInput.focusLost = function() { suspendControls = false; }
 		songNameInput.callback = function(text:String, action:String) {
@@ -586,7 +586,7 @@ class ChartEditorState extends MusicBeatState
 		var songNameLabel:Label = new Label("Song Name:", songNameInput);
 		tabGroupProperties.add(songNameLabel);
 
-		var songArtistInput:InputText = new InputText(10, songNameInput.y + 40);
+		var songArtistInput:InputText = new InputText(10, songNameInput.y + 40, songData.artist);
 		songArtistInput.focusGained = function() { songArtistInput.text = songData.artist; suspendControls = true; }
 		songArtistInput.focusLost = function() { suspendControls = false; }
 		songArtistInput.callback = function(text:String, action:String) {
@@ -635,7 +635,7 @@ class ChartEditorState extends MusicBeatState
 		}
 		tabGroupProperties.add(notetypeOverridesCamCheckbox);
 
-		var columnDivisionsInput:InputText = new InputText(10, notetypeOverridesCamCheckbox.y + 40);
+		var columnDivisionsInput:InputText = new InputText(10, notetypeOverridesCamCheckbox.y + 40, songData.columnDivisions.join(","));
 		columnDivisionsInput.customFilterPattern = ~/[^0-9,]*/g;
 		columnDivisionsInput.focusGained = function() {
 			columnDivisionsInput.text = songData.columnDivisions.join(",");
@@ -652,7 +652,7 @@ class ChartEditorState extends MusicBeatState
 		var columnDivisionsLabel:Label = new Label("Playable sections:", columnDivisionsInput);
 		tabGroupProperties.add(columnDivisionsLabel);
 
-		var columnDivisionNamesInput:InputText = new InputText(10, columnDivisionsInput.y + 40);
+		var columnDivisionNamesInput:InputText = new InputText(10, columnDivisionsInput.y + 40, songData.columnDivisionNames.join(","));
 		columnDivisionNamesInput.focusGained = function() {
 			columnDivisionNamesInput.text = songData.columnDivisionNames.join(",");
 			suspendControls = true;
@@ -674,7 +674,7 @@ class ChartEditorState extends MusicBeatState
 		var stageDropdownLabel:Label = new Label("Stage:", stageDropdown);
 		tabGroupProperties.add(stageDropdownLabel);
 
-		var noteskinTypeInput:InputText = new InputText(10, stageDropdown.y + 40);
+		var noteskinTypeInput:InputText = new InputText(10, stageDropdown.y + 40, songData.noteType.join(","));
 		noteskinTypeInput.focusGained = function() { noteskinTypeInput.text = songData.noteType.join(","); suspendControls = true; }
 		noteskinTypeInput.focusLost = function() {
 			songData.noteType = noteskinTypeInput.text.split(",");
@@ -709,7 +709,7 @@ class ChartEditorState extends MusicBeatState
 		}
 		tabGroupProperties.add(skipCountdownCheckbox);
 
-		var eventFileInput:InputText = new InputText(10, skipCountdownCheckbox.y + 40);
+		var eventFileInput:InputText = new InputText(10, skipCountdownCheckbox.y + 40, songData.eventFile);
 		eventFileInput.focusGained = function() { eventFileInput.text = songData.eventFile; suspendControls = true; }
 		eventFileInput.focusLost = function() { suspendControls = false; }
 		eventFileInput.callback = function(text:String, action:String) {
@@ -753,7 +753,7 @@ class ChartEditorState extends MusicBeatState
 		var characterCountLabel:Label = new Label("Number of characters:", characterCount);
 		tabGroupCharacters.add(characterCountLabel);
 
-		var characterColumns:InputText = new InputText(10, characterCount.y + 40);
+		var characterColumns:InputText = new InputText(10, characterCount.y + 40, songData.singerColumns.join(","));
 		characterColumns.customFilterPattern = ~/[^0-9,]*/g;
 		characterColumns.focusGained = function() {
 			characterColumns.text = songData.singerColumns.join(",");
@@ -2280,8 +2280,11 @@ class ChartEditorState extends MusicBeatState
 			var charDropdownLabel:Label = new Label("Character "+Std.string(i+1)+":", charDropdown);
 			newCharacterSettings.push(charDropdownLabel);
 
-			var charNotetypes:InputText = new InputText(charDropdown.x + 115, charDropdown.y, 115);
-			charNotetypes.focusGained = function() { 
+			var charNotetypesText:String = "";
+			if (songData.notetypeSingers[i].length > 0)
+				charNotetypesText = songData.notetypeSingers[i].join(",");
+			var charNotetypes:InputText = new InputText(charDropdown.x + 115, charDropdown.y, 115, charNotetypesText);
+			charNotetypes.focusGained = function() {
 				if (songData.notetypeSingers[i].length > 0)
 					charNotetypes.text = songData.notetypeSingers[i].join(",");
 				else
@@ -3126,7 +3129,7 @@ class ChartEditorState extends MusicBeatState
 
 				case "dropdownSpecial":
 					yy += 10;
-					var newOptions:Array<String> = Paths.listFilesSub("data/"+p.options[0]+"/", ".json");
+					var newOptions:Array<String> = (p.options.length > 1 ? Paths.listFilesSub(p.options[0]+"/"+p.options[1]+"/", ".json") : Paths.listFilesSub("data/"+p.options[0]+"/", ".json"));
 					var newThing:DropdownMenu = new DropdownMenu(10, yy, 230, 20, pValue, newOptions, true);
 					newThing.onChanged = function() {Reflect.setField(eventParamList, p.id, newThing.value);}
 

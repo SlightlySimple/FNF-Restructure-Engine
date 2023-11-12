@@ -1,6 +1,7 @@
 package editors;
 
 import flixel.FlxG;
+import flixel.FlxSubState;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -23,6 +24,7 @@ import lime.app.Application;
 
 import funkui.TabMenu;
 import funkui.Checkbox;
+import funkui.ColorSwatch;
 import funkui.DropdownMenu;
 import funkui.InputText;
 import funkui.Label;
@@ -39,10 +41,10 @@ class StageEditorState extends MusicBeatState
 
 	var myStage:Array<FlxSprite> = [];
 	var myStageGroup:FlxSpriteGroup;
-	var stageData:StageData;
+	public var stageData:StageData;
 
 	var camFollow:FlxObject;
-	var camGame:FlxCamera;
+	public var camGame:FlxCamera;
 	var camHUD:FlxCamera;
 	var camPosText:FlxText;
 
@@ -165,6 +167,7 @@ class StageEditorState extends MusicBeatState
 				{position: [250, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [0.95, 0.95], layer: 0}],
 				camZoom: 1,
 				camFollow: [Std.int(FlxG.width / 2), Std.int(FlxG.height / 2)],
+				bgColor: [0, 0, 0],
 				pixelPerfect: false,
 				pieces: []
 			}
@@ -179,6 +182,7 @@ class StageEditorState extends MusicBeatState
 
 		camFollow.x = stageData.camFollow[0];
 		camFollow.y = stageData.camFollow[1];
+		camGame.bgColor = FlxColor.fromRGB(stageData.bgColor[0], stageData.bgColor[1], stageData.bgColor[2]);
 
 		myStageGroup = new FlxSpriteGroup();
 		add(myStageGroup);
@@ -265,7 +269,7 @@ class StageEditorState extends MusicBeatState
 		}
 		tabGroupSettings.add(pixelPerfectCheckbox);
 
-		var searchDirsInput:InputText = new InputText(10, pixelPerfectCheckbox.y + 40, 230);
+		var searchDirsInput:InputText = new InputText(10, pixelPerfectCheckbox.y + 40, stageData.searchDirs.join(","));
 		searchDirsInput.focusGained = function() {
 			searchDirsInput.text = stageData.searchDirs.join(",");
 		}
@@ -306,7 +310,14 @@ class StageEditorState extends MusicBeatState
 		var scriptLabel:Label = new Label("Script (Optional):", scriptDropdown);
 		tabGroupSettings.add(scriptLabel);
 
-		gridSnapX = new Stepper(10, scriptDropdown.y + 40, 115, 20, 10, 1, 1);
+		var bgColor:TextButton = new TextButton(10, scriptDropdown.y + 30, 230, 20, "Background Color");
+		bgColor.onClicked = function() {
+			persistentUpdate = false;
+			openSubState(new StageColorSubState(this));
+		};
+		tabGroupSettings.add(bgColor);
+
+		gridSnapX = new Stepper(10, bgColor.y + 40, 115, 20, 10, 1, 1);
 		tabGroupSettings.add(gridSnapX);
 		gridSnapY = new Stepper(gridSnapX.x + 115, gridSnapX.y, 115, 20, 10, 1, 1);
 		tabGroupSettings.add(gridSnapY);
@@ -1768,6 +1779,9 @@ class StageEditorState extends MusicBeatState
 		if (!saveData.pixelPerfect)
 			Reflect.deleteField(saveData, "pixelPerfect");
 
+		if (saveData.bgColor[0] == 0 && saveData.bgColor[1] == 0 && saveData.bgColor[2] == 0)
+			Reflect.deleteField(saveData, "bgColor");
+
 		var searchDirs:Array<String> = saveData.searchDirs.copy();
 		searchDirs.remove("stages/" + curStage + "/");
 		if (curStage.indexOf("/") > -1)
@@ -1812,5 +1826,63 @@ class StageEditorState extends MusicBeatState
 		var file:FileBrowser = new FileBrowser();
 		file.loadCallback = EditorMenuState.loadStageCallback;
 		file.load();
+	}
+}
+
+class StageColorSubState extends FlxSubState
+{
+	override public function new(state:StageEditorState)
+	{
+		super();
+
+		var tabMenu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, 300, 260);
+		tabMenu.screenCenter();
+		add(tabMenu);
+
+		var tabGroupColor = new TabGroup();
+
+		var ol1:FlxSprite = new FlxSprite(48, 8).makeGraphic(204, 34, FlxColor.BLACK);
+		tabGroupColor.add(ol1);
+
+		var ol2:FlxSprite = new FlxSprite(48, 48).makeGraphic(144, 144, FlxColor.BLACK);
+		tabGroupColor.add(ol2);
+
+		var ol3:FlxSprite = new FlxSprite(218, 48).makeGraphic(34, 144, FlxColor.BLACK);
+		tabGroupColor.add(ol3);
+
+		var colorThing:FlxSprite = new FlxSprite(50, 10).makeGraphic(200, 30, FlxColor.WHITE);
+		colorThing.color = FlxColor.fromRGB(state.stageData.bgColor[0], state.stageData.bgColor[1], state.stageData.bgColor[2]);
+		tabGroupColor.add(colorThing);
+
+		var colorSwatch:ColorSwatch = new ColorSwatch(50, 50, 140, 140, 30, colorThing.color);
+		tabGroupColor.add(colorSwatch);
+
+		var stepperR:Stepper = new Stepper(20, 200, 80, 20, colorThing.color.red, 5, 0, 255);
+		var stepperG:Stepper = new Stepper(110, 200, 80, 20, colorThing.color.green, 5, 0, 255);
+		var stepperB:Stepper = new Stepper(200, 200, 80, 20, colorThing.color.blue, 5, 0, 255);
+
+		stepperR.onChanged = function() { colorSwatch.r = stepperR.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperR);
+
+		stepperG.onChanged = function() { colorSwatch.g = stepperG.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperG);
+
+		stepperB.onChanged = function() { colorSwatch.b = stepperB.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperB);
+
+		colorSwatch.onChanged = function() { colorThing.color = colorSwatch.swatchColor; stepperR.value = colorSwatch.r; stepperG.value = colorSwatch.g; stepperB.value = colorSwatch.b; }
+
+		var acceptButton:TextButton = new TextButton(20, 230, 260, 20, "#accept");
+		acceptButton.onClicked = function()
+		{
+			state.stageData.bgColor = [colorThing.color.red, colorThing.color.green, colorThing.color.blue];
+			state.camGame.bgColor = colorThing.color;
+			close();
+		};
+		tabGroupColor.add(acceptButton);
+
+		tabMenu.addGroup(tabGroupColor);
+
+		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
 	}
 }

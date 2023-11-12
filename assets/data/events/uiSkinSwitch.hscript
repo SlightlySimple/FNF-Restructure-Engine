@@ -1,0 +1,45 @@
+function create()
+{
+	var skins = [];
+
+	for (e in game.songData.events)
+	{
+		if (e.type == "uiSkinSwitch" && !skins.contains(e.parameters.skin))
+			skins.push(e.parameters.skin);
+	}
+
+	for (_s in skins)
+	{
+		if (Paths.jsonImagesExists("ui/skins/" + _s))
+		{
+			var uiSkin = Paths.jsonImages("ui/skins/" + _s);
+
+			for (s in uiSkin.countdown)
+			{
+				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+			}
+
+			for (s in uiSkin.judgements)
+			{
+				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+			}
+
+			if (uiSkin.combo.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + uiSkin.combo.asset))
+				Paths.cacheGraphic("ui/skins/" + _s + "/" + uiSkin.combo.asset);
+
+			for (s in uiSkin.numbers)
+			{
+				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+			}
+		}
+	}
+}
+
+function onEvent(event)
+{
+	game.songData.uiSkin = event.parameters.skin;
+	game.uiSkin = Paths.jsonImages("ui/skins/" + event.parameters.skin);
+}

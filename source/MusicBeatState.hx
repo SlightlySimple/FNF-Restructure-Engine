@@ -19,6 +19,7 @@ class MusicBeatState extends FlxState
 	{
 		super.create();
 		persistentUpdate = true;
+		FlxG.camera.bgColor = FlxColor.BLACK;
 
 		if (doTransIn)
 			add(new FunkinTransition(this, false));

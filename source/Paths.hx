@@ -19,6 +19,7 @@ using StringTools;
 
 class Paths
 {
+	static var assets:Array<String> = [];
 	static var DEFAULT_IMAGE:String = "assets/images/logo/default.png";
 
 	public static function file(path:String, ext:String):String
@@ -270,7 +271,14 @@ class Paths
 
 	public static function exists(path:String):Bool
 	{
-		return Assets.exists("assets/" + path);
+		if (assets.contains("assets/" + path))
+			return true;
+		if (Assets.exists("assets/" + path))
+		{
+			assets.push("assets/" + path);
+			return true;
+		}
+		return false;
 	}
 
 	public static function textExists(path:String):Bool

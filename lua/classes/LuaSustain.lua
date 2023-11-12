@@ -1,6 +1,6 @@
 sustainIDs = {}
 
-function onSustainSpawned(note)
+function onSustainAdded(note)
 	local nID = "sustain_" .. #sustainIDs
 	_G[nID] = LuaClass(nID)
 	assignObjectToLuaClass("sustainNotes.members["..note.."]", nID)

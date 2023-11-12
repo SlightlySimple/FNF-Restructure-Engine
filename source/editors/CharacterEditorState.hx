@@ -586,7 +586,7 @@ class CharacterEditorState extends MusicBeatState
 		var camTestDeadLabel:Label = new Label("Game Over:", camTestDeadButton);
 		tabGroupProperties.add(camTestDeadLabel);
 
-		var iconInput:InputText = new InputText(10, camTestDeadButton.y + 40, 230);
+		var iconInput:InputText = new InputText(10, camTestDeadButton.y + 40);
 		iconInput.focusGained = function() {
 			if (myCharacterData.icon != null)
 				iconInput.text = myCharacterData.icon;

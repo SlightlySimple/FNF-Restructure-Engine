@@ -87,6 +87,7 @@ class Noteskins
 	public static var noteskinName:String = "Arrows";
 	public static var noteskinNames:Array<String> = [];
 	public static var noteskinData:Map<String, NoteskinData>;
+	public static var sparrows:Map<String, Bool>;
 
 	public static function loadNoteskins()
 	{
@@ -144,6 +145,7 @@ class Noteskins
 			}
 			noteskinData.set(noteskinNames[i], newNoteskin);
 		}
+		sparrows = new Map<String, Bool>();
 	}
 
 	public static function noteskinOptions()
@@ -213,7 +215,9 @@ class Noteskins
 		var path:String = "noteskins/" + asset[0];
 		if (Paths.imageExists("noteskins/" + skindef.skinName + "/" + asset[0]))
 			path = "noteskins/" + skindef.skinName + "/" + asset[0];
-		if (Paths.sparrowExists(path))
+		if (!sparrows.exists(path))
+			sparrows[path] = Paths.sparrowExists(path);	// This check is somewhat resource intensive, so we store it's return value each time to ensure we only have to do it once per asset
+		if (sparrows[path])
 			return Paths.sparrow(path);
 		return Paths.tiles(path, asset[1], asset[2]);
 	}

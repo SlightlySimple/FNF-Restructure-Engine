@@ -21,6 +21,8 @@ class Note extends FlxSprite
 	public var noteType:String = "default";
 	public var missed:Bool = false;
 	public var typeData:NoteTypeData = null;
+	public static var defaultTypeData:NoteTypeData = null;
+	public static var noteTypes:Map<String, NoteTypeData>;
 	public var noteskinOverride:String = "";
 	public var noteskinType:String = "";
 	public var noteskinData:NoteskinTypedef = null;
@@ -45,6 +47,45 @@ class Note extends FlxSprite
 	public var missAnim:String = "";
 	public var animationSuffix:String = "";
 	public var singers:Array<Character> = [];
+
+	public static function refreshNoteTypes(types:Array<String>)
+	{
+		if (defaultTypeData == null)
+			defaultTypeData = cast Paths.json("notetypes/default");
+
+		noteTypes = new Map<String, NoteTypeData>();
+		for (t in types)
+		{
+			if (t != "default" && t != "" && Paths.jsonExists("notetypes/" + t))
+			{
+				var typeData:NoteTypeData = cast Paths.json("notetypes/" + t);
+				if (typeData.noteskinOverride == null)
+					typeData.noteskinOverride = defaultTypeData.noteskinOverride;
+
+				if (typeData.noteskinOverrideSustain == null)
+					typeData.noteskinOverrideSustain = defaultTypeData.noteskinOverrideSustain;
+
+				if (typeData.hitSound == null)
+					typeData.hitSound = defaultTypeData.hitSound;
+
+				if (typeData.hitSoundVolume == null)
+					typeData.hitSoundVolume = defaultTypeData.hitSoundVolume;
+
+				if (typeData.animationSuffix == null)
+					typeData.animationSuffix = defaultTypeData.animationSuffix;
+
+				if (typeData.healthValues == null)
+					typeData.healthValues = defaultTypeData.healthValues;
+
+				if (typeData.alwaysSplash == null)
+					typeData.alwaysSplash = defaultTypeData.alwaysSplash;
+
+				if (typeData.splashMin == null)
+					typeData.splashMin = defaultTypeData.splashMin;
+				noteTypes[t] = typeData;
+			}
+		}
+	}
 
 	public static function getShader(col:String)
 	{
@@ -113,36 +154,16 @@ class Note extends FlxSprite
 
 	public function updateTypeData()
 	{
-		var defaultTypeData:NoteTypeData = cast Paths.json("notetypes/default");
+		if (defaultTypeData == null)
+			defaultTypeData = cast Paths.json("notetypes/default");
 
-		if (Paths.jsonExists("notetypes/" + noteType))
-			typeData = cast Paths.json("notetypes/" + noteType);
+		if (noteTypes.exists(noteType))
+			typeData = Reflect.copy(noteTypes[noteType]);
 		else
-			typeData = defaultTypeData;
-
-		if (typeData.noteskinOverride == null)
-			typeData.noteskinOverride = defaultTypeData.noteskinOverride;
-
-		if (typeData.hitSound == null)
-			typeData.hitSound = defaultTypeData.hitSound;
-
-		if (typeData.hitSoundVolume == null)
-			typeData.hitSoundVolume = defaultTypeData.hitSoundVolume;
-
-		if (typeData.animationSuffix == null)
-			typeData.animationSuffix = defaultTypeData.animationSuffix;
-		animationSuffix = typeData.animationSuffix;
-
-		if (typeData.healthValues == null)
-			typeData.healthValues = defaultTypeData.healthValues;
-
-		if (typeData.alwaysSplash == null)
-			typeData.alwaysSplash = defaultTypeData.alwaysSplash;
-
-		if (typeData.splashMin == null)
-			typeData.splashMin = defaultTypeData.splashMin;
+			typeData = Reflect.copy(defaultTypeData);
 
 		noteskinOverride = typeData.noteskinOverride;
+		animationSuffix = typeData.animationSuffix;
 
 		if (noteskinOverride == "")
 			noteskinOverride = Noteskins.noteskinName;
@@ -237,29 +258,8 @@ class SustainNote extends FlxSprite
 		this.actualHeight = actualHeight;
 		downscroll = Options.options.downscroll;
 
-		var defaultTypeData:NoteTypeData = cast Paths.json("notetypes/default");
 		this.noteType = noteType;
-		if (Paths.jsonExists("notetypes/" + noteType))
-			typeData = cast Paths.json("notetypes/" + noteType);
-		else
-			typeData = defaultTypeData;
-
-		if (typeData.noteskinOverrideSustain == null)
-			typeData.noteskinOverrideSustain = defaultTypeData.noteskinOverrideSustain;
-
-		if (typeData.animationSuffix == null)
-			typeData.animationSuffix = defaultTypeData.animationSuffix;
-		animationSuffix = typeData.animationSuffix;
-
-		if (typeData.healthValues == null)
-			typeData.healthValues = defaultTypeData.healthValues;
-
-
-
-		noteskinOverride = typeData.noteskinOverrideSustain;
-
-		if (noteskinOverride == "")
-			noteskinOverride = Noteskins.noteskinName;
+		updateTypeData();
 
 		onNotetypeChanged(noteskinType);
 	}
@@ -343,6 +343,22 @@ class SustainNote extends FlxSprite
 		antialiasing = noteskinData.antialias;
 
 		rebuildSustain();
+	}
+
+	public function updateTypeData()
+	{
+		var defaultTypeData = Note.defaultTypeData;
+
+		if (Note.noteTypes.exists(noteType))
+			typeData = Reflect.copy(Note.noteTypes[noteType]);
+		else
+			typeData = Reflect.copy(defaultTypeData);
+
+		animationSuffix = typeData.animationSuffix;
+		noteskinOverride = typeData.noteskinOverrideSustain;
+
+		if (noteskinOverride == "")
+			noteskinOverride = Noteskins.noteskinName;
 	}
 
 	public function assignAnims(strum:StrumNote)

@@ -12,6 +12,8 @@ class RatingPopup extends FlxSprite
 	var skinName:String;
 	var skin:UISkin;
 
+	public static var sparrows:Map<String, Bool>;
+
 	public function refresh(type:Int, value:Int, skinName:String, skin:UISkin):RatingPopup
 	{
 		var comboType:Int = Options.options.comboType;
@@ -78,15 +80,15 @@ class RatingPopup extends FlxSprite
 			if (comboType == 2)
 			{
 				if (type == 2)
-					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.beatLength * 2) / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.beatLength * 2) / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
 				else
-					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: Conductor.beatLength / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: Conductor.beatLength / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
 			}
 			else
 			{
 				y += 15;
 				FlxTween.tween(this, {y: y - 15}, 0.1, { ease: FlxEase.quadOut });
-				FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.stepLength * 2) / 1000, onComplete: function(twn:FlxTween) { kill(); } });
+				FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.stepLength * 2) / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
 			}
 		}
 
@@ -95,14 +97,17 @@ class RatingPopup extends FlxSprite
 
 	function staticOrAnimatedGraphic(_graphic:UISprite)
 	{
-		if (Paths.sparrowExists(_graphic.asset))
+		var key:String = "ui/skins/" + skinName + "/" + _graphic.asset;
+		if (!sparrows.exists(key))
+			sparrows[key] = Paths.sparrowExists(key);	// This check is somewhat resource intensive, so we store it's return value each time to ensure we only have to do it once per asset
+		if (sparrows[key])
 		{
-			frames = Paths.sparrow("ui/skins/" + skinName + "/" + _graphic.asset);
+			frames = Paths.sparrow(key);
 			animation.addByPrefix("idle", _graphic.animation, _graphic.fps, _graphic.loop);
 			animation.play("idle");
 		}
 		else
-			loadGraphic(Paths.image("ui/skins/" + skinName + "/" + _graphic.asset));
+			loadGraphic(Paths.image(key));
 
 		if (_graphic.antialias == null)
 			antialiasing = skin.antialias;

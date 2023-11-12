@@ -1,6 +1,6 @@
 noteIDs = {}
 
-function onNoteSpawned(note)
+function onNoteAdded(note)
 	local nID = "note_" .. #noteIDs
 	_G[nID] = LuaClass(nID)
 	assignObjectToLuaClass("notes.members["..note.."]", nID)

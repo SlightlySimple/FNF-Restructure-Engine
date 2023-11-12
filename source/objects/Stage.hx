@@ -46,6 +46,7 @@ class Stage
 				{position: data.girlfriend, camPosition: [0, 0], flip: false, scrollFactor: [0.95, 0.95]}],
 				camZoom: data.defaultZoom,
 				camFollow: [Std.int(FlxG.width / 2), Std.int(FlxG.height / 2)],
+				bgColor: [0, 0, 0],
 				pixelPerfect: false,
 				pieces: []
 			}
@@ -72,11 +73,14 @@ class Stage
 				if (oldStageData.searchDirs != null && oldStageData.searchDirs.length > 0)
 					sData.searchDirs = oldStageData.searchDirs;
 
-				if (oldStageData.characters != null && oldStageData.characters.length >= 3)
+				if (oldStageData.characters != null && oldStageData.characters.length >= 2)
 					sData.characters = oldStageData.characters;
 
 				if (oldStageData.camZoom != null && oldStageData.camZoom != 0)
 					sData.camZoom = oldStageData.camZoom;
+
+				if (oldStageData.bgColor != null && oldStageData.bgColor.length >= 3)
+					sData.bgColor = oldStageData.bgColor;
 			}
 			else
 				sData = cast Paths.json("stages/" + TitleState.defaultVariables.stage);
@@ -125,6 +129,9 @@ class Stage
 
 		if (sData.camFollow == null || sData.camFollow.length < 2)
 			sData.camFollow = [Std.int(FlxG.width / 2), Std.int(FlxG.height / 2)];
+
+		if (sData.bgColor == null || sData.bgColor.length < 3)
+			sData.bgColor = [0, 0, 0];
 
 		if (sData.script == null || sData.script == "")
 			sData.script = "stages/" + id;

@@ -1,0 +1,12 @@
+{
+	"parameters":
+	[
+		{
+			"id": "skin",
+			"label": "New UI Skin",
+			"type": "dropdownSpecial",
+			"defaultValue": "",
+			"options": ["images", "ui/skins"]
+		}
+	]
+}

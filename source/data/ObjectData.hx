@@ -78,6 +78,7 @@ typedef StageData =
 	var characters:Array<StageCharacter>;
 	var camZoom:Null<Float>;
 	var camFollow:Array<Int>;
+	var bgColor:Array<Int>;
 	var pixelPerfect:Null<Bool>;
 	var pieces:Array<StagePiece>;
 }

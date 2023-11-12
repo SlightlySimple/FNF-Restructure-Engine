@@ -7,8 +7,10 @@ function create()
 	titleEnter = state.pieces["titleEnter"];
 
 	colorswap = new ColorSwap();
-	logo.shader = colorswap.shader;
-	gf.shader = colorswap.shader;
+	if (logo != null)
+		logo.shader = colorswap.shader;
+	if (gf != null)
+		gf.shader = colorswap.shader;
 }
 
 function update(elapsed)
@@ -24,20 +26,26 @@ function beatHit()
 {
 	var state = FlxG.state;
 
-	logo.scale.x = 0.94;
-	logo.scale.y = 0.94;
-	new FlxTimer().start(0.05, function(tmr:FlxTimer)
+	if (logo != null)
 	{
-		logo.scale.x = 1;
-		logo.scale.y = 1;
-		FlxTween.tween(logo.scale, {x: 0.95, y: 0.95}, 0.15, {ease: FlxEase.quadOut});
-	});
+		logo.scale.x = 0.94;
+		logo.scale.y = 0.94;
+		new FlxTimer().start(0.05, function(tmr:FlxTimer)
+		{
+			logo.scale.x = 1;
+			logo.scale.y = 1;
+			FlxTween.tween(logo.scale, {x: 0.95, y: 0.95}, 0.15, {ease: FlxEase.quadOut});
+		});
+	}
 }
 
 function onPressedEnter()
 {
-	if (Options.options.flashingLights)
-		titleEnter.playAnim("press");
-	else
-		titleEnter.playAnim("pressNoFlash");
+	if (titleEnter != null)
+	{
+		if (Options.options.flashingLights)
+			titleEnter.playAnim("press");
+		else
+			titleEnter.playAnim("pressNoFlash");
+	}
 }

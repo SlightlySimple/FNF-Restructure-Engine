@@ -217,6 +217,7 @@ class PlayState extends MusicBeatState
 
 		noteType = songData.noteType;
 		uiSkin = cast Paths.jsonImages('ui/skins/' + songData.uiSkin);
+		RatingPopup.sparrows = new Map<String, Bool>();
 
 		for (n in noteType)
 		{
@@ -372,6 +373,7 @@ class PlayState extends MusicBeatState
 		}
 
 		var noteTypes:Array<String> = generateSong();
+		Note.refreshNoteTypes(noteTypes);
 
 		FlxG.camera.zoom = camZoom;
 		camFollow.x = stage.stageData.camFollow[0];
@@ -678,6 +680,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 		updateScoreText();
+		spawnNotes();
 
 		startCountdown();
 	}
@@ -805,43 +808,35 @@ class PlayState extends MusicBeatState
 
 		if (countdownStarted)
 		{
-			var poppers:Array<NoteData> = [];
+			var poppers:Array<Note> = [];
+			var poppers2:Array<SustainNote> = [];
 			for (i in 0...songData.columnDivisions.length)
 			{
-				if (i < notesSpawn.length)
+				if (i < noteArray.length)
 				{
-					var note:NoteData = notesSpawn[i];
+					var note:Note = noteArray[i];
 					if (getScrollPosition(note.strumTime, songProgress, note.column) <= FlxG.height)
 					{
-						var thisNoteType:String = noteTypeFromColumn(note.column);
-						var newNote:Note = new Note(note.strumTime, note.column, note.type, thisNoteType, strumColumns[note.column]);
-						newNote.assignAnims(strumNotes.members[newNote.column]);
-						newNote.offsetByStrum(strumNotes.members[newNote.column]);
-						newNote.singers = Reflect.copy(strumNotes.members[newNote.column].singers);
-						if (notetypeSingers.exists(note.type))
-							newNote.singers = Reflect.copy(notetypeSingers[note.type]);
-						hscriptExec("onNoteSpawned", [newNote]);
-						notes.add(newNote);
-						luaExec("onNoteSpawned", [notes.members.indexOf(newNote)]);
-						if (note.sustainLength > 0 && !newNote.typeData.noSustains)
-						{
-							var susLength:Float = getScrollPosition(note.strumTime + note.sustainLength, 0, note.column) - getScrollPosition(note.strumTime, 0, note.column);
-							var newSustain:SustainNote = new SustainNote(note.strumTime, note.column, note.sustainLength, susLength, note.type, thisNoteType, strumColumns[note.column]);
-							newSustain.assignAnims(strumNotes.members[newSustain.column]);
-							newSustain.singers = newNote.singers;
-							newNote.child = newSustain;
-							newSustain.parent = newNote;
-							hscriptExec("onSustainSpawned", [newSustain, newNote]);
-							sustainNotes.add(newSustain);
-							luaExec("onSustainSpawned", [sustainNotes.members.indexOf(newSustain), notes.members.indexOf(newNote)]);
-						}
+						hscriptExec("onNoteAdded", [note]);
+						notes.add(note);
+						luaExec("onNoteAdded", [notes.members.indexOf(note)]);
 						poppers.push(note);
+						if (note.child != null)
+						{
+							hscriptExec("onSustainAdded", [note.child, note]);
+							sustainNotes.add(note.child);
+							luaExec("onSustainAdded", [sustainNotes.members.indexOf(note.child), notes.members.indexOf(note)]);
+							poppers2.push(note.child);
+						}
 					}
 				}
 			}
 
 			for (p in poppers)
-				notesSpawn.remove(p);
+				noteArray.remove(p);
+
+			for (p in poppers2)
+				sustainArray.remove(p);
 
 			if (songData.events.length > 0)
 			{
@@ -1176,6 +1171,40 @@ class PlayState extends MusicBeatState
 		return noteTypes;
 	}
 
+	var noteArray:Array<Note> = [];
+	var sustainArray:Array<SustainNote> = [];
+
+	public function spawnNotes()
+	{
+		for (note in notesSpawn)
+		{
+			var thisNoteType:String = noteTypeFromColumn(note.column);
+			var newNote:Note = new Note(note.strumTime, note.column, note.type, thisNoteType, strumColumns[note.column]);
+			newNote.assignAnims(strumNotes.members[newNote.column]);
+			newNote.offsetByStrum(strumNotes.members[newNote.column]);
+			newNote.singers = strumNotes.members[newNote.column].singers.copy();
+			if (notetypeSingers.exists(note.type))
+				newNote.singers = notetypeSingers[note.type].copy();
+			hscriptExec("onNoteSpawned", [newNote]);
+			noteArray.push(newNote);
+			luaExec("onNoteSpawned", [noteArray.indexOf(newNote)]);
+			if (note.sustainLength > 0 && !newNote.typeData.noSustains)
+			{
+				var susLength:Float = getScrollPosition(note.strumTime + note.sustainLength, 0, note.column) - getScrollPosition(note.strumTime, 0, note.column);
+				var newSustain:SustainNote = new SustainNote(note.strumTime, note.column, note.sustainLength, susLength, note.type, thisNoteType, strumColumns[note.column]);
+				newSustain.assignAnims(strumNotes.members[newSustain.column]);
+				newSustain.singers = newNote.singers;
+				newNote.child = newSustain;
+				newSustain.parent = newNote;
+				hscriptExec("onSustainSpawned", [newSustain, newNote]);
+				sustainArray.push(newSustain);
+				luaExec("onSustainSpawned", [sustainArray.indexOf(newSustain), noteArray.indexOf(newNote)]);
+			}
+		}
+
+		notesSpawn = [];
+	}
+
 	public function spawnCharacter(char:String):Character
 	{
 		var c:Character = new Character(0, 0, FreeplaySandbox.character(allCharacters.length, char));
@@ -1295,31 +1324,42 @@ class PlayState extends MusicBeatState
 	{
 		var scrollSpeeds = strumNotes.members[column].scrollSpeeds;
 		var spd:ScrollSpeed = scrollSpeeds[0];
-		for (s in scrollSpeeds)
+		if (scrollSpeeds.length > 1)
 		{
-			if (s.startTime <= ms)
-				spd = s;
-		}
+			for (s in scrollSpeeds)
+			{
+				if (s.startTime <= ms)
+					spd = s;
+			}
 
-		var spd2:ScrollSpeed = scrollSpeeds[0];
-		for (s in scrollSpeeds)
+			var spd2:ScrollSpeed = scrollSpeeds[0];
+			for (s in scrollSpeeds)
+			{
+				if (s.startTime <= songTime)
+					spd2 = s;
+			}
+
+			var dist:Float = ms - spd.startTime;
+			var dist2:Float = songTime - spd2.startTime;
+
+			if (songData.altSpeedCalc && Options.options.scrollSpeedType != 0)
+			{
+				dist = Conductor.stepFromTime(ms) - Conductor.stepFromTime(spd.startTime);
+				dist2 = Conductor.stepFromTime(songTime) - Conductor.stepFromTime(spd2.startTime);
+
+				return ((spd.startPosition + (dist * spd.speed)) - (spd2.startPosition + (dist2 * spd2.speed))) * StrumNote.noteSize;
+			}
+
+			return ((spd.startPosition + (dist * spd.speed * 0.45)) - (spd2.startPosition + (dist2 * spd2.speed * 0.45))) * StrumNote.noteScale;
+		}
+		else if (songData.altSpeedCalc && Options.options.scrollSpeedType != 0)
 		{
-			if (s.startTime <= songTime)
-				spd2 = s;
+			var dist:Float = Conductor.stepFromTime(ms);
+			var dist2:Float = Conductor.stepFromTime(songTime);
+
+			return ((dist * spd.speed) - (dist2 * spd.speed)) * StrumNote.noteSize;
 		}
-
-		var dist:Float = ms - spd.startTime;
-		var dist2:Float = songTime - spd2.startTime;
-
-		if (songData.altSpeedCalc && Options.options.scrollSpeedType != 0)
-		{
-			dist = Conductor.stepFromTime(ms) - Conductor.stepFromTime(spd.startTime);
-			dist2 = Conductor.stepFromTime(songTime) - Conductor.stepFromTime(spd2.startTime);
-
-			return ((spd.startPosition + (dist * spd.speed)) - (spd2.startPosition + (dist2 * spd2.speed))) * StrumNote.noteSize;
-		}
-
-		return ((spd.startPosition + (dist * spd.speed * 0.45)) - (spd2.startPosition + (dist2 * spd2.speed * 0.45))) * StrumNote.noteScale;
+		return (ms - songTime) * spd.speed * 0.45 * StrumNote.noteScale;
 	}
 
 	public var customGameOver:Bool = false;
@@ -1346,7 +1386,19 @@ class PlayState extends MusicBeatState
 			luaExec("gameOver", [GameOverSubState.character.curCharacter]);
 			if (customGameOver)
 			{
-				notesSpawn = [];
+				for (note in noteArray)
+				{
+					note.kill();
+					note.destroy();
+				}
+				noteArray = [];
+
+				for (note in sustainArray)
+				{
+					note.kill();
+					note.destroy();
+				}
+				sustainArray = [];
 
 				notes.forEachAlive(function(note:Note) {
 					note.kill();
@@ -1577,15 +1629,31 @@ class PlayState extends MusicBeatState
 		{
 			if (time >= Conductor.timeFromBeat(songStartPos))
 			{
-				var poppers:Array<NoteData> = [];
-				for (note in notesSpawn)
+				var poppers:Array<Note> = [];
+				var poppers2:Array<SustainNote> = [];
+				for (note in noteArray)
 				{
 					if (note.strumTime - totalOffset < time)
+					{
 						poppers.push(note);
+						if (note.child != null)
+							poppers2.push(note.child);
+					}
 				}
 
 				for (p in poppers)
-					notesSpawn.remove(p);
+				{
+					noteArray.remove(p);
+					p.kill();
+					p.destroy();
+				}
+
+				for (p in poppers2)
+				{
+					sustainArray.remove(p);
+					p.kill();
+					p.destroy();
+				}
 
 				notes.forEachAlive(function(note:Note) {
 					if (note.strumTime - totalOffset < time)
@@ -2220,19 +2288,16 @@ class PlayState extends MusicBeatState
 			{
 				ratingPopups.forEachAlive(function(thing:FlxSprite)
 				{
-					FlxTween.cancelTweensOf(thing);
 					thing.kill();
+					thing.destroy();
 				});
+				ratingPopups.clear();
 			}
 
-			var ratingPopup:RatingPopup = ratingPopups.recycle(RatingPopup);
+			var ratingPopup:RatingPopup = new RatingPopup();
 			ratingPopup.refresh(0, 4 - rating, songData.uiSkin, uiSkin);
 			if (!note.typeData.p1ShouldMiss)
-			{
-				if (ratingPopups.members.contains(ratingPopup))
-					ratingPopups.remove(ratingPopup, true);
 				ratingPopups.insert(ratingPopups.members.length, ratingPopup);
-			}
 
 			var comboDigits:Array<Int> = [];
 			var combo:Int = scores.combo;
@@ -2246,21 +2311,17 @@ class PlayState extends MusicBeatState
 
 			if (Options.options.comboPopup && uiSkin.combo.asset != null)
 			{
-				var comboPopup:RatingPopup = ratingPopups.recycle(RatingPopup);
+				var comboPopup:RatingPopup = new RatingPopup();
 				comboPopup.refresh(1, 0, songData.uiSkin, uiSkin);
 				comboPopup.x += (43 * comboDigits.length);
-				if (ratingPopups.members.contains(comboPopup))
-					ratingPopups.remove(comboPopup, true);
 				ratingPopups.insert(ratingPopups.members.length, comboPopup);
 			}
 
 			for (i in 0...comboDigits.length)
 			{
-				var digit:RatingPopup = ratingPopups.recycle(RatingPopup);
+				var digit:RatingPopup = new RatingPopup();
 				digit.refresh(2, comboDigits[i], songData.uiSkin, uiSkin);
 				digit.x += (43 * i);
-				if (ratingPopups.members.contains(digit))
-					ratingPopups.remove(digit, true);
 				ratingPopups.insert(ratingPopups.members.length, digit);
 			}
 		}
@@ -2460,6 +2521,8 @@ class PlayState extends MusicBeatState
 			FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
 			FlxTween.tween(FlxG.camera, {zoom: camZoom}, Conductor.beatLength / 1000, { ease: FlxEase.quadOut });
 		}
+
+		FlxG.camera.bgColor = FlxColor.fromRGB(stage.stageData.bgColor[0], stage.stageData.bgColor[1], stage.stageData.bgColor[2]);
 
 		for (c in allCharacters)
 			postSpawnCharacter(c);

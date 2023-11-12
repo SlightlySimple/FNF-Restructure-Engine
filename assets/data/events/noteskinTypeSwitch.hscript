@@ -35,12 +35,27 @@ function onEvent(event)
 			}
 		);
 
+		for (note in game.noteArray)
+		{
+			if (validColumns.contains(note.column))
+				note.onNotetypeChanged(event.parameters.type);
+		}
+
 		game.notes.forEachAlive(function(note)
 			{
 				if (validColumns.contains(note.column))
 					note.onNotetypeChanged(event.parameters.type);
 			}
 		);
+
+		for (note in game.sustainArray)
+		{
+			if (validColumns.contains(note.column))
+			{
+				note.y = 0;
+				note.onNotetypeChanged(event.parameters.type);
+			}
+		}
 
 		game.sustainNotes.forEachAlive(function(note)
 			{

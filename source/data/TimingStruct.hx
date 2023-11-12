@@ -62,10 +62,13 @@ class TimingStruct
 		if (actingTime != 0)
 			trueActingTime = actingTime;
 		var myT:StructTiming = timingStruct[0];
-		for (t in timingStruct)
+		if (timingStruct.length > 1)
 		{
-			if (trueActingTime >= t.startTime)
-				myT = t;
+			for (t in timingStruct)
+			{
+				if (trueActingTime >= t.startTime)
+					myT = t;
+			}
 		}
 		var beatsFromTiming:Float = time - myT.startTime;
 		beatsFromTiming /= 1000;
@@ -79,10 +82,13 @@ class TimingStruct
 	public function timeFromBeat(beat:Float):Float
 	{
 		var myT:StructTiming = timingStruct[0];
-		for (t in timingStruct)
+		if (timingStruct.length > 1)
 		{
-			if (beat >= t.startBeat)
-				myT = t;
+			for (t in timingStruct)
+			{
+				if (beat >= t.startBeat)
+					myT = t;
+			}
 		}
 		var timeFromTiming:Float = beat - myT.startBeat;
 		timeFromTiming /= myT.bpm / 60;

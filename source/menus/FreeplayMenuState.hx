@@ -302,6 +302,8 @@ class FreeplayChartInfo extends FlxSpriteGroup
 
 class FreeplayMenuState extends MusicBeatState
 {
+	public var myScript:HscriptHandler = null;
+
 	static var menuState:Int = 0;
 	var categories:Map<String, Array<String>>;
 	var categoriesList:Array<String> = [];
@@ -355,6 +357,9 @@ class FreeplayMenuState extends MusicBeatState
 			FlxG.save.data.unlockedWeeks = [];
 
 		Util.menuMusic();
+
+		if (Paths.hscriptExists('data/states/FreeplayMenuState'))
+			myScript = new HscriptHandler('data/states/FreeplayMenuState');
 
 		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[2]));
 		bg.color = MainMenuState.menuColors[2];
@@ -499,6 +504,10 @@ class FreeplayMenuState extends MusicBeatState
 		}
 		nav2.leftClick = nav2.accept;
 		nav2.rightClick = nav2.back;
+
+		if (myScript != null)
+			myScript.execFunc("create", []);
+
 		reloadMenuStuff();
 	}
 
@@ -758,6 +767,9 @@ class FreeplayMenuState extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		if (myScript != null)
+			myScript.execFunc("update", [elapsed]);
+
 		if (Options.keyJustPressed("fullscreen") && !DropdownMenu.isOneActive)
 			FlxG.fullscreen = !FlxG.fullscreen;
 
@@ -809,6 +821,9 @@ class FreeplayMenuState extends MusicBeatState
 				}
 			}
 		}
+
+		if (myScript != null)
+			myScript.execFunc("updatePost", [elapsed]);
 	}
 
 	function getScore()
@@ -829,6 +844,22 @@ class FreeplayMenuState extends MusicBeatState
 				HscriptState.setFromState();
 			FlxG.switchState(new PlayState(false, song, diff));
 		});
+	}
+
+	override public function beatHit()
+	{
+		super.beatHit();
+
+		if (myScript != null)
+			myScript.execFunc("beatHit", []);
+	}
+
+	override public function stepHit()
+	{
+		super.stepHit();
+
+		if (myScript != null)
+			myScript.execFunc("stepHit", []);
 	}
 
 	function changeCategory(change:Int = 0)
