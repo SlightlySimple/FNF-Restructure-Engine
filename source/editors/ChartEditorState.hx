@@ -326,6 +326,8 @@ class ChartEditorState extends MusicBeatState
 			songProgress = Conductor.stepFromTime(PlayState.testingChartPos);
 		}
 
+		updateReplaceTypeList();
+
 		sectionLines = new FlxSpriteGroup();
 		add(sectionLines);
 
@@ -473,10 +475,10 @@ class ChartEditorState extends MusicBeatState
 			confirm.yesFunc = function() {
 				noteData = [];
 				selectedNotes = [];
+				updateReplaceTypeList();
 				refreshSelectedNotes();
 				refreshNotes();
 				refreshSustains();
-				updateReplaceTypeList();
 			}
 			confirm.cameras = [camHUD];
 		}
@@ -1223,10 +1225,10 @@ class ChartEditorState extends MusicBeatState
 				}
 
 				selectedNotes = [];
+				updateReplaceTypeList();
 				refreshSelectedNotes();
 				refreshNotes();
 				refreshSustains();
-				updateReplaceTypeList();
 			}
 			confirm.cameras = [camHUD];
 		}
@@ -1266,8 +1268,8 @@ class ChartEditorState extends MusicBeatState
 					s.defaultNoteP2 = noteTypeInput.text;
 			}
 
-			refreshNotes();
 			updateReplaceTypeList();
+			refreshNotes();
 		}
 		tabGroupMisc.add(replaceTypeButton);
 		var noteTypeLabel:Label = new Label("Change notes of type:", removeTypeButton);
@@ -1669,7 +1671,7 @@ class ChartEditorState extends MusicBeatState
 				});
 			}
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 			{
 				var willPopNotes:Bool = false;
 				var posConflict:Bool = false;
@@ -1740,7 +1742,7 @@ class ChartEditorState extends MusicBeatState
 			}
 			selectionBox.updateHitbox();
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 			{
 				notes.forEachAlive(function(note:Note)
 					{
@@ -1772,10 +1774,10 @@ class ChartEditorState extends MusicBeatState
 					n.pop();
 			}
 
+			updateReplaceTypeList();
 			refreshNotes();
 			refreshSustains();
 			refreshSelectedNotes();
-			updateReplaceTypeList();
 		}
 
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.C && selectedNotes.length > 0)
@@ -1900,9 +1902,9 @@ class ChartEditorState extends MusicBeatState
 				selectedNotes = [];
 				refreshSelectedNotes();
 
+				updateReplaceTypeList();
 				refreshNotes();
 				refreshSustains();
-				updateReplaceTypeList();
 				suspendSelection = false;
 			}
 			confirm.noFunc = function() {
@@ -1911,7 +1913,7 @@ class ChartEditorState extends MusicBeatState
 			confirm.cameras = [camHUD];
 		}
 
-		if (FlxG.mouse.justPressed && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu) && !FlxG.mouse.overlaps(tabButtons))
+		if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu) && !FlxG.mouse.overlaps(tabButtons))
 		{
 			var myNote:Note = null;
 			notes.forEachAlive(function(note:Note) {
@@ -1964,7 +1966,7 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (FlxG.mouse.justPressedRight)
+		if (Options.mouseJustPressed(true))
 		{
 			notes.forEachAlive(function(note:Note) {
 				if (note.overlaps(mousePos))
@@ -1972,9 +1974,9 @@ class ChartEditorState extends MusicBeatState
 					var sec:Int = removeNote(note.strumTime, note.column);
 					if (sec > -1)
 					{
+						updateReplaceTypeList();
 						refreshNotes();
 						refreshSustains();
-						updateReplaceTypeList();
 						selectedNotes = [];
 						refreshSelectedNotes();
 					}
@@ -2132,6 +2134,7 @@ class ChartEditorState extends MusicBeatState
 					}
 					else
 						makingNotes[i] = songProgress;
+					updateReplaceTypeList();
 					refreshNotes();
 					if (doRefreshSustains)
 						refreshSustains();
@@ -2168,10 +2171,9 @@ class ChartEditorState extends MusicBeatState
 
 					makingNotes[i] = -1;
 					noteData.push(newNote);
-					refreshNotes();
-					if (newNote[2] > 0)
-						refreshSustains();
 					updateReplaceTypeList();
+					refreshNotes();
+					refreshSustains();
 				}
 			}
 		}
@@ -2720,7 +2722,6 @@ class ChartEditorState extends MusicBeatState
 			if (notes.members[i].noteType != noteType)
 			{
 				notes.members[i].noteType = noteType;
-				notes.members[i].updateTypeData();
 				updateThis = true;
 			}
 
@@ -2730,6 +2731,7 @@ class ChartEditorState extends MusicBeatState
 
 			if (updateThis)
 			{
+				notes.members[i].updateTypeData();
 				notes.members[i].onNotetypeChanged(noteskinType);
 
 				notes.members[i].setGraphicSize(NOTE_SIZE);
@@ -2934,6 +2936,7 @@ class ChartEditorState extends MusicBeatState
 		for (p in poppers)
 			noteData.remove(p);
 
+		updateReplaceTypeList();
 		refreshNotes();
 		refreshSustains();
 		selectedNotes = [];
@@ -2945,7 +2948,6 @@ class ChartEditorState extends MusicBeatState
 			}
 		});
 		refreshSelectedNotes();
-		updateReplaceTypeList();
 	}
 
 	function returnSelection()
@@ -3028,6 +3030,9 @@ class ChartEditorState extends MusicBeatState
 	function updateReplaceTypeList()
 	{
 		var replaceTypeList:Array<String> = [""];
+		if (noteTypeInput != null && !replaceTypeList.contains(noteTypeInput.text))
+			replaceTypeList.push(noteTypeInput.text);
+
 		for (n in noteData)
 		{
 			if (n.length > 3)
@@ -3045,9 +3050,15 @@ class ChartEditorState extends MusicBeatState
 			if (s.defaultNoteP2 != null && !replaceTypeList.contains(s.defaultNoteP2))
 				replaceTypeList.push(s.defaultNoteP2);
 		}
-		replaceTypeDropdown.valueList = replaceTypeList;
-		if (!replaceTypeList.contains(replaceTypeDropdown.value))
-			replaceTypeDropdown.value = "";
+
+		Note.refreshNoteTypes(replaceTypeList);
+
+		if (replaceTypeDropdown != null)
+		{
+			replaceTypeDropdown.valueList = replaceTypeList;
+			if (!replaceTypeList.contains(replaceTypeDropdown.value))
+				replaceTypeDropdown.value = "";
+		}
 	}
 
 	function updateEventList()

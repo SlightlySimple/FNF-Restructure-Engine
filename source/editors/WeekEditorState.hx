@@ -1,6 +1,7 @@
 package editors;
 
 import flixel.FlxG;
+import flixel.FlxSubState;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -35,7 +36,7 @@ class WeekEditorState extends MusicBeatState
 	public static var newWeek:Bool = false;
 	public static var curWeek:String = "";
 
-	var weekData:WeekData;
+	public var weekData:WeekData;
 
 	public var camFollow:FlxObject;
 	public var camGame:FlxCamera;
@@ -53,7 +54,7 @@ class WeekEditorState extends MusicBeatState
 	var songIcons:FlxTypedSpriteGroup<HealthIcon>;
 
 	var weekName:InputText;
-	var bgYellow:FlxSprite;
+	public var bgYellow:FlxSprite;
 	var banner:FlxSprite;
 	var imageButton:FlxSprite;
 	var menuCharacters:FlxTypedSpriteGroup<MenuCharacter>;
@@ -535,38 +536,19 @@ class WeekEditorState extends MusicBeatState
 		var bannerImageLabel:Label = new Label("Week Banner (Optional):", bannerImageDropdown);
 		tabGroupStory.add(bannerImageLabel);
 
-		var color:Array<Int> = weekData.color;
 		if (weekData.color == null)
-			color = [249, 207, 81];
-		var menuColorR:Stepper = new Stepper(10, bannerImageDropdown.y + 40, 75, 20, color[0], 1, 0, 255);
-		tabGroupStory.add(menuColorR);
-		var menuColorG:Stepper = new Stepper(menuColorR.x + 75, menuColorR.y, 75, 20, color[1], 1, 0, 255);
-		tabGroupStory.add(menuColorG);
-		var menuColorB:Stepper = new Stepper(menuColorG.x + 75, menuColorG.y, 75, 20, color[2], 1, 0, 255);
-		tabGroupStory.add(menuColorB);
-		var menuColorLabel:Label = new Label("Week Background Color:", menuColorR);
-		tabGroupStory.add(menuColorLabel);
-
-		menuColorR.onChanged = function() {
-			if (menuColorR.value == 249 && menuColorG.value == 207 && menuColorB.value == 81)
-			{
-				if (Reflect.hasField(weekData, "color"))
-					Reflect.deleteField(weekData, "color");
-				bgYellow.color = 0xFFF9CF51;
-			}
-			else
-			{
-				weekData.color = [Std.int(menuColorR.value), Std.int(menuColorG.value), Std.int(menuColorB.value)];
-				bgYellow.color = FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]);
-			}
-		}
-		menuColorG.onChanged = menuColorR.onChanged;
-		menuColorB.onChanged = menuColorR.onChanged;
-		menuColorR.onChanged();
+			weekData.color = [249, 207, 81];
+		bgYellow.color = FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]);
+		var menuColor:TextButton = new TextButton(10, bannerImageDropdown.y + 30, 230, 20, "Banner Color");
+		menuColor.onClicked = function() {
+			persistentUpdate = false;
+			openSubState(new WeekColorSubState(this));
+		};
+		tabGroupStory.add(menuColor);
 
 		var characterList:Array<String> = Paths.listFilesSub("data/story_characters/", ".json");
 		characterList.unshift("");
-		var charLeftDropdown:DropdownMenu = new DropdownMenu(10, menuColorR.y + 40, 230, 20, weekData.characters[0], characterList, true);
+		var charLeftDropdown:DropdownMenu = new DropdownMenu(10, menuColor.y + 40, 230, 20, weekData.characters[0], characterList, true);
 		charLeftDropdown.onChanged = function() {
 			weekData.characters[0] = charLeftDropdown.value;
 			refreshMenuCharacters();
@@ -791,6 +773,9 @@ class WeekEditorState extends MusicBeatState
 		for (s in weekData.songs)
 			saveData.songs.push(Reflect.copy(s));
 
+		if (saveData.color[0] == 249 && saveData.color[1] == 207 && saveData.color[2] == 81)
+			Reflect.deleteField(saveData, "color");
+
 		for (s in saveData.songs)
 		{
 			if (s.characters == 3)
@@ -819,5 +804,63 @@ class WeekEditorState extends MusicBeatState
 		var file:FileBrowser = new FileBrowser();
 		file.loadCallback = EditorMenuState.loadWeekCallback;
 		file.load();
+	}
+}
+
+class WeekColorSubState extends FlxSubState
+{
+	override public function new(state:WeekEditorState)
+	{
+		super();
+
+		var tabMenu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, 300, 260);
+		tabMenu.screenCenter();
+		add(tabMenu);
+
+		var tabGroupColor = new TabGroup();
+
+		var ol1:FlxSprite = new FlxSprite(48, 8).makeGraphic(204, 34, FlxColor.BLACK);
+		tabGroupColor.add(ol1);
+
+		var ol2:FlxSprite = new FlxSprite(48, 48).makeGraphic(144, 144, FlxColor.BLACK);
+		tabGroupColor.add(ol2);
+
+		var ol3:FlxSprite = new FlxSprite(218, 48).makeGraphic(34, 144, FlxColor.BLACK);
+		tabGroupColor.add(ol3);
+
+		var colorThing:FlxSprite = new FlxSprite(50, 10).makeGraphic(200, 30, FlxColor.WHITE);
+		colorThing.color = FlxColor.fromRGB(state.weekData.color[0], state.weekData.color[1], state.weekData.color[2]);
+		tabGroupColor.add(colorThing);
+
+		var colorSwatch:ColorSwatch = new ColorSwatch(50, 50, 140, 140, 30, colorThing.color);
+		tabGroupColor.add(colorSwatch);
+
+		var stepperR:Stepper = new Stepper(20, 200, 80, 20, colorThing.color.red, 5, 0, 255);
+		var stepperG:Stepper = new Stepper(110, 200, 80, 20, colorThing.color.green, 5, 0, 255);
+		var stepperB:Stepper = new Stepper(200, 200, 80, 20, colorThing.color.blue, 5, 0, 255);
+
+		stepperR.onChanged = function() { colorSwatch.r = stepperR.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperR);
+
+		stepperG.onChanged = function() { colorSwatch.g = stepperG.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperG);
+
+		stepperB.onChanged = function() { colorSwatch.b = stepperB.valueInt; colorThing.color = colorSwatch.swatchColor; }
+		tabGroupColor.add(stepperB);
+
+		colorSwatch.onChanged = function() { colorThing.color = colorSwatch.swatchColor; stepperR.value = colorSwatch.r; stepperG.value = colorSwatch.g; stepperB.value = colorSwatch.b; }
+
+		var acceptButton:TextButton = new TextButton(20, 230, 260, 20, "#accept");
+		acceptButton.onClicked = function()
+		{
+			state.weekData.color = [colorThing.color.red, colorThing.color.green, colorThing.color.blue];
+			state.bgYellow.color = colorThing.color;
+			close();
+		};
+		tabGroupColor.add(acceptButton);
+
+		tabMenu.addGroup(tabGroupColor);
+
+		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
 	}
 }

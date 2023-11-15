@@ -879,12 +879,12 @@ class StageEditorState extends MusicBeatState
 			camFollow.x += FlxG.mouse.drag.x / camGame.zoom;
 			camFollow.y += FlxG.mouse.drag.y / camGame.zoom;
 
-			if (FlxG.mouse.justReleasedRight)
+			if (Options.mouseJustReleased(true))
 				movingCamera = false;
 		}
 		else
 		{
-			if (FlxG.mouse.justPressedRight)
+			if (Options.mouseJustPressed(true))
 				movingCamera = true;
 		}
 
@@ -899,7 +899,7 @@ class StageEditorState extends MusicBeatState
 			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
 			updateCharacterPositionText();
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 				movingCharacter = false;
 		}
 		else if (movingPiece)
@@ -910,10 +910,10 @@ class StageEditorState extends MusicBeatState
 			myStage[curStagePiece].setPosition(stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]);
 			alignPiece(curStagePiece);
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 				movingPiece = false;
 		}
-		else if (FlxG.mouse.justPressed && !DropdownMenu.isOneActive)
+		else if (Options.mouseJustPressed() && !DropdownMenu.isOneActive)
 		{
 			if (tabMenu.curTab == 1)
 			{

@@ -2,6 +2,8 @@
 
 "optionsNameResetControls"	"Reset Controls"
 "optionsDescResetControls"	"Reset all controls to their defaults (This cannot be undone!)"
+"optionsNameAltMouse"		"Allow Alt Mouse"
+"optionsDescAltMouse"		"If enabled, holding the \"Alt\" key while left-clicking will simulate right-clicking."
 
 "optionsSubcatNotes"		"NOTES"
 "optionsNameLeft"			"Left"

@@ -99,14 +99,14 @@ class UINavigation extends FlxBasic
 			scroll(-FlxG.mouse.wheel);
 		}
 
-		if (leftClick != null && FlxG.mouse.justPressed)
+		if (leftClick != null && Options.mouseJustPressed())
 		{
 			if (uiSounds[1])
 				FlxG.sound.play(Paths.sound(uiSoundFiles[1]));
 			leftClick();
 		}
 
-		if (rightClick != null && FlxG.mouse.justPressedRight)
+		if (rightClick != null && Options.mouseJustPressed(true))
 		{
 			if (uiSounds[2])
 				FlxG.sound.play(Paths.sound(uiSoundFiles[2]));

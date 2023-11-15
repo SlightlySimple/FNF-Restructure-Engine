@@ -102,7 +102,7 @@ class EditorMenuState extends MusicBeatState
 				}
 			}
 
-			if (FlxG.mouse.justPressed && menuButtonText[curButton].trim() != "")
+			if (Options.mouseJustPressed() && menuButtonText[curButton].trim() != "")
 			{
 				switch (menuButtonText[curButton].toLowerCase())
 				{

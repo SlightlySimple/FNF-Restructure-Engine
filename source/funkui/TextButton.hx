@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import data.Options;
 
 class TextButton extends FlxSpriteGroup
 {
@@ -55,7 +56,7 @@ class TextButton extends FlxSpriteGroup
 			}
 		}
 
-		if (hovered && FlxG.mouse.justPressed && rePress <= 0 && onClicked != null)
+		if (hovered && Options.mouseJustPressed() && rePress <= 0 && onClicked != null)
 		{
 			rePress = 0.01;
 			onClicked();

@@ -147,6 +147,45 @@ class Options
 		return keysArray[0].toString() + " or " + keysArray[1].toString();
 	}
 
+	var allowAltMouse:Bool = false;
+
+	public static function mousePressed(?right:Bool = false)
+	{
+		if (right)
+		{
+			if (options.altMouse && FlxG.keys.pressed.ALT)
+				return FlxG.mouse.pressed || FlxG.mouse.pressedRight;
+			return FlxG.mouse.pressedRight;
+		}
+		if (options.altMouse && FlxG.keys.pressed.ALT)
+			return false;
+		return FlxG.mouse.pressed;
+	}
+
+	public static function mouseJustPressed(?right:Bool = false)
+	{
+		if (right)
+		{
+			if (options.altMouse && FlxG.keys.pressed.ALT)
+				return FlxG.mouse.justPressed || FlxG.mouse.justPressedRight;
+			return FlxG.mouse.justPressedRight;
+		}
+		if (options.altMouse && FlxG.keys.pressed.ALT)
+			return false;
+		return FlxG.mouse.justPressed;
+	}
+
+	public static function mouseJustReleased(?right:Bool = false)
+	{
+		if (right)
+		{
+			if (options.altMouse)
+				return FlxG.mouse.justReleased || FlxG.mouse.justReleasedRight;
+			return FlxG.mouse.justReleasedRight;
+		}
+		return FlxG.mouse.justReleased;
+	}
+
 	public static function noteColorExists(col:String):Bool
 	{
 		if (options.noteColors == null)

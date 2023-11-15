@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import data.Options;
 
 class ObjectMenu extends FlxSpriteGroup
 {
@@ -87,7 +88,7 @@ class ObjectMenu extends FlxSpriteGroup
 				});
 			}
 
-			if (FlxG.mouse.justPressed && valueList.length > 0)
+			if (Options.mouseJustPressed() && valueList.length > 0)
 			{
 				var i:Int = 0;
 				var foundItem:Bool = false;

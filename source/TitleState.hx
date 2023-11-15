@@ -237,7 +237,7 @@ class TitleState extends MusicBeatState
 		if (Options.keyJustPressed("fullscreen"))
 			FlxG.fullscreen = !FlxG.fullscreen;
 
-		if ((Options.keyJustPressed("ui_accept") || FlxG.mouse.justPressed) && !transitioning)
+		if ((Options.keyJustPressed("ui_accept") || Options.mouseJustPressed()) && !transitioning)
 		{
 			if (skippedIntro)
 			{

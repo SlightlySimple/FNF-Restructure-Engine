@@ -685,12 +685,12 @@ class StoryCharacterEditorState extends MusicBeatState
 				animGhost.setPosition(myCharacter.x, myCharacter.y);
 			}
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 				movingCharacter = false;
 		}
 		else
 		{
-			if (FlxG.mouse.justPressed)
+			if (Options.mouseJustPressed())
 			{
 				var clickedOne:Bool = false;
 				var i:Int = 0;
@@ -733,7 +733,7 @@ class StoryCharacterEditorState extends MusicBeatState
 					dragOffset = [0, 0];
 				}
 			}
-			else if (FlxG.mouse.justPressedRight)
+			else if (Options.mouseJustPressed(true))
 			{
 				charAnims.forEachAlive(function(anim:FlxText)
 				{

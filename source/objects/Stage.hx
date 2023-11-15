@@ -185,7 +185,7 @@ class Stage
 				case "static":
 					if (imageExists(stagePiece.asset))
 					{
-						if (stagePiece.scriptClass != null && stagePiece.scriptClass != "")
+						if (FlxG.state == PlayState.instance && stagePiece.scriptClass != null && stagePiece.scriptClass != "")
 						{
 							piece = new HscriptSprite(stagePiece.scriptClass, []).loadGraphic(image(stagePiece.asset));
 							piece.setPosition(stagePiece.position[0], stagePiece.position[1]);
@@ -229,7 +229,7 @@ class Stage
 							pieceFrames = tiles(stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
 
 						var aPiece:AnimatedSprite = null;
-						if (stagePiece.scriptClass != null && stagePiece.scriptClass != "")
+						if (FlxG.state == PlayState.instance && stagePiece.scriptClass != null && stagePiece.scriptClass != "")
 						{
 							aPiece = new HscriptAnimatedSprite(stagePiece.scriptClass, []);
 							aPiece.frames = pieceFrames;

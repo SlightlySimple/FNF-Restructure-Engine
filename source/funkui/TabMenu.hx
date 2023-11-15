@@ -7,6 +7,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import haxe.ds.ArraySort;
+import data.Options;
 
 class TabMenu extends FlxSpriteGroup
 {
@@ -93,7 +94,7 @@ class TabMenu extends FlxSpriteGroup
 			}
 		}
 
-		if (hoveredTab > -1 && FlxG.mouse.justPressed)
+		if (hoveredTab > -1 && Options.mouseJustPressed())
 			selectTab(hoveredTab);
 	}
 }
@@ -219,7 +220,7 @@ class TabButtons extends FlxSpriteGroup
 			}
 		}
 
-		if (hoveredTab > -1 && FlxG.mouse.justPressed)
+		if (hoveredTab > -1 && Options.mouseJustPressed())
 			selectTab(hoveredTab);
 	}
 }

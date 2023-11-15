@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import data.Options;
 
 class DropdownMenu extends FlxSpriteGroup
 {
@@ -76,7 +77,7 @@ class DropdownMenu extends FlxSpriteGroup
 					}
 				}
 
-				if (FlxG.mouse.justPressed)
+				if (Options.mouseJustPressed())
 				{
 					var i:Int = 0;
 					var clickedText:FlxText = null;
@@ -142,7 +143,7 @@ class DropdownMenu extends FlxSpriteGroup
 					}
 				}
 
-				if (hovered && FlxG.mouse.justPressed)
+				if (hovered && Options.mouseJustPressed())
 				{
 					dropdownStatus = 1;
 					hovered = false;

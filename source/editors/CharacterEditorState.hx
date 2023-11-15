@@ -1168,20 +1168,6 @@ class CharacterEditorState extends MusicBeatState
 			camPosText.y = FlxG.height - camPosText.height - 10;
 		}
 
-		if (movingCamera)
-		{
-			camFollow.x += FlxG.mouse.drag.x / camGame.zoom;
-			camFollow.y += FlxG.mouse.drag.y / camGame.zoom;
-
-			if (FlxG.mouse.justReleasedRight)
-				movingCamera = false;
-		}
-		else
-		{
-			if (FlxG.mouse.justPressedRight)
-				movingCamera = true;
-		}
-
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
 
@@ -1219,12 +1205,20 @@ class CharacterEditorState extends MusicBeatState
 				animGhost.setPosition(myCharacter.x, myCharacter.y);
 			}
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 				movingCharacter = false;
+		}
+		else if (movingCamera)
+		{
+			camFollow.x += FlxG.mouse.drag.x / camGame.zoom;
+			camFollow.y += FlxG.mouse.drag.y / camGame.zoom;
+
+			if (Options.mouseJustReleased(true))
+				movingCamera = false;
 		}
 		else
 		{
-			if (FlxG.mouse.justPressed)
+			if (Options.mouseJustPressed())
 			{
 				var clickedOne:Bool = false;
 				var i:Int = 0;
@@ -1279,8 +1273,9 @@ class CharacterEditorState extends MusicBeatState
 					dragOffset = [0, 0];
 				}
 			}
-			else if (FlxG.mouse.justPressedRight)
+			else if (Options.mouseJustPressed(true))
 			{
+				var clickedOne:Bool = false;
 				charAnims.forEachAlive(function(anim:FlxText)
 				{
 					if (FlxG.mouse.overlaps(anim, camHUD))
@@ -1289,8 +1284,11 @@ class CharacterEditorState extends MusicBeatState
 						if (animationName == ">")
 							animationName = anim.text.split(" ")[1];
 						playAnim(animationName, true, true);
+						clickedOne = true;
 					}
 				});
+				if (!clickedOne)
+					movingCamera = true;
 			}
 		}
 

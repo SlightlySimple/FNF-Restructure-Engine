@@ -6,6 +6,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import openfl.display.BlendMode;
+import data.Options;
 
 class ColorSwatch extends FlxSpriteGroup
 {
@@ -60,7 +61,7 @@ class ColorSwatch extends FlxSpriteGroup
 
 	override public function update(elapsed)
 	{
-		if (FlxG.mouse.justPressed)
+		if (Options.mouseJustPressed())
 		{
 			if (swatchR.overlapsPoint(FlxG.mouse.getWorldPosition(camera, swatchR._point), true, camera))
 				draggingSwatch = 1;
@@ -68,7 +69,7 @@ class ColorSwatch extends FlxSpriteGroup
 				draggingSwatch = 2;
 		}
 
-		if (FlxG.mouse.justReleased)
+		if (Options.mouseJustReleased())
 			draggingSwatch = 0;
 
 		switch (draggingSwatch)

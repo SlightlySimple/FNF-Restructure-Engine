@@ -442,17 +442,17 @@ class OptionsMenu extends FlxGroup
 					case 1:
 						Options.options.judgementOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
 						resetComboPositionStuff();
-						if (FlxG.mouse.justReleased)
+						if (Options.mouseJustReleased())
 							comboAdjustState = 0;
 
 					case 2:
 						Options.options.comboOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
 						resetComboPositionStuff();
-						if (FlxG.mouse.justReleased)
+						if (Options.mouseJustReleased())
 							comboAdjustState = 0;
 
 					default:
-						if (FlxG.mouse.justPressed)
+						if (Options.mouseJustPressed())
 						{
 							lastMousePos = [FlxG.mouse.screenX, FlxG.mouse.screenY];
 							if (displayCombo.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))

@@ -268,7 +268,7 @@ class ModMenuState extends MusicBeatState
 					modObjectUI.y = obj.y;
 			});
 
-			if (FlxG.mouse.justReleased)
+			if (Options.mouseJustReleased())
 			{
 				grabbed = false;
 				modObjects.forEachAlive(function(obj:ModObject) {
@@ -289,7 +289,7 @@ class ModMenuState extends MusicBeatState
 							modCheckbox.checked = m[1];
 					}
 
-					if (FlxG.mouse.justPressed && !FlxG.mouse.overlaps(modObjectUI))
+					if (Options.mouseJustPressed() && !FlxG.mouse.overlaps(modObjectUI))
 					{
 						grabOffset = FlxG.mouse.y;
 						grabIndex = 0;

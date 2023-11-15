@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import data.Options;
 
 class Checkbox extends FlxSpriteGroup
 {
@@ -64,7 +65,7 @@ class Checkbox extends FlxSpriteGroup
 			}
 		}
 
-		if (hovered && FlxG.mouse.justPressed && rePress <= 0)
+		if (hovered && Options.mouseJustPressed() && rePress <= 0)
 		{
 			checked = !checked;
 			rePress = 0.01;

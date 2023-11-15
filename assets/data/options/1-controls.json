@@ -8,6 +8,13 @@
 			"variable": "resetControls"
 		},
 		{
+			"type": "bool",
+			"label": "#optionsNameAltMouse",
+			"description": "#optionsDescAltMouse",
+			"variable": "altMouse",
+			"defValue": false
+		},
+		{
 			"type": "label",
 			"label": ""
 		},

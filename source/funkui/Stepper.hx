@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
+import data.Options;
 
 import flixel.addons.ui.FlxUIInputText;
 import lime.system.Clipboard;
@@ -112,7 +113,7 @@ class Stepper extends FlxSpriteGroup
 			}
 		}
 
-		if (FlxG.mouse.justPressed && rePress <= 0)
+		if (Options.mouseJustPressed() && rePress <= 0)
 		{
 			switch (hovered)
 			{

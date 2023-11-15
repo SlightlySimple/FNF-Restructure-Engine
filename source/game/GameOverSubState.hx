@@ -71,10 +71,10 @@ class GameOverSubState extends FlxSubState
 			PlayState.instance.hscriptExec("gameOverMusicStarted", []);
 		}
 
-		if ((Options.keyJustPressed("ui_accept") || FlxG.mouse.justPressed) && !transitioning)
+		if ((Options.keyJustPressed("ui_accept") || Options.mouseJustPressed()) && !transitioning)
 			confirm();
 
-		if ((Options.keyJustPressed("ui_back") || FlxG.mouse.justPressedRight) && !transitioning)
+		if ((Options.keyJustPressed("ui_back") || Options.mouseJustPressed(true)) && !transitioning)
 		{
 			transitioning = true;
 			if (FlxG.sound.music != null)
