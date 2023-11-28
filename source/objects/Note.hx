@@ -22,7 +22,7 @@ class Note extends FlxSprite
 	public var missed:Bool = false;
 	public var typeData:NoteTypeData = null;
 	public static var defaultTypeData:NoteTypeData = null;
-	public static var noteTypes:Map<String, NoteTypeData>;
+	public static var noteTypes:Map<String, NoteTypeData> = null;
 	public var noteskinOverride:String = "";
 	public var noteskinType:String = "";
 	public var noteskinData:NoteskinTypedef = null;
@@ -48,15 +48,17 @@ class Note extends FlxSprite
 	public var animationSuffix:String = "";
 	public var singers:Array<Character> = [];
 
-	public static function refreshNoteTypes(types:Array<String>)
+	public static function refreshNoteTypes(types:Array<String>, ?force:Bool = false)
 	{
 		if (defaultTypeData == null)
 			defaultTypeData = cast Paths.json("notetypes/default");
 
-		noteTypes = new Map<String, NoteTypeData>();
+		if (noteTypes == null || force)
+			noteTypes = new Map<String, NoteTypeData>();
+
 		for (t in types)
 		{
-			if (t != "default" && t != "" && Paths.jsonExists("notetypes/" + t))
+			if (t != "default" && t != "" && !noteTypes.exists(t) && Paths.jsonExists("notetypes/" + t))
 			{
 				var typeData:NoteTypeData = cast Paths.json("notetypes/" + t);
 				if (typeData.noteskinOverride == null)
@@ -156,6 +158,8 @@ class Note extends FlxSprite
 	{
 		if (defaultTypeData == null)
 			defaultTypeData = cast Paths.json("notetypes/default");
+		if (noteTypes == null)
+			noteTypes = new Map<String, NoteTypeData>();
 
 		if (noteTypes.exists(noteType))
 			typeData = Reflect.copy(noteTypes[noteType]);
@@ -287,8 +291,10 @@ class SustainNote extends FlxSprite
 				noteskinData.scale *= -PlayState.instance.strumNotes.members[column].noteskinData.scale;
 			var ww:Int = Std.int(Math.max(sustainPiece.width, sustainEnd.width));
 			var hh:Int = Std.int(actualHeight / (noteskinData.scale * StrumNote.noteScale));
+			if (hh > 16384)			// For some reason, any graphic taller than this number will appear pitch black
+				hh = 16384;
 
-			makeGraphic(ww, hh, FlxColor.TRANSPARENT, false, key);
+			makeGraphic(ww, hh, FlxColor.TRANSPARENT, true, key);
 			var yy:Int = Std.int(height - sustainEnd.height);
 			if (sustainEnd.width < ww - 2)
 				stamp(sustainEnd, Std.int((ww - sustainEnd.width) / 2), yy);
@@ -311,7 +317,7 @@ class SustainNote extends FlxSprite
 			sustainEnd.destroy();
 		}
 
-		scale.set(noteskinData.scale * StrumNote.noteScale, noteskinData.scale * StrumNote.noteScale);
+		scale.set(noteskinData.scale * StrumNote.noteScale, actualHeight / height);
 		updateHitbox();
 		origin.set();
 		offset.set();

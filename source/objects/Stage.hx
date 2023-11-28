@@ -347,6 +347,16 @@ class Stage
 		return null;
 	}
 
+	public function imagePath(asset:String):String
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.imageExists(s + asset))
+				return s + asset;
+		}
+		return "";
+	}
+
 	public function imageExists(asset:String):Bool
 	{
 		for (s in stageData.searchDirs)

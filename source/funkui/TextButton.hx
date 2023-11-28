@@ -17,7 +17,7 @@ class TextButton extends FlxSpriteGroup
 	{
 		super(x, y);
 
-		var back:FlxSprite = new FlxSprite(0, 0).makeGraphic(Std.int(w), Std.int(h), FlxColor.BLACK);
+		var back:FlxSprite = new FlxSprite().makeGraphic(Std.int(w), Std.int(h), FlxColor.BLACK);
 		add(back);
 
 		var front:FlxSprite = new FlxSprite(1, 1).makeGraphic(Std.int(w-2), Std.int(h-2), FlxColor.WHITE);

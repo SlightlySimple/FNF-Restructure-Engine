@@ -7,6 +7,7 @@ function create()
 	if (allowed)
 	{
 		var stages = [];
+		stageIds = [];
 
 		for (e in game.songData.events)
 		{
@@ -18,12 +19,8 @@ function create()
 		{
 			if (Paths.jsonExists("stages/" + s))
 			{
-				var curS = new Stage(s);
-				for (piece in curS.stageData.pieces)
-				{
-					if (piece.type != "group" && Paths.imageExists(Paths.resolveStageAsset(s, piece.asset)))
-						Paths.cacheGraphic(Paths.resolveStageAsset(s, piece.asset));
-				}
+				game.cacheStage(s);
+				stageIds.push(s);
 			}
 		}
 	}
@@ -31,7 +28,7 @@ function create()
 
 function onEvent(event)
 {
-	if (allowed && Paths.jsonExists("stages/" + event.parameters.stage))
+	if (allowed && stageIds.contains(event.parameters.stage))
 	{
 		game.changeStage(event.parameters.stage);
 		game.hscriptAdd('stage', 'data/' + game.stage.stageData.script, true);

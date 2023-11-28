@@ -197,6 +197,8 @@ class ChartEditorState extends MusicBeatState
 	var selecting:Bool = false;
 	var suspendSelection:Bool = false;
 	var movingSelection:Bool = false;
+	var cellsX:Int = 0;
+	var cellsY:Int = 0;
 	var selectionPos:Array<Int> = [0, 0];
 	var selectionBox:FlxSprite;
 	var selNoteBoxes:FlxTypedSpriteGroup<NoteSelection>;
@@ -207,7 +209,7 @@ class ChartEditorState extends MusicBeatState
 	var suspendControls:Bool = false;
 
 	var noteTick:Stepper;
-	var noteTicks:Array<Array<Float>> = [];
+	var noteTicks:Array<Array<Dynamic>> = [];
 
 	var characterSettings:FlxSpriteGroup;
 
@@ -399,6 +401,7 @@ class ChartEditorState extends MusicBeatState
 		refreshNotes();
 		refreshBPMLines();
 		refreshEventLines();
+		FlxG.sound.cache(Paths.sound("noteTick"));
 
 
 
@@ -1636,10 +1639,12 @@ class ChartEditorState extends MusicBeatState
 
 		if (movingSelection)
 		{
-			var cellsX:Int = Std.int(Math.round((mousePos.x - selectionPos[0]) / NOTE_SIZE));
+			var cellsXPrev:Int = cellsX;
+			var cellsYPrev:Int = cellsY;
+			cellsX = Std.int(Math.round((mousePos.x - selectionPos[0]) / NOTE_SIZE));
 			var cellSizeY:Float = (NOTE_SIZE * zoom) * (16 / snap);
-			var cellsY:Int = Std.int(Math.round((mousePos.y - selectionPos[1]) / cellSizeY));
-			if (FlxG.mouse.justMoved)
+			cellsY = Std.int(Math.round((mousePos.y - selectionPos[1]) / cellSizeY));
+			if (FlxG.mouse.justMoved && (cellsX != cellsXPrev || cellsY != cellsYPrev))
 			{
 				for (n in selectedNotes)
 				{
@@ -1757,6 +1762,66 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
+		if (FlxG.keys.pressed.SHIFT && selectedNotes.length > 0)
+		{
+			var noteDirs:Array<Int> = [0, 0];
+			if (FlxG.keys.justPressed.LEFT)
+				noteDirs[0] = -1;
+			if (FlxG.keys.justPressed.RIGHT)
+				noteDirs[0] = 1;
+			if (FlxG.keys.justPressed.UP)
+				noteDirs[1] = -1;
+			if (FlxG.keys.justPressed.DOWN)
+				noteDirs[1] = 1;
+
+			if (noteDirs[0] != 0 || noteDirs[1] != 0)
+			{
+				var cellSizeY:Float = (NOTE_SIZE * zoom) * (16 / snap);
+				var willPopNotes:Bool = false;
+				var posConflict:Bool = false;
+				for (note in selectedNotes)
+				{
+					var column:Int = note.column + noteDirs[0];
+					if (column < 0 || column >= numColumns)
+						willPopNotes = true;
+				}
+				notes.forEachAlive(function(n:Note) {
+					for (note in selectedNotes)
+					{
+						if (Math.floor(note.x + (noteDirs[0] * NOTE_SIZE)) == Math.floor(n.x) && Math.floor(note.y + (noteDirs[1] * cellSizeY)) == Math.floor(n.y) && note != n)
+							posConflict = true;
+					}
+				});
+				if (posConflict)
+				{
+					suspendSelection = true;
+					var notify:Notify = new Notify(300, 100, "Two notes cannot occupy the same space.", this);
+					notify.okFunc = function() {
+						returnSelection();
+						suspendSelection = false;
+					}
+					notify.cameras = [camHUD];
+				}
+				else if (willPopNotes)
+				{
+					suspendSelection = true;
+					var confirm:Confirm = new Confirm(300, 120, "Some notes are outside valid columns and will get deleted.\nProceed?", this);
+					confirm.yesFunc = function() {
+						moveSelection(noteDirs[0], noteDirs[1], cellSizeY);
+						suspendSelection = false;
+					}
+					confirm.noFunc = function() {
+						returnSelection();
+						suspendSelection = false;
+					}
+					confirm.cameras = [camHUD];
+				}
+				else
+					moveSelection(noteDirs[0], noteDirs[1], cellSizeY);
+				movingSelection = false;
+			}
+		}
+
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.T && selectedNotes.length > 0)
 		{
 			for (note in selectedNotes)
@@ -1865,6 +1930,18 @@ class ChartEditorState extends MusicBeatState
 				notify.okFunc = function() { suspendSelection = false; }
 				notify.cameras = [camHUD];
 			}
+		}
+
+		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.A)
+		{
+			notes.forEachAlive(function(note:Note)
+				{
+					if (!selectedNotes.contains(note))
+						selectedNotes.push(note);
+				}
+			);
+
+			refreshSelectedNotes();
 		}
 
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.B && selectedNotes.length > 0)
@@ -2008,7 +2085,6 @@ class ChartEditorState extends MusicBeatState
 				}
 			}
 
-			var poppers:Array<Array<Float>> = [];
 			var tickMin:Int = 0;
 			var tickMax:Int = 0;
 			if (noteTick.value > 0)
@@ -2016,17 +2092,20 @@ class ChartEditorState extends MusicBeatState
 				tickMin = Std.int(((noteTick.value-1)/(strumDivisions+1)) * numColumns);
 				tickMax = Std.int((noteTick.value/(strumDivisions+1)) * numColumns);
 			}
+			var hasTicked:Bool = false;
 			for (note in noteTicks)
 			{
 				if (tracks[0].time + songData.offset >= note[0])
 				{
-					if (note[1] >= tickMin && note[1] < tickMax)
-						FlxG.sound.play(Paths.sound("noteTick"));
-					poppers.push(note);
+					if (note[1] >= tickMin && note[1] < tickMax && !note[2])
+					{
+						if (!hasTicked)
+							FlxG.sound.play(Paths.sound("noteTick"));
+						hasTicked = true;
+						note[2] = true;
+					}
 				}
 			}
-			for (p in poppers)
-				noteTicks.remove(p);
 		}
 		else if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive && !ObjectMenu.isOneActive)
 		{
@@ -2049,22 +2128,28 @@ class ChartEditorState extends MusicBeatState
 
 		super.update(elapsed);
 
-		if (((FlxG.keys.justPressed.UP && !downscroll) || (FlxG.keys.justPressed.DOWN && downscroll)) && !Stepper.isOneActive)
+		if (((FlxG.keys.justPressed.UP && !downscroll) || (FlxG.keys.justPressed.DOWN && downscroll)) && !Stepper.isOneActive && !FlxG.keys.pressed.SHIFT)
 		{
 			curSection--;
 			curSection = Std.int(Math.min(songData.notes.length-1, Math.max(0, curSection)));
 			songProgress = stepFromSec(curSection);
 			if (tracks[0].playing)
+			{
 				tracks[0].time = Math.max(0, Conductor.timeFromStep(songProgress) - songData.offset);
+				correctTrackPitch();
+			}
 		}
 
-		if (((FlxG.keys.justPressed.UP && downscroll) || (FlxG.keys.justPressed.DOWN && !downscroll)) && !Stepper.isOneActive)
+		if (((FlxG.keys.justPressed.UP && downscroll) || (FlxG.keys.justPressed.DOWN && !downscroll)) && !Stepper.isOneActive && !FlxG.keys.pressed.SHIFT)
 		{
 			curSection++;
 			curSection = Std.int(Math.min(songData.notes.length-1, Math.max(0, curSection)));
 			songProgress = stepFromSec(curSection);
 			if (tracks[0].playing)
+			{
 				tracks[0].time = Math.max(0, Conductor.timeFromStep(songProgress) - songData.offset);
+				correctTrackPitch();
+			}
 		}
 
 		if (songProgress >= songData.notes[songData.notes.length-1].lastStep)
@@ -2087,7 +2172,7 @@ class ChartEditorState extends MusicBeatState
 				for (note in noteData)
 				{
 					if (note[0] >= tracks[0].time + songData.offset)
-						noteTicks.push([note[0], note[1]]);
+						noteTicks.push([note[0], note[1], false]);
 				}
 			}
 		}
@@ -2178,7 +2263,7 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (FlxG.keys.justPressed.A && !DropdownMenu.isOneActive && snap > 4 && !suspendControls)
+		if (FlxG.keys.justPressed.A && !DropdownMenu.isOneActive && snap > 4 && !suspendControls && !FlxG.keys.pressed.CONTROL)
 		{
 			snap -= 4;
 			snapSongProgress();

@@ -88,6 +88,22 @@ class Paths
 		return file("images/" + path, ".png");
 	}
 
+	public static function imageSong(path:String):FlxGraphic
+	{
+		if (FlxG.bitmap.checkCache(imageSongPath(path)))
+			return FlxG.bitmap.get(imageSongPath(path));
+		if (imageSongExists(path))
+			return FlxG.bitmap.add(Assets.getBitmapData(imageSongPath(path)), false, imageSongPath(path));
+		return FlxGraphic.fromAssetKey(DEFAULT_IMAGE);
+	}
+
+	public static function imageSongPath(path:String):String
+	{
+		if (FlxG.state is PlayState)
+			return file("data/songs/" + PlayState.songId + "/images/" + path, ".png");
+		return "";
+	}
+
 	public static function sound(path:String):String
 	{
 		return "assets/sounds/" + path + ".ogg";
@@ -136,6 +152,20 @@ class Paths
 			return FlxAtlasFrames.fromSparrow(image(path), file("images/" + path, ".xml"));
 		}
 		Application.current.window.alert("File \"images/" + path + ".xml\" does not exist", "Alert");
+		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(DEFAULT_IMAGE);
+		return FlxTileFrames.fromGraphic(graphic, FlxPoint.get(Std.int(graphic.width), Std.int(graphic.height)));
+	}
+
+	public static function sparrowSong(path:String):FlxFramesCollection
+	{
+		var basePath:String = "data/songs/" + PlayState.songId + "/images/" + path;
+		if (sparrowSongExists(path))
+		{
+			if (exists(basePath + ".txt") && !exists(basePath + ".xml"))
+				return FlxAtlasFrames.fromSpriteSheetPacker(imageSong(path), raw(basePath + ".txt"));
+			return FlxAtlasFrames.fromSparrow(imageSong(path), file(basePath, ".xml"));
+		}
+		Application.current.window.alert("File \"data/songs/" + PlayState.songId + "/images/" + path + ".xml\" does not exist", "Alert");
 		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(DEFAULT_IMAGE);
 		return FlxTileFrames.fromGraphic(graphic, FlxPoint.get(Std.int(graphic.width), Std.int(graphic.height)));
 	}
@@ -311,6 +341,13 @@ class Paths
 		return exists("images/" + path + ".png");
 	}
 
+	public static function imageSongExists(path:String):Bool
+	{
+		if (FlxG.state is PlayState)
+			return exists("data/songs/" + PlayState.songId + "/images/" + path + ".png");
+		return false;
+	}
+
 	public static function soundExists(path:String):Bool
 	{
 		return exists("sounds/" + path + ".ogg");
@@ -329,6 +366,13 @@ class Paths
 	public static function sparrowExists(path:String):Bool
 	{
 		return exists("images/" + path + ".xml") || exists("images/" + path + ".txt");
+	}
+
+	public static function sparrowSongExists(path:String):Bool
+	{
+		if (FlxG.state is PlayState)
+			return exists("data/songs/" + PlayState.songId + "/images/" + path + ".xml") || exists("data/songs/" + PlayState.songId + "/images/" + path + ".txt");
+		return false;
 	}
 
 	public static function iconExists(path:String):Bool
@@ -372,17 +416,6 @@ class Paths
 	public static function clearCache()
 	{
 		FlxG.bitmap.dumpCache();
-	}
-
-	public static function resolveStageAsset(id:String, path:String):String
-	{
-		if (id.indexOf("/") > 0)
-		{
-			var dir:String = id.substr(0, id.lastIndexOf("/")+1);
-			if (imageExists(dir + "stages/" + id.replace(dir, "") + "/" + path))
-				return dir + "stages/" + id.replace(dir, "") + "/" + path;
-		}
-		return "stages/" + id + "/" + path;
 	}
 
 	static function listFilesSort(a:String, b:String):Int

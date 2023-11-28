@@ -585,10 +585,7 @@ class StoryMenuState extends MusicBeatState
 					imageButton.screenCenter(X);
 					weekButtons.add(imageButton);
 
-					var lock:FlxSprite = new FlxSprite(imageButton.x + imageButton.width + 10, imageButton.y);
-					lock.frames = arrowLeft.frames;
-					lock.animation.addByPrefix('lock', 'lock');
-					lock.animation.play('lock');
+					var lock:FlxSprite = new FlxSprite(imageButton.x + imageButton.width + 10, imageButton.y, Paths.image("ui/lock"));
 					lock.visible = (newWeek.startsLocked && !unlockedWeeks.contains(weekNames[i]));
 					weekUnlocked.push(!lock.visible);
 					weekLocks.add(lock);

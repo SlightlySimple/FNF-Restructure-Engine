@@ -67,11 +67,12 @@ class Character extends FlxSprite
 		return ind;
 	}
 
+	public static var parsedCharacters:Map<String, CharacterData> = new Map<String, CharacterData>();
 	public static function parseCharacter(id:String):CharacterData
 	{
 		var data:Dynamic = Paths.json("characters/" + id);
 		var cData:CharacterData = cast data;
-		if (data.image != null)			// This is a Psych Engine character and must be converted to the Slightly Engine format
+		if (data.image != null)			// This is a Psych Engine character and must be converted to the Restructure Engine format
 		{
 			cData = {
 				asset: data.image,
@@ -324,7 +325,9 @@ class Character extends FlxSprite
 
 		if (Paths.jsonExists("characters/" + char))
 			curCharacter = char;
-		characterData = parseCharacter(curCharacter);
+		if (!parsedCharacters.exists(curCharacter))
+			parsedCharacters[curCharacter] = parseCharacter(curCharacter);
+		characterData = parsedCharacters[curCharacter];
 
 		if (characterData.gameOverCharacter == null || characterData.gameOverCharacter == "")
 		{

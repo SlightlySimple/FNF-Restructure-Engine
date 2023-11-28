@@ -5,7 +5,9 @@ You can also right click a note to delete it
 Left click a note to select it
 Click and drag to select multiple notes
 Click and drag selected notes to move them
+Shift-Arrow Keys: Precisely move selected notes
 Delete Key: Delete all selected notes
+Ctrl+A: Select all notes
 Ctrl+C: Copy selected notes
 Ctrl+V: Paste notes
 Ctrl+B: Align selected notes to snap size

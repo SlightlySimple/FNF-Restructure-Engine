@@ -373,7 +373,7 @@ class PlayState extends MusicBeatState
 		}
 
 		var noteTypes:Array<String> = generateSong();
-		Note.refreshNoteTypes(noteTypes);
+		Note.refreshNoteTypes(noteTypes, true);
 
 		FlxG.camera.zoom = camZoom;
 		camFollow.x = stage.stageData.camFollow[0];
@@ -2502,18 +2502,33 @@ class PlayState extends MusicBeatState
 
 
 
+	var storedStages:Map<String, Stage> = new Map<String, Stage>();
+	function cacheStage(stageId:String)
+	{
+		if (!storedStages.exists(stageId))
+		{
+			var s = new Stage(stageId);
+			for (piece in s.stageData.pieces)
+			{
+				if (piece.type != "group" && s.imageExists(piece.asset))
+					Paths.cacheGraphic(s.imagePath(piece.asset));
+			}
+
+			storedStages[stageId] = s;
+		}
+	}
+
 	function changeStage(newStage:String, ?replacing = true)
 	{
 		if (replacing)
 		{
 			for (piece in stage.stageData.pieces)
-			{
 				remove(stage.pieces[piece.id], true);
-				stage.pieces[piece.id].destroy();
-			}
 		}
 
-		stage = new Stage(newStage);
+		if (!storedStages.exists(newStage))
+			cacheStage(newStage);
+		stage = storedStages[newStage];
 
 		camZoom = stage.stageData.camZoom;
 		if (replacing)

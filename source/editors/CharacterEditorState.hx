@@ -97,6 +97,8 @@ class CharacterEditorState extends MusicBeatState
 
 	override public function create()
 	{
+		Character.parsedCharacters = new Map<String, CharacterData>();
+
 		camGame = new FlxCamera();
 		FlxG.cameras.add(camGame);
 

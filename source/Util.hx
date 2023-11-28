@@ -9,6 +9,8 @@ using StringTools;
 
 class Util
 {
+	public static var menuSong:String = "freakyMenu";
+
 	public static function version():String
 	{
 		return Std.string(Application.current.meta.get('version'));
@@ -17,7 +19,7 @@ class Util
 	public static function menuMusic()
 	{
 		if (!FlxG.sound.music.playing)
-			Conductor.playMusic("freakyMenu");
+			Conductor.playMusic(menuSong);
 	}
 
 	public static function splitFile(content:String):Array<String>
@@ -57,8 +59,16 @@ class Util
 		return ret;
 	}
 
-	public static function CreateSprite(asset:String, ?x:Float = 0, ?y:Float = 0):FlxSprite
+	public static function CreateSprite(asset:String, ?x:Float = 0, ?y:Float = 0, ?inSong:Bool = false):FlxSprite
 	{
+		if (inSong)
+		{
+			if (Paths.sparrowSongExists(asset))
+				return new AnimatedSprite(x, y, Paths.sparrowSong(asset));
+
+			return new FlxSprite(x, y, Paths.imageSong(asset));
+		}
+
 		if (Paths.sparrowExists(asset))
 			return new AnimatedSprite(x, y, Paths.sparrow(asset));
 

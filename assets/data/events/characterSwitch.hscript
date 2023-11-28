@@ -8,6 +8,7 @@ function create()
 	}
 
 	var chars = [];
+	characterIds = [];
 
 	for (e in game.songData.events)
 	{
@@ -19,7 +20,9 @@ function create()
 	{
 		if (Paths.jsonExists("characters/" + c))
 		{
-			var curC = Character.parseCharacter(c);
+			if (!Character.parsedCharacters.exists(c))
+				Character.parsedCharacters[c] = Character.parseCharacter(c);
+			var curC = Character.parsedCharacters[c];
 			var asset:String = curC.asset;
 			if (Paths.imageExists(asset))
 				Paths.cacheGraphic(asset);
@@ -28,6 +31,7 @@ function create()
 				Paths.cacheGraphic("icons/" + curC.healthIcon);
 			else if (Paths.imageExists("icons/icon-" + curC.healthIcon))
 				Paths.cacheGraphic("icons/icon-" + curC.healthIcon);
+			characterIds.push(c);
 		}
 	}
 }
@@ -45,7 +49,7 @@ function getSlot(str)
 function onEvent(event)
 {
 	var slot = getSlot(event.parameters.id.toLowerCase());
-	if (allowedSlots.contains(slot) && Paths.jsonExists("characters/" + event.parameters.character))
+	if (allowedSlots.contains(slot) && characterIds.contains(event.parameters.character))
 	{
 		doSwitch(game.allCharacters[slot], event.parameters.character);
 		if (slot == 2)
