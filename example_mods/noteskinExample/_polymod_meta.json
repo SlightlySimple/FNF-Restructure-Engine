@@ -1,0 +1,7 @@
+{
+	"license": "CC BY 4.0,MIT",
+	"title": "Noteskin Example",
+	"api_version": "0.1.0",
+	"mod_version": "1.0.0",
+	"description": "Sample mod to showcase Restructure Engine's noteskin and noteskin type systems. To use the custom noteskin type in a song, replace \"default\" with \"custom\" into the \"Noteskin Types\" box in the Chart Editor"
+}
