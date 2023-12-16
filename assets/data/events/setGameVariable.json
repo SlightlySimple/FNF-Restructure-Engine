@@ -2,12 +2,6 @@
 	"parameters":
 	[
 		{
-			"id": "id",
-			"label": "Script ID",
-			"type": "string",
-			"defaultValue": ""
-		},
-		{
 			"id": "variable",
 			"label": "Variable",
 			"type": "string",

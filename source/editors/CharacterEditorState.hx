@@ -128,6 +128,7 @@ class CharacterEditorState extends MusicBeatState
 				facing: "right",
 				icon: "",
 				gameOverCharacter: "",
+				deathCounterText: "",
 				script: ""
 			}
 		}
@@ -215,7 +216,7 @@ class CharacterEditorState extends MusicBeatState
 
 
 
-		tabMenu = new IsolatedTabMenu(50, 50, 250, 530);
+		tabMenu = new IsolatedTabMenu(50, 50, 250, 540);
 		tabMenu.cameras = [camHUD];
 		add(tabMenu);
 		refreshCharAnims();
@@ -688,6 +689,20 @@ class CharacterEditorState extends MusicBeatState
 		var gameOverCharLabel:Label = new Label("Game Over Character (Optional):", gameOverCharDropdown);
 		tabGroupProperties.add(gameOverCharLabel);
 
+		var deathCounterInput:InputText = new InputText(10, gameOverCharDropdown.y + 40);
+		deathCounterInput.focusGained = function() {
+			deathCounterInput.text = myCharacterData.deathCounterText;
+		}
+		deathCounterInput.focusLost = function() {
+			deathCounterInput.text = myCharacterData.deathCounterText;
+		}
+		deathCounterInput.callback = function(text:String, action:String) {
+			myCharacterData.deathCounterText = text.trim();
+		}
+		tabGroupProperties.add(deathCounterInput);
+		var deathCounterLabel:Label = new Label("Death Counter Text (Optional):", deathCounterInput);
+		tabGroupProperties.add(deathCounterLabel);
+
 		var scriptList:Array<String> = [""];
 		for (s in Paths.listFilesSub("data/characters/", ".hscript"))
 			scriptList.push("characters/" + s);
@@ -696,7 +711,7 @@ class CharacterEditorState extends MusicBeatState
 
 		if (myCharacterData.script == "characters/" + curCharacter)
 			myCharacterData.script = "";
-		var scriptDropdown:DropdownMenu = new DropdownMenu(10, gameOverCharDropdown.y + 40, 230, 20, myCharacterData.script, scriptList, true);
+		var scriptDropdown:DropdownMenu = new DropdownMenu(10, deathCounterInput.y + 40, 230, 20, myCharacterData.script, scriptList, true);
 		scriptDropdown.onChanged = function() {
 			myCharacterData.script = scriptDropdown.value;
 		};
@@ -1717,6 +1732,9 @@ class CharacterEditorState extends MusicBeatState
 
 		if (saveData.gameOverCharacter == "")
 			Reflect.deleteField(saveData, "gameOverCharacter");
+
+		if (saveData.deathCounterText == "")
+			Reflect.deleteField(saveData, "deathCounterText");
 
 		if (saveData.script == "" || saveData.script == "characters/" + curCharacter)
 			Reflect.deleteField(saveData, "script");

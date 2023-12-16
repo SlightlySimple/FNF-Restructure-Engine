@@ -9,7 +9,7 @@ function create()
 	for (i in 0...5)
 	{
 		if (game.stage.pieces.exists("win" + Std.string(i)))
-			allWindows.push(game.stage.pieces.get("win" + Std.string(i)));
+			allWindows.push(game.stage.pieces["win" + Std.string(i)]);
 	}
 }
 

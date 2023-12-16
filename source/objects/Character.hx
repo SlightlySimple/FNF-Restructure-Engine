@@ -130,6 +130,9 @@ class Character extends FlxSprite
 				if (oldCharData.gameOverCharacter != null && oldCharData.gameOverCharacter != "")
 					cData.gameOverCharacter = oldCharData.gameOverCharacter;
 
+				if (oldCharData.deathCounterText != null && oldCharData.deathCounterText != "")
+					cData.deathCounterText = oldCharData.deathCounterText;
+
 				if (oldCharData.icon != null && oldCharData.icon != "")
 					cData.icon = oldCharData.icon;
 			}
@@ -145,6 +148,9 @@ class Character extends FlxSprite
 
 		if (cData.gameOverCharacter == null)
 			cData.gameOverCharacter = "";
+
+		if (cData.deathCounterText == null)
+			cData.deathCounterText = "";
 
 		if (cData.icon == null)
 			cData.icon = "";

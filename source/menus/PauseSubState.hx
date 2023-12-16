@@ -29,6 +29,9 @@ class PauseSubState extends FlxSubState
 	public static var menuMusic:FlxSound = null;
 	var bg:FlxSprite;
 	var songStuff:FlxText;
+	var songDifficulty:FlxText;
+	var deathCounter:FlxText;
+	public static var deathCounterText:String = "";
 	var menuButtonText:Array<String> = ["#pResume", "#pRestart", "#pOptions", "#pExit"];
 	var menuButtons:FlxTypedSpriteGroup<Alphabet>;
 	public var menuButtonPosition:Void->Void;
@@ -86,13 +89,39 @@ class PauseSubState extends FlxSubState
 		menuButtons = new FlxTypedSpriteGroup<Alphabet>();
 		add(menuButtons);
 
-		songStuff = new FlxText(0, 15, FlxG.width - 20, PlayState.instance.songName + "\n" + Lang.getNoHash(PlayState.difficulty).toUpperCase() + "\n", 32);
+		songStuff = new FlxText(0, 15, FlxG.width - 20, PlayState.instance.songName, 32);
 		songStuff.font = "VCR OSD Mono";
 		songStuff.alignment = RIGHT;
 		songStuff.alpha = 0;
 		add(songStuff);
+		new FlxTimer().start(0.3, function(tmr) {FlxTween.tween(songStuff, {alpha: 1, y: songStuff.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
 
-		FlxTween.tween(songStuff, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
+		songDifficulty = new FlxText(0, 47, FlxG.width - 20, Lang.getNoHash(PlayState.difficulty).toUpperCase(), 32);
+		songDifficulty.font = "VCR OSD Mono";
+		songDifficulty.alignment = RIGHT;
+		songDifficulty.alpha = 0;
+		add(songDifficulty);
+		new FlxTimer().start(0.5, function(tmr) {FlxTween.tween(songDifficulty, {alpha: 1, y: songDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
+
+		var trueDeathCounterText:String = Lang.get("#pGameOver", [Std.string(PlayState.deaths)]);
+		if (deathCounterText.trim() != "")
+		{
+			if (deathCounterText.trim().startsWith("#"))
+				trueDeathCounterText = Lang.get(deathCounterText.trim(), [Std.string(PlayState.deaths)]);
+			else
+			{
+				trueDeathCounterText = deathCounterText.trim();
+				if (!trueDeathCounterText.endsWith(":"))
+					trueDeathCounterText += ":";
+				trueDeathCounterText += " " + Std.string(PlayState.deaths);
+			}
+		}
+		deathCounter = new FlxText(0, 79, FlxG.width - 20, trueDeathCounterText, 32);
+		deathCounter.font = "VCR OSD Mono";
+		deathCounter.alignment = RIGHT;
+		deathCounter.alpha = 0;
+		add(deathCounter);
+		new FlxTimer().start(0.7, function(tmr) {FlxTween.tween(deathCounter, {alpha: 1, y: deathCounter.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
 
 		if (PlayState.instance.isSM)
 			menuButtonText.insert(2, "#pSaveChart");

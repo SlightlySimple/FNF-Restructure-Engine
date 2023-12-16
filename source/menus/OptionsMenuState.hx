@@ -683,14 +683,19 @@ class OptionsMenu extends FlxGroup
 				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 
 			case "float" | "int" | "percent":
-				setOptVal(curOption, getOptVal(curOption) + (opt.changeValue * change));
-				if (getOptVal(curOption) < opt.range[0])
-					setOptVal(curOption, opt.range[0]);
-				if (getOptVal(curOption) > opt.range[1])
-					setOptVal(curOption, opt.range[1]);
+				var start:Float = getOptVal(curOption);
+				var goal:Float = start + (opt.changeValue * change);
+				if (opt.changeValue != Math.round(opt.changeValue))
+					goal = Math.round(goal / opt.changeValue) * opt.changeValue;
+				if (goal < opt.range[0])
+					goal = opt.range[0];
+				if (goal > opt.range[1])
+					goal = opt.range[1];
+				setOptVal(curOption, goal);
 				if (opt.type == "int")
-					setOptVal(curOption, Std.int(getOptVal(curOption)));
-				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+					setOptVal(curOption, Std.int(goal));
+				if (start != goal)
+					FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 				if (opt.scrollSpeed > 0 && !holding)
 				{
 					holding = true;

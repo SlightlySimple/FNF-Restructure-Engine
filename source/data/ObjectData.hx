@@ -19,6 +19,7 @@ typedef CharacterData =
 	var idles:Array<String>;
 	var ?danceSpeed:Null<Float>;
 	var ?gameOverCharacter:String;
+	var ?deathCounterText:String;
 	var flip:Null<Bool>;
 	var facing:String;
 	var icon:String;

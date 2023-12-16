@@ -1207,9 +1207,9 @@ class ChartEditorState extends MusicBeatState
 						type = n[3];
 					if (type == "")
 					{
-						if (n[1] >= numColumns / 2 && s.defaultNoteP1 != null && s.defaultNoteP1 != "")
+						if (songData.columnDivisions[n[1]] == 0 && s.defaultNoteP1 != null && s.defaultNoteP1 != "")
 							type = s.defaultNoteP1;
-						if (n[1] < numColumns / 2 && s.defaultNoteP2 != null && s.defaultNoteP2 != "")
+						if (songData.columnDivisions[n[1]] == 1 && s.defaultNoteP2 != null && s.defaultNoteP2 != "")
 							type = s.defaultNoteP2;
 					}
 					if (type == replaceTypeDropdown.value)
@@ -1296,13 +1296,13 @@ class ChartEditorState extends MusicBeatState
 						if (noteData[i].length > 3)
 							t = noteData[i][3];
 
-						if (noteData[i][1] < numColumns / 2)
+						if (songData.columnDivisions[noteData[i][1]] == 1)
 						{
 							if (!typesLeft.contains(t))
 								typesLeft.push(t);
 							emptyNotesLeft.push(i);
 						}
-						else
+						else if (songData.columnDivisions[noteData[i][1]] == 0)
 						{
 							if (!typesRight.contains(t))
 								typesRight.push(t);
@@ -1337,7 +1337,7 @@ class ChartEditorState extends MusicBeatState
 				if (n.length < 4 || n[3] == "")
 				{
 					var s:SectionData = songData.notes[secFromTime(n[0])];
-					if (n[1] >= numColumns / 2 && s.defaultNoteP1 != null && s.defaultNoteP1 != "")
+					if (songData.columnDivisions[n[1]] == 0 && s.defaultNoteP1 != null && s.defaultNoteP1 != "")
 					{
 						if (n.length < 4)
 							n.push(s.defaultNoteP1);
@@ -1345,7 +1345,7 @@ class ChartEditorState extends MusicBeatState
 							n[3] = s.defaultNoteP1;
 					}
 
-					if (n[1] < numColumns / 2 && s.defaultNoteP2 != null && s.defaultNoteP2 != "")
+					if (songData.columnDivisions[n[1]] == 1 && s.defaultNoteP2 != null && s.defaultNoteP2 != "")
 					{
 						if (n.length < 4)
 							n.push(s.defaultNoteP2);
@@ -1617,9 +1617,9 @@ class ChartEditorState extends MusicBeatState
 						else
 						{
 							var sec:SectionData = songData.notes[secFromStep(Std.int(note.beat * 4))];
-							if (note.column >= numColumns / 2 && sec.defaultNoteP1 != null && sec.defaultNoteP1 != "")
+							if (songData.columnDivisions[note.column] == 0 && sec.defaultNoteP1 != null && sec.defaultNoteP1 != "")
 								curNotetype = sec.defaultNoteP1;
-							else if (note.column < numColumns / 2 && sec.defaultNoteP2 != null && sec.defaultNoteP2 != "")
+							else if (songData.columnDivisions[note.column] == 1 && sec.defaultNoteP2 != null && sec.defaultNoteP2 != "")
 								curNotetype = sec.defaultNoteP2;
 						}
 					}

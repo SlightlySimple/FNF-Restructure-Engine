@@ -574,12 +574,6 @@ class StoryMenuState extends MusicBeatState
 				for (i in 0...weekNames.length)
 				{
 					var newWeek:WeekData = weekList.get(weekNames[i]);
-					for (j in 0...newWeek.songs.length)
-					{
-						if (newWeek.songs[j].difficulties == null || newWeek.songs[j].difficulties.length == 0)
-							newWeek.songs[j].difficulties = newWeek.difficulties;
-					}
-					weekList.set(weekNames[i], newWeek);
 
 					var imageButton:WeekButton = new WeekButton(0, i * 120, newWeek.image);
 					imageButton.screenCenter(X);
@@ -795,8 +789,11 @@ class StoryMenuState extends MusicBeatState
 		tracks.text = Lang.get("#smTracks") + "\n\n";
 		for (track in weekData.songs)
 		{
-			var songName:String = Song.getSongName(track.songId, weekData.difficulties[0]);
-			tracks.text += songName.toUpperCase() + "\n";
+			if (track.songId != null && track.songId != "")
+			{
+				var songName:String = Song.getSongName(track.songId, weekData.difficulties[0]);
+				tracks.text += songName.toUpperCase() + "\n";
+			}
 		}
 		tracks.screenCenter(X);
 		tracks.x -= FlxG.width * 0.35;

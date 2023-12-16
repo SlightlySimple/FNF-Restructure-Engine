@@ -19,6 +19,7 @@ import objects.Character;
 import objects.Stage;
 import haxe.Json;
 import menus.EditorMenuState;
+import shaders.ColorFade;
 
 import lime.app.Application;
 
@@ -42,6 +43,7 @@ class StageEditorState extends MusicBeatState
 	var myStage:Array<FlxSprite> = [];
 	var myStageGroup:FlxSpriteGroup;
 	public var stageData:StageData;
+	var selectionShader:ColorFade;
 
 	var camFollow:FlxObject;
 	public var camGame:FlxCamera;
@@ -156,6 +158,9 @@ class StageEditorState extends MusicBeatState
 		FlxG.cameras.add(camHUD, false);
 
 		super.create();
+		selectionShader = new ColorFade();
+		selectionShader.color = FlxColor.LIME;
+		selectionShader.amount = 0.25;
 
 		if (newStage)
 		{
@@ -192,6 +197,7 @@ class StageEditorState extends MusicBeatState
 
 		myStage = [];
 		refreshStage();
+		refreshSelectionShader();
 
 		camPosText = new FlxText(10, 10, 0, "", 16);
 		camPosText.font = "VCR OSD Mono";
@@ -204,6 +210,7 @@ class StageEditorState extends MusicBeatState
 
 		tabMenu = new IsolatedTabMenu(50, 50, 250, 510);
 		tabMenu.cameras = [camHUD];
+		tabMenu.onTabChanged = refreshSelectionShader;
 		add(tabMenu);
 
 		var tabButtons:TabButtons = new TabButtons(0, 0, 550, ["Settings", "Characters", "Pieces", "Properties", "Animations", "Help"]);
@@ -337,7 +344,7 @@ class StageEditorState extends MusicBeatState
 		tabGroupCharacters.add(characterCountLabel);
 
 		characterId = new Stepper(10, characterCount.y + 40, 230, 20, 0, 1, 0, stageData.characters.length-1);
-		characterId.onChanged = updateCharacterTab;
+		characterId.onChanged = function() {updateCharacterTab(); refreshSelectionShader();};
 		tabGroupCharacters.add(characterId);
 		var characterIdLabel:Label = new Label("Character ID:", characterId);
 		tabGroupCharacters.add(characterIdLabel);
@@ -461,6 +468,7 @@ class StageEditorState extends MusicBeatState
 			updatePieceTabVisibility();
 			updatePieceTab();
 			updateAnimationTab();
+			refreshSelectionShader();
 		}
 		tabGroupPieces.add(pieceList);
 		refreshStagePieces();
@@ -1027,6 +1035,7 @@ class StageEditorState extends MusicBeatState
 			refreshStagePieces();
 			updatePieceTabVisibility();
 			updateAnimationTab();
+			refreshSelectionShader();
 		}
 	}
 
@@ -1141,6 +1150,7 @@ class StageEditorState extends MusicBeatState
 		refreshStage();
 		refreshStagePieces();
 		updatePieceTabVisibility();
+		refreshSelectionShader();
 	}
 
 	function updateCharacterCount()
@@ -1410,6 +1420,43 @@ class StageEditorState extends MusicBeatState
 		}
 	}
 
+	function refreshSelectionShader()
+	{
+		if (tabMenu != null && tabMenu.curTab == 1)
+		{
+			for (i in 0...allCharacters.length)
+			{
+				if (i == characterId.valueInt)
+					allCharacters[i].shader = selectionShader.shader;
+				else
+					allCharacters[i].shader = null;
+			}
+			if (myStage.length > 0)
+			{
+				for (p in myStage)
+					p.shader = null;
+			}
+		}
+		else
+		{
+			if (myStage.length > 0)
+			{
+				for (i in 0...myStage.length)
+				{
+					if (i == curStagePiece)
+						myStage[i].shader = selectionShader.shader;
+					else
+						myStage[i].shader = null;
+				}
+			}
+			if (allCharacters.length > 0)
+			{
+				for (p in allCharacters)
+					p.shader = null;
+			}
+		}
+	}
+
 	function refreshStage()
 	{
 		for (piece in myStage)
@@ -1670,6 +1717,7 @@ class StageEditorState extends MusicBeatState
 		pieceList.value = curStagePiece;
 		updateAllPieces();
 		refreshStagePieces();
+		refreshSelectionShader();
 	}
 
 	function alignPiece(pieceId:Int)

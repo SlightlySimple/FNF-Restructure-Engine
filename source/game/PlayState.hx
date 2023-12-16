@@ -61,6 +61,7 @@ class PlayState extends MusicBeatState
 	public static var songId:String = "";
 	public static var songIdShort:String = "";
 	public static var difficulty:String = "normal";
+	public static var deaths:Int = 0;
 	public var songData:SongData = null;
 	public var songName:String = "";
 	public var isSM:Bool = false;
@@ -162,22 +163,34 @@ class PlayState extends MusicBeatState
 			inStoryMode = _inStoryMode;
 
 		if (_songId != null)
+		{
 			songId = _songId;
+			deaths = 0;
+		}
 
 		if (_difficulty != null)
+		{
 			difficulty = _difficulty;
+			deaths = 0;
+		}
 
 		if (inStoryMode && _storyWeekName != null)
 		{
 			storyWeekName = _storyWeekName;
 			storyWeek = [];
-			var songArray:Array<WeekSongData> = StoryMenuState.convertWeek(storyWeekName).songs;
+			var songArray:Array<WeekSongData> = StoryMenuState.convertWeek(storyWeekName, true).songs;
 			for (s in songArray)
-				storyWeek.push(s.songId);
+			{
+				if (s.songId != null && s.songId != "")
+					storyWeek.push(s.songId);
+			}
 		}
 
 		if (_storyProgress != null)
+		{
 			storyProgress = _storyProgress;
+			deaths = 0;
+		}
 
 		super();
 	}
@@ -1098,7 +1111,7 @@ class PlayState extends MusicBeatState
 
 				if (section.defaultNoteP1 != null && section.defaultNoteP1 != "")
 				{
-					if (newNote.column >= numKeys && newNote.type == "")
+					if (songData.columnDivisions[newNote.column] == 0 && newNote.type == "")
 						newNote.type = section.defaultNoteP1;
 
 					if (!noteTypes.contains(section.defaultNoteP1))
@@ -1106,7 +1119,7 @@ class PlayState extends MusicBeatState
 				}
 				if (section.defaultNoteP2 != null && section.defaultNoteP2 != "")
 				{
-					if (newNote.column < numKeys && newNote.type == "")
+					if (songData.columnDivisions[newNote.column] == 1 && newNote.type == "")
 						newNote.type = section.defaultNoteP2;
 
 					if (!noteTypes.contains(section.defaultNoteP2))
@@ -1366,6 +1379,7 @@ class PlayState extends MusicBeatState
 	function gameOver()
 	{
 		paused = true;
+		deaths++;
 
 		for (t in tracks)
 			t.stop();
@@ -1434,6 +1448,7 @@ class PlayState extends MusicBeatState
 		for (t in tracks)
 			t.pause();
 		persistentUpdate = false;
+		PauseSubState.deathCounterText = strumNotes.members[playerColumns[0]].singers[0].characterData.deathCounterText;
 		openSubState(new PauseSubState());
 	}
 
@@ -2054,6 +2069,7 @@ class PlayState extends MusicBeatState
 			else if (inStoryMode)
 			{
 				PlayState.storyProgress++;
+				deaths = 0;
 				if (PlayState.storyProgress >= storyWeek.length)
 				{
 					paused = true;

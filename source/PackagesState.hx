@@ -9,6 +9,7 @@ import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import haxe.ds.ArraySort;
 import sys.FileSystem;
 import sys.io.File;
 
@@ -156,6 +157,13 @@ class PackagesState extends MusicBeatState
 			if (FileSystem.isDirectory("packages/" + file))
 				p.push(file);
 		}
+		ArraySort.sort(p, function(a:String, b:String) {
+			if (a < b)
+				return -1;
+			if (a > b)
+				return 1;
+			return 0;
+		});
 		return p;
 	}
 

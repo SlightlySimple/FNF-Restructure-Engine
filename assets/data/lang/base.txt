@@ -58,6 +58,8 @@
 "optAdjustComboNotice"		"Press R to reset the positions to default"
 
 // Pause menu
+"pGameOver"			"Blue balled: %s1"
+"pGameOverCensor"	"Game over'd: %s1"
 "pResume"			"Resume"
 "pRestart"			"Restart Song"
 "pOptions"			"Options"

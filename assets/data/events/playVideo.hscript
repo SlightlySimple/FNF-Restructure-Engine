@@ -1,7 +1,7 @@
 function create()
 {
 	video = new MP4Handler();
-	videoSprite = new FlxSprite();
+	videoSprite = new FlxSprite().loadGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 	videoSprite.cameras = [game.camOther];
 	videoSprite.alpha = 0.001;
 	game.add(videoSprite);
@@ -38,6 +38,9 @@ function update(elapsed)
 {
 	if (videoSprite.alpha > 0.001)
 	{
+		videoSprite.setGraphicSize(FlxG.width, FlxG.height);
+		videoSprite.screenCenter();
+
 		var time = MP4Handler.vlcBitmap.getTime() + videoStartTime;
 		var length = MP4Handler.vlcBitmap.length;
 		if (Math.abs(game.tracks[0].time - time) > 350)

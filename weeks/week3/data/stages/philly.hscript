@@ -1,17 +1,20 @@
+curLight = -1;
+
 function create()
 {
 	for (i in 0...5)
-		stage.pieces.get("win" + Std.string(i)).visible = false;
+		stage.pieces["win" + Std.string(i)].visible = false;
+	curLight = FlxG.random.int(0, 4);
+	stage.pieces["win" + Std.string(curLight)].visible = true;
 }
 
 function beatHit()
 {
 	if (game.curBeat % 4 == 0)
 	{
-		for (i in 0...5)
-			stage.pieces.get("win" + Std.string(i)).visible = false;
+		stage.pieces["win" + Std.string(curLight)].visible = false;
 
-		var curLight = FlxG.random.int(0, 4);
-		stage.pieces.get("win" + Std.string(curLight)).visible = true;
+		curLight = FlxG.random.int(0, 4, [curLight]);
+		stage.pieces["win" + Std.string(curLight)].visible = true;
 	}
 }

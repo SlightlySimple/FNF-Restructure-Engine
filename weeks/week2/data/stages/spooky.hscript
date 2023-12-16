@@ -1,5 +1,5 @@
-var lightningStrikeBeat = 0;
-var lightningOffset = 8;
+lightningStrikeBeat = 0;
+lightningOffset = 8;
 
 function create()
 {
@@ -7,7 +7,7 @@ function create()
 	FlxG.sound.cache(Paths.sound("week2/thunder_2"));
 }
 
-function lightningStrikeShit()
+function lightningStrike()
 {
 	PlaySound("week2/thunder_" + Std.string(FlxG.random.int(1, 2)));
 	stage.pieces["halloween_bg"].playAnim('lightning');
@@ -15,12 +15,20 @@ function lightningStrikeShit()
 	lightningStrikeBeat = game.curBeat;
 	lightningOffset = FlxG.random.int(8, 24);
 
-	game.player1.playAnim('scared', true);
-	game.gf.playAnim('scared', true);
+	if (game.player1.holdTimer <= 0)
+	{
+		game.player1.playAnim('scared', true);
+		game.player1.holdTimer = Conductor.stepLength;
+	}
+	if (game.gf.holdTimer <= 0)
+	{
+		game.gf.playAnim('scared', true);
+		game.gf.holdTimer = Conductor.stepLength;
+	}
 }
 
 function beatHit()
 {
 	if (Options.options.distractions && FlxG.random.bool(10) && game.curBeat > lightningStrikeBeat + lightningOffset)
-		lightningStrikeShit();
+		lightningStrike();
 }

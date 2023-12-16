@@ -3,26 +3,17 @@ function onEvent(event)
 	if (event.parameters.variable.indexOf(".") > 0)
 	{
 		var varSplit = event.parameters.variable.split(".");
-		var affect;
-		if (varSplit[0].indexOf("[") > -1)
+		var affect = game;
+
+		for (i in 0...varSplit.length - 1)
 		{
-			affect = game.hscriptIdGet(event.parameters.id, varSplit[0].split("[")[0]);
-			affect = affect[analyzeArrayValue(varSplit[0].split("[")[1].split("]")[0])];
-		}
-		else
-			affect = game.hscriptIdGet(event.parameters.id, varSplit[0]);
-		if (varSplit.length > 2)
-		{
-			for (i in 1...varSplit.length - 1)
+			if (varSplit[i].indexOf("[") > -1)
 			{
-				if (varSplit[i].indexOf("[") > -1)
-				{
-					affect = Reflect.getProperty(affect, varSplit[i].split("[")[0]);
-					affect = affect[analyzeArrayValue(varSplit[i].split("[")[1].split("]")[0])];
-				}
-				else
-					affect = Reflect.getProperty(affect, varSplit[i]);
+				affect = Reflect.getProperty(affect, varSplit[i].split("[")[0]);
+				affect = affect[analyzeArrayValue(varSplit[i].split("[")[1].split("]")[0])];
 			}
+			else
+				affect = Reflect.getProperty(affect, varSplit[i]);
 		}
 
 		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
@@ -36,13 +27,13 @@ function onEvent(event)
 	}
 	else
 	{
-		var prev = game.hscriptIdGet(event.parameters.id, event.parameters.variable);
+		var prev = Reflect.getProperty(game, event.parameters.variable);
 		switch (event.parameters.operation)
 		{
-			case "add": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev + analyzeValue(event.parameters.value));
-			case "multiply": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev * analyzeValue(event.parameters.value));
-			case "divide": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev / analyzeValue(event.parameters.value));
-			default: game.hscriptIdSet(event.parameters.id, event.parameters.variable, analyzeValue(event.parameters.value));
+			case "add": Reflect.setProperty(game, event.parameters.variable, prev + analyzeValue(event.parameters.value));
+			case "multiply": Reflect.setProperty(game, event.parameters.variable, prev * analyzeValue(event.parameters.value));
+			case "divide": Reflect.setProperty(game, event.parameters.variable, prev / analyzeValue(event.parameters.value));
+			default: Reflect.setProperty(game, event.parameters.variable, analyzeValue(event.parameters.value));
 		}
 	}
 }
