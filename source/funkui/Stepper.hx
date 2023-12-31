@@ -3,6 +3,11 @@ package funkui;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxTileFrames;
+import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
+import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import data.Options;
 
@@ -32,21 +37,41 @@ class Stepper extends FlxSpriteGroup
 	{
 		super(x, y);
 
-		var back:FlxSprite = new FlxSprite(0, 0).makeGraphic(Std.int(w), Std.int(h), FlxColor.BLACK);
-		add(back);
+		var key:String = "PlusButton_" + Std.string(w) + "_" + Std.string(h);
+		if (FlxG.bitmap.get(key) == null)
+		{
+			var img:BitmapData = new BitmapData(Std.int(h), Std.int(h * 2), false, FlxColor.BLACK);
+			img.fillRect(new Rectangle(1, 1, Std.int(h - 2), Std.int(h - 2)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(2, Std.int(h + 2), Std.int(h - 4), Std.int(h - 4)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(5, Std.int(h / 2) - 1, Std.int(h - 10), 3), FlxColor.BLACK);
+			img.fillRect(new Rectangle(Std.int(h / 2) - 1, 5, 3, Std.int(h - 10)), FlxColor.BLACK);
+			img.fillRect(new Rectangle(5, Std.int(h * 1.5) - 1, Std.int(h - 10), 3), FlxColor.BLACK);
+			img.fillRect(new Rectangle(Std.int(h / 2) - 1, Std.int(h) + 5, 3, Std.int(h - 10)), FlxColor.BLACK);
+			FlxGraphic.fromBitmapData(img, false, key);
+		}
 
-		plusButton = new FlxSprite(Std.int( (w - (h * 2)) + 1 ), 1).makeGraphic(Std.int(h-2), Std.int(h-2), FlxColor.WHITE);
+		var key2:String = "MinusButton_" + Std.string(w) + "_" + Std.string(h);
+		if (FlxG.bitmap.get(key2) == null)
+		{
+			var img:BitmapData = new BitmapData(Std.int(h), Std.int(h * 2), false, FlxColor.BLACK);
+			img.fillRect(new Rectangle(1, 1, Std.int(h - 2), Std.int(h - 2)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(2, Std.int(h + 2), Std.int(h - 4), Std.int(h - 4)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(5, Std.int(h / 2) - 1, Std.int(h - 10), 3), FlxColor.BLACK);
+			img.fillRect(new Rectangle(5, Std.int(h * 1.5) - 1, Std.int(h - 10), 3), FlxColor.BLACK);
+			FlxGraphic.fromBitmapData(img, false, key2);
+		}
+
+		plusButton = new FlxSprite(Std.int(w - (h * 2)), 0);
+		plusButton.frames = FlxTileFrames.fromGraphic(FlxG.bitmap.get(key), FlxPoint.get(Std.int(h), Std.int(h)));
+		plusButton.animation.add("idle", [0]);
+		plusButton.animation.add("hover", [1]);
 		add(plusButton);
 
-		minusButton = new FlxSprite(Std.int( (w - h) + 1 ), 1).makeGraphic(Std.int(h-2), Std.int(h-2), FlxColor.WHITE);
+		minusButton = new FlxSprite(Std.int(w - h), 0);
+		minusButton.frames = FlxTileFrames.fromGraphic(FlxG.bitmap.get(key2), FlxPoint.get(Std.int(h), Std.int(h)));
+		minusButton.animation.add("idle", [0]);
+		minusButton.animation.add("hover", [1]);
 		add(minusButton);
-
-		var decA:FlxSprite = new FlxSprite(Std.int( (w - (h * 2)) + 5 ), Std.int(h/2) - 1).makeGraphic(Std.int(h-10), 3, FlxColor.BLACK);
-		add(decA);
-		var decB:FlxSprite = new FlxSprite(Std.int( (w - (h * 1.5)) - 1 ), 5).makeGraphic(3, Std.int(h-10), FlxColor.BLACK);
-		add(decB);
-		var decC:FlxSprite = new FlxSprite(Std.int( (w - h) + 5 ), Std.int(h/2) - 1).makeGraphic(Std.int(h-10), 3, FlxColor.BLACK);
-		add(decC);
 
 		textObject = new FlxUIInputText(1, 1, Std.int(w - (h * 2))-1, "", Std.int(h - 5));
 		textObject.font = "VCR OSD Mono";
@@ -81,35 +106,23 @@ class Stepper extends FlxSpriteGroup
 			if (plusButton.overlapsPoint(FlxG.mouse.getWorldPosition(camera, plusButton._point), true, camera) && hovered == 0)
 			{
 				hovered = 1;
-				plusButton.x++;
-				plusButton.y++;
-				plusButton.setGraphicSize(Std.int(members[0].height - 4), Std.int(members[0].height - 4));
-				plusButton.updateHitbox();
+				plusButton.animation.play("hover");
 			}
 			else if (!plusButton.overlapsPoint(FlxG.mouse.getWorldPosition(camera, plusButton._point), true, camera) && hovered == 1)
 			{
 				hovered = 0;
-				plusButton.x--;
-				plusButton.y--;
-				plusButton.setGraphicSize(Std.int(members[0].height - 2), Std.int(members[0].height - 2));
-				plusButton.updateHitbox();
+				plusButton.animation.play("idle");
 			}
 
 			if (minusButton.overlapsPoint(FlxG.mouse.getWorldPosition(camera, minusButton._point), true, camera) && hovered == 0)
 			{
 				hovered = 2;
-				minusButton.x++;
-				minusButton.y++;
-				minusButton.setGraphicSize(Std.int(members[0].height - 4), Std.int(members[0].height - 4));
-				minusButton.updateHitbox();
+				minusButton.animation.play("hover");
 			}
 			else if (!minusButton.overlapsPoint(FlxG.mouse.getWorldPosition(camera, minusButton._point), true, camera) && hovered == 2)
 			{
 				hovered = 0;
-				minusButton.x--;
-				minusButton.y--;
-				minusButton.setGraphicSize(Std.int(members[0].height - 2), Std.int(members[0].height - 2));
-				minusButton.updateHitbox();
+				minusButton.animation.play("idle");
 			}
 		}
 

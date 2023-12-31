@@ -79,6 +79,8 @@ class CharacterEditorState extends MusicBeatState
 	var charScaleY:Stepper;
 	var camPosX:Stepper;
 	var camPosY:Stepper;
+	var camPosDeadX:Stepper;
+	var camPosDeadY:Stepper;
 	var firstAnimDropdown:DropdownMenu;
 
 	var animName:InputText;
@@ -118,6 +120,7 @@ class CharacterEditorState extends MusicBeatState
 				asset: newCharacterImage,
 				position: [0, 0],
 				camPosition: [0, 0],
+				camPositionGameOver: [0, 0],
 				scale: [1, 1],
 				antialias: true,
 				animations: [],
@@ -128,6 +131,7 @@ class CharacterEditorState extends MusicBeatState
 				facing: "right",
 				icon: "",
 				gameOverCharacter: "",
+				gameOverSFX: "",
 				deathCounterText: "",
 				script: ""
 			}
@@ -216,7 +220,10 @@ class CharacterEditorState extends MusicBeatState
 
 
 
-		tabMenu = new IsolatedTabMenu(50, 50, 250, 540);
+		var tabMenuY:Int = 580;
+		if (myCharType == "tiles")
+			tabMenuY += 40;
+		tabMenu = new IsolatedTabMenu(50, 50, 250, tabMenuY);
 		tabMenu.cameras = [camHUD];
 		add(tabMenu);
 		refreshCharAnims();
@@ -538,7 +545,7 @@ class CharacterEditorState extends MusicBeatState
 		var camPosLabel:Label = new Label("Camera Position:", camPosX);
 		tabGroupProperties.add(camPosLabel);
 
-		var camTestButton:TextButton = new TextButton(10, camPosX.y + 40, 115, 20, "Test");
+		var camTestButton:TextButton = new TextButton(10, camPosX.y + 30, 115, 20, "Test");
 		camTestButton.onClicked = function() {
 			if (myCharacter.flipX == myCharacterData.flip)
 			{
@@ -567,29 +574,32 @@ class CharacterEditorState extends MusicBeatState
 		};
 		tabGroupProperties.add(camSetButton);
 
-		var camTestLabel:Label = new Label("In-Game:", camTestButton);
-		tabGroupProperties.add(camTestLabel);
+		camPosDeadX = new Stepper(10, camSetButton.y + 40, 115, 20, myCharacterData.camPositionGameOver[0], 5);
+		camPosDeadX.onChanged = function() {myCharacterData.camPositionGameOver[0] = camPosDeadX.valueInt;};
+		tabGroupProperties.add(camPosDeadX);
+		camPosDeadY = new Stepper(camPosDeadX.x + 115, camPosDeadX.y, 115, 20, myCharacterData.camPositionGameOver[1], 5);
+		camPosDeadY.onChanged = function() {myCharacterData.camPositionGameOver[1] = camPosDeadY.valueInt;};
+		tabGroupProperties.add(camPosDeadY);
+		var camPosDeadLabel:Label = new Label("Camera Position (Game Over):", camPosDeadX);
+		tabGroupProperties.add(camPosDeadLabel);
 
-		var camTestDeadButton:TextButton = new TextButton(10, camSetButton.y + 40, 115, 20, "Test");
+		var camTestDeadButton:TextButton = new TextButton(10, camPosDeadX.y + 30, 115, 20, "Test");
 		camTestDeadButton.onClicked = function() {
-			camFollow.x = myCharacter.getGraphicMidpoint().x + myCharacterData.camPosition[0];
-			camFollow.y = myCharacter.getGraphicMidpoint().y + myCharacterData.camPosition[1];
+			camFollow.x = myCharacter.getGraphicMidpoint().x + myCharacterData.camPositionGameOver[0];
+			camFollow.y = myCharacter.getGraphicMidpoint().y + myCharacterData.camPositionGameOver[1];
 		};
 		tabGroupProperties.add(camTestDeadButton);
 
 		var camSetDeadButton:TextButton = new TextButton(camTestDeadButton.x + 115, camTestDeadButton.y, 115, 20, "Set");
 		camSetDeadButton.onClicked = function() {
-			myCharacterData.camPosition = [Std.int(camFollow.x - myCharacter.getGraphicMidpoint().x), Std.int(camFollow.y - myCharacter.getGraphicMidpoint().y)];
+			myCharacterData.camPositionGameOver = [Std.int(camFollow.x - myCharacter.getGraphicMidpoint().x), Std.int(camFollow.y - myCharacter.getGraphicMidpoint().y)];
 
-			camPosX.value = myCharacterData.camPosition[0];
-			camPosY.value = myCharacterData.camPosition[1];
+			camPosDeadX.value = myCharacterData.camPositionGameOver[0];
+			camPosDeadY.value = myCharacterData.camPositionGameOver[1];
 		};
 		tabGroupProperties.add(camSetDeadButton);
 
-		var camTestDeadLabel:Label = new Label("Game Over:", camTestDeadButton);
-		tabGroupProperties.add(camTestDeadLabel);
-
-		var iconInput:InputText = new InputText(10, camTestDeadButton.y + 40);
+		var iconInput:InputText = new InputText(10, camTestDeadButton.y + 40, 115);
 		iconInput.focusGained = function() {
 			if (myCharacterData.icon != null)
 				iconInput.text = myCharacterData.icon;
@@ -611,7 +621,7 @@ class CharacterEditorState extends MusicBeatState
 				iconList.push(curCharacter.substring(0, curCharacter.indexOf("/")+1) + i);
 		}
 		iconList.unshift("");
-		var iconDropdown:DropdownMenu = new DropdownMenu(10, iconInput.y + 30, 230, 20, myCharacterData.icon, iconList, true);
+		var iconDropdown:DropdownMenu = new DropdownMenu(iconInput.x + 115, iconInput.y, 115, 20, myCharacterData.icon, iconList, true);
 		iconDropdown.onChanged = function() {
 			iconInput.text = iconDropdown.value;
 			iconInput.focusLost();
@@ -680,6 +690,7 @@ class CharacterEditorState extends MusicBeatState
 		tabGroupProperties.add(autoAnimButton);
 
 		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
+		characterList.unshift("_self");
 		characterList.unshift("");
 		var gameOverCharDropdown:DropdownMenu = new DropdownMenu(10, autoAnimButton.y + 40, 230, 20, myCharacterData.gameOverCharacter, characterList, true);
 		gameOverCharDropdown.onChanged = function() {
@@ -689,7 +700,17 @@ class CharacterEditorState extends MusicBeatState
 		var gameOverCharLabel:Label = new Label("Game Over Character (Optional):", gameOverCharDropdown);
 		tabGroupProperties.add(gameOverCharLabel);
 
-		var deathCounterInput:InputText = new InputText(10, gameOverCharDropdown.y + 40);
+		var soundList:Array<String> = Paths.listFilesSub("sounds/", ".ogg");
+		soundList.unshift("");
+		var gameOverSFXDropdown:DropdownMenu = new DropdownMenu(10, gameOverCharDropdown.y + 40, 230, 20, myCharacterData.gameOverSFX, soundList, true);
+		gameOverSFXDropdown.onChanged = function() {
+			myCharacterData.gameOverSFX = gameOverSFXDropdown.value;
+		};
+		tabGroupProperties.add(gameOverSFXDropdown);
+		var gameOverSFXLabel:Label = new Label("Game Over SFX (Optional):", gameOverSFXDropdown);
+		tabGroupProperties.add(gameOverSFXLabel);
+
+		var deathCounterInput:InputText = new InputText(10, gameOverSFXDropdown.y + 40);
 		deathCounterInput.focusGained = function() {
 			deathCounterInput.text = myCharacterData.deathCounterText;
 		}
@@ -1061,8 +1082,12 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.position[1] -= offY;
 			myCharacterData.camPosition[0] += offX;
 			myCharacterData.camPosition[1] += offY;
+			myCharacterData.camPositionGameOver[0] += offX;
+			myCharacterData.camPositionGameOver[1] += offY;
 			camPosX.value = myCharacterData.camPosition[0];
 			camPosY.value = myCharacterData.camPosition[1];
+			camPosDeadX.value = myCharacterData.camPositionGameOver[0];
+			camPosDeadY.value = myCharacterData.camPositionGameOver[1];
 
 			resetCharPosition();
 			playAnim(myCharacterData.animations[curCharAnim].name, true);
@@ -1732,6 +1757,9 @@ class CharacterEditorState extends MusicBeatState
 
 		if (saveData.gameOverCharacter == "")
 			Reflect.deleteField(saveData, "gameOverCharacter");
+
+		if (saveData.gameOverSFX == "")
+			Reflect.deleteField(saveData, "gameOverSFX");
 
 		if (saveData.deathCounterText == "")
 			Reflect.deleteField(saveData, "deathCounterText");

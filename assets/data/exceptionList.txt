@@ -2,3 +2,4 @@
 characters/bf-dead
 characters/bf-pixel-dead
 characters/bf-holding-gf-dead
+characters/old/*

@@ -78,6 +78,7 @@ class Character extends FlxSprite
 				asset: data.image,
 				position: data.position,
 				camPosition: [Std.int(data.camera_position[0] + 150), Std.int(data.camera_position[1] - 100)],
+				camPositionGameOver: [0, 0],
 				scale: [data.scale, data.scale],
 				antialias: !data.no_antialiasing,
 				animations: [],
@@ -127,8 +128,17 @@ class Character extends FlxSprite
 				if (oldCharData.asset != null && oldCharData.asset != "")
 					cData.asset = oldCharData.asset;
 
+				if (oldCharData.camPosition != null && oldCharData.camPosition.length >= 2)
+					cData.camPosition = oldCharData.camPosition;
+
+				if (oldCharData.camPositionGameOver != null && oldCharData.camPositionGameOver.length >= 2)
+					cData.camPositionGameOver = oldCharData.camPositionGameOver;
+
 				if (oldCharData.gameOverCharacter != null && oldCharData.gameOverCharacter != "")
 					cData.gameOverCharacter = oldCharData.gameOverCharacter;
+
+				if (oldCharData.gameOverSFX != null && oldCharData.gameOverSFX != "")
+					cData.gameOverSFX = oldCharData.gameOverSFX;
 
 				if (oldCharData.deathCounterText != null && oldCharData.deathCounterText != "")
 					cData.deathCounterText = oldCharData.deathCounterText;
@@ -146,8 +156,14 @@ class Character extends FlxSprite
 		if (cData.scale == null || cData.scale.length < 2)
 			cData.scale = [1, 1];
 
+		if (cData.camPositionGameOver == null || cData.camPositionGameOver.length < 2)
+			cData.camPositionGameOver = [cData.camPosition[0], cData.camPosition[1]];
+
 		if (cData.gameOverCharacter == null)
 			cData.gameOverCharacter = "";
+
+		if (cData.gameOverSFX == null)
+			cData.gameOverSFX = "";
 
 		if (cData.deathCounterText == null)
 			cData.deathCounterText = "";
@@ -342,6 +358,8 @@ class Character extends FlxSprite
 			else
 				characterData.gameOverCharacter = TitleState.defaultVariables.dead;
 		}
+		else if (characterData.gameOverCharacter == "_self")
+			characterData.gameOverCharacter = curCharacter;
 
 		if (characterData.icon == null || characterData.icon == "")
 		{

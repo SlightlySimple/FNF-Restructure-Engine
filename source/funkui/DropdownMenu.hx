@@ -3,6 +3,11 @@ package funkui;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxTileFrames;
+import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
+import flixel.math.FlxPoint;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import data.Options;
@@ -30,11 +35,20 @@ class DropdownMenu extends FlxSpriteGroup
 	{
 		super(x, y);
 
-		var back:FlxSprite = new FlxSprite(0, 0).makeGraphic(Std.int(w), Std.int(h), FlxColor.BLACK);
-		add(back);
+		var key:String = "DropdownMenu_" + Std.string(w) + "_" + Std.string(h);
+		if (FlxG.bitmap.get(key) == null)
+		{
+			var img:BitmapData = new BitmapData(Std.int(w), Std.int(h * 2), false, FlxColor.BLACK);
+			img.fillRect(new Rectangle(1, 1, Std.int(w - 2), Std.int(h - 2)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(2, Std.int(h + 2), Std.int(w - 4), Std.int(h - 4)), FlxColor.WHITE);
+			FlxGraphic.fromBitmapData(img, false, key);
+		}
 
-		var front:FlxSprite = new FlxSprite(1, 1).makeGraphic(Std.int(w-2), Std.int(h-2), FlxColor.WHITE);
-		add(front);
+		var back:FlxSprite = new FlxSprite();
+		back.frames = FlxTileFrames.fromGraphic(FlxG.bitmap.get(key), FlxPoint.get(Std.int(w), Std.int(h)));
+		back.animation.add("idle", [0]);
+		back.animation.add("hover", [1]);
+		add(back);
 
 		textObject = new FlxText(0, 0, w, text, fontSize);
 		textObject.color = FlxColor.BLACK;
@@ -110,10 +124,7 @@ class DropdownMenu extends FlxSpriteGroup
 						searchObject.hasFocus = false;
 					}
 
-					members[1].x--;
-					members[1].y--;
-					members[1].setGraphicSize(Std.int(members[0].width - 2), Std.int(members[0].height - 2));
-					members[1].updateHitbox();
+					members[0].animation.play("idle");
 				}
 				else if (FlxG.mouse.wheel != 0)
 				{
@@ -128,18 +139,12 @@ class DropdownMenu extends FlxSpriteGroup
 					if (FlxG.mouse.overlaps(members[0]) && !hovered)
 					{
 						hovered = true;
-						members[1].x++;
-						members[1].y++;
-						members[1].setGraphicSize(Std.int(members[0].width - 4), Std.int(members[0].height - 4));
-						members[1].updateHitbox();
+						members[0].animation.play("hover");
 					}
 					else if (!FlxG.mouse.overlaps(members[0]) && hovered)
 					{
 						hovered = false;
-						members[1].x--;
-						members[1].y--;
-						members[1].setGraphicSize(Std.int(members[0].width - 2), Std.int(members[0].height - 2));
-						members[1].updateHitbox();
+						members[0].animation.play("idle");
 					}
 				}
 
@@ -163,7 +168,7 @@ class DropdownMenu extends FlxSpriteGroup
 
 					var yy:Float = 0;
 					var yy2:Float = 0;
-					for (i in 0...Std.int(Math.min(30, valueList.length)))
+					for (i in 0...Std.int(Math.min(50, valueList.length)))
 					{
 						var dropdownTextObject:FlxText = new FlxText(5, yy, w - 10, valueList[i], 12);
 						dropdownTextObject.color = FlxColor.BLACK;

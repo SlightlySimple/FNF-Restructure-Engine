@@ -19,6 +19,8 @@ typedef CharacterData =
 	var idles:Array<String>;
 	var ?danceSpeed:Null<Float>;
 	var ?gameOverCharacter:String;
+	var ?gameOverSFX:String;
+	var ?camPositionGameOver:Array<Int>;
 	var ?deathCounterText:String;
 	var flip:Null<Bool>;
 	var facing:String;
@@ -143,6 +145,7 @@ typedef NoteTypeData =
 	var p1ShouldMiss:Bool;
 	var p2ShouldMiss:Bool;
 	var noSustains:Bool;
+	var ?singers:Array<Int>;
 	var ?alwaysSplash:Null<Bool>;
 	var ?splashMin:Null<Int>;
 }

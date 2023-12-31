@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSubState;
 import openfl.utils.Assets;
+import openfl.events.KeyboardEvent;
 import haxe.ds.ArraySort;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -39,7 +40,7 @@ import scripting.HscriptState;
 
 using StringTools;
 
-class FreeplaySandbox extends IsolatedTabMenu
+class FreeplaySandbox extends FlxSpriteGroup
 {
 	public static var characters:Array<String> = ["","",""];
 	public static var stage:String = "";
@@ -132,92 +133,326 @@ class FreeplaySandbox extends IsolatedTabMenu
 
 
 
+	var state:FlxState;
+	var curSelected:Int = 0;
+	var cursor:FlxText;
+	var txtLeft:Array<FlxText> = [];
+	var txtRight:Array<FlxText> = [];
+	var sideListLang:Array<String>;
+	var reloadFunc:Void->Void;
+	var exitFunc:Void->Void;
+	var nav:UINumeralNavigation;
+
 	override public function new(state:FlxState, reloadFunc:Void->Void, exitFunc:Void->Void)
 	{
+		super();
+		this.state = state;
+		this.reloadFunc = reloadFunc;
+		this.exitFunc = exitFunc;
+
 		if (characterCount > characters.length)
 		{
 			while (characterCount > characters.length)
 				characters.push("");
 		}
 
-		super(0, 0, 300, 200 + (characterCount * 40));
+		sideListLang = [];
+		for (s in sideList)
+			sideListLang.push(Lang.get(s));
+
+		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 240 + (characterCount * 40), FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
+
 		screenCenter();
 
-		var tabGroup:TabGroup = new TabGroup();
-		var yy:Int = 20;
-
-		var charDropdowns:Array<DropdownMenu> = [];
+		var options:Array<String> = [];
 		for (i in 0...characterCount)
 		{
-			var charDropdown:DropdownMenu = new DropdownMenu(10, yy, 280, 20, characters[i], characterList, true);
-			charDropdown.onChanged = function() {
-				characters[i] = charDropdown.value;
-			}
-			tabGroup.add(charDropdown);
-			charDropdowns.push(charDropdown);
 			var labelString:String = Lang.get("#fpSandboxCharacter", [Std.string(i+1)]);
 			if (characterLabels != null && characterLabels.length > i)
 				labelString = Lang.get(characterLabels[i], [Std.string(i+1)]);
-			var charDropdownLabel:Label = new Label(labelString, charDropdown);
-			tabGroup.add(charDropdownLabel);
-			yy += 40;
+			if (!labelString.endsWith(":"))
+				labelString += ":";
+			options.push(labelString);
 		}
+		options.push(Lang.get("#fpSandboxStage"));
+		options.push(Lang.get("#fpSandboxSide"));
+		options.push(Lang.get("#fpSandboxRate"));
+		options.push(Lang.get("#fpSandboxReset"));
+		options.push(Lang.get("#fpSandboxExit"));
 
-		var stageDropdown:DropdownMenu = new DropdownMenu(10, yy, 280, 20, stage, stageList, true);
-		stageDropdown.onChanged = function() {
-			stage = stageDropdown.value;
-		}
-		tabGroup.add(stageDropdown);
-		var stageDropdownLabel:Label = new Label("#fpSandboxStage", stageDropdown);
-		tabGroup.add(stageDropdownLabel);
-
-		var sideListLang:Array<String> = [];
-		for (s in sideList)
-			sideListLang.push(Lang.get(s));
-		var chartSideDropdown:DropdownMenu = new DropdownMenu(10, stageDropdown.y + 40, 280, 20, sideListLang[chartSide], sideListLang);
-		chartSideDropdown.onChanged = function() {
-			chartSide = chartSideDropdown.valueInt;
-			reloadFunc();
-		}
-		tabGroup.add(chartSideDropdown);
-		var stageDropdownLabel:Label = new Label("#fpSandboxSide", chartSideDropdown);
-		tabGroup.add(stageDropdownLabel);
-
-		var rateStepper:Stepper = new Stepper(10, chartSideDropdown.y + 40, 280, 20, playbackRate, 0.05, 0.05, 9999, 2);
-		rateStepper.onChanged = function() {
-			playbackRate = rateStepper.value;
-		}
-		tabGroup.add(rateStepper);
-		var rateStepperLabel:Label = new Label("#fpSandboxRate", rateStepper);
-		tabGroup.add(rateStepperLabel);
-
-		var resetButton:TextButton = new TextButton(10, rateStepper.y + 30, 280, 20, "#fpSandboxReset");
-		resetButton.onClicked = function()
+		for (i in 0...options.length)
 		{
-			for (i in 0...characters.length)
-				characters[i] = "";
-			stage = "";
-			chartSide = 0;
-			playbackRate = 1;
+			var txt:FlxText = new FlxText(20, 20 + (i * 40), 0, options[i], 32);
+			txt.font = "VCR OSD Mono";
+			add(txt);
+			txtLeft.push(txt);
 
-			for (c in charDropdowns)
-				c.value = "";
-			stageDropdown.value = "";
-			chartSideDropdown.setValueByInt(0);
-			rateStepper.value = 1;
-			reloadFunc();
-		};
-		tabGroup.add(resetButton);
+			var txt2:FlxText = new FlxText(20, 20 + (i * 40), 0, "", 32);
+			txt2.font = "VCR OSD Mono";
+			add(txt2);
+			txtRight.push(txt2);
+		}
+		cursor = new FlxText(20, 20, 0, ">", 32);
+		cursor.font = "VCR OSD Mono";
+		add(cursor);
 
-		var exitButton:TextButton = new TextButton(10, resetButton.y + 30, 280, 20, "#fpSandboxExit");
-		exitButton.onClicked = function()
-		{
+		nav = new UINumeralNavigation(changeOption, changeSelection, acceptOption, function() {
 			state.remove(this);
+			state.remove(nav);
 			exitFunc();
-		};
-		tabGroup.add(exitButton);
+		}, changeSelection);
+		nav.leftClick = nav.accept;
+		nav.rightClick = nav.back;
+		state.add(nav);
 
-		addGroup(tabGroup);
+		changeSelection();
+	}
+
+	function changeSelection(?v:Int = 0)
+	{
+		curSelected = Util.loop(curSelected + v, 0, txtRight.length - 1);
+		cursor.y = y + 20 + (curSelected * 40);
+
+		for (t in txtLeft)
+			t.x = cursor.x;
+		txtLeft[curSelected].x += 30;
+		updateAllTexts();
+	}
+
+	function acceptOption()
+	{
+		if (curSelected < characterCount)
+		{
+			nav.locked = true;
+			new FlxTimer().start(0.001, function(tmr) {
+				state.add(new FreeplaySandboxMenu(state, characterList, characters[curSelected], function(v) {
+					nav.locked = false;
+					characters[curSelected] = v;
+					updateAllTexts();
+				}, function() { nav.locked = false; }));
+			});
+		}
+		else
+		{
+			switch (curSelected - characterCount)
+			{
+				case 0:
+					nav.locked = true;
+					new FlxTimer().start(0.001, function(tmr) {
+						state.add(new FreeplaySandboxMenu(state, stageList, stage, function(v) {
+							nav.locked = false;
+							stage = v;
+							updateAllTexts();
+						}, function() { nav.locked = false; }));
+					});
+
+				case 3:
+					for (i in 0...characters.length)
+						characters[i] = "";
+					stage = "";
+					chartSide = 0;
+					playbackRate = 1;
+
+					reloadFunc();
+					updateAllTexts();
+
+				case 4:
+					state.remove(this);
+					state.remove(nav);
+					exitFunc();
+			}
+		}
+	}
+
+	function changeOption(?v:Int = 0)
+	{
+		switch (curSelected - characterCount)
+		{
+			case 1:
+				chartSide = Util.loop(chartSide + v, 0, sideList.length - 1);
+				reloadFunc();
+				updateAllTexts();
+
+			case 2:
+				if (FlxG.keys.pressed.SHIFT)
+					playbackRate += 0.01 * v;
+				else
+					playbackRate += 0.05 * v;
+				playbackRate = Math.round(playbackRate * 100) / 100;
+				if (playbackRate < 0.05)
+					playbackRate = 0.05;
+
+				updateAllTexts();
+		}
+	}
+
+	function updateAllTexts()
+	{
+		for (i in 0...characterCount)
+		{
+			if (characters[i] == "")
+				txtRight[i].text = Lang.get("#fpSandboxDefault");
+			else
+				txtRight[i].text = characters[i];
+		}
+		if (stage == "")
+			txtRight[characterCount].text = Lang.get("#fpSandboxDefault");
+		else
+			txtRight[characterCount].text = stage;
+
+		txtRight[characterCount + 1].text = sideListLang[chartSide];
+		if (curSelected == characterCount + 1)
+			txtRight[characterCount + 1].text = "< " + txtRight[characterCount + 1].text + " >";
+		txtRight[characterCount + 2].text = Std.string(playbackRate);
+		if (curSelected == characterCount + 2)
+			txtRight[characterCount + 2].text = "< " + txtRight[characterCount + 2].text + " >";
+
+		for (t in txtRight)
+			t.x = x + members[0].width - 20 - t.width;
+	}
+}
+
+class FreeplaySandboxMenu extends FlxSpriteGroup
+{
+	var OGlist:Array<String> = [];
+	var list:Array<String> = [];
+	var texts:Array<FlxText> = [];
+	var cursor:FlxText;
+	var search:FlxText;
+	var nav:UINumeralNavigation;
+
+	var curSelected:Int = 0;
+	var selOffset:Int = 0;
+
+	override public function new(state:FlxState, list:Array<String>, def:String, acceptFunc:String->Void, exitFunc:Void->Void)
+	{
+		super();
+
+		OGlist = list.copy();
+		this.list = list.copy();
+
+		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 600, FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
+
+		screenCenter();
+
+		var searchHint:FlxText = new FlxText(20, 20, bg.width - 40, Lang.get("#fpSandboxSearchHint"), 32);
+		searchHint.font = "VCR OSD Mono";
+		searchHint.alignment = CENTER;
+		add(searchHint);
+
+		search = new FlxText(20, 60, 0, "", 32);
+		search.font = "VCR OSD Mono";
+		add(search);
+
+		for (i in 0...16)
+		{
+			var txt:FlxText = new FlxText(20, 100 + (i * 30), 0, "", 24);
+			txt.font = "VCR OSD Mono";
+			add(txt);
+			texts.push(txt);
+		}
+		cursor = new FlxText(20, 100, 0, ">", 24);
+		cursor.font = "VCR OSD Mono";
+		add(cursor);
+
+		nav = new UINumeralNavigation(null, changeSelection, function() {
+			state.remove(this);
+			state.remove(nav);
+			acceptFunc(this.list[curSelected]);
+			this.destroy();
+		}, function() {
+			state.remove(this);
+			state.remove(nav);
+			exitFunc();
+			this.destroy();
+		}, changeSelection);
+		nav.leftClick = nav.accept;
+		nav.rightClick = nav.back;
+		state.add(nav);
+
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		if (list.indexOf(def) > -1)
+			curSelected = list.indexOf(def);
+		changeSelection();
+	}
+
+	override public function destroy()
+	{
+		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		super.destroy();
+	}
+
+	function changeSelection(?v:Int = 0)
+	{
+		curSelected = Std.int(Math.max(0, Math.min(list.length - 1, curSelected + v)));
+		while (curSelected - selOffset >= texts.length)
+			selOffset++;
+		while (curSelected - selOffset < 0)
+			selOffset--;
+		cursor.y = y + 100 + ((curSelected - selOffset) * 30);
+
+		for (t in texts)
+			t.x = cursor.x;
+		texts[curSelected - selOffset].x += 20;
+
+		updateAllTexts();
+	}
+
+	function updateAllTexts()
+	{
+		for (i in 0...texts.length)
+		{
+			if (i + selOffset < list.length)
+				texts[i].text = list[i + selOffset];
+			else
+				texts[i].text = "";
+		}
+	}
+
+	function onKeyDown(e:KeyboardEvent)
+	{
+		var key:Int = e.keyCode;
+
+		if (key == 8 && search.text.length > 0)
+		{
+			if (search.text.length > 1)
+				search.text = search.text.substring(0, search.text.length - 1);
+			else
+				search.text = "";
+			filterList();
+		}
+		else if (key == 46)
+		{
+			search.text = "";
+			filterList();
+		}
+		else
+		{
+			if (e.charCode == 0)
+				return;
+
+			var newText:String = String.fromCharCode(e.charCode);
+
+			if (newText.length > 0)
+				search.text += newText;
+
+			filterList();
+		}
+	}
+
+	function filterList()
+	{
+		list = [];
+		for (l in OGlist)
+		{
+			if (search.text.trim() == "" || l.toLowerCase().indexOf(search.text.toLowerCase()) > -1)
+				list.push(l);
+		}
+		changeSelection();
 	}
 }
 
@@ -811,12 +1046,10 @@ class FreeplayMenuState extends MusicBeatState
 				if (Options.keyJustPressed("sandbox"))
 				{
 					nav2.locked = true;
-					FlxG.mouse.visible = true;
 					add(new FreeplaySandbox(this, function() {
 						reload();
 					}, function() {
 						nav2.locked = false;
-						FlxG.mouse.visible = false;
 					}));
 				}
 			}

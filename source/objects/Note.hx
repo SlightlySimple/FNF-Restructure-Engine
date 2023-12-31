@@ -220,6 +220,7 @@ class SustainNote extends FlxSprite
 	public var isBeingHit:Bool = false;
 	public var hitTimer:Float = 0;
 	public var hitLimit:Float = 100;
+	public var passedHitLimit:Bool = false;
 
 	public var typeData:NoteTypeData = null;
 	public var noteskinOverride:String = "";

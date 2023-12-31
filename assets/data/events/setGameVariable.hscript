@@ -1,4 +1,19 @@
+function create()
+{
+	for (e in game.songData.events)
+	{
+		if (e.type == "setGameVariable" && e.parameters.init)
+			eventGo(e);
+	}
+}
+
 function onEvent(event)
+{
+	if (!event.parameters.init)
+		eventGo(event);
+}
+
+function eventGo(event)
 {
 	if (event.parameters.variable.indexOf(".") > 0)
 	{

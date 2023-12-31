@@ -11,7 +11,7 @@ function create()
 function onSustainSpawned(note)
 {
 	if (note.noteType == "roll")
-		note.hitLimit *= 2.5;
+		note.hitLimit *= 1.5;
 }
 
 function update(elapsed)
@@ -28,7 +28,7 @@ function update(elapsed)
 
 			if (matchingTimer != null)
 			{
-				if (note.isBeingHit)
+				if (note.isBeingHit && !note.passedHitLimit)
 				{
 					for (s in note.singers)
 						s.playAnim(note.hitAnim);

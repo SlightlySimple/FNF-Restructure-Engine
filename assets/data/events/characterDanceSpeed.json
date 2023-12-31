@@ -20,6 +20,12 @@
 			"max": 9999,
 			"increment": 0.25,
 			"decimals": 2
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"type": "checkbox",
+			"defaultValue": false
 		}
 	]
 }

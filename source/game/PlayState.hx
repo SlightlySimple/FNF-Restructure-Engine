@@ -299,6 +299,21 @@ class PlayState extends MusicBeatState
 
 		GameOverSubState.resetStatics();
 
+		if (songData.music.pause != null && songData.music.pause != "")
+			PauseSubState.music = songData.music.pause;
+
+		if (songData.music.gameOver != null && songData.music.gameOver != "")
+			GameOverSubState.gameOverMusic = songData.music.gameOver;
+
+		if (songData.music.gameOverEnd != null && songData.music.gameOverEnd != "")
+			GameOverSubState.gameOverMusicEnd = songData.music.gameOverEnd;
+
+		if (songData.music.results != null && songData.music.results != "")
+			ResultsSubState.music = songData.music.results;
+
+		if (songData.music.resultsEnd != null && songData.music.resultsEnd != "")
+			ResultsSubState.musicEnd = songData.music.resultsEnd;
+
 		camFollow = new FlxObject();
 		camFollowPos = new FlxObject();
 
@@ -387,6 +402,18 @@ class PlayState extends MusicBeatState
 
 		var noteTypes:Array<String> = generateSong();
 		Note.refreshNoteTypes(noteTypes, true);
+		for (n in noteTypes)
+		{
+			if (Note.noteTypes.exists(n) && Note.noteTypes[n].singers != null && !notetypeSingers.exists(n))
+			{
+				notetypeSingers[n] = [];
+				for (s in Note.noteTypes[n].singers)
+				{
+					if (allCharacters.length > s)
+						notetypeSingers[n].push(allCharacters[s]);
+				}
+			}
+		}
 
 		FlxG.camera.zoom = camZoom;
 		camFollow.x = stage.stageData.camFollow[0];
@@ -488,7 +515,7 @@ class PlayState extends MusicBeatState
 		if (iconCharacters.length < 2)
 		{
 			if (iconCharacters.contains(player2))
-				iconCharacters.push(player1);
+				iconCharacters.unshift(player1);
 			else
 				iconCharacters.unshift(player2);
 		}
@@ -968,14 +995,20 @@ class PlayState extends MusicBeatState
 
 				if (!playerColumns.contains(note.column))
 				{
-					if (note.strumTime - songProgress <= 0)
+					if (note.strumTime - songProgress <= 0 && !note.typeData.p2ShouldMiss)
 						opponentSustainHit(note);
+
+					if (note.strumTime + note.sustainLength - songProgress < -100 - StrumNote.noteSize)
+					{
+						note.kill();
+						note.destroy();
+					}
 				}
 				else
 				{
 					if (note.strumTime - songProgress <= 0)
 					{
-						if ((holdArray[playerColumns.indexOf(note.column)] || botplay) && note.canBeHit && !note.missed)
+						if ((botplay || note.passedHitLimit || holdArray[playerColumns.indexOf(note.column)]) && note.canBeHit && !note.missed)
 							sustainHit(note);
 						else
 						{
@@ -1904,6 +1937,7 @@ class PlayState extends MusicBeatState
 	public var skipCountdown:Bool = false;
 	public var countdownStarted:Bool = false;
 	public var countdownProgress:Int = 0;
+	public var countdownMultiplier:Float = 1;
 	public var countdownTimer:FlxTimer = null;
 	public var countdownTickSprites:Array<CountdownPopup> = [];
 	public var countdownTickGroup:FlxTypedSpriteGroup<CountdownPopup>;
@@ -1917,14 +1951,16 @@ class PlayState extends MusicBeatState
 			{
 				countdownStarted = true;
 				PlayState.firstPlay = false;
-				songProgress = (Conductor.beatLength * -5) + totalOffset;
+				var countdownBeatLength:Float = Conductor.beatLength * countdownMultiplier;
+				songProgress = (countdownBeatLength * -5) + totalOffset;
 				if (testingChart)
 					songProgress += testingChartPos;
 				healthGraphInfo = [[0, health]];
+				insert(members.length, countdownTickGroup);				// The reason we do this instead of "add" is to ensure the group is on the top layer rather than replacing a null object
 				if (skipCountdown && !testingChart)
 				{
-					songProgress = (Conductor.beatLength * -1) + totalOffset;
-					countdownTimer = new FlxTimer().start((Conductor.beatLength / 1000.0) / playbackRate, function(tmr:FlxTimer)
+					songProgress = (countdownBeatLength * -1) + totalOffset;
+					countdownTimer = new FlxTimer().start((countdownBeatLength / 1000.0) / playbackRate, function(tmr:FlxTimer)
 					{
 						countdownProgress = 4;
 						playSong();
@@ -1935,16 +1971,15 @@ class PlayState extends MusicBeatState
 				}
 				else
 				{
-					insert(members.length, countdownTickGroup);				// The reason we do this instead of "add" is to ensure the group is on the top layer rather than replacing a null object
 					for (i in 0...uiSkin.countdownSounds.length)
 					{
 						if (uiSkin.countdownSounds[i] != "")
 							FlxG.sound.cache(Paths.sound(uiSkin.countdownSounds[i]));
 					}
 
-					countdownTimer = new FlxTimer().start((Conductor.beatLength / 1000.0) / playbackRate, function(tmr:FlxTimer)
+					countdownTimer = new FlxTimer().start((countdownBeatLength / 1000.0) / playbackRate, function(tmr:FlxTimer)
 					{
-						songProgress = (Conductor.beatLength * (-4 + countdownProgress)) + totalOffset;
+						songProgress = (countdownBeatLength * (-4 + countdownProgress)) + totalOffset;
 						if (testingChart)
 							songProgress += testingChartPos;
 
@@ -2496,6 +2531,9 @@ class PlayState extends MusicBeatState
 
 		hscriptExec("sustainHit", [note]);
 		luaExec("sustainHit", [sustainNotes.members.indexOf(note)]);
+
+		if (!note.passedHitLimit && note.strumTime + note.sustainLength - songProgress <= (note.hitLimit * playbackRate))
+			note.passedHitLimit = true;
 
 		if (note.strumTime + note.sustainLength - songProgress <= 0)
 		{

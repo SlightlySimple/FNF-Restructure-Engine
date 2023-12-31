@@ -212,6 +212,9 @@ class ChartEditorState extends MusicBeatState
 	var noteTicks:Array<Array<Dynamic>> = [];
 
 	var characterSettings:FlxSpriteGroup;
+	var characterList:FlxSpriteGroup;
+	var characterNotetypes:FlxSpriteGroup;
+	var characterFileList:Array<String>;
 
 	var trackSettings:FlxSpriteGroup;
 
@@ -285,7 +288,8 @@ class ChartEditorState extends MusicBeatState
 				tracks: [["Inst", 0]],
 				notes: [{camOn: 1, lengthInSteps: 16, sectionNotes: []}],
 				eventFile: "_events",
-				events: []
+				events: [],
+				music: { pause: "", gameOver: "", gameOverEnd: "", results: "", resultsEnd: "" }
 			}
 			if (Paths.songExists(songId, "Voices"))
 				songData.tracks.push(["Voices", 1]);
@@ -364,6 +368,7 @@ class ChartEditorState extends MusicBeatState
 		var xx:Int = Std.int( (FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) );
 		var ww:Int = Std.int(NOTE_SIZE * numColumns);
 		eventTimeLine = new FlxSprite(xx, 0).makeGraphic(ww, 1, FlxColor.YELLOW);
+		eventTimeLine.visible = false;
 		add(eventTimeLine);
 
 		selectionBox = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
@@ -409,7 +414,7 @@ class ChartEditorState extends MusicBeatState
 		tabMenu.cameras = [camHUD];
 		add(tabMenu);
 
-		tabButtons = new TabButtons(0, 0, 750, ["Settings", "Properties", "Characters", "Tracks", "Section", "Misc.", "Events", "Help"]);
+		tabButtons = new TabButtons(0, 0, 800, ["Settings", "Properties", "Characters", "Tracks", "Music", "Section", "Misc.", "Events", "Help"]);
 		tabButtons.cameras = [camHUD];
 		tabButtons.menu = tabMenu;
 		add(tabButtons);
@@ -425,8 +430,7 @@ class ChartEditorState extends MusicBeatState
 		var saveChartButton:TextButton = new TextButton(loadChartButton.x + 115, loadChartButton.y, 115, 20, "Save");
 		saveChartButton.onClicked = saveChart;
 		tabGroupSettings.add(saveChartButton);
-		var chartLabel:Label = new Label("Chart:", loadChartButton);
-		tabGroupSettings.add(chartLabel);
+		tabGroupSettings.add(new Label("Chart:", loadChartButton));
 
 		var loadEventsButton:TextButton = new TextButton(10, saveChartButton.y + 40, 75, 20, "Load");
 		loadEventsButton.onClicked = function() {loadEvents(false); };
@@ -439,8 +443,7 @@ class ChartEditorState extends MusicBeatState
 		var saveEventsButton:TextButton = new TextButton(addEventsButton.x + 75, addEventsButton.y, 75, 20, "Save");
 		saveEventsButton.onClicked = saveEvents;
 		tabGroupSettings.add(saveEventsButton);
-		var eventsLabel:Label = new Label("Events:", loadEventsButton);
-		tabGroupSettings.add(eventsLabel);
+		tabGroupSettings.add(new Label("Events:", loadEventsButton));
 
 		var saveSMButton:TextButton = new TextButton(10, saveEventsButton.y + 30, 230, 20, "Save SM");
 		saveSMButton.onClicked = saveSM;
@@ -498,8 +501,7 @@ class ChartEditorState extends MusicBeatState
 			confirm.cameras = [camHUD];
 		}
 		tabGroupSettings.add(clearEventsButton);
-		var clearLabel:Label = new Label("Clear:", clearNotesButton);
-		tabGroupSettings.add(clearLabel);
+		tabGroupSettings.add(new Label("Clear:", clearNotesButton));
 
 		var optimizeSectionsButton:TextButton = new TextButton(10, clearEventsButton.y + 30, 230, 20, "Optimize Sections");
 		optimizeSectionsButton.onClicked = function() {
@@ -561,19 +563,16 @@ class ChartEditorState extends MusicBeatState
 			refreshSectionLines();
 		}
 		tabGroupSettings.add(strumDivisionsStepper);
-		var strumDivisionsLabel:Label = new Label("Strumline Divisions (Editor):", strumDivisionsStepper);
-		tabGroupSettings.add(strumDivisionsLabel);
+		tabGroupSettings.add(new Label("Strumline Divisions (Editor):", strumDivisionsStepper));
 
 		noteTick = new Stepper(10, strumDivisionsStepper.y + 40, 230, 20, 0, 1, 0, strumDivisions + 1);
 		tabGroupSettings.add(noteTick);
-		var noteTickLabel:Label = new Label("Note Tick for Strumline:", noteTick);
-		tabGroupSettings.add(noteTickLabel);
+		tabGroupSettings.add(new Label("Note Tick for Strumline:", noteTick));
 
 		var playbackRateStepper:Stepper = new Stepper(10, noteTick.y + 40, 230, 20, 1, 0.05, 0.05, 9999, 2);
 		playbackRateStepper.onChanged = function() { playbackRate = playbackRateStepper.value; correctTrackPitch(true); }
 		tabGroupSettings.add(playbackRateStepper);
-		var playbackRateStepperLabel:Label = new Label("Playback Rate (Editor):", playbackRateStepper);
-		tabGroupSettings.add(playbackRateStepperLabel);
+		tabGroupSettings.add(new Label("Playback Rate (Editor):", playbackRateStepper));
 
 		tabMenu.addGroup(tabGroupSettings);
 
@@ -588,8 +587,7 @@ class ChartEditorState extends MusicBeatState
 			songData.song = text;
 		}
 		tabGroupProperties.add(songNameInput);
-		var songNameLabel:Label = new Label("Song Name:", songNameInput);
-		tabGroupProperties.add(songNameLabel);
+		tabGroupProperties.add(new Label("Song Name:", songNameInput));
 
 		var songArtistInput:InputText = new InputText(10, songNameInput.y + 40, songData.artist);
 		songArtistInput.focusGained = function() { songArtistInput.text = songData.artist; suspendControls = true; }
@@ -598,16 +596,14 @@ class ChartEditorState extends MusicBeatState
 			songData.artist = text;
 		}
 		tabGroupProperties.add(songArtistInput);
-		var songArtistLabel:Label = new Label("Artist (Optional):", songArtistInput);
-		tabGroupProperties.add(songArtistLabel);
+		tabGroupProperties.add(new Label("Artist (Optional):", songArtistInput));
 
 		var offsetStepper:Stepper = new Stepper(10, songArtistInput.y + 40, 115, 20, songData.offset);
 		offsetStepper.onChanged = function() {
 			songData.offset = offsetStepper.value;
 		}
 		tabGroupProperties.add(offsetStepper);
-		var offsetStepperLabel:Label = new Label("Offset (ms):", offsetStepper);
-		tabGroupProperties.add(offsetStepperLabel);
+		tabGroupProperties.add(new Label("Offset (ms):", offsetStepper));
 
 		var bakeOffsetButton:TextButton = new TextButton(offsetStepper.x + 115, offsetStepper.y, 115, 20, "Bake");
 		bakeOffsetButton.onClicked = function () {
@@ -652,10 +648,21 @@ class ChartEditorState extends MusicBeatState
 			for (c in text.split(","))
 				songData.columnDivisions.push(Std.parseInt(c));
 			numColumns = songData.columnDivisions.length;
+
+			NOTE_SIZE = Std.int(480 / numColumns);
+			if (NOTE_SIZE > 60)
+				NOTE_SIZE = 60;
+
+			refreshSectionLines();
+			refreshSectionIcons();
+			refreshStrums();
+			refreshSustains(-1, true);
+			refreshNotes(-1, true);
+			refreshBPMLines();
+			refreshEventLines();
 		}
 		tabGroupProperties.add(columnDivisionsInput);
-		var columnDivisionsLabel:Label = new Label("Playable sections:", columnDivisionsInput);
-		tabGroupProperties.add(columnDivisionsLabel);
+		tabGroupProperties.add(new Label("Playable sections:", columnDivisionsInput));
 
 		var columnDivisionNamesInput:InputText = new InputText(10, columnDivisionsInput.y + 40, songData.columnDivisionNames.join(","));
 		columnDivisionNamesInput.focusGained = function() {
@@ -667,8 +674,7 @@ class ChartEditorState extends MusicBeatState
 			songData.columnDivisionNames = text.split(",");
 		}
 		tabGroupProperties.add(columnDivisionNamesInput);
-		var columnDivisionNamesLabel:Label = new Label("Section names:", columnDivisionNamesInput);
-		tabGroupProperties.add(columnDivisionNamesLabel);
+		tabGroupProperties.add(new Label("Section names:", columnDivisionNamesInput));
 
 		var stageList:Array<String> = Paths.listFilesSub("data/stages/", ".json");
 		var stageDropdown:DropdownMenu = new DropdownMenu(10, columnDivisionNamesInput.y + 40, 230, 20, songData.stage, stageList, true);
@@ -676,8 +682,7 @@ class ChartEditorState extends MusicBeatState
 			songData.stage = stageDropdown.value;
 		};
 		tabGroupProperties.add(stageDropdown);
-		var stageDropdownLabel:Label = new Label("Stage:", stageDropdown);
-		tabGroupProperties.add(stageDropdownLabel);
+		tabGroupProperties.add(new Label("Stage:", stageDropdown));
 
 		var noteskinTypeInput:InputText = new InputText(10, stageDropdown.y + 40, songData.noteType.join(","));
 		noteskinTypeInput.focusGained = function() { noteskinTypeInput.text = songData.noteType.join(","); suspendControls = true; }
@@ -696,8 +701,7 @@ class ChartEditorState extends MusicBeatState
 			suspendControls = false;
 		}
 		tabGroupProperties.add(noteskinTypeInput);
-		var noteskinTypeLabel:Label = new Label("Noteskin Types:", noteskinTypeInput);
-		tabGroupProperties.add(noteskinTypeLabel);
+		tabGroupProperties.add(new Label("Noteskin Types:", noteskinTypeInput));
 
 		var uiSkinList:Array<String> = Paths.listFiles("images/ui/skins/", ".json");
 		var uiSkinDropdown:DropdownMenu = new DropdownMenu(10, noteskinTypeInput.y + 40, 230, 20, songData.uiSkin, uiSkinList, true);
@@ -705,8 +709,7 @@ class ChartEditorState extends MusicBeatState
 			songData.uiSkin = uiSkinDropdown.value;
 		};
 		tabGroupProperties.add(uiSkinDropdown);
-		var uiSkinDropdownLabel:Label = new Label("UI Skin:", uiSkinDropdown);
-		tabGroupProperties.add(uiSkinDropdownLabel);
+		tabGroupProperties.add(new Label("UI Skin:", uiSkinDropdown));
 
 		var skipCountdownCheckbox:Checkbox = new Checkbox(10, uiSkinDropdown.y + 30, "Skip Countdown", songData.skipCountdown);
 		skipCountdownCheckbox.onClicked = function() {
@@ -721,14 +724,14 @@ class ChartEditorState extends MusicBeatState
 			songData.eventFile = text;
 		}
 		tabGroupProperties.add(eventFileInput);
-		var eventFileLabel:Label = new Label("Events File:", eventFileInput);
-		tabGroupProperties.add(eventFileLabel);
+		tabGroupProperties.add(new Label("Events File:", eventFileInput));
 
 		tabMenu.addGroup(tabGroupProperties);
 
 
 
 		var tabGroupCharacters = new TabGroup();
+		characterFileList = Paths.listFilesSub("data/characters/", ".json");
 
 		var charCount:Int = 2;
 		while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
@@ -755,8 +758,7 @@ class ChartEditorState extends MusicBeatState
 			refreshCharacters();
 		}
 		tabGroupCharacters.add(characterCount);
-		var characterCountLabel:Label = new Label("Number of characters:", characterCount);
-		tabGroupCharacters.add(characterCountLabel);
+		tabGroupCharacters.add(new Label("Number of characters:", characterCount));
 
 		var characterColumns:InputText = new InputText(10, characterCount.y + 40, songData.singerColumns.join(","));
 		characterColumns.customFilterPattern = ~/[^0-9,]*/g;
@@ -775,12 +777,31 @@ class ChartEditorState extends MusicBeatState
 				songData.singerColumns.resize(numColumns);
 		}
 		tabGroupCharacters.add(characterColumns);
-		var characterColumnsLabel:Label = new Label("Associated columns:", characterColumns);
-		tabGroupCharacters.add(characterColumnsLabel);
+		tabGroupCharacters.add(new Label("Associated columns:", characterColumns));
+
+		var characterTabSwap:TextButton = new TextButton(10, characterColumns.y + 30, 230, 20, "Character Notetypes");
+		characterTabSwap.onClicked = function() {
+			if (characterSettings.members.contains(characterList))
+			{
+				characterSettings.remove(characterList);
+				characterSettings.add(characterNotetypes);
+				characterTabSwap.textObject.text = "Characters";
+			}
+			else
+			{
+				characterSettings.remove(characterNotetypes);
+				characterSettings.add(characterList);
+				characterTabSwap.textObject.text = "Character Notetypes";
+			}
+		}
+		tabGroupCharacters.add(characterTabSwap);
 
 		characterSettings = new FlxSpriteGroup();
+		characterList = new FlxSpriteGroup();
+		characterNotetypes = new FlxSpriteGroup();
 		refreshCharacters();
 		tabGroupCharacters.add(characterSettings);
+		characterSettings.add(characterList);
 
 		tabMenu.addGroup(tabGroupCharacters);
 
@@ -812,8 +833,7 @@ class ChartEditorState extends MusicBeatState
 				refreshTracks();
 			}
 			tabGroupTracks.add(trackCount);
-			var trackCountLabel:Label = new Label("Number of tracks:", trackCount);
-			tabGroupTracks.add(trackCountLabel);
+			tabGroupTracks.add(new Label("Number of tracks:", trackCount));
 
 			trackSettings = new FlxSpriteGroup();
 			refreshTracks();
@@ -821,6 +841,50 @@ class ChartEditorState extends MusicBeatState
 		}
 
 		tabMenu.addGroup(tabGroupTracks);
+
+
+
+		var tabGroupMusic = new TabGroup();
+
+		var musicList:Array<String> = Paths.listFilesSub("music/", ".ogg");
+		musicList.unshift("");
+
+		var pauseDropdown:DropdownMenu = new DropdownMenu(10, 20, 230, 20, songData.music.pause, musicList, true);
+		pauseDropdown.onChanged = function() {
+			songData.music.pause = pauseDropdown.value;
+		};
+		tabGroupMusic.add(pauseDropdown);
+		tabGroupMusic.add(new Label("Pause Menu:", pauseDropdown));
+
+		var gameOverDropdown:DropdownMenu = new DropdownMenu(10, pauseDropdown.y + 40, 230, 20, songData.music.gameOver, musicList, true);
+		gameOverDropdown.onChanged = function() {
+			songData.music.gameOver = gameOverDropdown.value;
+		};
+		tabGroupMusic.add(gameOverDropdown);
+		tabGroupMusic.add(new Label("Game Over:", gameOverDropdown));
+
+		var gameOverEndDropdown:DropdownMenu = new DropdownMenu(10, gameOverDropdown.y + 40, 230, 20, songData.music.gameOverEnd, musicList, true);
+		gameOverEndDropdown.onChanged = function() {
+			songData.music.gameOverEnd = gameOverEndDropdown.value;
+		};
+		tabGroupMusic.add(gameOverEndDropdown);
+		tabGroupMusic.add(new Label("Game Over Confirm:", gameOverEndDropdown));
+
+		var resultsDropdown:DropdownMenu = new DropdownMenu(10, gameOverEndDropdown.y + 40, 230, 20, songData.music.results, musicList, true);
+		resultsDropdown.onChanged = function() {
+			songData.music.results = resultsDropdown.value;
+		};
+		tabGroupMusic.add(resultsDropdown);
+		tabGroupMusic.add(new Label("Results Screen:", resultsDropdown));
+
+		var resultsEndDropdown:DropdownMenu = new DropdownMenu(10, resultsDropdown.y + 40, 230, 20, songData.music.resultsEnd, musicList, true);
+		resultsEndDropdown.onChanged = function() {
+			songData.music.resultsEnd = resultsEndDropdown.value;
+		};
+		tabGroupMusic.add(resultsEndDropdown);
+		tabGroupMusic.add(new Label("Results Screen Confirm:", resultsEndDropdown));
+
+		tabMenu.addGroup(tabGroupMusic);
 
 
 
@@ -834,8 +898,7 @@ class ChartEditorState extends MusicBeatState
 			refreshGhostNotes();
 		}
 		tabGroupSections.add(sectionCamOnStepper);
-		var sectionCamOnLabel:Label = new Label("Camera Focus Character:", sectionCamOnStepper);
-		tabGroupSections.add(sectionCamOnLabel);
+		tabGroupSections.add(new Label("Camera Focus Character:", sectionCamOnStepper));
 
 		sectionLengthStepper = new Stepper(10, sectionCamOnStepper.y + 40, 230, 20, songData.notes[0].lengthInSteps, 1, 1);
 		sectionLengthStepper.onChanged = function() {
@@ -846,8 +909,7 @@ class ChartEditorState extends MusicBeatState
 			refreshSectionIcons();
 		}
 		tabGroupSections.add(sectionLengthStepper);
-		var sectionLengthLabel:Label = new Label("Section length in steps:", sectionLengthStepper);
-		tabGroupSections.add(sectionLengthLabel);
+		tabGroupSections.add(new Label("Section length in steps:", sectionLengthStepper));
 
 		var splitSectionButton:TextButton = new TextButton(10, sectionLengthStepper.y + 30, 230, 20, "Split Section");
 		splitSectionButton.onClicked = function () {
@@ -898,8 +960,7 @@ class ChartEditorState extends MusicBeatState
 		}
 		tabGroupSections.add(copyBothButton);
 
-		var copyLastLabel:Label = new Label("Copy Last:", copyLeftButton);
-		tabGroupSections.add(copyLastLabel);
+		tabGroupSections.add(new Label("Copy Last:", copyLeftButton));
 
 		maintainSidesCheckbox = new Checkbox(10, copyBothButton.y + 30, "Maintain Sides");
 		maintainSidesCheckbox.checked = false;
@@ -980,8 +1041,7 @@ class ChartEditorState extends MusicBeatState
 		}
 		tabGroupSections.add(clearBothButton);
 
-		var clearLabel:Label = new Label("Clear Section:", clearLeftButton);
-		tabGroupSections.add(clearLabel);
+		tabGroupSections.add(new Label("Clear Section:", clearLeftButton));
 
 		var deleteSectionButton:TextButton = new TextButton(10, clearBothButton.y + 30, 230, 20, "Delete Section");
 		deleteSectionButton.onClicked = function() {
@@ -1026,8 +1086,7 @@ class ChartEditorState extends MusicBeatState
 				sec.defaultNoteP1 = defaultNoteP1Input.text;
 		}
 		tabGroupSections.add(defaultNoteP1Input);
-		var defaultNoteP1InputLabel:Label = new Label("Default Notetype (Player 1):", defaultNoteP1Input);
-		tabGroupSections.add(defaultNoteP1InputLabel);
+		tabGroupSections.add(new Label("Default Notetype (Player 1):", defaultNoteP1Input));
 
 		var defaultNoteP1Dropdown:DropdownMenu = new DropdownMenu(10, defaultNoteP1Input.y + 30, 230, 20, "", noteTypeList, 16, true);
 		defaultNoteP1Dropdown.onChanged = function() {
@@ -1048,8 +1107,7 @@ class ChartEditorState extends MusicBeatState
 				sec.defaultNoteP2 = defaultNoteP2Input.text;
 		}
 		tabGroupSections.add(defaultNoteP2Input);
-		var defaultNoteP2InputLabel:Label = new Label("Default Notetype (Player 2):", defaultNoteP2Input);
-		tabGroupSections.add(defaultNoteP2InputLabel);
+		tabGroupSections.add(new Label("Default Notetype (Player 2):", defaultNoteP2Input));
 
 		var defaultNoteP2Dropdown:DropdownMenu = new DropdownMenu(10, defaultNoteP2Input.y + 30, 230, 20, "", noteTypeList, 16, true);
 		defaultNoteP2Dropdown.onChanged = function() {
@@ -1116,8 +1174,7 @@ class ChartEditorState extends MusicBeatState
 			refreshBPMLines();
 		}
 		tabGroupMisc.add(bpmStepper);
-		var bpmStepperLabel:Label = new Label("BPM:", bpmStepper);
-		tabGroupMisc.add(bpmStepperLabel);
+		tabGroupMisc.add(new Label("BPM:", bpmStepper));
 
 		scrollSpeedStepper = new Stepper(10, bpmStepper.y + 40, 230, 20, songData.scrollSpeeds[0][1], 0.05, 0, 10, 3);
 		scrollSpeedStepper.onChanged = function () {
@@ -1148,8 +1205,7 @@ class ChartEditorState extends MusicBeatState
 			refreshBPMLines();
 		}
 		tabGroupMisc.add(scrollSpeedStepper);
-		var scrollSpeedStepperLabel:Label = new Label("Scroll Speed:", scrollSpeedStepper);
-		tabGroupMisc.add(scrollSpeedStepperLabel);
+		tabGroupMisc.add(new Label("Scroll Speed:", scrollSpeedStepper));
 
 		var scrollSpeedHalfButton:TextButton = new TextButton(10, scrollSpeedStepper.y + 30, 115, 20, "Half");
 		scrollSpeedHalfButton.onClicked = function()
@@ -1176,8 +1232,7 @@ class ChartEditorState extends MusicBeatState
 		noteTypeInput.focusGained = function() { suspendControls = true; }
 		noteTypeInput.focusLost = function() { suspendControls = false; }
 		tabGroupMisc.add(noteTypeInput);
-		var noteTypeInputLabel:Label = new Label("Type of new Notes:", noteTypeInput);
-		tabGroupMisc.add(noteTypeInputLabel);
+		tabGroupMisc.add(new Label("Type of new Notes:", noteTypeInput));
 
 		var noteTypeDropdown:DropdownMenu = new DropdownMenu(10, noteTypeInput.y + 30, 230, 20, "", noteTypeList, 16, true);
 		noteTypeDropdown.onChanged = function() { noteTypeInput.text = noteTypeDropdown.value; }
@@ -1186,8 +1241,7 @@ class ChartEditorState extends MusicBeatState
 		replaceTypeDropdown = new DropdownMenu(10, noteTypeDropdown.y + 40, 230, 20, "", [""], 16, true);
 		updateReplaceTypeList();
 		tabGroupMisc.add(replaceTypeDropdown);
-		var replaceTypeDropdownLabel:Label = new Label("Type to alter:", replaceTypeDropdown);
-		tabGroupMisc.add(replaceTypeDropdownLabel);
+		tabGroupMisc.add(new Label("Type to alter:", replaceTypeDropdown));
 
 		var removeTypeButton:TextButton = new TextButton(10, replaceTypeDropdown.y + 40, 115, 20, "Remove");
 		removeTypeButton.onClicked = function()
@@ -1275,8 +1329,7 @@ class ChartEditorState extends MusicBeatState
 			refreshNotes();
 		}
 		tabGroupMisc.add(replaceTypeButton);
-		var noteTypeLabel:Label = new Label("Change notes of type:", removeTypeButton);
-		tabGroupMisc.add(noteTypeLabel);
+		tabGroupMisc.add(new Label("Change notes of type:", removeTypeButton));
 
 		var autoSectionNotetypes:TextButton = new TextButton(10, replaceTypeButton.y + 30, 230, 20, "Assign Section NTs");
 		autoSectionNotetypes.onClicked = function()
@@ -1366,8 +1419,7 @@ class ChartEditorState extends MusicBeatState
 
 		var beatStepper:Stepper = new Stepper(10, clearSectionNotetypes.y + 40, 230, 20, 1, 0.25, 0, 9999, 2);
 		tabGroupMisc.add(beatStepper);
-		var beatStepperLabel:Label = new Label("Beats:", beatStepper);
-		tabGroupMisc.add(beatStepperLabel);
+		tabGroupMisc.add(new Label("Beats:", beatStepper));
 
 		var insertBeatsButton:TextButton = new TextButton(10, beatStepper.y + 30, 115, 20, "Insert");
 		insertBeatsButton.onClicked = function()
@@ -1429,8 +1481,7 @@ class ChartEditorState extends MusicBeatState
 		var allCamsOnButton:TextButton = new TextButton(allCamsOnStepper.x + 115, allCamsOnStepper.y, 115, 20, "Apply");
 		allCamsOnButton.onClicked = function() { allCamsOn(allCamsOnStepper.valueInt - 1); }
 		tabGroupMisc.add(allCamsOnButton);
-		var allCamsOnLabel:Label = new Label("All section cameras on:", allCamsOnStepper);
-		tabGroupMisc.add(allCamsOnLabel);
+		tabGroupMisc.add(new Label("All section cameras on:", allCamsOnStepper));
 
 		var copyCamsFromFileButton:TextButton = new TextButton(10, allCamsOnButton.y + 30, 230, 20, "Sections from file");
 		copyCamsFromFileButton.onClicked = copyCamsFromFile;
@@ -1485,8 +1536,7 @@ class ChartEditorState extends MusicBeatState
 		eventTypeDropdown = new DropdownMenu(10, deleteEventButton.y + 40, 230, 20, eventTypeList[0], eventTypeList, 12, true);
 		eventTypeDropdown.onChanged = function() { updateEventParams(); };
 		tabGroupEvents.add(eventTypeDropdown);
-		var eventTypeLabel:Label = new Label("Type:", eventTypeDropdown);
-		tabGroupEvents.add(eventTypeLabel);
+		tabGroupEvents.add(new Label("Type:", eventTypeDropdown));
 
 		eventListDropdown.onChanged = function() {
 			if (eventListDropdown.value > 0)
@@ -2333,12 +2383,19 @@ class ChartEditorState extends MusicBeatState
 
 	function refreshCharacters()
 	{
-		characterSettings.forEachAlive(function(thing:FlxSprite)
+		characterList.forEachAlive(function(thing:FlxSprite)
 		{
 			thing.kill();
 			thing.destroy();
 		});
-		characterSettings.clear();
+		characterList.clear();
+
+		characterNotetypes.forEachAlive(function(thing:FlxSprite)
+		{
+			thing.kill();
+			thing.destroy();
+		});
+		characterNotetypes.clear();
 
 		var charCount:Int = 2;
 		while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
@@ -2352,25 +2409,23 @@ class ChartEditorState extends MusicBeatState
 				songData.notetypeSingers.push([]);
 		}
 
-		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
-
-		var yy:Int = 100;
-		var newCharacterSettings:Array<FlxSprite> = [];
+		var yy:Int = 130;
+		var newCharacterList:Array<FlxSprite> = [];
+		var newCharacterNotetypes:Array<FlxSprite> = [];
 		for (i in 0...charCount)
 		{
-			var charDropdown:DropdownMenu = new DropdownMenu(10, yy, 115, 20, Reflect.field(songData, "player" + Std.string(i+1)), characterList, 12, true);
+			var charDropdown:DropdownMenu = new DropdownMenu(10, yy, 230, 20, Reflect.field(songData, "player" + Std.string(i+1)), characterFileList, 12, true);
 			charDropdown.onChanged = function() {
 				Reflect.setField(songData, "player" + Std.string(i+1), charDropdown.value);
 				refreshSectionIcons();
 			};
-			newCharacterSettings.push(charDropdown);
-			var charDropdownLabel:Label = new Label("Character "+Std.string(i+1)+":", charDropdown);
-			newCharacterSettings.push(charDropdownLabel);
+			newCharacterList.push(charDropdown);
+			newCharacterList.push(new Label("Character "+Std.string(i+1)+":", charDropdown));
 
 			var charNotetypesText:String = "";
 			if (songData.notetypeSingers[i].length > 0)
 				charNotetypesText = songData.notetypeSingers[i].join(",");
-			var charNotetypes:InputText = new InputText(charDropdown.x + 115, charDropdown.y, 115, charNotetypesText);
+			var charNotetypes:InputText = new InputText(10, charDropdown.y, 230, charNotetypesText);
 			charNotetypes.focusGained = function() {
 				if (songData.notetypeSingers[i].length > 0)
 					charNotetypes.text = songData.notetypeSingers[i].join(",");
@@ -2385,14 +2440,16 @@ class ChartEditorState extends MusicBeatState
 				else
 					songData.notetypeSingers[i] = text.split(",");
 			}
-			newCharacterSettings.push(charNotetypes);
-			var charNotetypesLabel:Label = new Label("Note types:", charNotetypes);
-			newCharacterSettings.push(charNotetypesLabel);
+			newCharacterNotetypes.push(charNotetypes);
+			newCharacterNotetypes.push(new Label("Character "+Std.string(i+1)+":", charDropdown));
 			yy += 40;
 		}
 
-		for (i in 0...newCharacterSettings.length)
-			characterSettings.add(newCharacterSettings[newCharacterSettings.length-1-i]);
+		for (i in 0...newCharacterList.length)
+			characterList.add(newCharacterList[newCharacterList.length-1-i]);
+
+		for (i in 0...newCharacterNotetypes.length)
+			characterNotetypes.add(newCharacterNotetypes[newCharacterNotetypes.length-1-i]);
 	}
 
 	function refreshTracks()
@@ -2443,8 +2500,7 @@ class ChartEditorState extends MusicBeatState
 		{
 			var trackDropdown:DropdownMenu = new DropdownMenu(10, yy, 115, 20, songData.tracks[i][0], trackList, true);
 			newTrackSettings.push(trackDropdown);
-			var trackDropdownLabel:Label = new Label("Track "+Std.string(i+1)+":", trackDropdown);
-			newTrackSettings.push(trackDropdownLabel);
+			newTrackSettings.push(new Label("Track "+Std.string(i+1)+":", trackDropdown));
 
 			var typeList:Array<String> = ["INST", "VOICES", "PLAYER", "OPPONENT"];
 			var typeDropdown:DropdownMenu = new DropdownMenu(125, yy, 115, 20, typeList[songData.tracks[i][1]], typeList);
@@ -2452,8 +2508,7 @@ class ChartEditorState extends MusicBeatState
 				songData.tracks[i][1] = typeDropdown.valueInt;
 			};
 			newTrackSettings.push(typeDropdown);
-			var typeDropdownLabel:Label = new Label("Type:", typeDropdown);
-			newTrackSettings.push(typeDropdownLabel);
+			newTrackSettings.push(new Label("Type:", typeDropdown));
 			yy += 40;
 
 			var volStepper:Stepper = new Stepper(10, yy, 230, 20, tracks[i].volume * 10, 1, 0, 10);
@@ -2466,8 +2521,7 @@ class ChartEditorState extends MusicBeatState
 				tracks[i].volume = volStepper.value / 10;
 			};
 			newTrackSettings.push(volStepper);
-			var volStepperLabel:Label = new Label("Volume (Editor):", volStepper);
-			newTrackSettings.push(volStepperLabel);
+			newTrackSettings.push(new Label("Volume (Editor):", volStepper));
 			yy += 40;
 		}
 
@@ -2540,33 +2594,12 @@ class ChartEditorState extends MusicBeatState
 
 	function refreshSectionIcons(?whichSec:Int = -1)
 	{
-		if (whichSec > -1)
+		while (sectionIcons.members.length < songData.notes.length)
 		{
-			var secY:Int = 0;
-			if (whichSec > 0)
-			{
-				for (i in 0...whichSec)
-					secY += Std.int(NOTE_SIZE * zoom * songData.notes[i].lengthInSteps);
-			}
-			if (downscroll)
-				secY = -secY;
-			sectionIcons.forEachAlive(function(icon:HealthIcon)
-			{
-				if ((!downscroll && Math.abs(icon.y - secY) < 10) || (downscroll && Math.abs(icon.y + icon.height - secY) < 10))
-				{
-					icon.kill();
-					icon.destroy();
-				}
-			});
-		}
-		else
-		{
-			sectionIcons.forEachAlive(function(icon:HealthIcon)
-			{
-				icon.kill();
-				icon.destroy();
-			});
-			sectionIcons.clear();
+			var icon:HealthIcon = new HealthIcon(0, 0, "none");
+			icon.sc.set(0.5, 0.5);
+			icon.updateHitbox();
+			sectionIcons.add(icon);
 		}
 
 		var yy:Int = 0;
@@ -2597,12 +2630,14 @@ class ChartEditorState extends MusicBeatState
 			}
 			iconTypes.push(iconType);
 		}
-
 		var xx:Int = Std.int( (FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) );
 		var ww:Int = Std.int(NOTE_SIZE * numColumns);
-		for (i in 0...songData.notes.length)
+
+		for (i in 0...sectionIcons.members.length)
 		{
-			if (whichSec == -1 || whichSec == i)
+			if (i >= songData.notes.length)
+				sectionIcons.members[i].visible = false;
+			else if (whichSec < 0 || whichSec == i)
 			{
 				var iconName:String = iconNames[songData.notes[i].camOn];
 				if (songData.notetypeOverridesCam)
@@ -2612,14 +2647,18 @@ class ChartEditorState extends MusicBeatState
 					if (songData.notes[i].camOn > 0 && songData.notes[i].defaultNoteP2 != null && songData.notes[i].defaultNoteP2 != "" && iconTypes.contains(songData.notes[i].defaultNoteP2))
 						iconName = iconNames[iconTypes.indexOf(songData.notes[i].defaultNoteP2)];
 				}
-				var icon:HealthIcon = new HealthIcon(xx, yy, iconName);
-				icon.sc.set(0.5, 0.5);
-				icon.updateHitbox();
-				if (downscroll)
+				var icon:HealthIcon = sectionIcons.members[i];
+				icon.visible = true;
+				icon.setPosition(xx, yy);
+				if (icon.id != iconName)
 				{
-					icon.y = -icon.y;
-					icon.y -= icon.height;
+					icon.reloadIcon(iconName);
+					icon.sc.set(0.5, 0.5);
+					icon.updateHitbox();
 				}
+				if (downscroll)
+					icon.y = -icon.y;
+				icon.y -= icon.height / 2;
 
 				if (songData.notes[i].camOn == 0)
 					icon.x += ww;
@@ -2627,7 +2666,8 @@ class ChartEditorState extends MusicBeatState
 					icon.x -= icon.width;
 				sectionIcons.add(icon);
 			}
-			yy += Std.int(NOTE_SIZE * zoom * songData.notes[i].lengthInSteps);
+			if (i < songData.notes.length)
+				yy += Std.int(NOTE_SIZE * zoom * songData.notes[i].lengthInSteps);
 		}
 	}
 
@@ -2758,7 +2798,7 @@ class ChartEditorState extends MusicBeatState
 		}
 	}
 
-	function refreshNotes(?whichSec:Int = -1)
+	function refreshNotes(?whichSec:Int = -1, ?forceUpdate:Bool = false)
 	{
 		var totalNotes:Int = noteData.length;
 		for (i in 0...makingNotes.length)
@@ -2783,7 +2823,7 @@ class ChartEditorState extends MusicBeatState
 
 		for (i in 0...noteData.length)
 		{
-			var updateThis:Bool = false;
+			var updateThis:Bool = forceUpdate;
 			if (notes.members[i].beat == 0 && notes.members[i].column == 0)		// Since these are the default values, they have to be hardcoded to always update a note that has them
 				updateThis = true;
 
@@ -2861,7 +2901,7 @@ class ChartEditorState extends MusicBeatState
 		}
 	}
 
-	function refreshSustains(?whichSec:Int = -1)
+	function refreshSustains(?whichSec:Int = -1, ?forceUpdate:Bool = false)
 	{
 		while (sustains.members.length > noteData.length)
 		{
@@ -2879,7 +2919,7 @@ class ChartEditorState extends MusicBeatState
 
 		for (i in 0...noteData.length)
 		{
-			if (sustains.members[i].refreshVars(noteData[i][0], noteData[i][1], noteData[i][2]))
+			if (sustains.members[i].refreshVars(noteData[i][0], noteData[i][1], noteData[i][2]) || forceUpdate)
 				sustains.members[i].refreshPosition(zoom, downscroll);
 		}
 	}
@@ -3219,8 +3259,7 @@ class ChartEditorState extends MusicBeatState
 					var newThing:DropdownMenu = new DropdownMenu(10, yy, 230, 20, pValue, p.options, true);
 					newThing.onChanged = function() {Reflect.setField(eventParamList, p.id, newThing.value);}
 
-					var newThingLabel:Label = new Label(p.label, newThing);
-					newThings.push(newThingLabel);
+					newThings.push(new Label(p.label, newThing));
 					newThings.push(newThing);
 
 				case "dropdownSpecial":
@@ -3229,8 +3268,7 @@ class ChartEditorState extends MusicBeatState
 					var newThing:DropdownMenu = new DropdownMenu(10, yy, 230, 20, pValue, newOptions, true);
 					newThing.onChanged = function() {Reflect.setField(eventParamList, p.id, newThing.value);}
 
-					var newThingLabel:Label = new Label(p.label, newThing);
-					newThings.push(newThingLabel);
+					newThings.push(new Label(p.label, newThing));
 					newThings.push(newThing);
 
 				case "stepper":
@@ -3243,8 +3281,7 @@ class ChartEditorState extends MusicBeatState
 						newThing.onChanged = function () {Reflect.setField(eventParamList, p.id, newThing.value);}
 						newThings.push(newThing);
 
-						var newThingLabel:Label = new Label("", newThing);
-						newThings.push(newThingLabel);
+						newThings.push(new Label("", newThing));
 					}
 					else
 					{
@@ -3264,8 +3301,7 @@ class ChartEditorState extends MusicBeatState
 						newThing.onChanged = function () {Reflect.setField(eventParamList, p.id, newThing.value);}
 						newThings.push(newThing);
 
-						var newThingLabel:Label = new Label(p.label, newThing);
-						newThings.push(newThingLabel);
+						newThings.push(new Label(p.label, newThing));
 					}
 
 				case "string":
@@ -3276,8 +3312,7 @@ class ChartEditorState extends MusicBeatState
 					newThing.focusLost = function() { suspendControls = false; }
 					newThings.push(newThing);
 
-					var newThingLabel:Label = new Label(p.label, newThing);
-					newThings.push(newThingLabel);
+					newThings.push(new Label(p.label, newThing));
 
 				case "color":
 					var newThing:TextButton = new TextButton(10, yy, 230, p.label);
@@ -3442,8 +3477,7 @@ class ChartEditorState extends MusicBeatState
 		{
 			var replacementDropdown:DropdownMenu = new DropdownMenu(50, 10 + (i * 40), 200, 20, "", noteTypeList, true);
 			replacementDropdowns.push(replacementDropdown);
-			var replacementLabel:Label = new Label(Std.string(totalColumns[i] * (songData.columnDivisions.length / 2)) + "-" + Std.string((totalColumns[i] * (songData.columnDivisions.length / 2)) + (songData.columnDivisions.length / 2) - 1) + ":", replacementDropdown);
-			handlerGroup.add(replacementLabel);
+			handlerGroup.add(new Label(Std.string(totalColumns[i] * (songData.columnDivisions.length / 2)) + "-" + Std.string((totalColumns[i] * (songData.columnDivisions.length / 2)) + (songData.columnDivisions.length / 2) - 1) + ":", replacementDropdown));
 		}
 
 		var accept:TextButton = new TextButton(113, totalColumns.length * 40, 75, 20, "Accept");
@@ -3523,6 +3557,9 @@ class ChartEditorState extends MusicBeatState
 
 		if (songData.artist.trim() != "")
 			savedData.artist = songData.artist;
+
+		if (songData.music.pause.trim() != "" || songData.music.gameOver.trim() != "" || songData.music.gameOverEnd.trim() != "" || songData.music.results.trim() != "" || songData.music.resultsEnd.trim() != "")
+			savedData.music = songData.music;
 
 		if (songData.eventFile != "_events")
 			savedData.eventFile = songData.eventFile;

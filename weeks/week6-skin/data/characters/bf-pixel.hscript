@@ -2,7 +2,6 @@ function gameOver(char)
 {
 	if (thisChar == char)
 	{
-		GameOverSubState.sfx = "fnf_loss_sfx-pixel";
 		GameOverSubState.gameOverMusic = "gameOver-pixel";
 		GameOverSubState.gameOverMusicEnd = "gameOverEnd-pixel";
 	}

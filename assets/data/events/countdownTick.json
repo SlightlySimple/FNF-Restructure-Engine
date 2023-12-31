@@ -1,0 +1,21 @@
+{
+	"parameters":
+	[
+		{
+			"id": "tick",
+			"label": "Tick",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": 0,
+			"max": 99999,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "sound",
+			"label": "Play Sound",
+			"type": "checkbox",
+			"defaultValue": true
+		}
+	]
+}

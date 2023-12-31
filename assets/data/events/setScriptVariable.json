@@ -25,6 +25,12 @@
 			"type": "dropdown",
 			"defaultValue": "set",
 			"options": ["set", "add", "multiply", "divide"]
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"type": "checkbox",
+			"defaultValue": false
 		}
 	]
 }

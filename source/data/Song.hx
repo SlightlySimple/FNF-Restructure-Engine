@@ -58,6 +58,15 @@ typedef EventParams =
 	var decimals:Int;
 }
 
+typedef SongMusicData =
+{
+	var pause:String;
+	var gameOver:String;
+	var gameOverEnd:String;
+	var results:String;
+	var resultsEnd:String;
+}
+
 typedef SongData =
 {
 	var song:String;
@@ -92,6 +101,7 @@ typedef SongData =
 	var ?noteType:Array<String>;
 	var ?uiSkin:String;
 	var ?events:Array<EventData>;
+	var ?music:SongMusicData;
 }
 
 class Song
@@ -392,6 +402,9 @@ class Song
 		if (retSong.notetypeOverridesCam == null)
 			retSong.notetypeOverridesCam = baseData.notetypeOverridesCam;
 
+		if (retSong.music == null)
+			retSong.music = baseData.music;
+
 		return retSong;
 	}
 
@@ -446,6 +459,9 @@ class Song
 
 		if (retSong.notetypeOverridesCam == null)
 			retSong.notetypeOverridesCam = true;
+
+		if (retSong.music == null)
+			retSong.music = { pause: "", gameOver: "", gameOverEnd: "", results: "", resultsEnd: "" };
 
 		if (retSong.characterPrefix != "" || retSong.characterSuffix != "")
 		{

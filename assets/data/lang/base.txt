@@ -30,6 +30,8 @@
 "fpSongSustains"		"Holds: %s1"
 "fpSongRolls"			"Rolls: %s1"
 "fpSongMines"			"Mines: %s1"
+"fpSandboxDefault"		"Default"
+"fpSandboxSearchHint"	"Type to Search"
 "fpSandboxCharacter"	"Character %s1:"
 "fpSandboxCharacter0"	"Player:"
 "fpSandboxCharacter1"	"Opponent:"

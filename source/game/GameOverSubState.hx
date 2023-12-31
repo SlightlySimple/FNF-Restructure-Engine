@@ -23,6 +23,7 @@ class GameOverSubState extends FlxSubState
 	var camFollow:FlxObject;
 	var camFollowTimer:FlxTimer;
 	var transitioning:Bool = false;
+	var playedMusic:Bool = false;
 
 	public static function resetStatics()
 	{
@@ -30,6 +31,8 @@ class GameOverSubState extends FlxSubState
 		gameOverMusic = "gameOver";
 		gameOverMusicEnd = "gameOverEnd";
 		PauseSubState.music = "breakfast";
+		ResultsSubState.music = "results";
+		ResultsSubState.musicEnd = "resultsEnd";
 	}
 
 	override public function new()
@@ -39,12 +42,16 @@ class GameOverSubState extends FlxSubState
 		instance = this;
 
 		deadCharacter = new Character(character.getScreenPosition().x - character.characterData.position[0], character.getScreenPosition().y - character.characterData.position[1], character.characterData.gameOverCharacter, character.wasFlipped);
+		deadCharacter.playAnim("firstDeath");
 		add(deadCharacter);
+
+		if (sfx == "fnf_loss_sfx" && deadCharacter.characterData.gameOverSFX != "")
+			sfx = deadCharacter.characterData.gameOverSFX;
 
 		if (sfx != "")
 			FlxG.sound.play(Paths.sound(sfx));
 
-		camFollow = new FlxObject(deadCharacter.getGraphicMidpoint().x + deadCharacter.characterData.camPosition[0], deadCharacter.getGraphicMidpoint().y + deadCharacter.characterData.camPosition[1], 1, 1);
+		camFollow = new FlxObject(deadCharacter.getGraphicMidpoint().x + deadCharacter.characterData.camPositionGameOver[0], deadCharacter.getGraphicMidpoint().y + deadCharacter.characterData.camPositionGameOver[1], 1, 1);
 		add(camFollow);
 		FlxG.camera.scroll.set();
 		FlxG.camera.target = null;
@@ -63,8 +70,9 @@ class GameOverSubState extends FlxSubState
 
 		PlayState.instance.hscriptExec("gameOverUpdate", [elapsed]);
 
-		if (deadCharacter.curAnimName == deadCharacter.characterData.firstAnimation && deadCharacter.curAnimFinished && !transitioning)
+		if (!playedMusic && deadCharacter.curAnimFinished && !transitioning)
 		{
+			playedMusic = true;
 			if (gameOverMusic != "")
 				FlxG.sound.playMusic(Paths.music(gameOverMusic));
 			deadCharacter.playAnim(deadCharacterAnims[0]);

@@ -69,6 +69,7 @@ class StageEditorState extends MusicBeatState
 	var characterCount:Stepper;
 	var characterId:Stepper;
 	var charIndex:DropdownMenu;
+	var charAnim:DropdownMenu;
 	var charPositionText:FlxText;
 	var charFlip:Checkbox;
 	var charLayer:Stepper;
@@ -356,13 +357,27 @@ class StageEditorState extends MusicBeatState
 			{
 				allCharacters[characterId.valueInt].changeCharacter(charIndex.value);
 				allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+
+				var animList:Array<String> = [];
+				for (a in allCharacters[characterId.valueInt].characterData.animations)
+					animList.push(a.name);
+				charAnim.valueList = animList;
+				charAnim.value = allCharacters[characterId.valueInt].curAnimName;
 			}
 		}
 		tabGroupCharacters.add(charIndex);
 		var charIndexLabel:Label = new Label("Preview Character:", charIndex);
 		tabGroupCharacters.add(charIndexLabel);
 
-		charPositionText = new FlxText(10, charIndex.y + 30, 0, "Position:", 16);
+		charAnim = new DropdownMenu(10, charIndex.y + 40, 230, 20, "idle", [], true);
+		charAnim.onChanged = function() {
+			allCharacters[characterId.valueInt].playAnim(charAnim.value, true);
+		}
+		tabGroupCharacters.add(charAnim);
+		var charAnimLabel:Label = new Label("Preview Animation:", charAnim);
+		tabGroupCharacters.add(charAnimLabel);
+
+		charPositionText = new FlxText(10, charAnim.y + 30, 0, "Position:", 16);
 		charPositionText.color = FlxColor.BLACK;
 		charPositionText.font = "VCR OSD Mono";
 		tabGroupCharacters.add(charPositionText);
@@ -1201,6 +1216,13 @@ class StageEditorState extends MusicBeatState
 	function updateCharacterTab()
 	{
 		charIndex.value = allCharacters[characterId.valueInt].curCharacter;
+
+		var animList:Array<String> = [];
+		for (a in allCharacters[characterId.valueInt].characterData.animations)
+			animList.push(a.name);
+		charAnim.valueList = animList;
+		charAnim.value = allCharacters[characterId.valueInt].curAnimName;
+
 		updateCharacterPositionText();
 		var c:StageCharacter = stageData.characters[characterId.valueInt];
 		charFlip.checked = c.flip;

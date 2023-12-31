@@ -22,6 +22,12 @@
 			"label": "Animation Suffix",
 			"type": "string",
 			"defaultValue": ""
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"type": "checkbox",
+			"defaultValue": false
 		}
 	]
 }

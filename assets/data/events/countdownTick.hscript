@@ -1,0 +1,13 @@
+import objects.CountdownPopup;
+
+function onEvent(event)
+{
+	if (event.parameters.tick < game.uiSkin.countdown.length && game.uiSkin.countdown[event.parameters.tick].asset != null)
+	{
+		var countdownTickSprite = new CountdownPopup(event.parameters.tick, game.songData.uiSkin, game.uiSkin);
+		game.countdownTickGroup.add(countdownTickSprite);
+	}
+
+	if (event.parameters.sound && event.parameters.tick < game.uiSkin.countdownSounds.length && game.uiSkin.countdownSounds[event.parameters.tick] != "")
+		PlaySound(game.uiSkin.countdownSounds[event.parameters.tick]);
+}

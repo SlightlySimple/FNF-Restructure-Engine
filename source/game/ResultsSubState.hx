@@ -99,8 +99,6 @@ class ResultsSubState extends FlxSubState
 	{
 		songNames = [];
 		healthData = [];
-		music = "results";
-		musicEnd = "resultsEnd";
 	}
 
 	override public function new(scores:ScoreSystems)

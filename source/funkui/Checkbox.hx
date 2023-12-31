@@ -3,6 +3,11 @@ package funkui;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxTileFrames;
+import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
+import flixel.math.FlxPoint;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import data.Options;
@@ -18,11 +23,20 @@ class Checkbox extends FlxSpriteGroup
 	{
 		super(x, y);
 
-		var back:FlxSprite = new FlxSprite(0, 0).makeGraphic(Std.int(w), Std.int(h), FlxColor.BLACK);
-		add(back);
+		var key:String = "Checkbox_" + Std.string(w) + "_" + Std.string(h);
+		if (FlxG.bitmap.get(key) == null)
+		{
+			var img:BitmapData = new BitmapData(Std.int(w), Std.int(h * 2), false, FlxColor.BLACK);
+			img.fillRect(new Rectangle(1, 1, Std.int(w - 2), Std.int(h - 2)), FlxColor.WHITE);
+			img.fillRect(new Rectangle(2, Std.int(h + 2), Std.int(w - 4), Std.int(h - 4)), FlxColor.WHITE);
+			FlxGraphic.fromBitmapData(img, false, key);
+		}
 
-		var front:FlxSprite = new FlxSprite(1, 1).makeGraphic(Std.int(w-2), Std.int(h-2), FlxColor.WHITE);
-		add(front);
+		var back:FlxSprite = new FlxSprite();
+		back.frames = FlxTileFrames.fromGraphic(FlxG.bitmap.get(key), FlxPoint.get(Std.int(w), Std.int(h)));
+		back.animation.add("idle", [0]);
+		back.animation.add("hover", [1]);
+		add(back);
 
 		var tick:FlxSprite = new FlxSprite(3, 3).makeGraphic(Std.int(w-6), Std.int(h-6), FlxColor.BLACK);
 		add(tick);
@@ -50,18 +64,12 @@ class Checkbox extends FlxSpriteGroup
 			if (overlapsPoint(FlxG.mouse.getWorldPosition(camera, _point), true, camera) && !hovered)
 			{
 				hovered = true;
-				members[1].x++;
-				members[1].y++;
-				members[1].setGraphicSize(Std.int(members[0].width - 4), Std.int(members[0].height - 4));
-				members[1].updateHitbox();
+				members[0].animation.play("hover");
 			}
 			else if (!overlapsPoint(FlxG.mouse.getWorldPosition(camera, _point), true, camera) && hovered)
 			{
 				hovered = false;
-				members[1].x--;
-				members[1].y--;
-				members[1].setGraphicSize(Std.int(members[0].width - 2), Std.int(members[0].height - 2));
-				members[1].updateHitbox();
+				members[0].animation.play("idle");
 			}
 		}
 
@@ -76,7 +84,7 @@ class Checkbox extends FlxSpriteGroup
 
 	public function set_checked(newVal:Bool):Bool
 	{
-		members[2].visible = newVal;
+		members[1].visible = newVal;
 		return checked = newVal;
 	}
 }

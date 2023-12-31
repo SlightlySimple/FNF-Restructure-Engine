@@ -346,7 +346,13 @@ class ModMenuState extends MusicBeatState
 			if (m[0] == mod)
 				modToMove = m;
 		}
-		var newPos:Int = Std.int(Math.max(0, ModLoader.modList.indexOf(modToMove) + amount));
+		var newPos:Int = ModLoader.modList.indexOf(modToMove) + amount;
+		if (newPos >= 0 && newPos < ModLoader.modList.length - 1 && ModLoader.hiddenMods.contains(ModLoader.modList[newPos][0]))
+		{
+			while (newPos >= 0 && newPos < ModLoader.modList.length - 1 && ModLoader.hiddenMods.contains(ModLoader.modList[newPos][0]))
+				newPos += amount;
+		}
+		newPos = Std.int(Math.max(0, Math.min(ModLoader.modList.length - 1, newPos)));
 		ModLoader.modList.remove(modToMove);
 		ModLoader.modList.insert(newPos, modToMove);
 
