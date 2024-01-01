@@ -35,6 +35,7 @@ class StrumNote extends FlxSprite
 	public var ang:Float = 0;
 	public var noteAng:Float = 0;
 	public var allowShader:Bool = true;
+	public var doUnstick:Bool = false;
 
 	public var isMod:Bool = false;
 	public var modBaseX:Float = 0;
@@ -76,8 +77,11 @@ class StrumNote extends FlxSprite
 			y = modBaseY + (modY * (Options.options.downscroll ? -1 : 1));
 		}
 
-		if ((!isPlayer || PlayState.botplay || Options.options.strumAnims == 1) && animation.curAnim.finished && animation.curAnim.name != "static")
+		if ((!isPlayer || PlayState.botplay || doUnstick || Options.options.strumAnims == 1) && animation.curAnim.finished && animation.curAnim.name != "static")
+		{
+			doUnstick = false;
 			playAnim("static");
+		}
 	}
 
 	public function playAnim(animName:String, forced:Bool = false, ?ignoreOptions:Bool = false, ?color:String = "")

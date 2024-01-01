@@ -2541,6 +2541,8 @@ class PlayState extends MusicBeatState
 			{
 				scores.sustains++;
 				updateJudgementCounter();
+				if (!holdArray[playerColumns.indexOf(note.column)])
+					strumNotes.members[note.column].doUnstick = true;
 			}
 			for (s in note.singers)
 				s.sustainEnd();
