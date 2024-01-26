@@ -450,6 +450,12 @@ class ChartEditorState extends MusicBeatState
 		tabGroupSettings.add(saveSMButton);
 
 		var testChartButton:TextButton = new TextButton(10, saveSMButton.y + 30, 230, 20, "Test Chart");
+		tabGroupSettings.add(testChartButton);
+
+		var testChartSide:Stepper = new Stepper(10, testChartButton.y + 40, 230, 20, 0, 1, 0, strumDivisions);
+		tabGroupSettings.add(testChartSide);
+		tabGroupSettings.add(new Label("Chart Side:", testChartSide));
+
 		testChartButton.onClicked = function() {
 			PlayState.testingChart = true;
 			PlayState.testingChartData = Song.copy(songData);
@@ -462,14 +468,14 @@ class ChartEditorState extends MusicBeatState
 				PlayState.testingChartData.notes[s].sectionNotes.push(newN);
 			}
 			PlayState.testingChartPos = Conductor.timeFromStep(songProgress);
+			PlayState.testingChartSide = testChartSide.valueInt;
 			PlayState.inStoryMode = false;
 			PlayState.songId = songId;
 			FlxG.mouse.visible = false;
 			FlxG.switchState(new PlayState());
 		}
-		tabGroupSettings.add(testChartButton);
 
-		var jumpToStart:TextButton = new TextButton(10, testChartButton.y + 30, 230, 20, "Jump to Start");
+		var jumpToStart:TextButton = new TextButton(10, testChartSide.y + 30, 230, 20, "Jump to Start");
 		jumpToStart.onClicked = function() {
 			songProgress = 0;
 		}
@@ -648,6 +654,14 @@ class ChartEditorState extends MusicBeatState
 			for (c in text.split(","))
 				songData.columnDivisions.push(Std.parseInt(c));
 			numColumns = songData.columnDivisions.length;
+
+			var uniqueDivisions:Array<Int> = [];
+			for (i in songData.columnDivisions)
+			{
+				if (!uniqueDivisions.contains(i))
+					uniqueDivisions.push(i);
+			}
+			testChartSide.maxVal = uniqueDivisions.length-1;
 
 			NOTE_SIZE = Std.int(480 / numColumns);
 			if (NOTE_SIZE > 60)
@@ -1706,13 +1720,8 @@ class ChartEditorState extends MusicBeatState
 					n.y += cellsY * cellSizeY;
 				}
 				var childSustains:Array<EditorSustainNote> = [];
-				sustains.forEachAlive(function(s:EditorSustainNote) {
-					for (n in selectedNotes)
-					{
-						if (!childSustains.contains(s) && n.strumTime == s.strumTime && n.column == s.column)
-							childSustains.push(s);
-					}
-				});
+				for (n in selectedNotes)
+					childSustains.push(sustains.members[notes.members.indexOf(n)]);
 				for (s in childSustains)
 				{
 					s.refreshPosition(zoom, downscroll);
@@ -1737,10 +1746,13 @@ class ChartEditorState extends MusicBeatState
 						willPopNotes = true;
 				}
 				notes.forEachAlive(function(n:Note) {
-					for (note in selectedNotes)
+					if (!selectedNotes.contains(n))
 					{
-						if (Math.floor(note.x) == Math.floor(n.x) && Math.floor(note.y) == Math.floor(n.y) && note != n)
-							posConflict = true;
+						for (note in selectedNotes)
+						{
+							if (Math.floor(note.x) == Math.floor(n.x) && Math.floor(note.y) == Math.floor(n.y))
+								posConflict = true;
+						}
 					}
 				});
 				if (posConflict)
@@ -1836,10 +1848,13 @@ class ChartEditorState extends MusicBeatState
 						willPopNotes = true;
 				}
 				notes.forEachAlive(function(n:Note) {
-					for (note in selectedNotes)
+					if (!selectedNotes.contains(n))
 					{
-						if (Math.floor(note.x + (noteDirs[0] * NOTE_SIZE)) == Math.floor(n.x) && Math.floor(note.y + (noteDirs[1] * cellSizeY)) == Math.floor(n.y) && note != n)
-							posConflict = true;
+						for (note in selectedNotes)
+						{
+							if (Math.floor(note.x + (noteDirs[0] * NOTE_SIZE)) == Math.floor(n.x) && Math.floor(note.y + (noteDirs[1] * cellSizeY)) == Math.floor(n.y))
+								posConflict = true;
+						}
 					}
 				});
 				if (posConflict)
@@ -3040,8 +3055,8 @@ class ChartEditorState extends MusicBeatState
 	{
 		cellsY *= (downscroll ? -1 : 1);
 
-		var selectionArray:Array<Array<Float>> = [];
 		var poppers:Array<Array<Dynamic>> = [];
+		var poppers2:Array<Note> = [];
 		for (note in selectedNotes)
 		{
 			var n = noteData[notes.members.indexOf(note)];
@@ -3053,25 +3068,20 @@ class ChartEditorState extends MusicBeatState
 			n[0] = Conductor.timeFromStep(n[0]);
 			n[2] = Conductor.timeFromStep(n[2]) - n[0];
 			n[1] += cellsX;
-			if (n[1] >= 0 && n[1] < numColumns)
-				selectionArray.push([n[0], n[1]]);
-			else
+			if (n[1] < 0 || n[1] >= numColumns)
+			{
 				poppers.push(n);
+				poppers2.push(note);
+			}
 		}
 		for (p in poppers)
 			noteData.remove(p);
+		for (p in poppers2)
+			selectedNotes.remove(p);
 
 		updateReplaceTypeList();
 		refreshNotes();
 		refreshSustains();
-		selectedNotes = [];
-		notes.forEachAlive(function(n:Note) {
-			for (a in selectionArray)
-			{
-				if (!selectedNotes.contains(n) && n.strumTime == a[0] && n.column == Std.int(a[1]))
-					selectedNotes.push(n);
-			}
-		});
 		refreshSelectedNotes();
 	}
 
@@ -3086,13 +3096,8 @@ class ChartEditorState extends MusicBeatState
 			n.y -= n.height / 2;
 		}
 		var childSustains:Array<EditorSustainNote> = [];
-		sustains.forEachAlive(function(s:EditorSustainNote) {
-			for (n in selectedNotes)
-			{
-				if (!childSustains.contains(s) && n.strumTime == s.strumTime && n.column == s.column)
-					childSustains.push(s);
-			}
-		});
+		for (n in selectedNotes)
+			childSustains.push(sustains.members[notes.members.indexOf(n)]);
 		for (s in childSustains)
 			s.refreshPosition(zoom, downscroll);
 		selNoteBoxes.forEachAlive(function(n:NoteSelection) {

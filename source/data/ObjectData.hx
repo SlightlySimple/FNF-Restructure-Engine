@@ -138,6 +138,8 @@ typedef NoteTypeData =
 {
 	var noteskinOverride:String;
 	var noteskinOverrideSustain:String;
+	var ?animation:String;
+	var ?animationMiss:String;
 	var animationSuffix:String;
 	var hitSound:String;
 	var hitSoundVolume:Null<Float>;

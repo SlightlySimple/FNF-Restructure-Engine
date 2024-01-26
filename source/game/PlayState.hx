@@ -57,6 +57,7 @@ class PlayState extends MusicBeatState
 	public static var testingChart:Bool = false;
 	public static var testingChartData:SongData = null;
 	public static var testingChartPos:Float = 0;
+	public static var testingChartSide:Int = 0;
 
 	public static var songId:String = "";
 	public static var songIdShort:String = "";
@@ -284,7 +285,9 @@ class PlayState extends MusicBeatState
 		if (uniqueDivisions.length > noteType.length)
 			uniqueDivisions.resize(noteType.length);
 
-		if (!inStoryMode && !testingChart)
+		if (testingChart)
+			chartSide = testingChartSide;
+		else if (!inStoryMode)
 		{
 			if (FreeplaySandbox.stage != "")
 				songData.stage = FreeplaySandbox.stage;
@@ -338,6 +341,15 @@ class PlayState extends MusicBeatState
 		{
 			spawnCharacter(Reflect.field(songData, "player" + Std.string(i)));
 			i++;
+		}
+
+		if (FreeplaySandbox.character(i-1, "") != "")
+		{
+			while (FreeplaySandbox.character(i-1, "") != "")
+			{
+				spawnCharacter(Reflect.field(songData, "player" + Std.string(i)));
+				i++;
+			}
 		}
 
 		player1 = allCharacters[0];
@@ -2603,7 +2615,7 @@ class PlayState extends MusicBeatState
 			var ind:Int = members.length;
 			for (i in 0...allCharacters.length)
 			{
-				var slot:Int = Std.int(Math.min(1, stage.stageData.characters.length-1));
+				var slot:Int = Std.int(Math.min(i, stage.stageData.characters.length-1));
 				if (piece.layer <= stage.stageData.characters[slot].layer && members.contains(allCharacters[i]) && ind > members.indexOf(allCharacters[i]))
 					ind = members.indexOf(allCharacters[i]);
 			}

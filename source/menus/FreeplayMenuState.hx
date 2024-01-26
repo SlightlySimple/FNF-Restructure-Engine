@@ -57,7 +57,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 	{
 		if (PlayState.inStoryMode || PlayState.testingChart || slot >= characters.length)
 			return def;
-		return (characters[slot] == "" ? def : characters[slot]);
+		return (characters[slot].trim() == "" ? def : characters[slot]);
 	}
 
 	public static function reloadLists()

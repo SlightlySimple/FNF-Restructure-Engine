@@ -76,6 +76,9 @@ class Note extends FlxSprite
 				if (typeData.animationSuffix == null)
 					typeData.animationSuffix = defaultTypeData.animationSuffix;
 
+				if (typeData.animation == null)
+					typeData.animation = defaultTypeData.animation;
+
 				if (typeData.healthValues == null)
 					typeData.healthValues = defaultTypeData.healthValues;
 
@@ -177,6 +180,10 @@ class Note extends FlxSprite
 	{
 		hitAnim = strum.defaultCharAnims[0] + animationSuffix;
 		missAnim = strum.defaultCharAnims[1] + animationSuffix;
+		if (typeData.animation != null)
+			hitAnim = typeData.animation + animationSuffix;
+		if (typeData.animationMiss != null)
+			missAnim = typeData.animationMiss + animationSuffix;
 	}
 
 	public function offsetByStrum(strum:StrumNote)
@@ -372,6 +379,10 @@ class SustainNote extends FlxSprite
 	{
 		hitAnim = strum.defaultCharAnims[0] + animationSuffix;
 		missAnim = strum.defaultCharAnims[1] + animationSuffix;
+		if (typeData.animation != null)
+			hitAnim = typeData.animation + animationSuffix;
+		if (typeData.animationMiss != null)
+			missAnim = typeData.animationMiss + animationSuffix;
 	}
 
 	public function calcPos(strum:StrumNote, h:Float)

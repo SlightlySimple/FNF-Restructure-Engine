@@ -33,7 +33,7 @@ class EditorMenuState extends MusicBeatState
 {
 	var menuButtons:Array<FlxText> = [];
 	#if ALLOW_MODS
-	var menuButtonText:Array<String> = ["Create New Mod", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
+	var menuButtonText:Array<String> = ["Create New Mod", "Create New Package", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
 	#else
 	var menuButtonText:Array<String> = ["Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
 	#end
@@ -62,10 +62,10 @@ class EditorMenuState extends MusicBeatState
 		for (e in customEditors)
 			menuButtonText.push(e.split("|")[1]);
 
-		var yStart:Int = Std.int((FlxG.height - (menuButtonText.length * 50)) / 2);
+		var yStart:Int = Std.int((FlxG.height - (menuButtonText.length * 40)) / 2);
 		for (i in 0...menuButtonText.length)
 		{
-			var textButton:FlxText = new FlxText(0, yStart + (i * 50), 0, Lang.get(menuButtonText[i]), 36);
+			var textButton:FlxText = new FlxText(0, yStart + (i * 40), 0, Lang.get(menuButtonText[i]), 36);
 			textButton.font = "VCR OSD Mono";
 			textButton.alignment = CENTER;
 			textButton.screenCenter(X);
@@ -107,6 +107,7 @@ class EditorMenuState extends MusicBeatState
 				switch (menuButtonText[curButton].toLowerCase())
 				{
 					case "create new mod": inMenu = true; createNewMod();
+					case "create new package": inMenu = true; createNewPackage();
 					case "chart editor": inMenu = true; prepareChartEditor();
 					case "character editor": inMenu = true; prepareCharacterEditor();
 					case "stage editor": inMenu = true; prepareStageEditor();
@@ -246,6 +247,145 @@ class EditorMenuState extends MusicBeatState
 					};
 					var modMetaString:String = Json.stringify(modMeta, null, "\t");
 					File.saveContent("mods/" + modFolderName + "/_polymod_meta.json", modMetaString);
+
+					remove(tabMenu);
+					inMenu = false;
+				}
+			}
+		};
+		tabGroup.add(newModButton);
+
+		var cancelButton:TextButton = new TextButton(newModButton.x + 150, newModButton.y, 100, 20, "Cancel");
+		cancelButton.onClicked = function()
+		{
+			remove(tabMenu);
+			inMenu = false;
+		};
+		tabGroup.add(cancelButton);
+
+		tabMenu.addGroup(tabGroup);
+	}
+
+	function createNewPackage()
+	{
+		var validChars:Array<String> = [];
+
+		for (c in "a".code..."z".code+1)
+			validChars.push(String.fromCharCode(c));
+
+		for (c in "A".code..."Z".code+1)
+			validChars.push(String.fromCharCode(c));
+
+		for (c in "0".code..."9".code+1)
+			validChars.push(String.fromCharCode(c));
+		validChars.push("-");
+		validChars.push("_");
+
+		tabMenu = new IsolatedTabMenu(0, 0, 400, 300);
+		tabMenu.screenCenter();
+		add(tabMenu);
+
+		var tabGroup:TabGroup = new TabGroup();
+
+		var packageNameInput:InputText = new InputText(10, 20, 380);
+		tabGroup.add(packageNameInput);
+		tabGroup.add(new Label("Package Name:", packageNameInput));
+
+		var packageDescInput:InputText = new InputText(10, packageNameInput.y + 40, 380);
+		tabGroup.add(packageDescInput);
+		tabGroup.add(new Label("Package Description:", packageDescInput));
+
+		var packageWindowTitleInput:InputText = new InputText(10, packageDescInput.y + 40, 380);
+		tabGroup.add(packageWindowTitleInput);
+		tabGroup.add(new Label("Window Title (Optional):", packageWindowTitleInput));
+
+		var packageModsInput:InputText = new InputText(10, packageWindowTitleInput.y + 40, 380);
+		tabGroup.add(packageModsInput);
+
+		var modList:Array<String> = [];
+		for (file in FileSystem.readDirectory("mods"))
+		{
+			if (FileSystem.exists("mods/" + file + "/_polymod_meta.json"))
+				modList.push(file);
+		}
+		var packageModsDropdown:DropdownMenu = new DropdownMenu(100, packageModsInput.y + 30, 200, 20, modList[0], modList, true);
+		packageModsDropdown.onChanged = function() {
+			if (packageModsInput.text.trim() == "")
+				packageModsInput.text = packageModsDropdown.value;
+			else
+				packageModsInput.text += "," + packageModsDropdown.value;
+		}
+		tabGroup.add(packageModsDropdown);
+		tabGroup.add(new Label("Package Mods:", packageModsInput));
+
+		var packageIncludeBase:Checkbox = new Checkbox(10, packageModsDropdown.y + 30, "Include Base", false);
+		tabGroup.add(packageIncludeBase);
+
+		var packageAllowModTools:Checkbox = new Checkbox(packageIncludeBase.x + 190, packageIncludeBase.y, "Allow Mod Tools", false);
+		tabGroup.add(packageAllowModTools);
+
+		var packageCreateMenuMod:Checkbox = new Checkbox(100, packageIncludeBase.y + 30, "Create Menu Mod", false);
+		tabGroup.add(packageCreateMenuMod);
+
+		var newModButton:TextButton = new TextButton(75, packageCreateMenuMod.y + 30, 100, 20, "Create");
+		newModButton.onClicked = function()
+		{
+			if (packageNameInput.text.trim() != "")
+			{
+				var packageFolderNameArray:Array<String> = packageNameInput.text.replace("-", " ").replace(".", " ").replace("'", " ").replace("\"", " ").split(" ");
+				packageFolderNameArray[0] = packageFolderNameArray[0].toLowerCase();
+				var tempPackageFolderName:String = packageFolderNameArray.join("");
+				var packageFolderName:String = "";
+				for (i in 0...tempPackageFolderName.length)
+				{
+					if (validChars.contains(tempPackageFolderName.charAt(i)))
+						packageFolderName += tempPackageFolderName.charAt(i);
+				}
+				if (FileSystem.exists("packages/" + packageFolderName))
+					Application.current.window.alert("The package you are trying to create already exists. Please choose a different name.", "Alert");
+				else
+				{
+					if (!FileSystem.exists("packages"))
+						FileSystem.createDirectory("packages");
+					FileSystem.createDirectory("packages/" + packageFolderName);
+
+					var packageData:Dynamic = {
+						name: packageNameInput.text,
+						mods: packageModsInput.text.split(",")
+					};
+					if (packageDescInput.text.trim() != "")
+						packageData.description = packageDescInput.text;
+					if (packageWindowTitleInput.text.trim() != "")
+						packageData.windowName = packageWindowTitleInput.text;
+					if (!packageIncludeBase.checked)
+						packageData.excludeBase = true;
+					if (packageAllowModTools.checked)
+						packageData.allowModTools = true;
+
+					if (packageCreateMenuMod.checked)
+					{
+						if (FileSystem.exists("mods/" + packageFolderName + "Menu"))
+							Application.current.window.alert("Failed to create menu mod. The name for it is already taken.", "Alert");
+						else
+						{
+							FileSystem.createDirectory("mods/" + packageFolderName + "Menu");
+							var modMeta:Dynamic = {
+								title: "",
+								description: "",
+								api_version: "0.1.0",
+								mod_version: "1.0.0",
+								license: "CC BY 4.0,MIT",
+								start_disabled: true,
+								hidden: true
+							};
+							var modMetaString:String = Json.stringify(modMeta, null, "\t");
+							File.saveContent("mods/" + packageFolderName + "Menu/_polymod_meta.json", modMetaString);
+							packageData.mods.push(packageFolderName + "Menu");
+						}
+					}
+
+					var packageDataString:String = Json.stringify(packageData, null, "\t");
+					File.saveContent("packages/" + packageFolderName + "/data.json", packageDataString);
 
 					remove(tabMenu);
 					inMenu = false;
