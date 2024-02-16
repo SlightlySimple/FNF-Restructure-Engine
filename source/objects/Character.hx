@@ -68,6 +68,7 @@ class Character extends FlxSprite
 	}
 
 	public static var parsedCharacters:Map<String, CharacterData> = new Map<String, CharacterData>();
+	public static var parsedCharacterTypes:Map<String, String> = new Map<String, String>();
 	public static function parseCharacter(id:String):CharacterData
 	{
 		var data:Dynamic = Paths.json("characters/" + id);
@@ -227,6 +228,20 @@ class Character extends FlxSprite
 		if (!Paths.sparrowExists(asset) && (cData.tileCount == null || cData.tileCount.length < 2))
 			cData.tileCount = [1, 1];
 
+		if (parsedCharacterTypes != null && !parsedCharacterTypes.exists(id))
+		{
+			if (asset == "")
+				parsedCharacterTypes[id] = "sparrow";
+			else if (Paths.exists("images/" + asset + ".json"))
+				parsedCharacterTypes[id] = "atlas";
+			else if (Paths.sparrowExists(asset))
+				parsedCharacterTypes[id] = "sparrow";
+			else if (Paths.imageExists(asset))
+				parsedCharacterTypes[id] = "tiles";
+			else
+				parsedCharacterTypes[id] = "error";
+		}
+
 		if (cData.flip == null)
 			cData.flip = false;
 
@@ -345,7 +360,7 @@ class Character extends FlxSprite
 		animChain = new Map<String, String>();
 		animData = new Map<String, CharacterAnimation>();
 
-		if (Paths.jsonExists("characters/" + char))
+		if (parsedCharacters.exists(char) || Paths.jsonExists("characters/" + char))
 			curCharacter = char;
 		if (!parsedCharacters.exists(curCharacter))
 			parsedCharacters[curCharacter] = parseCharacter(curCharacter);
@@ -353,8 +368,12 @@ class Character extends FlxSprite
 
 		if (characterData.gameOverCharacter == null || characterData.gameOverCharacter == "")
 		{
-			if (Paths.jsonExists("characters/" + curCharacter + "-dead"))
+			if (parsedCharacters.exists(curCharacter + "-dead") || Paths.jsonExists("characters/" + curCharacter + "-dead"))
+			{
 				characterData.gameOverCharacter = curCharacter + "-dead";
+				if (!parsedCharacters.exists(curCharacter + "-dead"))
+					parsedCharacters[curCharacter + "-dead"] = parseCharacter(curCharacter + "-dead");
+			}
 			else
 				characterData.gameOverCharacter = TitleState.defaultVariables.dead;
 		}
@@ -391,11 +410,13 @@ class Character extends FlxSprite
 		var asset:String = characterData.asset;
 
 		myCharType = "sparrow";
+		if (parsedCharacterTypes.exists(char))
+			myCharType = parsedCharacterTypes[char];
+
 		if (characterData.asset == "")
 			makeGraphic(1, 1, FlxColor.TRANSPARENT);
-		else if (Paths.exists("images/" + asset + ".json"))
+		else if (myCharType == "atlas")
 		{
-			myCharType = "atlas";
 			makeGraphic(1, 1, FlxColor.TRANSPARENT);
 
 			var assetArray = characterData.asset.replace("\\","/").split("/");
@@ -423,7 +444,7 @@ class Character extends FlxSprite
 			baseFrameWidth = 1;
 			atlas.antialiasing = antialiasing;
 		}
-		else if (Paths.sparrowExists(asset))
+		else if (myCharType == "sparrow")
 		{
 			frames = Paths.sparrow(asset);
 			for (i in 0...characterData.animations.length)
@@ -447,10 +468,8 @@ class Character extends FlxSprite
 			updateHitbox();
 			updateOffsets();
 		}
-		else if (Paths.imageExists(asset))
+		else if (myCharType == "tiles")
 		{
-			myCharType = "tiles";
-
 			frames = Paths.tiles(asset, characterData.tileCount[0], characterData.tileCount[1]);
 			for (i in 0...characterData.animations.length)
 			{

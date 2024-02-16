@@ -33,9 +33,9 @@ class EditorMenuState extends MusicBeatState
 {
 	var menuButtons:Array<FlxText> = [];
 	#if ALLOW_MODS
-	var menuButtonText:Array<String> = ["Create New Mod", "Create New Package", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
+	var menuButtonText:Array<String> = ["Create New Mod", "Create New Package", "Restructure Engine Wiki", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
 	#else
-	var menuButtonText:Array<String> = ["Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
+	var menuButtonText:Array<String> = ["Restructure Engine Wiki", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
 	#end
 	var customEditors:Array<String> = [];
 	var curButton:Int = -1;
@@ -108,6 +108,7 @@ class EditorMenuState extends MusicBeatState
 				{
 					case "create new mod": inMenu = true; createNewMod();
 					case "create new package": inMenu = true; createNewPackage();
+					case "restructure engine wiki": FlxG.openURL("https://github.com/SlightlySimple/FNF-Restructure-Engine/wiki");
 					case "chart editor": inMenu = true; prepareChartEditor();
 					case "character editor": inMenu = true; prepareCharacterEditor();
 					case "stage editor": inMenu = true; prepareStageEditor();

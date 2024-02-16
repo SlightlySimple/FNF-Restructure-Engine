@@ -98,7 +98,7 @@ class AnimatedSprite extends FlxSprite
 	public function addAnim(name:String, prefix:String, fps:Int = 24, loop:Bool = true, ?indices:Array<Int> = null)
 	{
 		if (indices != null && indices.length > 0)
-			animation.addByIndices(name, prefix, indices, "", fps, loop);
+			animation.addByIndices(name, prefix, Character.uncompactIndices(indices), "", fps, loop);
 		else
 			animation.addByPrefix(name, prefix, fps, loop);
 	}

@@ -16,6 +16,7 @@ class HealthIcon extends FlxSprite
 	public var allAnims:Array<String> = [];
 	public var sc:FlxPoint;
 	public var iconOffset:Int = 0;
+	public var swapTo:String = "";
 
 	public var stack:Array<IconStack> = [];
 
@@ -67,8 +68,11 @@ class HealthIcon extends FlxSprite
 		}
 	}
 
-	public function reloadIcon(char:String)
+	public function reloadIcon(char:String, ?isSwap:Bool = false)
 	{
+		if (isSwap)
+			swapTo = id;
+
 		if (char == id)
 			return;
 
@@ -98,6 +102,14 @@ class HealthIcon extends FlxSprite
 			iconData = cast Paths.jsonImages(iconDir);
 		else
 			iconData = { antialias: true, scale: [1, 1], offset: 26 };
+
+		if (!isSwap)
+		{
+			if (iconData.swapTo == null)
+				swapTo = "";
+			else
+				swapTo = iconData.swapTo;
+		}
 
 		if (iconData.antialias == null)
 			iconData.antialias = true;
@@ -221,6 +233,12 @@ class HealthIcon extends FlxSprite
 				playAnim(curState + "_to_" + anim);
 			}
 		}
+	}
+
+	public function swapIcon()
+	{
+		if (swapTo != "")
+			reloadIcon(swapTo, true);
 	}
 
 	override public function updateHitbox()

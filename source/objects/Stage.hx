@@ -38,7 +38,7 @@ class Stage
 			data = Paths.json("stages/" + id);
 		var sData:StageData = cast data;
 
-		if (data.boyfriend != null)			// This is a Psych Engine stage and must be converted to the Slightly Engine format
+		if (data.boyfriend != null)			// This is a Psych Engine stage and must be converted to the Restructure Engine format
 		{
 			sData = {
 				characters: [{position: data.boyfriend, camPosition: [0, 0], flip: true},
@@ -244,7 +244,7 @@ class Stage
 							else
 							{
 								if (anim.indices != null && anim.indices.length > 0)
-									aPiece.animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+									aPiece.animation.add(anim.name, Character.uncompactIndices(anim.indices), anim.fps, anim.loop);
 							}
 							if (anim.offsets != null && anim.offsets.length == 2)
 								aPiece.addOffsets(anim.name, anim.offsets);

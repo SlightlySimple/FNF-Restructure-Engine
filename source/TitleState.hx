@@ -51,6 +51,7 @@ class TitleState extends MusicBeatState
 {
 	public static var defaultVariables:DefaultVariables;
 
+	public static var initialized:Bool = false;
 	public var titleScreenSequence:Array<Dynamic>;
 	public var seqScreen:FlxSprite;
 	public var introBeat:Int = -1;
@@ -101,19 +102,22 @@ class TitleState extends MusicBeatState
 	{
 		super.create();
 
-		defaultVariables = cast Paths.json("defaultVariables");
+		if (!initialized)
+		{
+			defaultVariables = cast Paths.json("defaultVariables");
 
-		checkDefaultField("player1", "characters/");
-		checkDefaultField("player2", "characters/");
-		checkDefaultField("gf", "characters/");
-		checkDefaultField("stage", "stages/");
-		checkDefaultField("dead", "characters/");
-		checkDefaultFieldIcon("icon", "icons/");
-		checkDefaultFieldIcon("noicon", "icons/");
-		checkDefaultField("story1", "story_characters/", true);
-		checkDefaultField("story2", "story_characters/", true);
-		checkDefaultField("story3", "story_characters/", true);
-		checkDefaultFieldImages("storyimage", "ui/weeks/");
+			checkDefaultField("player1", "characters/");
+			checkDefaultField("player2", "characters/");
+			checkDefaultField("gf", "characters/");
+			checkDefaultField("stage", "stages/");
+			checkDefaultField("dead", "characters/");
+			checkDefaultFieldIcon("icon", "icons/");
+			checkDefaultFieldIcon("noicon", "icons/");
+			checkDefaultField("story1", "story_characters/", true);
+			checkDefaultField("story2", "story_characters/", true);
+			checkDefaultField("story3", "story_characters/", true);
+			checkDefaultFieldImages("storyimage", "ui/weeks/");
+		}
 
 
 
@@ -220,11 +224,18 @@ class TitleState extends MusicBeatState
 		if (specialIntroText.length < 2)
 			specialIntroText.push(specialIntroText[0]);
 
-		Conductor.playMusic("freakyMenu", 0);
-		FlxG.sound.music.fadeIn(4, 0, 0.7);
+		if (!initialized)
+		{
+			Conductor.playMusic("freakyMenu", 0);
+			FlxG.sound.music.fadeIn(4, 0, 0.7);
+		}
 
 		if (myScript != null)
 			myScript.execFunc("create", []);
+
+		if (initialized)
+			endIntro(false);
+		initialized = true;
 	}
 
 	override public function update(elapsed:Float)
@@ -350,14 +361,18 @@ class TitleState extends MusicBeatState
 		}
 	}
 
-	public function endIntro()
+	public function endIntro(?skipping:Bool = true)
 	{
 		skippedIntro = true;
-		FlxG.camera.flash(FlxColor.WHITE, 4);
+		if (skipping)
+			FlxG.camera.flash(FlxColor.WHITE, 4);
 		remove(seqScreen);
 		remove(introText);
 
-		if (Math.abs(FlxG.sound.music.time - Conductor.timeFromBeat(titleScreenSequence.length)) > 50)
+		if (skipping && Math.abs(FlxG.sound.music.time - Conductor.timeFromBeat(titleScreenSequence.length)) > 50)
 			FlxG.sound.music.time = Conductor.timeFromBeat(titleScreenSequence.length);
+
+		if (myScript != null)
+			myScript.execFunc("endIntro", [skipping]);
 	}
 }

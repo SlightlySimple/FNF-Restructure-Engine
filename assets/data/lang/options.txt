@@ -25,6 +25,7 @@
 "optionsNamePause"			"Pause Game"
 "optionsNameRestart"		"Restart Song"
 "optionsNameSkipIntro"		"Skip Song's Intro"
+"optionsNameSwapIcon"		"Swap Boyfriend's Health Icon"
 
 "optionsSubcatOtherMenu"	"OTHER (IN-MENU)"
 "optionsNameFullscreen"		"Toggle Fullscreen"

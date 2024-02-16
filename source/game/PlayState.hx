@@ -229,7 +229,7 @@ class PlayState extends MusicBeatState
 
 		totalOffset = songData.offset - Options.options.offset;
 
-		noteType = songData.noteType;
+		noteType = songData.noteType.copy();
 		uiSkin = cast Paths.jsonImages('ui/skins/' + songData.uiSkin);
 		RatingPopup.sparrows = new Map<String, Bool>();
 
@@ -856,7 +856,7 @@ class PlayState extends MusicBeatState
 			songProgressText.text = getSongProgressText();
 
 		if (msText.alpha > 0)
-			msText.alpha -= elapsed / (Conductor.beatLength / 1000);
+			msText.alpha -= elapsed / Conductor.beatSeconds;
 
 		if (countdownStarted)
 		{
@@ -1081,6 +1081,12 @@ class PlayState extends MusicBeatState
 
 		if (Options.keyJustPressed("restart"))
 			restartSong();
+
+		if (Options.keyJustPressed("swapIcon"))
+		{
+			for (i in healthIcons)
+				i.swapIcon();
+		}
 
 		scriptExec("updatePost", [elapsed]);
 	}
@@ -1813,7 +1819,7 @@ class PlayState extends MusicBeatState
 			if (tweenList.length == 0)
 			{
 				FlxG.camera.zoom = camZoom + (mainIntensity == 0 ? 0.015 : mainIntensity);
-				bumpTweenMain = FlxTween.tween(FlxG.camera, {zoom: camZoom}, (Conductor.beatLength / 1000) * timeMultiplier, { ease: FlxEase.quadOut });
+				bumpTweenMain = FlxTween.tween(FlxG.camera, {zoom: camZoom}, Conductor.beatSeconds * timeMultiplier, { ease: FlxEase.quadOut });
 			}
 
 			tweenList = [];
@@ -1822,7 +1828,7 @@ class PlayState extends MusicBeatState
 			if (tweenList.length == 0)
 			{
 				camHUD.zoom = 1 + (hudIntensity == 0 ? 0.03 : hudIntensity);
-				bumpTweenHUD = FlxTween.tween(camHUD, {zoom: 1}, (Conductor.beatLength / 1000) * timeMultiplier, { ease: FlxEase.quadOut });
+				bumpTweenHUD = FlxTween.tween(camHUD, {zoom: 1}, Conductor.beatSeconds * timeMultiplier, { ease: FlxEase.quadOut });
 			}
 		}
 	}
@@ -1887,7 +1893,7 @@ class PlayState extends MusicBeatState
 				for (i in healthIcons)
 				{
 					i.sc.set(1.2, 1.2);
-					FlxTween.tween(i.sc, {x: 1, y: 1}, Conductor.stepLength / 1000, { ease: FlxEase.quadOut });
+					FlxTween.tween(i.sc, {x: 1, y: 1}, Conductor.stepSeconds, { ease: FlxEase.quadOut });
 				}
 			}
 		}
@@ -2194,6 +2200,16 @@ class PlayState extends MusicBeatState
 				default: FlxG.switchState(new MainMenuState());
 			}
 		}
+	}
+
+	override public function destroy()
+	{
+		scriptExec("destroy");
+
+		if (MP4Handler.vlcBitmap != null && MP4Handler.vlcBitmap.isPlaying)
+			MP4Handler.vlcBitmap.stop();
+
+		super.destroy();
 	}
 
 	function onKeyPressed(event:KeyboardEvent)
@@ -2602,7 +2618,7 @@ class PlayState extends MusicBeatState
 		if (replacing)
 		{
 			FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
-			FlxTween.tween(FlxG.camera, {zoom: camZoom}, Conductor.beatLength / 1000, { ease: FlxEase.quadOut });
+			FlxTween.tween(FlxG.camera, {zoom: camZoom}, Conductor.beatSeconds, { ease: FlxEase.quadOut });
 		}
 
 		FlxG.camera.bgColor = FlxColor.fromRGB(stage.stageData.bgColor[0], stage.stageData.bgColor[1], stage.stageData.bgColor[2]);

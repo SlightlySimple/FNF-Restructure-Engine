@@ -1,3 +1,5 @@
+import objects.SustainNote;
+
 function onEvent(event)
 {
 	var side = Std.int(event.parameters.strumline);
@@ -48,6 +50,7 @@ function onEvent(event)
 			}
 		);
 
+		SustainNote.noteGraphics.clear();
 		for (note in game.sustainArray)
 		{
 			if (validColumns.contains(note.column))

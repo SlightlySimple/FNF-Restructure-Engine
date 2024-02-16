@@ -75,18 +75,15 @@ function create()
 	scaleStepperY = new Stepper(scaleStepperX.x + 115, scaleStepperX.y, 115, 20, data.scale[1], 0.05, 0, 9999, 3);
 	scaleStepperY.onChanged = function() { data.scale[1] = scaleStepperY.value; portrait.scale.y = data.scale[1]; }
 	tabGroup.add(scaleStepperY);
-	var scaleLabel = new Label("Scale:", scaleStepperX);
-	tabGroup.add(scaleLabel);
+	tabGroup.add(new Label("Scale:", scaleStepperX));
 
 	animName = new InputText(10, scaleStepperX.y + 60);
 	tabGroup.add(animName);
-	var animNameLabel = new Label("Animation Name:", animName);
-	tabGroup.add(animNameLabel);
+	tabGroup.add(new Label("Animation Name:", animName));
 
 	idlePrefix = new DropdownMenu(10, animName.y + 40, 230, 20, prefixArray[0], prefixArray);
 	tabGroup.add(idlePrefix);
-	var idlePrefixLabel = new Label("Idle Prefix:", idlePrefix);
-	tabGroup.add(idlePrefixLabel);
+	tabGroup.add(new Label("Idle Prefix:", idlePrefix));
 
 	idleLoop = new Checkbox(10, idlePrefix.y + 40, 20, 20, "Loop");
 	idleLoop.checked = true;
@@ -94,13 +91,11 @@ function create()
 
 	idleFPS = new Stepper(idleLoop.x + 115, idleLoop.y, 115, 20, 24, 1, 0);
 	tabGroup.add(idleFPS);
-	var idleFPSLabel = new Label("FPS:", idleFPS);
-	tabGroup.add(idleFPSLabel);
+	tabGroup.add(new Label("FPS:", idleFPS));
 
 	talkPrefix = new DropdownMenu(10, idleFPS.y + 40, 230, 20, prefixArray2[0], prefixArray2);
 	tabGroup.add(talkPrefix);
-	var talkPrefixLabel = new Label("Talk Prefix (Optional):", talkPrefix);
-	tabGroup.add(talkPrefixLabel);
+	tabGroup.add(new Label("Talk Prefix (Optional):", talkPrefix));
 
 	talkLoop = new Checkbox(10, talkPrefix.y + 40, 20, 20, "Loop");
 	talkLoop.checked = true;
@@ -108,8 +103,7 @@ function create()
 
 	talkFPS = new Stepper(talkLoop.x + 115, talkLoop.y, 115, 20, 24, 1, 0);
 	tabGroup.add(talkFPS);
-	var talkFPSLabel = new Label("FPS:", talkFPS);
-	tabGroup.add(talkFPSLabel);
+	tabGroup.add(new Label("FPS:", talkFPS));
 
 	var addAnimButton = new TextButton(10, talkFPS.y + 30, 230, 20, "Add/Update Animation");
 	addAnimButton.onClicked = function() {

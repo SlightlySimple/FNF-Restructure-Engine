@@ -46,6 +46,16 @@ class HscriptState extends MusicBeatState
 		super.create();
 	}
 
+	override public function destroy()
+	{
+		myScript.execFunc("destroy", []);
+
+		if (MP4Handler.vlcBitmap != null && MP4Handler.vlcBitmap.isPlaying)
+			MP4Handler.vlcBitmap.stop();
+
+		super.destroy();
+	}
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);

@@ -35,7 +35,7 @@ class MainMenuState extends MusicBeatState
 		if (Paths.hscriptExists('data/states/MainMenuState'))
 			myScript = new HscriptHandler('data/states/MainMenuState');
 
-		nav = new UINumeralNavigation(null, changeSelection, accept, null, changeSelection, accept);
+		nav = new UINumeralNavigation(null, changeSelection, accept, back, changeSelection, accept);
 		add(nav);
 
 		if (myScript != null)
@@ -71,6 +71,12 @@ class MainMenuState extends MusicBeatState
 			myScript.execFunc("onAccept", []);
 		nav.locked = true;
 		new FlxTimer().start(1, function(tmr:FlxTimer) { proceed(); });
+	}
+
+	function back()
+	{
+		nav.locked = true;
+		FlxG.switchState(new TitleState());
 	}
 
 	function proceed()

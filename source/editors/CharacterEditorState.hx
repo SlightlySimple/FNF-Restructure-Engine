@@ -66,14 +66,16 @@ class CharacterEditorState extends MusicBeatState
 	var listOffset:Int = 0;
 
 	var tabMenu:IsolatedTabMenu;
+	var tabButtons:TabButtons;
 
+	var posLocked:Checkbox;
 	var charPosDropdown:DropdownMenu = null;
 	var charPosStepper:Stepper;
 	var otherCharPosStepper:Stepper;
 	var otherCharAnimDropdown:DropdownMenu;
 
-	var charPositionText:FlxText;
-	var posLocked:Checkbox;
+	var charX:Stepper;
+	var charY:Stepper;
 	var charFacing:DropdownMenu;
 	var charScaleX:Stepper;
 	var charScaleY:Stepper;
@@ -100,6 +102,7 @@ class CharacterEditorState extends MusicBeatState
 	override public function create()
 	{
 		Character.parsedCharacters = new Map<String, CharacterData>();
+		Character.parsedCharacterTypes = new Map<String, String>();
 
 		camGame = new FlxCamera();
 		FlxG.cameras.add(camGame);
@@ -228,7 +231,7 @@ class CharacterEditorState extends MusicBeatState
 		add(tabMenu);
 		refreshCharAnims();
 
-		var tabButtons:TabButtons = new TabButtons(0, 0, 425, ["General", "Properties", "Animations", "Offsets", "Help"]);
+		tabButtons = new TabButtons(0, 0, 425, ["General", "Properties", "Animations", "Offsets", "Help"]);
 		tabButtons.cameras = [camHUD];
 		tabButtons.menu = tabMenu;
 		add(tabButtons);
@@ -258,7 +261,10 @@ class CharacterEditorState extends MusicBeatState
 		}
 		tabGroupGeneral.add(createCopyButton);
 
-		var showAnimGhost:Checkbox = new Checkbox(10, createCopyButton.y + 30, "Animation Ghost");
+		posLocked = new Checkbox(10, createCopyButton.y + 30, "Lock Positions", true);
+		tabGroupGeneral.add(posLocked);
+
+		var showAnimGhost:Checkbox = new Checkbox(10, posLocked.y + 30, "Animation Ghost");
 		showAnimGhost.checked = false;
 		showAnimGhost.onClicked = function()
 		{
@@ -291,8 +297,7 @@ class CharacterEditorState extends MusicBeatState
 			charPosStepper.onChanged();
 		}
 		tabGroupGeneral.add(charPosStepper);
-		var charPosLabel:Label = new Label("Preview Position:", charPosStepper);
-		tabGroupGeneral.add(charPosLabel);
+		tabGroupGeneral.add(new Label("Preview Position:", charPosStepper));
 
 		var stageList:Array<String> = Paths.listFilesSub("data/stages/", ".json");
 		var stageDropdown:DropdownMenu = new DropdownMenu(10, charPosStepper.y + 40, 230, 20, stage.curStage, stageList, true);
@@ -307,8 +312,7 @@ class CharacterEditorState extends MusicBeatState
 				otherCharPosStepper.value = otherCharPos;
 		}
 		tabGroupGeneral.add(stageDropdown);
-		var stageLabel:Label = new Label("Preview Stage:", stageDropdown);
-		tabGroupGeneral.add(stageLabel);
+		tabGroupGeneral.add(new Label("Preview Stage:", stageDropdown));
 
 		var showOtherAnimGhost:Checkbox = new Checkbox(10, stageDropdown.y + 30, "Other Anim. Ghost");
 		showOtherAnimGhost.checked = false;
@@ -327,8 +331,7 @@ class CharacterEditorState extends MusicBeatState
 			changeStage(stage.curStage);
 		}
 		tabGroupGeneral.add(otherCharPosStepper);
-		var otherCharPosLabel:Label = new Label("Preview Position:", otherCharPosStepper);
-		tabGroupGeneral.add(otherCharPosLabel);
+		tabGroupGeneral.add(new Label("Preview Position:", otherCharPosStepper));
 
 		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
 		characterList.remove("none");
@@ -342,8 +345,7 @@ class CharacterEditorState extends MusicBeatState
 			otherCharAnimDropdown.value = otherAnimGhost.curAnimName;
 		}
 		tabGroupGeneral.add(otherCharacterDropdown);
-		var otherCharacterLabel:Label = new Label("Character:", otherCharacterDropdown);
-		tabGroupGeneral.add(otherCharacterLabel);
+		tabGroupGeneral.add(new Label("Character:", otherCharacterDropdown));
 
 		otherCharAnimDropdown = new DropdownMenu(10, otherCharacterDropdown.y + 40, 230, 20, "idle", [], true);
 		otherCharAnimDropdown.onChanged = function() {
@@ -351,8 +353,7 @@ class CharacterEditorState extends MusicBeatState
 		}
 		otherCharacterDropdown.onChanged();
 		tabGroupGeneral.add(otherCharAnimDropdown);
-		var ootherCharAnimLabel:Label = new Label("Animation:", otherCharAnimDropdown);
-		tabGroupGeneral.add(ootherCharAnimLabel);
+		tabGroupGeneral.add(new Label("Animation:", otherCharAnimDropdown));
 
 		var bakeFlippedOffsets:TextButton = new TextButton(10, otherCharAnimDropdown.y + 30, 230, 20, "Bake Flipped Offsets");
 		bakeFlippedOffsets.onClicked = function() {
@@ -419,16 +420,21 @@ class CharacterEditorState extends MusicBeatState
 
 		var tabGroupProperties = new TabGroup();
 
-		charPositionText = new FlxText(10, 10, 150, "Position:", 18);
-		charPositionText.color = FlxColor.BLACK;
-		charPositionText.font = "VCR OSD Mono";
-		charPositionText.alignment = CENTER;
-		tabGroupProperties.add(charPositionText);
+		charX = new Stepper(10, 20, 115, 20, myCharacterData.position[0], 5);
+		charX.onChanged = function() {
+			myCharacterData.position[0] = charX.valueInt;
+			resetCharPosition();
+		}
+		tabGroupProperties.add(charX);
+		charY = new Stepper(charX.x + 115, charX.y, 115, 20, myCharacterData.position[1], 5);
+		charY.onChanged = function() {
+			myCharacterData.position[1] = charY.valueInt;
+			resetCharPosition();
+		}
+		tabGroupProperties.add(charY);
+		tabGroupProperties.add(new Label("Position:", charX));
 
-		posLocked = new Checkbox(charPositionText.x + 150, charPositionText.y + 10, "Lock", true);
-		tabGroupProperties.add(posLocked);
-
-		var charAntialias:Checkbox = new Checkbox(10, posLocked.y + 30, "Antialias", myCharacterData.antialias);
+		var charAntialias:Checkbox = new Checkbox(10, charX.y + 30, "Antialias", myCharacterData.antialias);
 		charAntialias.onClicked = function()
 		{
 			myCharacterData.antialias = charAntialias.checked;
@@ -461,15 +467,13 @@ class CharacterEditorState extends MusicBeatState
 			charTileY.onChanged = function() { myCharacterData.tileCount[1] = Std.int(charTileY.value); refreshTileCharacterFrames(); }
 			tabGroupProperties.add(charTileX);
 			tabGroupProperties.add(charTileY);
-			var charTileLabel:Label = new Label("Tile Count:", charTileX);
-			tabGroupProperties.add(charTileLabel);
+			tabGroupProperties.add(new Label("Tile Count:", charTileX));
 		}
 
 		var charDanceSpeed:Stepper = new Stepper(10, (myCharType == "tiles" ? charTileX.y + 40 : charAntialias.y + 40), 115, 20, myCharacterData.danceSpeed, 0.25, 0, 9999, 2);
 		charDanceSpeed.onChanged = function() { myCharacterData.danceSpeed = charDanceSpeed.value; }
 		tabGroupProperties.add(charDanceSpeed);
-		var charDanceSpeedLabel:Label = new Label("Dance Speed:", charDanceSpeed);
-		tabGroupProperties.add(charDanceSpeedLabel);
+		tabGroupProperties.add(new Label("Dance Speed:", charDanceSpeed));
 
 		charFacing = new DropdownMenu(125, charDanceSpeed.y, 115, 20, "right", ["right", "left", "center"]);
 		charFacing.value = myCharacterData.facing;
@@ -500,8 +504,7 @@ class CharacterEditorState extends MusicBeatState
 			charPosStepper.onChanged();
 		};
 		tabGroupProperties.add(charFacing);
-		var charFacingLabel:Label = new Label("Facing:", charFacing);
-		tabGroupProperties.add(charFacingLabel);
+		tabGroupProperties.add(new Label("Facing:", charFacing));
 
 		charScaleX = new Stepper(10, charDanceSpeed.y + 40, 115, 20, myCharacterData.scale[0], 0.05, 0, 9999, 3);
 		charScaleX.onChanged = function() {
@@ -533,8 +536,7 @@ class CharacterEditorState extends MusicBeatState
 			}
 		};
 		tabGroupProperties.add(charScaleY);
-		var charScaleLabel:Label = new Label("Scale:", charScaleX);
-		tabGroupProperties.add(charScaleLabel);
+		tabGroupProperties.add(new Label("Scale:", charScaleX));
 
 		camPosX = new Stepper(10, charScaleX.y + 40, 115, 20, myCharacterData.camPosition[0], 5);
 		camPosX.onChanged = function() {myCharacterData.camPosition[0] = camPosX.valueInt;};
@@ -542,8 +544,7 @@ class CharacterEditorState extends MusicBeatState
 		camPosY = new Stepper(camPosX.x + 115, camPosX.y, 115, 20, myCharacterData.camPosition[1], 5);
 		camPosY.onChanged = function() {myCharacterData.camPosition[1] = camPosY.valueInt;};
 		tabGroupProperties.add(camPosY);
-		var camPosLabel:Label = new Label("Camera Position:", camPosX);
-		tabGroupProperties.add(camPosLabel);
+		tabGroupProperties.add(new Label("Camera Position:", camPosX));
 
 		var camTestButton:TextButton = new TextButton(10, camPosX.y + 30, 115, 20, "Test");
 		camTestButton.onClicked = function() {
@@ -580,8 +581,7 @@ class CharacterEditorState extends MusicBeatState
 		camPosDeadY = new Stepper(camPosDeadX.x + 115, camPosDeadX.y, 115, 20, myCharacterData.camPositionGameOver[1], 5);
 		camPosDeadY.onChanged = function() {myCharacterData.camPositionGameOver[1] = camPosDeadY.valueInt;};
 		tabGroupProperties.add(camPosDeadY);
-		var camPosDeadLabel:Label = new Label("Camera Position (Game Over):", camPosDeadX);
-		tabGroupProperties.add(camPosDeadLabel);
+		tabGroupProperties.add(new Label("Camera Position (Game Over):", camPosDeadX));
 
 		var camTestDeadButton:TextButton = new TextButton(10, camPosDeadX.y + 30, 115, 20, "Test");
 		camTestDeadButton.onClicked = function() {
@@ -627,8 +627,7 @@ class CharacterEditorState extends MusicBeatState
 			iconInput.focusLost();
 		};
 		tabGroupProperties.add(iconDropdown);
-		var iconLabel:Label = new Label("Health Icon (Optional):", iconInput);
-		tabGroupProperties.add(iconLabel);
+		tabGroupProperties.add(new Label("Health Icon (Optional):", iconInput));
 
 		var idlesInput:InputText = new InputText(10, iconDropdown.y + 40, 115);
 		idlesInput.focusGained = function() {
@@ -656,8 +655,7 @@ class CharacterEditorState extends MusicBeatState
 				myCharacterData.idles.remove(p);
 		}
 		tabGroupProperties.add(idlesInput);
-		var idlesInputLabel:Label = new Label("Idle Animations:", idlesInput);
-		tabGroupProperties.add(idlesInputLabel);
+		tabGroupProperties.add(new Label("Idle Animations:", idlesInput));
 
 		var firstAnimList:Array<String> = [""];
 		if (charAnimList.length > 0)
@@ -667,8 +665,7 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.firstAnimation = firstAnimDropdown.value;
 		};
 		tabGroupProperties.add(firstAnimDropdown);
-		var firstAnimLabel:Label = new Label("First Animation:", firstAnimDropdown);
-		tabGroupProperties.add(firstAnimLabel);
+		tabGroupProperties.add(new Label("First Animation:", firstAnimDropdown));
 
 		var autoAnimButton:TextButton = new TextButton(10, firstAnimDropdown.y + 30, 230, 20, "Fill Anim Fields");
 		autoAnimButton.onClicked = function()
@@ -697,8 +694,7 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.gameOverCharacter = gameOverCharDropdown.value;
 		};
 		tabGroupProperties.add(gameOverCharDropdown);
-		var gameOverCharLabel:Label = new Label("Game Over Character (Optional):", gameOverCharDropdown);
-		tabGroupProperties.add(gameOverCharLabel);
+		tabGroupProperties.add(new Label("Game Over Character (Optional):", gameOverCharDropdown));
 
 		var soundList:Array<String> = Paths.listFilesSub("sounds/", ".ogg");
 		soundList.unshift("");
@@ -707,8 +703,7 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.gameOverSFX = gameOverSFXDropdown.value;
 		};
 		tabGroupProperties.add(gameOverSFXDropdown);
-		var gameOverSFXLabel:Label = new Label("Game Over SFX (Optional):", gameOverSFXDropdown);
-		tabGroupProperties.add(gameOverSFXLabel);
+		tabGroupProperties.add(new Label("Game Over SFX (Optional):", gameOverSFXDropdown));
 
 		var deathCounterInput:InputText = new InputText(10, gameOverSFXDropdown.y + 40);
 		deathCounterInput.focusGained = function() {
@@ -721,8 +716,7 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.deathCounterText = text.trim();
 		}
 		tabGroupProperties.add(deathCounterInput);
-		var deathCounterLabel:Label = new Label("Death Counter Text (Optional):", deathCounterInput);
-		tabGroupProperties.add(deathCounterLabel);
+		tabGroupProperties.add(new Label("Death Counter Text (Optional):", deathCounterInput));
 
 		var scriptList:Array<String> = [""];
 		for (s in Paths.listFilesSub("data/characters/", ".hscript"))
@@ -737,8 +731,7 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.script = scriptDropdown.value;
 		};
 		tabGroupProperties.add(scriptDropdown);
-		var scriptLabel:Label = new Label("Script (Optional):", scriptDropdown);
-		tabGroupProperties.add(scriptLabel);
+		tabGroupProperties.add(new Label("Script (Optional):", scriptDropdown));
 
 		tabMenu.addGroup(tabGroupProperties);
 
@@ -748,8 +741,7 @@ class CharacterEditorState extends MusicBeatState
 
 		animName = new InputText(10, 20);
 		tabGroupAnims.add(animName);
-		var animNameLabel:Label = new Label("Animation Name:", animName);
-		tabGroupAnims.add(animNameLabel);
+		tabGroupAnims.add(new Label("Animation Name:", animName));
 
 		var commonAnimations:Array<String> = Paths.textData("commonAnimations").replace("\r","").split("\n");
 		var animNameDropdown:DropdownMenu = new DropdownMenu(10, animName.y + 30, 230, 20, commonAnimations[0], commonAnimations, true);
@@ -763,8 +755,7 @@ class CharacterEditorState extends MusicBeatState
 		if (myCharType == "sparrow")
 		{
 			tabGroupAnims.add(animPrefix);
-			var animPrefixLabel:Label = new Label("Prefix:", animPrefix);
-			tabGroupAnims.add(animPrefixLabel);
+			tabGroupAnims.add(new Label("Prefix:", animPrefix));
 
 			animPrefixDropdown = new DropdownMenu(10, animPrefix.y + 30, 230, 20, allAnimPrefixes[0], allAnimPrefixes, true);
 			animPrefixDropdown.onChanged = function() {
@@ -774,8 +765,7 @@ class CharacterEditorState extends MusicBeatState
 
 			animIndices = new InputText(10, animPrefixDropdown.y + 40);
 			tabGroupAnims.add(animIndices);
-			var animIndicesLabel:Label = new Label("Indices (Optional):", animIndices);
-			tabGroupAnims.add(animIndicesLabel);
+			tabGroupAnims.add(new Label("Indices (Optional):", animIndices));
 
 			var allIndices:TextButton = new TextButton(10, animIndices.y + 30, 230, 20, "All Indices");
 			allIndices.onClicked = function()
@@ -798,18 +788,15 @@ class CharacterEditorState extends MusicBeatState
 		{
 			animIndices = new InputText(10, animNameDropdown.y + 40);
 			tabGroupAnims.add(animIndices);
-			var animIndicesLabel:Label = new Label("Indices:", animIndices);
-			tabGroupAnims.add(animIndicesLabel);
+			tabGroupAnims.add(new Label("Indices:", animIndices));
 
 			var indRangeStart:Stepper = new Stepper(10, animIndices.y + 40, 115, 20, 0, 1, 0);
 			tabGroupAnims.add(indRangeStart);
-			var indRangeStartLabel:Label = new Label("Start:", indRangeStart);
-			tabGroupAnims.add(indRangeStartLabel);
+			tabGroupAnims.add(new Label("Start:", indRangeStart));
 
 			var indRangeLength:Stepper = new Stepper(indRangeStart.x + 115, indRangeStart.y, 115, 20, 1, 1, 1);
 			tabGroupAnims.add(indRangeLength);
-			var indRangeLengthLabel:Label = new Label("Length:", indRangeLength);
-			tabGroupAnims.add(indRangeLengthLabel);
+			tabGroupAnims.add(new Label("Length:", indRangeLength));
 
 			var rangeIndices:TextButton = new TextButton(10, indRangeStart.y + 30, 230, 20, "Generate Range");
 			rangeIndices.onClicked = function()
@@ -830,8 +817,7 @@ class CharacterEditorState extends MusicBeatState
 		tabGroupAnims.add(animOffsetX);
 		animOffsetY = new Stepper(animOffsetX.x + 115, animOffsetX.y, 115, 20, 0, 1);
 		tabGroupAnims.add(animOffsetY);
-		var animOffsetLabel:Label = new Label("Offsets:", animOffsetX);
-		tabGroupAnims.add(animOffsetLabel);
+		tabGroupAnims.add(new Label("Offsets:", animOffsetX));
 
 		animLooped = new Checkbox(10, animOffsetX.y + 40, "Loop");
 		animLooped.checked = false;
@@ -839,18 +825,15 @@ class CharacterEditorState extends MusicBeatState
 
 		animFPS = new Stepper(animLooped.x + 115, animLooped.y, 115, 20, 24, 1, 0);
 		tabGroupAnims.add(animFPS);
-		var animFPSLabel:Label = new Label("FPS:", animFPS);
-		tabGroupAnims.add(animFPSLabel);
+		tabGroupAnims.add(new Label("FPS:", animFPS));
 
 		animLoopedFrames = new Stepper(10, animLooped.y + 40, 115, 20, 0, 1, 0);
 		tabGroupAnims.add(animLoopedFrames);
-		var animLoopedFramesLabel:Label = new Label("Trailing frames:", animLoopedFrames);
-		tabGroupAnims.add(animLoopedFramesLabel);
+		tabGroupAnims.add(new Label("Trailing frames:", animLoopedFrames));
 
 		animSustainFrame = new Stepper(animLoopedFrames.x + 115, animLoopedFrames.y, 115, 20, -1, 1, -1);
 		tabGroupAnims.add(animSustainFrame);
-		var animSustainFrameLabel:Label = new Label("Held frame:", animSustainFrame);
-		tabGroupAnims.add(animSustainFrameLabel);
+		tabGroupAnims.add(new Label("Held frame:", animSustainFrame));
 
 		animImportant = new Checkbox(10, animLoopedFrames.y + 30, "Prevents Idle");
 		animImportant.checked = false;
@@ -861,8 +844,7 @@ class CharacterEditorState extends MusicBeatState
 			nextAnimList = nextAnimList.concat(charAnimList);
 		animNextDropdown = new DropdownMenu(10, animImportant.y + 40, 230, 20, nextAnimList[0], nextAnimList, true);
 		tabGroupAnims.add(animNextDropdown);
-		var animNextLabel:Label = new Label("Next Animation (Optional):", animNextDropdown);
-		tabGroupAnims.add(animNextLabel);
+		tabGroupAnims.add(new Label("Next Animation (Optional):", animNextDropdown));
 
 		var addAnimButton:TextButton = new TextButton(10, animNextDropdown.y + 30, 230, 20, "Add/Update Animation");
 		addAnimButton.onClicked = function()
@@ -1084,6 +1066,8 @@ class CharacterEditorState extends MusicBeatState
 			myCharacterData.camPosition[1] += offY;
 			myCharacterData.camPositionGameOver[0] += offX;
 			myCharacterData.camPositionGameOver[1] += offY;
+			charX.value = myCharacterData.position[0];
+			charY.value = myCharacterData.position[1];
 			camPosX.value = myCharacterData.camPosition[0];
 			camPosY.value = myCharacterData.camPosition[1];
 			camPosDeadX.value = myCharacterData.camPositionGameOver[0];
@@ -1118,8 +1102,7 @@ class CharacterEditorState extends MusicBeatState
 			tabGroupOffsets.add(alignmentA);
 			var alignmentB:DropdownMenu = new DropdownMenu(alignmentA.x + 115, alignmentA.y, 115, 20, "top", ["top", "middle", "bottom"]);
 			tabGroupOffsets.add(alignmentB);
-			var alignmentLabel:Label = new Label("Alignment:", alignmentA);
-			tabGroupOffsets.add(alignmentLabel);
+			tabGroupOffsets.add(new Label("Alignment:", alignmentA));
 
 			var generateOffsets:TextButton = new TextButton(10, alignmentA.y + 30, 230, 20, "Generate Offsets");
 			generateOffsets.onClicked = function() {
@@ -1203,7 +1186,7 @@ class CharacterEditorState extends MusicBeatState
 			}
 		}
 
-		var camPosString:String = "Camera X: "+Std.string(camFollow.x)+"\nCamera Y: "+Std.string(camFollow.y)+"\nCamera Z: "+Std.string(camGame.zoom);
+		var camPosString:String = "Camera X: "+Std.string(Math.round(camFollow.x))+"\nCamera Y: "+Std.string(Math.round(camFollow.y))+"\nCamera Z: "+Std.string(camGame.zoom);
 		if (camPosText.text != camPosString)
 		{
 			camPosText.text = camPosString;
@@ -1211,7 +1194,10 @@ class CharacterEditorState extends MusicBeatState
 		}
 
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
+		{
 			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
+			camGame.zoom = Math.round(camGame.zoom * 100) / 100;
+		}
 
 		charAnims.forEachAlive(function(anim:FlxText)
 		{
@@ -1242,9 +1228,9 @@ class CharacterEditorState extends MusicBeatState
 			else
 			{
 				myCharacterData.position = [Std.int(dragStart[0] + dragOffset[0]), Std.int(dragStart[1] + dragOffset[1])];
-				myCharacter.x = myCharacterData.position[0] + charPosOffset[0];
-				myCharacter.y = myCharacterData.position[1] + charPosOffset[1];
-				animGhost.setPosition(myCharacter.x, myCharacter.y);
+				charX.value = myCharacterData.position[0];
+				charY.value = myCharacterData.position[1];
+				resetCharPosition();
 			}
 
 			if (Options.mouseJustReleased())
@@ -1301,7 +1287,7 @@ class CharacterEditorState extends MusicBeatState
 				if (clickedOne)
 					refreshCharAnims();
 
-				if (!posLocked.checked && !clickedOne && !FlxG.mouse.overlaps(tabMenu, camHUD))
+				if (!posLocked.checked && !clickedOne && !FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(tabButtons, camHUD))
 				{
 					movingAnimOffset = FlxG.keys.pressed.SHIFT;
 					if (myCharacterData.animations.length <= 0)
@@ -1375,10 +1361,6 @@ class CharacterEditorState extends MusicBeatState
 			}
 			confirm.cameras = [camHUD];
 		}
-
-		var posTxt:String = "Position:\n" + Std.string(myCharacterData.position);
-		if (charPositionText.text != posTxt)
-			charPositionText.text = posTxt;
 
 		var frameText:String = "Frame: ";
 		if (myCharType == "atlas")
@@ -1536,8 +1518,7 @@ class CharacterEditorState extends MusicBeatState
 	{
 		myCharacter.x = myCharacterData.position[0] + charPosOffset[0];
 		myCharacter.y = myCharacterData.position[1] + charPosOffset[1];
-		animGhost.x = myCharacter.x;
-		animGhost.y = myCharacter.y;
+		animGhost.setPosition(myCharacter.x, myCharacter.y);
 	}
 
 	function doMovement(xDir:Int, yDir:Int)
@@ -1555,6 +1536,8 @@ class CharacterEditorState extends MusicBeatState
 		{
 			myCharacterData.position[0] += xDir;
 			myCharacterData.position[1] += yDir;
+			charX.value = myCharacterData.position[0];
+			charY.value = myCharacterData.position[1];
 			resetCharPosition();
 		}
 	}

@@ -6,6 +6,24 @@
 			"label": "Event Name",
 			"type": "string",
 			"defaultValue": ""
+		},
+		{
+			"id": "param1",
+			"label": "Parameter 1",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "param2",
+			"label": "Parameter 2",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "param3",
+			"label": "Parameter 3",
+			"type": "string",
+			"defaultValue": ""
 		}
 	]
 }

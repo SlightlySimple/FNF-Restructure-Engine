@@ -3,6 +3,7 @@ package menus;
 import flixel.FlxG;
 import flixel.FlxSubState;
 import haxe.ds.ArraySort;
+import haxe.Json;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
@@ -227,12 +228,14 @@ class StoryMenuState extends MusicBeatState
 
 	var myScripts:Map<String, HscriptHandler>;
 
-	public static function convertWeek(id:String, ?quick:Bool = false):WeekData
+	public static function convertWeek(id:String, ?quick:Bool = false, ?rawData:Dynamic = null):WeekData
 	{
-		var data:Dynamic = Paths.json("weeks/" + id);
+		var data:Dynamic = rawData;
+		if (data == null)
+			data = Paths.json("weeks/" + id);
 
 		var wData:WeekData = cast data;
-		if (data.weekName != null)			// This is a Psych Engine week and must be converted to the Slightly Engine format
+		if (data.weekName != null)			// This is a Psych Engine week and must be converted to the Restructure Engine format
 		{
 			wData = {
 				image: id,
@@ -312,9 +315,9 @@ class StoryMenuState extends MusicBeatState
 		return wData;
 	}
 
-	public static function parseWeek(id:String, ?quick:Bool = false):WeekData
+	public static function parseWeek(id:String, ?quick:Bool = false, ?rawData:Dynamic = null):WeekData
 	{
-		var wData:WeekData = convertWeek(id, quick);
+		var wData:WeekData = convertWeek(id, quick, rawData);
 
 		if (wData.color == null)
 			wData.color = [249, 207, 81];
@@ -425,7 +428,8 @@ class StoryMenuState extends MusicBeatState
 		weekList = new Map<String, WeekData>();
 		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
-			var newWeek:WeekData = parseWeek(file[0], true);
+			var rawData:String = Paths.rawFromMod("data/weeks/"+file[0]+".json", file[1]);
+			var newWeek:WeekData = parseWeek(file[0], true, Json.parse(rawData));
 			if (newWeek.condition != "freeplayonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))
 			{
 				if (categories.exists(file[1]))

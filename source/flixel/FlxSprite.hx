@@ -928,20 +928,24 @@ class FlxSprite extends FlxObject
 
 		getScreenPosition(_point, Camera);
 		_point.subtractPoint(offset);
+		var scaledOrigin = FlxPoint.weak(origin.x * scale.x, origin.y * scale.y);
+		_point.x += origin.x - scaledOrigin.x;
+		_point.y += origin.y - scaledOrigin.y;
+
 		_flashPoint.x = (point.x - Camera.scroll.x) - _point.x;
 		_flashPoint.y = (point.y - Camera.scroll.y) - _point.y;
 
 		point.putWeak();
 
 		// 1. Check to see if the point is outside of framePixels rectangle
-		if (_flashPoint.x < 0 || _flashPoint.x > frameWidth || _flashPoint.y < 0 || _flashPoint.y > frameHeight)
+		if (_flashPoint.x < 0 || _flashPoint.x > frameWidth * scale.x || _flashPoint.y < 0 || _flashPoint.y > frameHeight * scale.y)
 		{
 			return false;
 		}
 		else // 2. Check pixel at (_flashPoint.x, _flashPoint.y)
 		{
 			var frameData:BitmapData = updateFramePixels();
-			var pixelColor:FlxColor = frameData.getPixel32(Std.int(_flashPoint.x), Std.int(_flashPoint.y));
+			var pixelColor:FlxColor = frameData.getPixel32(Std.int(_flashPoint.x / scale.x), Std.int(_flashPoint.y / scale.y));
 			return pixelColor.alpha * alpha >= Mask;
 		}
 	}

@@ -60,6 +60,7 @@ typedef HealthIconData =
 	var ?centered:Null<Bool>;
 	var offset:Null<Int>;
 	var ?animations:Array<StageAnimation>;
+	var ?swapTo:String;
 	var ?stack:Array<IconStack>;
 }
 

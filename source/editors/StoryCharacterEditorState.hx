@@ -238,8 +238,7 @@ class StoryCharacterEditorState extends MusicBeatState
 		}
 		resetCharPosition();
 		tabGroupGeneral.add(charPosDropdown);
-		var charPosLabel:Label = new Label("Preview Position:", charPosDropdown);
-		tabGroupGeneral.add(charPosLabel);
+		tabGroupGeneral.add(new Label("Preview Position:", charPosDropdown));
 
 		tabMenu.addGroup(tabGroupGeneral);
 
@@ -277,8 +276,7 @@ class StoryCharacterEditorState extends MusicBeatState
 		var charDanceSpeed:Stepper = new Stepper(10, charAntialias.y + 40, 230, 20, myCharacterData.danceSpeed, 0.25, 0, 9999, 2);
 		charDanceSpeed.onChanged = function() { myCharacterData.danceSpeed = charDanceSpeed.value; }
 		tabGroupProperties.add(charDanceSpeed);
-		var charDanceSpeedLabel:Label = new Label("Dance Speed:", charDanceSpeed);
-		tabGroupProperties.add(charDanceSpeedLabel);
+		tabGroupProperties.add(new Label("Dance Speed:", charDanceSpeed));
 
 		charScaleX = new Stepper(10, charDanceSpeed.y + 40, 115, 20, myCharacterData.scale[0], 0.05, 0, 9999, 3);
 		charScaleX.onChanged = function() {
@@ -310,8 +308,7 @@ class StoryCharacterEditorState extends MusicBeatState
 			}
 		};
 		tabGroupProperties.add(charScaleY);
-		var charScaleLabel:Label = new Label("Scale:", charScaleX);
-		tabGroupProperties.add(charScaleLabel);
+		tabGroupProperties.add(new Label("Scale:", charScaleX));
 
 		var idlesInput:InputText = new InputText(10, charScaleX.y + 40, 115);
 		idlesInput.focusGained = function() {
@@ -339,8 +336,7 @@ class StoryCharacterEditorState extends MusicBeatState
 				myCharacterData.idles.remove(p);
 		}
 		tabGroupProperties.add(idlesInput);
-		var idlesInputLabel:Label = new Label("Idle Animations:", idlesInput);
-		tabGroupProperties.add(idlesInputLabel);
+		tabGroupProperties.add(new Label("Idle Animations:", idlesInput));
 
 		var firstAnimList:Array<String> = [""];
 		if (charAnimList.length > 0)
@@ -350,8 +346,7 @@ class StoryCharacterEditorState extends MusicBeatState
 			myCharacterData.firstAnimation = firstAnimDropdown.value;
 		};
 		tabGroupProperties.add(firstAnimDropdown);
-		var firstAnimLabel:Label = new Label("First Animation:", firstAnimDropdown);
-		tabGroupProperties.add(firstAnimLabel);
+		tabGroupProperties.add(new Label("First Animation:", firstAnimDropdown));
 
 		var autoAnimButton:TextButton = new TextButton(10, firstAnimDropdown.y + 30, 230, 20, "Fill Anim Fields");
 		autoAnimButton.onClicked = function()
@@ -388,8 +383,7 @@ class StoryCharacterEditorState extends MusicBeatState
 
 		animName = new InputText(10, 20);
 		tabGroupAnims.add(animName);
-		var animNameLabel:Label = new Label("Animation Name:", animName);
-		tabGroupAnims.add(animNameLabel);
+		tabGroupAnims.add(new Label("Animation Name:", animName));
 
 		var commonAnimations:Array<String> = Paths.textData("commonAnimations").replace("\r","").split("\n");
 		var animNameDropdown:DropdownMenu = new DropdownMenu(10, animName.y + 30, 230, 20, commonAnimations[0], commonAnimations, true);
@@ -401,8 +395,7 @@ class StoryCharacterEditorState extends MusicBeatState
 		animPrefix = new InputText(10, animNameDropdown.y + 40);
 
 		tabGroupAnims.add(animPrefix);
-		var animPrefixLabel:Label = new Label("Prefix:", animPrefix);
-		tabGroupAnims.add(animPrefixLabel);
+		tabGroupAnims.add(new Label("Prefix:", animPrefix));
 
 		animPrefixDropdown = new DropdownMenu(10, animPrefix.y + 30, 230, 20, allAnimPrefixes[0], allAnimPrefixes, true);
 		animPrefixDropdown.onChanged = function() {
@@ -412,8 +405,7 @@ class StoryCharacterEditorState extends MusicBeatState
 
 		animIndices = new InputText(10, animPrefixDropdown.y + 40);
 		tabGroupAnims.add(animIndices);
-		var animIndicesLabel:Label = new Label("Indices (Optional):", animIndices);
-		tabGroupAnims.add(animIndicesLabel);
+		tabGroupAnims.add(new Label("Indices (Optional):", animIndices));
 
 		var allIndices:TextButton = new TextButton(10, animIndices.y + 30, 230, 20, "All Indices");
 		allIndices.onClicked = function()
@@ -438,8 +430,7 @@ class StoryCharacterEditorState extends MusicBeatState
 
 		animFPS = new Stepper(animLooped.x + 115, animLooped.y, 115, 20, 24, 1, 0);
 		tabGroupAnims.add(animFPS);
-		var animFPSLabel:Label = new Label("FPS:", animFPS);
-		tabGroupAnims.add(animFPSLabel);
+		tabGroupAnims.add(new Label("FPS:", animFPS));
 
 		var addAnimButton:TextButton = new TextButton(10, animLooped.y + 30, 230, 20, "Add/Update Animation");
 		addAnimButton.onClicked = function()

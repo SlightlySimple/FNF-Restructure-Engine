@@ -12,6 +12,8 @@ class Conductor
 
 	public static var stepLength:Float = 0;
 	public static var beatLength:Float = 0;
+	public static var stepSeconds:Float = 0;
+	public static var beatSeconds:Float = 0;
 	public static var songPosition:Float = 0;
 	public static var overrideSongPosition:Bool = false;
 
@@ -21,6 +23,8 @@ class Conductor
 		bpm = newBPM;
 		beatLength = 1000 / ( bpm / 60 );
 		stepLength = beatLength / 4;
+		beatSeconds = beatLength / 1000.0;
+		stepSeconds = stepLength / 1000.0;
 	}
 
 	public static function playMusic(song:String, ?volume:Float = 1)
@@ -39,6 +43,8 @@ class Conductor
 		bpm = timingStruct.timingStruct[0].bpm;
 		beatLength = 1000 / ( bpm / 60 );
 		stepLength = beatLength / 4;
+		beatSeconds = beatLength / 1000.0;
+		stepSeconds = stepLength / 1000.0;
 	}
 
 	public static function recalculateBPM()
@@ -52,6 +58,8 @@ class Conductor
 					bpm = t.bpm;
 					beatLength = 1000 / ( bpm / 60 );
 					stepLength = beatLength / 4;
+					beatSeconds = beatLength / 1000.0;
+					stepSeconds = stepLength / 1000.0;
 				}
 			}
 		}
@@ -62,6 +70,8 @@ class Conductor
 				bpm = timingStruct.timingStruct[0].bpm;
 				beatLength = 1000 / ( bpm / 60 );
 				stepLength = beatLength / 4;
+				beatSeconds = beatLength / 1000.0;
+				stepSeconds = stepLength / 1000.0;
 			}
 		}
 	}

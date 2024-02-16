@@ -27,10 +27,17 @@ function create()
 			if (Paths.imageExists(asset))
 				Paths.cacheGraphic(asset);
 
-			if (Paths.imageExists("icons/" + curC.healthIcon))
-				Paths.cacheGraphic("icons/" + curC.healthIcon);
-			else if (Paths.imageExists("icons/icon-" + curC.healthIcon))
-				Paths.cacheGraphic("icons/icon-" + curC.healthIcon);
+			var cIcon = curC.icon;
+			if (cIcon == null || cIcon == "")
+			{
+				cIcon = c;
+				if (!Paths.iconExists(cIcon, false) && Paths.iconExists(cIcon.split("-")[0], false))
+					cIcon = cIcon.split("-")[0];
+			}
+
+			if (Paths.iconExists(cIcon, false))
+				Paths.cacheGraphicDirect(Paths.icon(cIcon));
+
 			characterIds.push(c);
 		}
 	}

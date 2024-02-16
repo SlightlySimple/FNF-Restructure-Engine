@@ -131,13 +131,13 @@ class Stepper extends FlxSpriteGroup
 			switch (hovered)
 			{
 				case 1:
-					if (value + stepVal <= maxVal)
+					if (value + stepVal <= maxVal || maxVal == 9999)
 						value = value + stepVal;
 					rePress = 0.01;
 					if (onChanged != null)
 						onChanged();
 				case 2:
-					if (value - stepVal >= minVal)
+					if (value - stepVal >= minVal || minVal == -9999)
 						value = value - stepVal;
 					rePress = 0.01;
 					if (onChanged != null)

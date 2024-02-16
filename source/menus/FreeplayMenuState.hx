@@ -5,6 +5,7 @@ import flixel.FlxState;
 import flixel.FlxSubState;
 import openfl.utils.Assets;
 import openfl.events.KeyboardEvent;
+import haxe.Json;
 import haxe.ds.ArraySort;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -322,16 +323,17 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 	var cursor:FlxText;
 	var search:FlxText;
 	var nav:UINumeralNavigation;
+	var returnValue:String = "";
 
 	var curSelected:Int = 0;
 	var selOffset:Int = 0;
 
-	override public function new(state:FlxState, list:Array<String>, def:String, acceptFunc:String->Void, exitFunc:Void->Void)
+	override public function new(state:FlxState, _list:Array<String>, def:String, acceptFunc:String->Void, exitFunc:Void->Void)
 	{
 		super();
 
-		OGlist = list.copy();
-		this.list = list.copy();
+		OGlist = _list.copy();
+		list = _list.copy();
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 600, FlxColor.BLACK);
 		bg.alpha = 0.6;
@@ -360,9 +362,10 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 		add(cursor);
 
 		nav = new UINumeralNavigation(null, changeSelection, function() {
+			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			state.remove(this);
 			state.remove(nav);
-			acceptFunc(this.list[curSelected]);
+			acceptFunc(returnValue);
 			this.destroy();
 		}, function() {
 			state.remove(this);
@@ -375,8 +378,8 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 		state.add(nav);
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-		if (list.indexOf(def) > -1)
-			curSelected = list.indexOf(def);
+		if (_list.indexOf(def) > -1)
+			curSelected = _list.indexOf(def);
 		changeSelection();
 	}
 
@@ -411,19 +414,26 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 			else
 				texts[i].text = "";
 		}
+		returnValue = list[curSelected];
 	}
 
 	function onKeyDown(e:KeyboardEvent)
 	{
+		if (Options.keyPressed("ui_accept"))
+			return;
+
 		var key:Int = e.keyCode;
 
-		if (key == 8 && search.text.length > 0)
+		if (key == 8)
 		{
-			if (search.text.length > 1)
-				search.text = search.text.substring(0, search.text.length - 1);
-			else
-				search.text = "";
-			filterList();
+			if (search.text.length > 0)
+			{
+				if (search.text.length > 1)
+					search.text = search.text.substring(0, search.text.length - 1);
+				else
+					search.text = "";
+				filterList();
+			}
 		}
 		else if (key == 46)
 		{
@@ -632,7 +642,8 @@ class FreeplayMenuState extends MusicBeatState
 		weeks = new Map<String, WeekData>();
 		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
-			var newWeek:WeekData = StoryMenuState.parseWeek(file[0], true);
+			var rawData:String = Paths.rawFromMod("data/weeks/"+file[0]+".json", file[1]);
+			var newWeek:WeekData = StoryMenuState.parseWeek(file[0], true, Json.parse(rawData));
 			if (newWeek.condition != "storyonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))
 			{
 				if (categories.exists(file[1]))
@@ -862,7 +873,10 @@ class FreeplayMenuState extends MusicBeatState
 					for (i in 0...weekNames.length)
 					{
 						if (!weeks.exists(weekNames[i]))
-							weeks[weekNames[i]] = StoryMenuState.parseWeek(weekNames[i]);
+						{
+							var rawData:String = Paths.rawFromMod("data/weeks/"+weekNames[i]+".json", category);
+							weeks[weekNames[i]] = StoryMenuState.parseWeek(weekNames[i], false, Json.parse(rawData));
+						}
 						var newWeek:WeekData = weeks[weekNames[i]];
 						var weekLocked:Bool = (newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(weekNames[i]));
 						for (song in newWeek.songs)
@@ -930,7 +944,7 @@ class FreeplayMenuState extends MusicBeatState
 
 							songList.push(song);
 							songUnlocked.push(true);
-							artistList.push("");
+							artistList.push(Song.getSongArtist(song.songId, song.difficulties[0]));
 							if (spot >= songButtons.members.length)
 								songButtons.add(new Alphabet(Std.int((spot * 20) + 90), Std.int((spot * 1.3 * 120) + (FlxG.height * 0.48)), "", "bold", Std.int(FlxG.width * 0.9)));
 							var textButton:Alphabet = songButtons.members[spot];

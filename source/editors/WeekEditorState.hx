@@ -198,8 +198,7 @@ class WeekEditorState extends MusicBeatState
 			weekData.condition = conditionDropdown.value;
 		};
 		tabGroupSettings.add(conditionDropdown);
-		var conditionLabel:Label = new Label("Condition:", conditionDropdown);
-		tabGroupSettings.add(conditionLabel);
+		tabGroupSettings.add(new Label("Condition:", conditionDropdown));
 
 		var diffsText:String = "";
 		if (weekData.difficulties != null && weekData.difficulties.length > 0)
@@ -222,8 +221,7 @@ class WeekEditorState extends MusicBeatState
 				weekData.difficulties = text.split(",");
 		}
 		tabGroupSettings.add(diffs);
-		var diffsLabel:Label = new Label("Difficulties (Optional):", diffs);
-		tabGroupSettings.add(diffsLabel);
+		tabGroupSettings.add(new Label("Difficulties (Optional):", diffs));
 
 		var startsLockedCheck:Checkbox = new Checkbox(10, diffs.y + 30, "Starts Locked");
 		startsLockedCheck.checked = weekData.startsLocked;
@@ -241,8 +239,7 @@ class WeekEditorState extends MusicBeatState
 			weekData.weekToUnlock = weekToUnlockDropdown.value;
 		};
 		tabGroupSettings.add(weekToUnlockDropdown);
-		var weekToUnlockLabel:Label = new Label("Week to Unlock (Optional):", weekToUnlockDropdown);
-		tabGroupSettings.add(weekToUnlockLabel);
+		tabGroupSettings.add(new Label("Week to Unlock (Optional):", weekToUnlockDropdown));
 
 		var hiddenWhenLockedCheck:Checkbox = new Checkbox(10, weekToUnlockDropdown.y + 30, "Hidden When Locked");
 		hiddenWhenLockedCheck.checked = weekData.hiddenWhenLocked;
@@ -288,8 +285,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(removeSong);
-		var insertAndRemoveLabel:Label = new Label("Song:", addSong);
-		tabGroupSong.add(insertAndRemoveLabel);
+		tabGroupSong.add(new Label("Song:", addSong));
 
 		var moveUp:TextButton = new TextButton(10, removeSong.y + 40, 115, 20, "Move Up");
 		moveUp.onClicked = function() {
@@ -315,8 +311,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(moveDown);
-		var reorderLabel:Label = new Label("Song Order:", moveUp);
-		tabGroupSong.add(reorderLabel);
+		tabGroupSong.add(new Label("Song Order:", moveUp));
 		
 
 		songDropdown = new DropdownMenu(10, moveDown.y + 40, 230, 20, allSongs[1], allSongs, true);
@@ -344,8 +339,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(songDropdown);
-		var songLabel:Label = new Label("Song ID:", songDropdown);
-		tabGroupSong.add(songLabel);
+		tabGroupSong.add(new Label("Song ID:", songDropdown));
 
 		var iconInputText = "";
 		if (weekData.songs.length > curSong && weekData.songs[curSong].icon != null)
@@ -382,8 +376,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(iconDropdown);
-		var iconLabel:Label = new Label("Icon:", iconInput);
-		tabGroupSong.add(iconLabel);
+		tabGroupSong.add(new Label("Icon:", iconInput));
 
 		var songTitleText:String = "";
 		if (weekData.songs.length > curSong && weekData.songs[curSong].title != null)
@@ -410,8 +403,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(songTitle);
-		var songTitleLabel:Label = new Label("Title (Optional):", songTitle);
-		tabGroupSong.add(songTitleLabel);
+		tabGroupSong.add(new Label("Title (Optional):", songTitle));
 
 		var songDiffsText:String = "";
 		if (weekData.songs.length > curSong && weekData.songs[curSong].difficulties != null && weekData.songs[curSong].difficulties.length > 0)
@@ -440,8 +432,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(songDiffs);
-		var songDiffsLabel:Label = new Label("Difficulties (Optional):", songDiffs);
-		tabGroupSong.add(songDiffsLabel);
+		tabGroupSong.add(new Label("Difficulties (Optional):", songDiffs));
 
 		songCharCount = new Stepper(10, songDiffs.y + 40, 230, 20, 3, 1, 3);
 		songCharCount.onChanged = function() {
@@ -449,8 +440,7 @@ class WeekEditorState extends MusicBeatState
 				weekData.songs[curSong].characters = Std.int(songCharCount.value);
 		}
 		tabGroupSong.add(songCharCount);
-		var songCharCountLabel:Label = new Label("Character Count:", songCharCount);
-		tabGroupSong.add(songCharCountLabel);
+		tabGroupSong.add(new Label("Character Count:", songCharCount));
 
 		var songCharLabelsText:String = "";
 		if (weekData.songs.length > curSong)
@@ -492,8 +482,7 @@ class WeekEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSong.add(songCharLabels);
-		var songCharLabelsLabel:Label = new Label("Character Labels:", songCharLabels);
-		tabGroupSong.add(songCharLabelsLabel);
+		tabGroupSong.add(new Label("Character Labels:", songCharLabels));
 
 		songScriptDropdown = new DropdownMenu(10, songCharLabels.y + 40, 230, 20, "", allScripts, true);
 		songScriptDropdown.onChanged = function() {
@@ -503,8 +492,7 @@ class WeekEditorState extends MusicBeatState
 				Reflect.deleteField(weekData.songs[curSong], "hscript");
 		};
 		tabGroupSong.add(songScriptDropdown);
-		var scriptLabel:Label = new Label("Custom State (Optional):", songScriptDropdown);
-		tabGroupSong.add(scriptLabel);
+		tabGroupSong.add(new Label("Custom State (Optional):", songScriptDropdown));
 
 		refreshSongTab(false);
 		tabMenu.addGroup(tabGroupSong);
@@ -520,8 +508,7 @@ class WeekEditorState extends MusicBeatState
 			refreshImageButton();
 		};
 		tabGroupStory.add(weekImageDropdown);
-		var weekImageLabel:Label = new Label("Week Button Image:", weekImageDropdown);
-		tabGroupStory.add(weekImageLabel);
+		tabGroupStory.add(new Label("Week Button Image:", weekImageDropdown));
 
 		var bannerList:Array<String> = Paths.listFilesSub("images/ui/story_banners/", ".png");
 		bannerList.unshift("");
@@ -533,8 +520,7 @@ class WeekEditorState extends MusicBeatState
 			refreshWeekBanner();
 		};
 		tabGroupStory.add(bannerImageDropdown);
-		var bannerImageLabel:Label = new Label("Week Banner (Optional):", bannerImageDropdown);
-		tabGroupStory.add(bannerImageLabel);
+		tabGroupStory.add(new Label("Week Banner (Optional):", bannerImageDropdown));
 
 		if (weekData.color == null)
 			weekData.color = [249, 207, 81];
@@ -554,8 +540,7 @@ class WeekEditorState extends MusicBeatState
 			refreshMenuCharacters();
 		};
 		tabGroupStory.add(charLeftDropdown);
-		var charLeftLabel:Label = new Label("Left Character:", charLeftDropdown);
-		tabGroupStory.add(charLeftLabel);
+		tabGroupStory.add(new Label("Left Character:", charLeftDropdown));
 
 		var charCenterDropdown:DropdownMenu = new DropdownMenu(10, charLeftDropdown.y + 40, 230, 20, weekData.characters[1], characterList, true);
 		charCenterDropdown.onChanged = function() {
@@ -563,8 +548,7 @@ class WeekEditorState extends MusicBeatState
 			refreshMenuCharacters();
 		};
 		tabGroupStory.add(charCenterDropdown);
-		var charCenterLabel:Label = new Label("Center Character:", charCenterDropdown);
-		tabGroupStory.add(charCenterLabel);
+		tabGroupStory.add(new Label("Center Character:", charCenterDropdown));
 
 		var charRightDropdown:DropdownMenu = new DropdownMenu(10, charCenterDropdown.y + 40, 230, 20, weekData.characters[2], characterList, true);
 		charRightDropdown.onChanged = function() {
@@ -572,8 +556,7 @@ class WeekEditorState extends MusicBeatState
 			refreshMenuCharacters();
 		};
 		tabGroupStory.add(charRightDropdown);
-		var charRightLabel:Label = new Label("Right Character:", charRightDropdown);
-		tabGroupStory.add(charRightLabel);
+		tabGroupStory.add(new Label("Right Character:", charRightDropdown));
 
 		var scriptDropdown:DropdownMenu = new DropdownMenu(10, charRightDropdown.y + 40, 230, 20, (weekData.hscript == null ? "" : weekData.hscript), allScripts, true);
 		scriptDropdown.onChanged = function() {
@@ -583,8 +566,7 @@ class WeekEditorState extends MusicBeatState
 				Reflect.deleteField(weekData, "hscript");
 		};
 		tabGroupStory.add(scriptDropdown);
-		var scriptLabel:Label = new Label("Custom State (Optional):", scriptDropdown);
-		tabGroupStory.add(scriptLabel);
+		tabGroupStory.add(new Label("Custom State (Optional):", scriptDropdown));
 
 		tabMenu.addGroup(tabGroupStory);
 	}

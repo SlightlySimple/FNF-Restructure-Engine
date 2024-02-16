@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import openfl.utils.Assets;
 import sys.FileSystem;
+import sys.io.File;
 import lime.app.Application;
 import haxe.Json;
 import haxe.xml.Access;
@@ -29,9 +30,35 @@ class Paths
 		return "assets/" + path + ext;
 	}
 
+	public static function modFile(path:String, ext:String):String
+	{
+		#if ALLOW_MODS
+		for (mod in ModLoader.modListLoaded)
+		{
+			if (Options.options != null && !Options.options.naughtiness && FileSystem.exists("mods/" + mod + "/" + path + "Censor" + ext))
+				return "mods/" + mod + "/" + path + "Censor" + ext;
+			if (FileSystem.exists("mods/" + mod + "/" + path + ext))
+				return "mods/" + mod + "/" + path + ext;
+		}
+		#end
+
+		if (Options.options != null && !Options.options.naughtiness && exists(path + "Censor" + ext))
+			return "assets/" + path + "Censor" + ext;
+		return "assets/" + path + ext;
+	}
+
 	public static function raw(path:String, ?includeAssets:Bool = true):String
 	{
 		var rawFileData:String = Assets.getText((includeAssets ? "assets/" : "") + path);
+		return rawFileData;
+	}
+
+	public static function rawFromMod(path:String, mod:String):String
+	{
+		var truePath:String = "assets/"+path;
+		if (mod.trim() != "")
+			truePath = "mods/"+mod+"/"+path;
+		var rawFileData:String = File.getContent(truePath);
 		return rawFileData;
 	}
 
@@ -241,6 +268,30 @@ class Paths
 		return "assets/images/" + path;
 	}
 
+	public static function icon(path:String):String
+	{
+		if (path.indexOf("/") > -1)
+		{
+			var newPath:String = path.substring(0, path.lastIndexOf("/")+1) + "icon-" + path.substring(path.lastIndexOf("/")+1, path.length);
+			if (exists("images/icons/" + newPath + ".png"))
+				return "assets/images/icons/" + newPath + ".png";
+
+			newPath = newPath.substring(0, newPath.indexOf("/")+1) + "icons/" + newPath.substring(newPath.indexOf("/")+1, newPath.length);
+			if (exists("images/" + newPath + ".png"))
+				return "assets/images/" + newPath + ".png";
+
+			newPath = path.substring(0, path.indexOf("/")+1) + "icons/" + path.substring(path.indexOf("/")+1, path.length);
+			if (exists("images/" + newPath + ".png"))
+				return "assets/images/" + newPath + ".png";
+		}
+		else
+		{
+			if (exists("images/icons/icon-" + path + ".png"))
+				return "assets/images/icons/icon-" + path + ".png";
+		}
+		return "assets/images/icons/" + path + ".png";
+	}
+
 	public static function hscript(path:String):Dynamic
 	{
 		var rawFileData:String = Assets.getText("assets/" + path + ".hscript");
@@ -270,28 +321,12 @@ class Paths
 
 	public static function video(path:String):String
 	{
-		#if ALLOW_MODS
-		for (mod in ModLoader.modListLoaded)
-		{
-			if (FileSystem.exists("mods/" + mod + "/videos/" + path + ".mp4"))
-				return "mods/" + mod + "/videos/" + path + ".mp4";
-		}
-		#end
-
-		return "assets/videos/" + path + ".mp4";
+		return modFile("videos/" + path, ".mp4");
 	}
 
 	public static function lua(path:String):String
 	{
-		#if ALLOW_MODS
-		for (mod in ModLoader.modListLoaded)
-		{
-			if (FileSystem.exists("mods/" + mod + "/" + path + ".lua"))
-				return "mods/" + mod + "/" + path + ".lua";
-		}
-		#end
-
-		return "assets/" + path + ".lua";
+		return modFile(path, ".lua");
 	}
 
 	public static function shader(path:String):String
@@ -375,28 +410,28 @@ class Paths
 		return false;
 	}
 
-	public static function iconExists(path:String):Bool
+	public static function iconExists(path:String, ?includeJSON:Bool = true):Bool
 	{
 		if (path.indexOf("/") > -1)
 		{
 			var newPath:String = path.substring(0, path.lastIndexOf("/")+1) + "icon-" + path.substring(path.lastIndexOf("/")+1, path.length);
-			if (exists("images/icons/" + newPath + ".png") || exists("images/icons/" + newPath + ".json"))
+			if (exists("images/icons/" + newPath + ".png") || (includeJSON && exists("images/icons/" + newPath + ".json")))
 				return true;
 
 			newPath = newPath.substring(0, newPath.indexOf("/")+1) + "icons/" + newPath.substring(newPath.indexOf("/")+1, newPath.length);
-			if (exists("images/" + newPath + ".png") || exists("images/" + newPath + ".json"))
+			if (exists("images/" + newPath + ".png") || (includeJSON && exists("images/" + newPath + ".json")))
 				return true;
 
 			newPath = path.substring(0, path.indexOf("/")+1) + "icons/" + path.substring(path.indexOf("/")+1, path.length);
-			if (exists("images/" + newPath + ".png") || exists("images/" + newPath + ".json"))
+			if (exists("images/" + newPath + ".png") || (includeJSON && exists("images/" + newPath + ".json")))
 				return true;
 		}
 		else
 		{
-			if (exists("images/icons/icon-" + path + ".png") || exists("images/icons/icon-" + path + ".json"))
+			if (exists("images/icons/icon-" + path + ".png") || (includeJSON && exists("images/icons/icon-" + path + ".json")))
 				return true;
 		}
-		return (exists("images/icons/" + path + ".png") || exists("images/icons/" + path + ".json"));
+		return (exists("images/icons/" + path + ".png") || (includeJSON && exists("images/icons/" + path + ".json")));
 	}
 
 	public static function hscriptExists(path:String):Bool
@@ -409,6 +444,15 @@ class Paths
 		if (imageExists(graphic))
 		{
 			var cachedGraphic = FlxG.bitmap.add(Assets.getBitmapData(imagePath(graphic)), false, imagePath(graphic));
+			cachedGraphic.destroyOnNoUse = false;
+		}
+	}
+
+	public static function cacheGraphicDirect(graphic:String)
+	{
+		if (exists(graphic))
+		{
+			var cachedGraphic = FlxG.bitmap.add(Assets.getBitmapData(graphic), false, graphic);
 			cachedGraphic.destroyOnNoUse = false;
 		}
 	}

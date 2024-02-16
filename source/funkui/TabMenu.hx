@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.group.FlxSpriteGroup;
+import flixel.FlxSubState;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import haxe.ds.ArraySort;
@@ -253,54 +254,18 @@ class TabGroup extends FlxSpriteGroup
 
 
 
-class Confirm extends IsolatedTabMenu
+class NotifyBlank extends FlxSubState
 {
-	public var yesFunc:Void->Void = null;
-	public var noFunc:Void->Void = null;
+	public var group:TabGroup;
 
-	override public function new(w:Float, h:Float, txt:String, grp:FlxGroup)
+	override public function new(w:Float, h:Float, txt:String, grp:MusicBeatState)
 	{
-		super(0, 0, w, h);
-		screenCenter();
-		grp.add(this);
-		var group:TabGroup = new TabGroup();
+		super();
 
-		var text:FlxText = new FlxText(0, 0, 300, Lang.get(txt), 18);
-		text.color = FlxColor.BLACK;
-		text.font = "VCR OSD Mono";
-		text.alignment = CENTER;
-		group.add(text);
-
-		var yes:TextButton = new TextButton((w/3)-25, h - 30, 50, 20, "#yes");
-		yes.onClicked = function() {
-			if (yesFunc != null)
-				yesFunc();
-			grp.remove(this);
-		}
-		group.add(yes);
-
-		var no:TextButton = new TextButton((w*2/3)-25, h - 30, 50, 20, "#no");
-		no.onClicked = function() {
-			if (noFunc != null)
-				noFunc();
-			grp.remove(this);
-		}
-		group.add(no);
-
-		addGroup(group);
-	}
-}
-
-class Notify extends IsolatedTabMenu
-{
-	public var okFunc:Void->Void = null;
-
-	override public function new(w:Float, h:Float, txt:String, grp:FlxGroup)
-	{
-		super(0, 0, w, h);
-		screenCenter();
-		grp.add(this);
-		var group:TabGroup = new TabGroup();
+		var menu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, w, h);
+		menu.screenCenter();
+		add(menu);
+		group = new TabGroup();
 
 		var text:FlxText = new FlxText(0, 0, 300, txt, 18);
 		text.color = FlxColor.BLACK;
@@ -308,14 +273,54 @@ class Notify extends IsolatedTabMenu
 		text.alignment = CENTER;
 		group.add(text);
 
+		menu.addGroup(group);
+
+		grp.persistentUpdate = false;
+		grp.openSubState(this);
+	}
+}
+
+class Notify extends NotifyBlank
+{
+	public var okFunc:Void->Void = null;
+
+	override public function new(w:Float, h:Float, txt:String, grp:MusicBeatState)
+	{
+		super(w, h, txt, grp);
+
 		var ok:TextButton = new TextButton((w/2)-25, h - 30, 50, 20, "#ok");
 		ok.onClicked = function() {
 			if (okFunc != null)
 				okFunc();
-			grp.remove(this);
+			close();
 		}
 		group.add(ok);
+	}
+}
 
-		addGroup(group);
+class Confirm extends NotifyBlank
+{
+	public var yesFunc:Void->Void = null;
+	public var noFunc:Void->Void = null;
+
+	override public function new(w:Float, h:Float, txt:String, grp:MusicBeatState)
+	{
+		super(w, h, txt, grp);
+
+		var yes:TextButton = new TextButton((w/3)-25, h - 30, 50, 20, "#yes");
+		yes.onClicked = function() {
+			if (yesFunc != null)
+				yesFunc();
+			close();
+		}
+		group.add(yes);
+
+		var no:TextButton = new TextButton((w*2/3)-25, h - 30, 50, 20, "#no");
+		no.onClicked = function() {
+			if (noFunc != null)
+				noFunc();
+			close();
+		}
+		group.add(no);
 	}
 }

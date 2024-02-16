@@ -7,6 +7,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.math.FlxPoint;
 import flixel.addons.display.FlxBackdrop;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
@@ -43,12 +44,15 @@ class StageEditorState extends MusicBeatState
 	var myStage:Array<FlxSprite> = [];
 	var myStageGroup:FlxSpriteGroup;
 	public var stageData:StageData;
+	var hoveredObject:FlxSprite = null;
+	var hoverShader:ColorFade;
 	var selectionShader:ColorFade;
 
 	var camFollow:FlxObject;
 	public var camGame:FlxCamera;
 	var camHUD:FlxCamera;
 	var camPosText:FlxText;
+	var mousePos:FlxPoint;
 
 	var	movingCamera:Bool = false;
 	var	movingPiece:Bool = false;
@@ -56,11 +60,12 @@ class StageEditorState extends MusicBeatState
 	var dragStart:Array<Int> = [0, 0];
 	var dragOffset:Array<Float> = [0, 0];
 
-	var curStagePiece:Int = 0;
+	var curStagePiece:Int = -1;
 
 	var allCharacters:Array<Character> = [];
 
 	var tabMenu:IsolatedTabMenu;
+	var tabButtons:TabButtons;
 
 	var posLocked:Checkbox;
 	var gridSnapX:Stepper;
@@ -70,7 +75,8 @@ class StageEditorState extends MusicBeatState
 	var characterId:Stepper;
 	var charIndex:DropdownMenu;
 	var charAnim:DropdownMenu;
-	var charPositionText:FlxText;
+	var charX:Stepper;
+	var charY:Stepper;
 	var charFlip:Checkbox;
 	var charLayer:Stepper;
 	var charScaleX:Stepper;
@@ -86,6 +92,8 @@ class StageEditorState extends MusicBeatState
 	var typesList:Array<Array<String>> = [[],[]];
 	var typeDropdown:DropdownMenu;
 	var imageDropdown:DropdownMenu;
+	var pieceX:Stepper;
+	var pieceY:Stepper;
 	var pieceScrollX:Stepper;
 	var pieceScrollY:Stepper;
 	var pieceFlipX:Checkbox;
@@ -158,7 +166,12 @@ class StageEditorState extends MusicBeatState
 		camHUD.bgColor = FlxColor.TRANSPARENT;
 		FlxG.cameras.add(camHUD, false);
 
+		mousePos = FlxPoint.get();
+
 		super.create();
+		hoverShader = new ColorFade();
+		hoverShader.color = FlxColor.LIME;
+		hoverShader.amount = 0.15;
 		selectionShader = new ColorFade();
 		selectionShader.color = FlxColor.LIME;
 		selectionShader.amount = 0.25;
@@ -214,7 +227,7 @@ class StageEditorState extends MusicBeatState
 		tabMenu.onTabChanged = refreshSelectionShader;
 		add(tabMenu);
 
-		var tabButtons:TabButtons = new TabButtons(0, 0, 550, ["Settings", "Characters", "Pieces", "Properties", "Animations", "Help"]);
+		tabButtons = new TabButtons(0, 0, 550, ["Settings", "Characters", "Pieces", "Properties", "Animations", "Help"]);
 		tabButtons.cameras = [camHUD];
 		tabButtons.menu = tabMenu;
 		add(tabButtons);
@@ -241,8 +254,7 @@ class StageEditorState extends MusicBeatState
 			camGame.zoom = stageData.camZoom;
 		}
 		tabGroupSettings.add(camZoomStepper);
-		var camZoomLabel:Label = new Label("Camera Zoom:", camZoomStepper);
-		tabGroupSettings.add(camZoomLabel);
+		tabGroupSettings.add(new Label("Camera Zoom:", camZoomStepper));
 		camGame.zoom = stageData.camZoom;
 
 		var camFollowXStepper:Stepper = new Stepper(10, camZoomStepper.y + 40, 115, 20, stageData.camFollow[0], 10);
@@ -251,8 +263,7 @@ class StageEditorState extends MusicBeatState
 		var camFollowYStepper:Stepper = new Stepper(camFollowXStepper.x + 115, camFollowXStepper.y, 115, 20, stageData.camFollow[1], 10);
 		camFollowYStepper.onChanged = function() { stageData.camFollow[1] = camFollowYStepper.valueInt; }
 		tabGroupSettings.add(camFollowYStepper);
-		var camFollowStepperLabel:Label = new Label("Camera Starting Position:", camFollowXStepper);
-		tabGroupSettings.add(camFollowStepperLabel);
+		tabGroupSettings.add(new Label("Camera Starting Position:", camFollowXStepper));
 
 		var camTestButton:TextButton = new TextButton(10, camFollowYStepper.y + 30, 115, 20, "Test");
 		camTestButton.onClicked = function() {
@@ -299,8 +310,7 @@ class StageEditorState extends MusicBeatState
 			}
 		}
 		tabGroupSettings.add(searchDirsInput);
-		var searchDirsInputLabel:Label = new Label("Asset Directories:", searchDirsInput);
-		tabGroupSettings.add(searchDirsInputLabel);
+		tabGroupSettings.add(new Label("Asset Directories:", searchDirsInput));
 
 		var scriptList:Array<String> = [""];
 		for (s in Paths.listFilesSub("data/stages/", ".hscript"))
@@ -315,8 +325,7 @@ class StageEditorState extends MusicBeatState
 			stageData.script = scriptDropdown.value;
 		};
 		tabGroupSettings.add(scriptDropdown);
-		var scriptLabel:Label = new Label("Script (Optional):", scriptDropdown);
-		tabGroupSettings.add(scriptLabel);
+		tabGroupSettings.add(new Label("Script (Optional):", scriptDropdown));
 
 		var bgColor:TextButton = new TextButton(10, scriptDropdown.y + 30, 230, 20, "Background Color");
 		bgColor.onClicked = function() {
@@ -326,11 +335,12 @@ class StageEditorState extends MusicBeatState
 		tabGroupSettings.add(bgColor);
 
 		gridSnapX = new Stepper(10, bgColor.y + 40, 115, 20, 10, 1, 1);
+		gridSnapX.onChanged = function() { pieceX.stepVal = gridSnapX.value; }
 		tabGroupSettings.add(gridSnapX);
 		gridSnapY = new Stepper(gridSnapX.x + 115, gridSnapX.y, 115, 20, 10, 1, 1);
+		gridSnapY.onChanged = function() { pieceY.stepVal = gridSnapY.value; }
 		tabGroupSettings.add(gridSnapY);
-		var gridSnapLabel:Label = new Label("Grid Snapping:", gridSnapX);
-		tabGroupSettings.add(gridSnapLabel);
+		tabGroupSettings.add(new Label("Grid Snapping:", gridSnapX));
 
 		tabMenu.addGroup(tabGroupSettings);
 
@@ -341,14 +351,12 @@ class StageEditorState extends MusicBeatState
 		characterCount = new Stepper(10, 20, 230, 20, stageData.characters.length, 1, 2);
 		characterCount.onChanged = updateCharacterCount;
 		tabGroupCharacters.add(characterCount);
-		var characterCountLabel:Label = new Label("Character Slots:", characterCount);
-		tabGroupCharacters.add(characterCountLabel);
+		tabGroupCharacters.add(new Label("Character Slots:", characterCount));
 
 		characterId = new Stepper(10, characterCount.y + 40, 230, 20, 0, 1, 0, stageData.characters.length-1);
 		characterId.onChanged = function() {updateCharacterTab(); refreshSelectionShader();};
 		tabGroupCharacters.add(characterId);
-		var characterIdLabel:Label = new Label("Character ID:", characterId);
-		tabGroupCharacters.add(characterIdLabel);
+		tabGroupCharacters.add(new Label("Character ID:", characterId));
 
 		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
 		charIndex = new DropdownMenu(10, characterId.y + 40, 230, 20, allCharacters[0].curCharacter, characterList, true);
@@ -366,24 +374,30 @@ class StageEditorState extends MusicBeatState
 			}
 		}
 		tabGroupCharacters.add(charIndex);
-		var charIndexLabel:Label = new Label("Preview Character:", charIndex);
-		tabGroupCharacters.add(charIndexLabel);
+		tabGroupCharacters.add(new Label("Preview Character:", charIndex));
 
 		charAnim = new DropdownMenu(10, charIndex.y + 40, 230, 20, "idle", [], true);
 		charAnim.onChanged = function() {
 			allCharacters[characterId.valueInt].playAnim(charAnim.value, true);
 		}
 		tabGroupCharacters.add(charAnim);
-		var charAnimLabel:Label = new Label("Preview Animation:", charAnim);
-		tabGroupCharacters.add(charAnimLabel);
+		tabGroupCharacters.add(new Label("Preview Animation:", charAnim));
 
-		charPositionText = new FlxText(10, charAnim.y + 30, 0, "Position:", 16);
-		charPositionText.color = FlxColor.BLACK;
-		charPositionText.font = "VCR OSD Mono";
-		tabGroupCharacters.add(charPositionText);
-		updateCharacterPositionText();
+		charX = new Stepper(10, charAnim.y + 40, 115, 20, stageData.characters[0].position[0], 10);
+		charX.onChanged = function() {
+			stageData.characters[characterId.valueInt].position[0] = charX.valueInt;
+			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+		}
+		tabGroupCharacters.add(charX);
+		charY = new Stepper(charX.x + 115, charX.y, 115, 20, stageData.characters[0].position[1], 10);
+		charY.onChanged = function() {
+			stageData.characters[characterId.valueInt].position[1] = charY.valueInt;
+			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+		}
+		tabGroupCharacters.add(charY);
+		tabGroupCharacters.add(new Label("Position:", charX));
 
-		charFlip = new Checkbox(10, charPositionText.y + 40, "Left");
+		charFlip = new Checkbox(10, charX.y + 40, "Left");
 		charFlip.checked = stageData.characters[0].flip;
 		charFlip.onClicked = function() {
 			stageData.characters[characterId.valueInt].flip = charFlip.checked;
@@ -395,8 +409,7 @@ class StageEditorState extends MusicBeatState
 		charLayer = new Stepper(charFlip.x + 115, charFlip.y, 115, 20, stageData.characters[0].layer, 1, 0, stageData.characters.length-1);
 		charLayer.onChanged = function() { stageData.characters[characterId.valueInt].layer = charLayer.valueInt; postSpawnCharacter(allCharacters[characterId.valueInt]); }
 		tabGroupCharacters.add(charLayer);
-		var charLayerLabel:Label = new Label("Layer:", charLayer);
-		tabGroupCharacters.add(charLayerLabel);
+		tabGroupCharacters.add(new Label("Layer:", charLayer));
 
 		charScaleX = new Stepper(10, charLayer.y + 40, 115, 20, stageData.characters[0].scale[0], 0.05, 0, 9999, 3);
 		charScaleX.onChanged = function() {
@@ -410,8 +423,7 @@ class StageEditorState extends MusicBeatState
 			allCharacters[characterId.valueInt].scaleCharacter(charScaleX.value, charScaleY.value);
 		}
 		tabGroupCharacters.add(charScaleY);
-		var charScaleLabel:Label = new Label("Scale:", charScaleX);
-		tabGroupCharacters.add(charScaleLabel);
+		tabGroupCharacters.add(new Label("Scale:", charScaleX));
 
 		charScrollX = new Stepper(10, charScaleX.y + 40, 115, 20, stageData.characters[0].scrollFactor[0], 0.05, 0, 9999, 3);
 		charScrollX.onChanged = function() { stageData.characters[characterId.valueInt].scrollFactor[0] = charScrollX.value; allCharacters[characterId.valueInt].scrollFactor.x = charScrollX.value; }
@@ -419,8 +431,7 @@ class StageEditorState extends MusicBeatState
 		charScrollY = new Stepper(charScrollX.x + 115, charScrollX.y, 115, 20, stageData.characters[0].scrollFactor[1], 0.05, 0, 9999, 3);
 		charScrollY.onChanged = function() { stageData.characters[characterId.valueInt].scrollFactor[1] = charScrollY.value; allCharacters[characterId.valueInt].scrollFactor.y = charScrollY.value; }
 		tabGroupCharacters.add(charScrollY);
-		var charScrollLabel:Label = new Label("Scroll Factor:", charScrollX);
-		tabGroupCharacters.add(charScrollLabel);
+		tabGroupCharacters.add(new Label("Scroll Factor:", charScrollX));
 
 		charCamX = new Stepper(10, charScrollX.y + 40, 115, 20, stageData.characters[0].camPosition[0], 10);
 		charCamX.onChanged = function() { stageData.characters[characterId.valueInt].camPosition[0] = charCamX.valueInt; }
@@ -428,8 +439,7 @@ class StageEditorState extends MusicBeatState
 		charCamY = new Stepper(charCamX.x + 115, charCamX.y, 115, 20, stageData.characters[0].camPosition[1], 10);
 		charCamY.onChanged = function() { stageData.characters[characterId.valueInt].camPosition[1] = charCamY.valueInt; }
 		tabGroupCharacters.add(charCamY);
-		var charCamLabel:Label = new Label("Camera Offset:", charCamX);
-		tabGroupCharacters.add(charCamLabel);
+		tabGroupCharacters.add(new Label("Camera Offset:", charCamX));
 
 		charCamAbsolute = new Checkbox(10, charCamX.y + 30, "Absolute");
 		charCamAbsolute.checked = stageData.characters[0].camPosAbsolute;
@@ -478,7 +488,7 @@ class StageEditorState extends MusicBeatState
 
 		pieceList = new ObjectMenu(10, 10, 230, 200, 0, []);
 		pieceList.onChanged = function() {
-			curStagePiece = pieceList.value;
+			curStagePiece = pieceList.value - 1;
 
 			updatePieceTabVisibility();
 			updatePieceTab();
@@ -497,17 +507,15 @@ class StageEditorState extends MusicBeatState
 
 		var movePieceDownButton:TextButton = new TextButton(movePieceUpButton.x + 115, movePieceUpButton.y, 115, 20, "Move Down");
 		movePieceDownButton.onClicked = function() {
-			if (curStagePiece < stageData.pieces.length - 1)
+			if (curStagePiece > -1 && curStagePiece < stageData.pieces.length - 1)
 				movePiece(1);
 		};
 		tabGroupPieces.add(movePieceDownButton);
-		var movePieceLabel:Label = new Label("Move Piece:", movePieceUpButton);
-		tabGroupPieces.add(movePieceLabel);
+		tabGroupPieces.add(new Label("Move Piece:", movePieceUpButton));
 
 		pieceId = new InputText(10, movePieceDownButton.y + 40);
 		tabGroupPieces.add(pieceId);
-		var pieceIdLabel:Label = new Label("ID (Optional):", pieceId);
-		tabGroupPieces.add(pieceIdLabel);
+		tabGroupPieces.add(new Label("ID (Optional):", pieceId));
 
 		typesList = [[],[]];
 		for (t in Paths.text("stagePieceTypes").replace("\r","").split("\n"))
@@ -530,16 +538,20 @@ class StageEditorState extends MusicBeatState
 
 		typeDropdown = new DropdownMenu(10, pieceId.y + 40, 230, 20, typesList[0][0], typesList[0]);
 		tabGroupPieces.add(typeDropdown);
-		var typeLabel:Label = new Label("Type:", typeDropdown);
-		tabGroupPieces.add(typeLabel);
+		tabGroupPieces.add(new Label("Type:", typeDropdown));
 
 		var imageList:Array<String> = [];
 		for (s in stageData.searchDirs)
 			imageList = imageList.concat(Paths.listFilesSub("images/" + s, ".png"));
 		imageDropdown = new DropdownMenu(10, typeDropdown.y + 40, 230, 20, imageList[0], imageList, true);
+		imageDropdown.onChanged = function() {
+			if (sparrowExists(imageDropdown.value))
+				typeDropdown.value = "animated";
+			else
+				typeDropdown.value = "static";
+		}
 		tabGroupPieces.add(imageDropdown);
-		var imageLabel:Label = new Label("Asset:", imageDropdown);
-		tabGroupPieces.add(imageLabel);
+		tabGroupPieces.add(new Label("Asset:", imageDropdown));
 
 		var addPieceButton:TextButton = new TextButton(10, imageDropdown.y + 30, 230, 20, "Add Piece");
 		addPieceButton.onClicked = function() { addPiece(false); };
@@ -549,20 +561,31 @@ class StageEditorState extends MusicBeatState
 		insertPieceButton.onClicked = function() { addPiece(true); };
 		tabGroupPieces.add(insertPieceButton);
 
+		var deletePieceButton:TextButton = new TextButton(10, insertPieceButton.y + 30, 230, 20, "Delete Piece");
+		deletePieceButton.onClicked = function() { confirmDeletePiece(); };
+		tabGroupPieces.add(deletePieceButton);
+
 		tabMenu.addGroup(tabGroupPieces);
 
 
 
 		var tabGroupProperties = new TabGroup();
 
-		pieceScrollX = new Stepper(10, 20, 115, 20, 1, 0.05, 0, 9999, 3);
+		pieceX = new Stepper(10, 20, 115, 20, 0, 10);
+		pieceX.onChanged = updateCurrentPiece;
+		tabGroupProperties.add(pieceX);
+		pieceY = new Stepper(pieceX.x + 115, pieceX.y, 115, 20, 0, 10);
+		pieceY.onChanged = updateCurrentPiece;
+		tabGroupProperties.add(pieceY);
+		tabGroupProperties.add(new Label("Position:", pieceX));
+
+		pieceScrollX = new Stepper(10, pieceX.y + 40, 115, 20, 1, 0.05, 0, 9999, 3);
 		pieceScrollX.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceScrollX);
 		pieceScrollY = new Stepper(pieceScrollX.x + 115, pieceScrollX.y, 115, 20, 1, 0.05, 0, 9999, 3);
 		pieceScrollY.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceScrollY);
-		var pieceScrollLabel:Label = new Label("Scroll Factor:", pieceScrollX);
-		tabGroupProperties.add(pieceScrollLabel);
+		tabGroupProperties.add(new Label("Scroll Factor:", pieceScrollX));
 
 		pieceVisible = new Checkbox(10, pieceScrollX.y + 30, "Starts Visible", true);
 		pieceVisible.onClicked = updateCurrentPiece;
@@ -582,8 +605,7 @@ class StageEditorState extends MusicBeatState
 		pieceScaleY = new Stepper(pieceScaleX.x + 115, pieceScaleX.y, 115, 20, 1, 0.05, 0, 9999, 3);
 		pieceScaleY.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceScaleY);
-		var pieceScaleLabel:Label = new Label("Scale:", pieceScaleX);
-		tabGroupProperties.add(pieceScaleLabel);
+		tabGroupProperties.add(new Label("Scale:", pieceScaleX));
 
 		pieceUpdateHitbox = new Checkbox(10, pieceScaleX.y + 30, "Update Hitbox", true);
 		pieceUpdateHitbox.onClicked = updateCurrentPiece;
@@ -592,14 +614,12 @@ class StageEditorState extends MusicBeatState
 		pieceAlign = new DropdownMenu(10, pieceUpdateHitbox.y + 40, 115, 20, alignList[0], alignList);
 		pieceAlign.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceAlign);
-		var pieceAlignLabel:Label = new Label("Alignment:", pieceAlign);
-		tabGroupProperties.add(pieceAlignLabel);
+		tabGroupProperties.add(new Label("Alignment:", pieceAlign));
 
 		pieceLayer = new Stepper(pieceAlign.x + 115, pieceAlign.y, 115, 20, 0, 1, 0, stageData.characters.length);
 		pieceLayer.onChanged = updateCurrentPiecePosition;
 		tabGroupProperties.add(pieceLayer);
-		var pieceLayerLabel:Label = new Label("Layer:", pieceLayer);
-		tabGroupProperties.add(pieceLayerLabel);
+		tabGroupProperties.add(new Label("Layer:", pieceLayer));
 
 		pieceAntialias = new Checkbox(10, pieceAlign.y + 30, "Antialias", true);
 		pieceAntialias.onClicked = updateCurrentPiece;
@@ -618,20 +638,17 @@ class StageEditorState extends MusicBeatState
 		pieceTileCountY = new Stepper(pieceTileCountX.x + 115, pieceTileCountX.y, 115, 20, 1, 1, 1);
 		pieceTileCountY.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceTileCountY);
-		var pieceTileCountLabel:Label = new Label("Tile Count:", pieceTileCountX);
-		tabGroupProperties.add(pieceTileCountLabel);
+		tabGroupProperties.add(new Label("Tile Count:", pieceTileCountX));
 
 		pieceAlpha = new Stepper(10, pieceTileCountX.y + 40, 115, 20, 1, 0.1, 0, 1, 3);
 		pieceAlpha.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceAlpha);
-		var pieceAlphaLabel:Label = new Label("Alpha:", pieceAlpha);
-		tabGroupProperties.add(pieceAlphaLabel);
+		tabGroupProperties.add(new Label("Alpha:", pieceAlpha));
 
 		pieceBlend = new DropdownMenu(pieceAlpha.x + 115, pieceAlpha.y, 115, 20, blendList[0], blendList);
 		pieceBlend.onChanged = updateCurrentPiece;
 		tabGroupProperties.add(pieceBlend);
-		var pieceBlendLabel:Label = new Label("Blend Mode:", pieceBlend);
-		tabGroupProperties.add(pieceBlendLabel);
+		tabGroupProperties.add(new Label("Blend Mode:", pieceBlend));
 
 		tabMenu.addGroup(tabGroupProperties);
 		updatePieceTabVisibility();
@@ -642,13 +659,11 @@ class StageEditorState extends MusicBeatState
 
 		animName = new InputText(10, 20);
 		tabGroupAnims.add(animName);
-		var animNameLabel:Label = new Label("Animation Name:", animName);
-		tabGroupAnims.add(animNameLabel);
+		tabGroupAnims.add(new Label("Animation Name:", animName));
 
 		animPrefix = new InputText(10, animName.y + 40);
 		tabGroupAnims.add(animPrefix);
-		var animPrefixLabel:Label = new Label("Prefix:", animPrefix);
-		tabGroupAnims.add(animPrefixLabel);
+		tabGroupAnims.add(new Label("Prefix:", animPrefix));
 
 		animPrefixes = new DropdownMenu(10, animPrefix.y + 30, 230, 20, "", [""], true);
 		animPrefixes.onChanged = function() {
@@ -658,8 +673,7 @@ class StageEditorState extends MusicBeatState
 
 		animIndices = new InputText(10, animPrefixes.y + 40);
 		tabGroupAnims.add(animIndices);
-		var animIndicesLabel:Label = new Label("Indices (Optional):", animIndices);
-		tabGroupAnims.add(animIndicesLabel);
+		tabGroupAnims.add(new Label("Indices (Optional):", animIndices));
 
 		animLooped = new Checkbox(10, animIndices.y + 40, "Loop");
 		animLooped.checked = false;
@@ -667,20 +681,18 @@ class StageEditorState extends MusicBeatState
 
 		animFPS = new Stepper(animLooped.x + 115, animLooped.y, 115, 20, 24, 1, 0, 9999);
 		tabGroupAnims.add(animFPS);
-		var animFPSLabel:Label = new Label("FPS:", animFPS);
-		tabGroupAnims.add(animFPSLabel);
+		tabGroupAnims.add(new Label("FPS:", animFPS));
 
 		animOffsetX = new Stepper(10, animLooped.y + 40, 115, 20);
 		tabGroupAnims.add(animOffsetX);
 		animOffsetY = new Stepper(animOffsetX.x + 115, animOffsetX.y, 115, 20);
 		tabGroupAnims.add(animOffsetY);
-		var animOffsetLabel:Label = new Label("Offsets:", animOffsetX);
-		tabGroupAnims.add(animOffsetLabel);
+		tabGroupAnims.add(new Label("Offsets:", animOffsetX));
 
 		var addAnimButton:TextButton = new TextButton(10, animOffsetX.y + 30, 230, 20, "Add/Update Animation");
 		addAnimButton.onClicked = function()
 		{
-			if (stageData.pieces[curStagePiece].type == "animated")
+			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
 				if (!sparrowExists(stageData.pieces[curStagePiece].asset) && animIndices.text.trim() == "")
 					return;
@@ -699,6 +711,7 @@ class StageEditorState extends MusicBeatState
 					var indicesSplit:Array<String> = animIndices.text.trim().split(",");
 					for (i in indicesSplit)
 						newAnim.indices.push(Std.parseInt(i));
+					newAnim.indices = Character.compactIndices(newAnim.indices);
 				}
 
 				if (animOffsetX.value != 0 || animOffsetY.value != 0)
@@ -719,12 +732,12 @@ class StageEditorState extends MusicBeatState
 				if (sparrowExists(stageData.pieces[curStagePiece].asset))
 				{
 					if (newAnim.indices != null && newAnim.indices.length > 0)
-						myStage[curStagePiece].animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
+						myStage[curStagePiece].animation.addByIndices(newAnim.name, newAnim.prefix, Character.uncompactIndices(newAnim.indices), "", newAnim.fps, newAnim.loop);
 					else
 						myStage[curStagePiece].animation.addByPrefix(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop);
 				}
 				else
-					myStage[curStagePiece].animation.add(newAnim.name, newAnim.indices, newAnim.fps, newAnim.loop);
+					myStage[curStagePiece].animation.add(newAnim.name, Character.uncompactIndices(newAnim.indices), newAnim.fps, newAnim.loop);
 
 				var aPiece:AnimatedSprite = cast myStage[curStagePiece];
 				if (animOffsetX.value != 0 || animOffsetY.value != 0)
@@ -750,7 +763,7 @@ class StageEditorState extends MusicBeatState
 
 		curAnimDropdown = new DropdownMenu(10, addAnimButton.y + 40, 230, 20, "", [""], true);
 		curAnimDropdown.onChanged = function() {
-			if (curAnimDropdown.value != "")
+			if (curStagePiece > -1 && curAnimDropdown.value != "")
 			{
 				myStage[curStagePiece].animation.play(curAnimDropdown.value, true);
 
@@ -782,27 +795,28 @@ class StageEditorState extends MusicBeatState
 			}
 		}
 		tabGroupAnims.add(curAnimDropdown);
-		var curAnimDropdownLabel:Label = new Label("Current Animation:", curAnimDropdown);
-		tabGroupAnims.add(curAnimDropdownLabel);
+		tabGroupAnims.add(new Label("Current Animation:", curAnimDropdown));
 
 		firstAnimDropdown = new DropdownMenu(10, curAnimDropdown.y + 40, 230, 20, "", [""], true);
 		firstAnimDropdown.onChanged = function() {
-			if (firstAnimDropdown.value != "")
+			if (curStagePiece > -1 && firstAnimDropdown.value != "")
 				stageData.pieces[curStagePiece].firstAnimation = firstAnimDropdown.value;
 		}
 		tabGroupAnims.add(firstAnimDropdown);
-		var firstAnimDropdownLabel:Label = new Label("First Animation:", firstAnimDropdown);
-		tabGroupAnims.add(firstAnimDropdownLabel);
+		tabGroupAnims.add(new Label("First Animation:", firstAnimDropdown));
 
 		beatAnimInput = new InputText(10, firstAnimDropdown.y + 40);
 		beatAnimInput.focusLost = function() {
-			if (stageData.pieces[curStagePiece].idles == null)
-				beatAnimInput.text = "";
-			else
-				beatAnimInput.text = stageData.pieces[curStagePiece].idles.join(",");
+			if (curStagePiece > -1)
+			{
+				if (stageData.pieces[curStagePiece].idles == null)
+					beatAnimInput.text = "";
+				else
+					beatAnimInput.text = stageData.pieces[curStagePiece].idles.join(",");
+			}
 		}
 		beatAnimInput.callback = function(text:String, action:String) {
-			if (stageData.pieces[curStagePiece].type == "animated")
+			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
 				if (text.trim() == "")
 				{
@@ -831,12 +845,11 @@ class StageEditorState extends MusicBeatState
 			}
 		}
 		tabGroupAnims.add(beatAnimInput);
-		var beatAnimInputLabel:Label = new Label("Beat Animations (Optional):", beatAnimInput);
-		tabGroupAnims.add(beatAnimInputLabel);
+		tabGroupAnims.add(new Label("Beat Animations (Optional):", beatAnimInput));
 
 		beatAnimSpeed = new Stepper(10, beatAnimInput.y + 40, 230, 20, 1, 0.25, 0.25, 9999, 2);
 		beatAnimSpeed.onChanged = function() {
-			if (stageData.pieces[curStagePiece].type == "animated")
+			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
 				if (beatAnimSpeed.value == 1)
 					Reflect.deleteField(stageData.pieces[curStagePiece], "beatAnimationSpeed");
@@ -845,8 +858,7 @@ class StageEditorState extends MusicBeatState
 			}
 		}
 		tabGroupAnims.add(beatAnimSpeed);
-		var beatAnimSpeedLabel:Label = new Label("Beat Count:", beatAnimSpeed);
-		tabGroupAnims.add(beatAnimSpeedLabel);
+		tabGroupAnims.add(new Label("Beat Count:", beatAnimSpeed));
 
 		tabMenu.addGroup(tabGroupAnims);
 		updateAnimationTab();
@@ -886,10 +898,59 @@ class StageEditorState extends MusicBeatState
 
 		super.update(elapsed);
 
-		var camPosString:String = "Camera X: "+Std.string(camFollow.x)+"\nCamera Y: "+Std.string(camFollow.y)+"\nCamera Z: "+Std.string(camGame.zoom);
+		mousePos.x = (((FlxG.mouse.x - (FlxG.width / 2)) / camGame.zoom) + (FlxG.width / 2)) + camFollow.x - (FlxG.width / 2);
+		mousePos.y = (((FlxG.mouse.y - (FlxG.height / 2)) / camGame.zoom) + (FlxG.height / 2)) + camFollow.y - (FlxG.height / 2);
+
+		if (!movingPiece && !movingCharacter && FlxG.mouse.justMoved)
+		{
+			var prevHoveredObject:FlxSprite = hoveredObject;
+			hoveredObject = null;
+			if (!FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(tabButtons, camHUD))
+			{
+				var hoveredIndex:Int = -1;
+				if (tabMenu.curTab == 1)
+				{
+					for (s in allCharacters)
+					{
+						if (myStageGroup.members.indexOf(s) > hoveredIndex)
+						{
+							if (s.pixelsOverlapPoint(mousePos, 128, camGame))
+							{
+								hoveredObject = s;
+								hoveredIndex = myStageGroup.members.indexOf(s);
+							}
+						}
+					}
+				}
+				else
+				{
+					for (s in myStage)
+					{
+						if (!Std.isOfType(s, FlxSpriteGroup) && !Std.isOfType(s, FlxBackdrop) && myStageGroup.members.indexOf(s) > hoveredIndex)
+						{
+							if (s.pixelsOverlapPoint(mousePos, 128, camGame))
+							{
+								hoveredObject = s;
+								hoveredIndex = myStageGroup.members.indexOf(s);
+							}
+						}
+					}
+				}
+			}
+
+			if (hoveredObject != prevHoveredObject)
+			{
+				if (prevHoveredObject != null && prevHoveredObject.shader != selectionShader.shader)
+					prevHoveredObject.shader = null;
+				if (hoveredObject != null && hoveredObject.shader != selectionShader.shader)
+					hoveredObject.shader = hoverShader.shader;
+			}
+		}
+
+		var camPosString:String = "Camera X: "+Std.string(Math.round(camFollow.x))+"\nCamera Y: "+Std.string(Math.round(camFollow.y))+"\nCamera Z: "+Std.string(camGame.zoom);
 		if (tabMenu.curTab == 1)
 			camPosString += "\nCharacter X: " + Std.string(allCharacters[characterId.valueInt].x) + "\nCharacter Y: " + Std.string(allCharacters[characterId.valueInt].y);
-		else if (stageData.pieces.length > 0)
+		else if (curStagePiece > -1 && stageData.pieces.length > 0)
 			camPosString += "\nPiece X: " + Std.string(myStage[curStagePiece].x) + "\nPiece Y: " + Std.string(myStage[curStagePiece].y) + "\nPiece Width: " + Std.string(myStage[curStagePiece].width) + "\nPiece Height: " + Std.string(myStage[curStagePiece].height);
 		if (camPosText.text != camPosString)
 		{
@@ -912,46 +973,74 @@ class StageEditorState extends MusicBeatState
 		}
 
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive && !ObjectMenu.isOneActive)
+		{
 			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
+			camGame.zoom = Math.round(camGame.zoom * 100) / 100;
+		}
 
 		if (movingCharacter)
 		{
-			dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
-			dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
-			stageData.characters[characterId.valueInt].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
-			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
-			updateCharacterPositionText();
+			if (FlxG.mouse.justMoved)
+			{
+				dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
+				dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
+				stageData.characters[characterId.valueInt].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
+				allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+				charX.value = stageData.characters[characterId.valueInt].position[0];
+				charY.value = stageData.characters[characterId.valueInt].position[1];
+			}
 
 			if (Options.mouseJustReleased())
 				movingCharacter = false;
 		}
 		else if (movingPiece)
 		{
-			dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
-			dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
-			stageData.pieces[curStagePiece].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
-			myStage[curStagePiece].setPosition(stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]);
-			alignPiece(curStagePiece);
+			if (FlxG.mouse.justMoved)
+			{
+				dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
+				dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
+				stageData.pieces[curStagePiece].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
+				pieceX.value = stageData.pieces[curStagePiece].position[0];
+				pieceY.value = stageData.pieces[curStagePiece].position[1];
+				myStage[curStagePiece].setPosition(stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]);
+				alignPiece(curStagePiece);
+			}
 
 			if (Options.mouseJustReleased())
 				movingPiece = false;
 		}
-		else if (Options.mouseJustPressed() && !DropdownMenu.isOneActive)
+		else if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(tabButtons, camHUD))
 		{
 			if (tabMenu.curTab == 1)
 			{
-				if (!posLocked.checked && !FlxG.mouse.overlaps(tabMenu, camHUD))
+				var hoveredCharacter:Character = cast hoveredObject;
+				if (allCharacters.contains(hoveredCharacter))
+				{
+					characterId.value = allCharacters.indexOf(hoveredCharacter);
+					characterId.onChanged();
+				}
+
+				if (hoveredObject == allCharacters[characterId.valueInt] && !posLocked.checked)
 				{
 					dragStart = Reflect.copy(stageData.characters[characterId.valueInt].position);
 					dragOffset = [0, 0];
 					movingCharacter = true;
 				}
 			}
-			else if (stageData.pieces.length > 0 && !posLocked.checked && !FlxG.mouse.overlaps(tabMenu, camHUD))
+			else
 			{
-				dragStart = Reflect.copy(stageData.pieces[curStagePiece].position);
-				dragOffset = [0, 0];
-				movingPiece = true;
+				if (myStage.contains(hoveredObject))
+					pieceList.value = myStage.indexOf(hoveredObject) + 1;
+				else
+					pieceList.value = 0;
+				pieceList.onChanged();
+
+				if (curStagePiece > -1 && stageData.pieces.length > 0 && hoveredObject == myStage[curStagePiece] && !posLocked.checked)
+				{
+					dragStart = Reflect.copy(stageData.pieces[curStagePiece].position);
+					dragOffset = [0, 0];
+					movingPiece = true;
+				}
 			}
 		}
 
@@ -970,14 +1059,8 @@ class StageEditorState extends MusicBeatState
 				doMovement(0, gridSnapY.valueInt);
 		}
 
-		if (FlxG.keys.justPressed.DELETE && stageData.pieces.length > 0)
-		{
-			var confirm:Confirm = new Confirm(300, 100, "Are you sure you want to delete the current piece?", this);
-			confirm.yesFunc = function() {
-				deletePiece();
-			}
-			confirm.cameras = [camHUD];
-		}
+		if (FlxG.keys.justPressed.DELETE)
+			confirmDeletePiece();
 
 		if (FlxG.keys.justPressed.ESCAPE)
 			FlxG.switchState(new EditorMenuState());
@@ -1022,7 +1105,7 @@ class StageEditorState extends MusicBeatState
 			if (pieceId.text != "")
 				newPiece.id = pieceId.text;
 
-			if (stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
+			if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
 				newPiece.position = [stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]];
 
 			if (typesList[1][typeDropdown.valueInt] != "basetype")
@@ -1036,13 +1119,13 @@ class StageEditorState extends MusicBeatState
 					newPiece.tileCount = [1, 1];
 			}
 
-			if (insert)
+			if (curStagePiece > -1 && insert)
 				stageData.pieces.insert(curStagePiece, newPiece);
 			else
 			{
 				stageData.pieces.push(newPiece);
 				curStagePiece = stageData.pieces.length - 1;
-				pieceList.value = curStagePiece;
+				pieceList.value = curStagePiece + 1;
 			}
 
 			addToStage(curStagePiece, false);
@@ -1056,9 +1139,10 @@ class StageEditorState extends MusicBeatState
 
 	function updateCurrentPiece()
 	{
-		if (stageData.pieces.length <= 0) return;
+		if (curStagePiece <= -1 || stageData.pieces.length <= 0) return;
 
 		var piece:StagePiece = stageData.pieces[curStagePiece];
+		piece.position = [pieceX.valueInt, pieceY.valueInt];
 
 		piece.antialias = pieceAntialias.checked;
 		piece.layer = pieceLayer.valueInt;
@@ -1119,17 +1203,12 @@ class StageEditorState extends MusicBeatState
 
 	function updateCurrentPiecePosition()
 	{
-		if (stageData.pieces.length <= 0) return;
+		if (curStagePiece <= -1 || stageData.pieces.length <= 0) return;
 
 		var piece:StagePiece = stageData.pieces[curStagePiece];
 		piece.layer = pieceLayer.valueInt;
 
 		updatePiece(curStagePiece);
-	}
-
-	function updateCharacterPositionText()
-	{
-		charPositionText.text = "Position: " + Std.string(stageData.characters[characterId.valueInt].position);
 	}
 
 	function doMovement(xDir:Int, yDir:Int)
@@ -1139,9 +1218,10 @@ class StageEditorState extends MusicBeatState
 			stageData.characters[characterId.valueInt].position[0] += xDir;
 			stageData.characters[characterId.valueInt].position[1] += yDir;
 			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
-			updateCharacterPositionText();
+			charX.value = stageData.characters[characterId.valueInt].position[0];
+			charY.value = stageData.characters[characterId.valueInt].position[1];
 		}
-		else
+		else if (curStagePiece > -1)
 		{
 			stageData.pieces[curStagePiece].position[0] += xDir;
 			stageData.pieces[curStagePiece].position[1] += yDir;
@@ -1151,8 +1231,23 @@ class StageEditorState extends MusicBeatState
 		}
 	}
 
+	function confirmDeletePiece()
+	{
+		if (stageData.pieces.length > 0)
+		{
+			var confirm:Confirm = new Confirm(300, 100, "Are you sure you want to delete the current piece?", this);
+			confirm.yesFunc = function() {
+				deletePiece();
+			}
+			confirm.cameras = [camHUD];
+		}
+	}
+
 	function deletePiece()
 	{
+		if (curStagePiece <= -1)
+			return;
+
 		var toRemove:FlxSprite = myStage.splice(curStagePiece, 1)[0];
 		remove(toRemove, true);
 		toRemove.kill();
@@ -1223,8 +1318,9 @@ class StageEditorState extends MusicBeatState
 		charAnim.valueList = animList;
 		charAnim.value = allCharacters[characterId.valueInt].curAnimName;
 
-		updateCharacterPositionText();
 		var c:StageCharacter = stageData.characters[characterId.valueInt];
+		charX.value = c.position[0];
+		charY.value = c.position[1];
 		charFlip.checked = c.flip;
 		charLayer.value = c.layer;
 		charScaleX.value = c.scale[0];
@@ -1238,24 +1334,28 @@ class StageEditorState extends MusicBeatState
 
 	function updatePieceTabVisibility()
 	{
-		if (stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
+		if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
 		{
 			pieceVisible.visible = (stageData.pieces[curStagePiece].type != "group");
-			pieceScaleX.visible = (stageData.pieces[curStagePiece].type != "group");
-			pieceScaleY.visible = (stageData.pieces[curStagePiece].type != "group");
-			pieceUpdateHitbox.visible = (stageData.pieces[curStagePiece].type != "group");
+			pieceFlipX.visible = pieceVisible.visible;
+			pieceFlipY.visible = pieceVisible.visible;
+			pieceScaleX.visible = pieceVisible.visible;
+			pieceScaleY.visible = pieceVisible.visible;
+			pieceUpdateHitbox.visible = pieceVisible.visible;
 			pieceAlign.visible = (stageData.pieces[curStagePiece].type != "group" && stageData.pieces[curStagePiece].type != "tiled");
-			pieceAntialias.visible = (stageData.pieces[curStagePiece].type != "group");
+			pieceAntialias.visible = pieceVisible.visible;
 			pieceTileX.visible = (stageData.pieces[curStagePiece].type == "tiled");
-			pieceTileY.visible = (stageData.pieces[curStagePiece].type == "tiled");
+			pieceTileY.visible = pieceTileX.visible;
 			pieceTileCountX.visible = (stageData.pieces[curStagePiece].type == "animated" && !sparrowExists(stageData.pieces[curStagePiece].asset));
 			pieceTileCountY.visible = pieceTileCountX.visible;
-			pieceAlpha.visible = (stageData.pieces[curStagePiece].type != "group");
-			pieceBlend.visible = (stageData.pieces[curStagePiece].type != "group");
+			pieceAlpha.visible = pieceVisible.visible;
+			pieceBlend.visible = pieceVisible.visible;
 		}
 		else
 		{
 			pieceVisible.visible = false;
+			pieceFlipX.visible = false;
+			pieceFlipY.visible = false;
 			pieceScaleX.visible = false;
 			pieceScaleY.visible = false;
 			pieceUpdateHitbox.visible = false;
@@ -1272,6 +1372,9 @@ class StageEditorState extends MusicBeatState
 
 	function updatePieceTab()
 	{
+		if (curStagePiece <= -1)
+			return;
+
 		if (stageData.pieces[curStagePiece].id == null)
 			pieceId.text = "";
 		else
@@ -1283,6 +1386,9 @@ class StageEditorState extends MusicBeatState
 			typeDropdown.value = stageData.pieces[curStagePiece].type;
 
 		imageDropdown.value = stageData.pieces[curStagePiece].asset;
+
+		pieceX.value = stageData.pieces[curStagePiece].position[0];
+		pieceY.value = stageData.pieces[curStagePiece].position[1];
 
 		if (stageData.pieces[curStagePiece].scale != null && stageData.pieces[curStagePiece].scale.length == 2)
 		{
@@ -1359,7 +1465,7 @@ class StageEditorState extends MusicBeatState
 
 	function updateAnimationTab()
 	{
-		if (stageData.pieces.length > 0 && stageData.pieces[curStagePiece].type == "animated")
+		if (curStagePiece > -1 && stageData.pieces.length > 0 && stageData.pieces[curStagePiece].type == "animated")
 		{
 			if (sparrowExists(stageData.pieces[curStagePiece].asset))
 				animPrefixes.valueList = sparrowAnimations(stageData.pieces[curStagePiece].asset);
@@ -1375,7 +1481,7 @@ class StageEditorState extends MusicBeatState
 					for (anim in stageData.pieces[curStagePiece].animations)
 					{
 						if (!myStage[curStagePiece].animation.getNameList().contains(anim.name))
-							myStage[curStagePiece].animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+							myStage[curStagePiece].animation.add(anim.name, Character.uncompactIndices(anim.indices), anim.fps, anim.loop);
 						if (anim.name == stageData.pieces[curStagePiece].firstAnimation && myStage[curStagePiece].animation.curAnim == null)
 							myStage[curStagePiece].animation.play(stageData.pieces[curStagePiece].firstAnimation);
 					}
@@ -1579,12 +1685,12 @@ class StageEditorState extends MusicBeatState
 					if (isSparrow)
 					{
 						if (anim.indices != null && anim.indices.length > 0)
-							aPiece.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+							aPiece.animation.addByIndices(anim.name, anim.prefix, Character.uncompactIndices(anim.indices), "", anim.fps, anim.loop);
 						else
 							aPiece.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
 					}
 					else
-						aPiece.animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+						aPiece.animation.add(anim.name, Character.uncompactIndices(anim.indices), anim.fps, anim.loop);
 					if (anim.offsets != null && anim.offsets.length == 2)
 						aPiece.addOffsets(anim.name, anim.offsets);
 					animList.push(anim.name);
@@ -1728,6 +1834,7 @@ class StageEditorState extends MusicBeatState
 
 	function movePiece(dir:Int)
 	{
+		if (curStagePiece <= -1) return;
 		if (dir > 0 && stageData.pieces[curStagePiece+dir].layer > stageData.pieces[curStagePiece].layer) return;
 		if (dir < 0 && stageData.pieces[curStagePiece+dir].layer < stageData.pieces[curStagePiece].layer) return;
 
@@ -1736,7 +1843,7 @@ class StageEditorState extends MusicBeatState
 		curStagePiece += dir;
 		stageData.pieces.insert(curStagePiece, movePiece);
 		myStage.insert(curStagePiece, movePieceSprite);
-		pieceList.value = curStagePiece;
+		pieceList.value = curStagePiece + 1;
 		updateAllPieces();
 		refreshStagePieces();
 		refreshSelectionShader();
@@ -1762,7 +1869,7 @@ class StageEditorState extends MusicBeatState
 
 	function refreshStagePieces()
 	{
-		var pieceValueList:Array<String> = [];
+		var pieceValueList:Array<String> = [""];
 		for (p in stageData.pieces)
 		{
 			var checkId = p.asset;

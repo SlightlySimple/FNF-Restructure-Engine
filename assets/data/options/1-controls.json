@@ -158,6 +158,13 @@
 			"defValue": ["SPACE", "NONE"]
 		},
 		{
+			"type": "control",
+			"label": "#optionsNameSwapIcon",
+			"description": "",
+			"variable": "swapIcon",
+			"defValue": ["NINE", "NONE"]
+		},
+		{
 			"type": "label",
 			"label": ""
 		},

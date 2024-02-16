@@ -21,7 +21,7 @@ Z/X: Increase/Decrease Zoom
 Ctrl+S: Save Chart
 
 !StageEditor
-Left Click: Move Current Piece/Character
+Left Click: Select/Move Piece/Character
 Arrow Keys: Precisely Move Current Piece/Character
 Right Click: Move Camera
 Delete Key: Delete Current Piece
