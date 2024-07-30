@@ -490,8 +490,6 @@ class OptionsCategory extends FlxGroup
 
 	override function update(elapsed:Float)
 	{
-		super.update(elapsed);
-
 		optionsDisplay.clipRect = optionsDisplay.clipRect;
 
 		var opt:OptionMenuStuff = data.contents[curOption];
@@ -540,6 +538,8 @@ class OptionsCategory extends FlxGroup
 			if (FlxG.keys.justReleased.LEFT || FlxG.keys.justReleased.RIGHT)
 				holding = false;
 		}
+
+		super.update(elapsed);
 	}
 
 	function selectOption(change:Int = 0)
