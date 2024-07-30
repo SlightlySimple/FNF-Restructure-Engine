@@ -1,38 +1,60 @@
 {
-	"label": "#optionsCatMisc",
+	"label": "#options.category.misc",
 	"contents": [
 		{
+			"type": "label",
+			"label": "#options.misc.subCategory.game"
+		},
+		{
+			"type": "choicesPopulate",
+			"label": "#options.misc.language.name",
+			"description": "#options.misc.language.desc",
+			"variable": "language",
+			"defValue": ""
+		},
+		{
 			"type": "bool",
-			"label": "#optionsNameNaughtiness",
-			"description": "#optionsDescNaughtiness",
+			"label": "#options.misc.naughtiness.name",
+			"description": "#options.misc.naughtiness.desc",
 			"variable": "naughtiness",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameAutoPause",
-			"description": "#optionsDescAutoPause",
+			"label": "#options.misc.autoPause.name",
+			"description": "#options.misc.autoPause.desc",
 			"variable": "autoPause",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameAutoMute",
-			"description": "#optionsDescAutoMute",
+			"label": "#options.misc.autoMute.name",
+			"description": "#options.misc.autoMute.desc",
 			"variable": "autoMute",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameCompactJsons",
-			"description": "#optionsDescCompactJsons",
-			"variable": "compactJsons",
+			"label": "#options.misc.chartInfo.name",
+			"description": "#options.misc.chartInfo.desc",
+			"variable": "chartInfo",
 			"defValue": true
 		},
 		{
+			"type": "label",
+			"label": "#options.misc.subCategory.editors"
+		},
+		{
+			"type": "choicesPopulate",
+			"label": "#options.misc.editorMusic.name",
+			"description": "#options.misc.editorMusic.desc",
+			"variable": "editorMusic",
+			"defValue": "Lillian Craig - Hair and Makeup"
+		},
+		{
 			"type": "int",
-			"label": "#optionsNameAutosaveSecs",
-			"description": "#optionsDescAutosaveSecs",
+			"label": "#options.misc.autosaveSecs.name",
+			"description": "#options.misc.autosaveSecs.desc",
 			"variable": "autosaveSecs",
 			"range": [0, 120],
 			"changeValue": 1,
@@ -41,9 +63,9 @@
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameChartInfo",
-			"description": "#optionsDescChartInfo",
-			"variable": "chartInfo",
+			"label": "#options.misc.compactJsons.name",
+			"description": "#options.misc.compactJsons.desc",
+			"variable": "compactJsons",
 			"defValue": true
 		}
 	]

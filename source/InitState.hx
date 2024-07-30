@@ -10,6 +10,10 @@ import data.Options;
 import data.ScoreSystems;
 import menus.OptionsMenuState;
 
+import sys.FileSystem;
+import sys.io.File;
+import haxe.Json;
+
 class InitState extends MusicBeatState
 {
 	var doingSetup:Bool = false;
@@ -42,12 +46,20 @@ class InitState extends MusicBeatState
 			ScoreSystems.initScores();
 			Lang.init();
 
+			var soundTray:FunkSoundTray = cast FlxG.game.soundTray;
+			soundTray.rebuildSoundTray();
+
+			if (FileSystem.exists("assets/data/favorites.json"))
+				Util.favoriteSongs = cast Json.parse(File.getContent("assets/data/favorites.json"));
+			File.saveContent("assets/data/favorites.json", Json.stringify(Util.favoriteSongs));
+
 			FlxG.autoPause = Options.options.autoPause;
 			FlxG.sound.muteKeys = Options.getKeys("mute");
 			FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
 			FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
 			FlxG.sound.cache(Paths.music("freakyMenu"));
 			Main.screenshotKeys = Options.getKeys("screenshot");
+			Main.fullscreenKeys = Options.getKeys("fullscreen");
 
 			if (FlxG.save.data.setupOptions == null)
 				FlxG.save.data.setupOptions = false;

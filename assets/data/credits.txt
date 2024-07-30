@@ -1,12 +1,37 @@
 !bg ui/menuBGBlue
 !page base
 FRIDAY NIGHT FUNKIN
-ninjamuffin99|Friday Night Funkin Programmer|https://twitter.com/ninja_muffin99
-PhantomArcade|Friday Night Funkin Artist/Animator|https://twitter.com/PhantomArcade3K
-kawaisprite|Friday Night Funkin Musician|https://twitter.com/kawaisprite
-evilsk8er|Friday Night Funkin Artist|https://twitter.com/evilsk8r
+Programming
+ninjamuffin99|Lead Programmer|https://twitter.com/ninja_muffin99
+EliteMasterEric|Programmer|https://twitter.com/EliteMasterEric
+MtH|Charting and Additional Programming|https://twitter.com/emmnyaa
+GeoKureli|Additional Programming|https://twitter.com/Geokureli
 
+Art / Animation / UI
+PhantomArcade3K|Artist and Animator|https://twitter.com/PhantomArcade3K
+Evilsk8r|Art|https://twitter.com/evilsk8r
+Moawling|Week 6 Pixel Art|https://twitter.com/moawko
+IvanAlmighty|Misc UI Design|https://twitter.com/IvanA1mighty
+
+Music
+Kawaisprite|Musician|https://twitter.com/kawaisprite
+Saruky|Music Production|https://twitter.com/Saruky__
+crisp|Music Production|https://twitter.com/still_crisp
+BassetFilms|Music for "Monster", Additional Character Design|https://twitter.com/Bassetfilms
+Kohta Takahashi|Guest Musician|https://twitter.com/kohta09
+SixImpala|Guest Musician|https://twitter.com/siximpalasix
+Saster|Guest Musician|https://twitter.com/sub0ru
+
+Special Thanks
+Tom Fulp|Creator of Newgrounds & Pico's School|https://twitter.com/tomfulp
+SrPelo|Creator of Spooky Month & Voice of the Spooky Kids|https://twitter.com/_SrPelo_
+JohnnyUtah|Creator & Voice of Tankman|https://twitter.com/JohnnyUtahNG
+L0Litsmonica|Voice of Mommy Mearest|https://twitter.com/L0Litsmonica
+
+!page restructure
 RESTRUCTURE ENGINE
 SlightlySimple|Engine Developer|https://twitter.com/DevSlightly
+Lillian Craig|Editor UI Design & Music|https://twitter.com/Lillie_334
 DotWith & Cheemsandfriends|FlxAnimate Extension|https://github.com/Dot-Stuff/flxanimate
 PolybiusProxy|hxCodec Extension|https://github.com/KadeDev/Friday-Night-Funkin-Mp4-Video-Support
+!page base

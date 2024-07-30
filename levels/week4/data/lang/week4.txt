@@ -1,0 +1,18 @@
+// Week name
+"level.week4"			"MOMMY MUST MURDER"
+
+// Song names
+"song.week4.satin-panties"			"Satin Panties"
+"song.week4.satin-panties.censor"	"Satin Pants"
+"song.week4.high"					"High"
+"song.week4.milf"					"M.I.L.F."
+"song.week4.milf.censor"			"Mom"
+
+// Character names
+"character.bf-car"		"Boyfriend (Car)"
+"character.gf-car"		"Girlfriend (Car)"
+"character.mom"			"Mommy Mearest"
+"character.mom-car"		"Mommy Mearest (Car)"
+
+// Stage names
+"stage.limo"			"Limo Ride"

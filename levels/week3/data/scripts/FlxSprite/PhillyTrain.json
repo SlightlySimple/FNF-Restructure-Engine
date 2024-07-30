@@ -1,0 +1,12 @@
+{
+	"parameters":
+	[
+		{
+			"id": "sound",
+			"label": "Sound",
+			"type": "dropdownSpecial",
+			"defaultValue": "week3/train_passes",
+			"options": ["sounds", ".ogg"]
+		}
+	]
+}

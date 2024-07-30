@@ -7,67 +7,68 @@ import flixel.group.FlxSpriteGroup;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
+import flixel.math.FlxPoint;
+import flixel.input.keyboard.FlxKey;
+import helpers.DeepEquals;
+import helpers.Cloner;
 import data.ObjectData;
 import data.Options;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Stage;
 import haxe.Json;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 import menus.EditorMenuState;
 import menus.StoryMenuState;
 
 import lime.app.Application;
 
-import funkui.TabMenu;
-import funkui.Checkbox;
-import funkui.TextButton;
-import funkui.InputText;
-import funkui.Stepper;
-import funkui.DropdownMenu;
-import funkui.Label;
+import newui.UIControl;
+import newui.TopMenu;
+import newui.TabMenu;
+import newui.InfoBox;
+import newui.Button;
+import newui.Checkbox;
+import newui.Draggable;
+import newui.InputText;
+import newui.ObjectMenu;
+import newui.PopupWindow;
+import newui.Stepper;
+import newui.DropdownMenu;
 
 using StringTools;
 
-class StoryCharacterEditorState extends MusicBeatState
+class StoryCharacterEditorState extends BaseEditorState
 {
-	public static var newCharacter:Bool = false;
 	public static var newCharacterImage:String = "";
-	public static var curCharacter:String = "";
-	var charPos:Int = 1;
-	var charPosOffset:Array<Int> = [0, 0];
-	var otherCharPos:Int = 1;
+	var charPos:String = "center";
+	var charPosOffset:Array<Int> = [Std.int(FlxG.width / 3), 56];
 
-	var myCharacter:FlxSprite;
+	var character:FlxSprite;
+	var characterGhost:FlxSprite = null;
 
 	var allAnimData:String = "";
 	var allAnimPrefixes:Array<String> = [];
-	var animGhost:FlxSprite = null;
-	var otherAnimGhost:Character;
-	var myCharacterData:WeekCharacterData;
 
-	var camGame:FlxCamera;
-	var camHUD:FlxCamera;
+	var characterData:WeekCharacterData;
+	var dataLog:Array<WeekCharacterData> = [];
 
-	var	movingCamera:Bool = false;
+	var mousePos:FlxPoint;
+
 	var	movingCharacter:Bool = false;
 	var	movingAnimOffset:Bool = false;
 	var dragStart:Array<Int> = [0, 0];
 	var dragOffset:Array<Float> = [0, 0];
 
 	var charAnimList:Array<String>;
-	var charAnims:FlxTypedSpriteGroup<FlxText>;
+	var charAnims:ObjectMenu;
 	var curCharAnim:Int = -1;
-	var listOffset:Int = 0;
 
-	var tabMenu:IsolatedTabMenu;
+	var showAnimGhost:Checkbox;
 
-	var charPosDropdown:DropdownMenu = null;
-	var charPosStepper:Stepper;
-	var otherCharPosStepper:Stepper;
-	var otherCharAnimDropdown:DropdownMenu;
-
-	var charPositionText:FlxText;
-	var posLocked:Checkbox;
+	var posLocked:Bool = false;
 	var charScaleX:Stepper;
 	var charScaleY:Stepper;
 	var camPosX:Stepper;
@@ -78,27 +79,25 @@ class StoryCharacterEditorState extends MusicBeatState
 	var animPrefix:InputText;
 	var animPrefixDropdown:DropdownMenu = null;
 	var animIndices:InputText;
+	var animOffsetX:Stepper;
+	var animOffsetY:Stepper;
 	var animLooped:Checkbox;
 	var animFPS:Stepper;
 	var curFrameText:FlxText;
 
 	override public function create()
 	{
-		camGame = new FlxCamera();
-		FlxG.cameras.add(camGame);
-
-		camHUD = new FlxCamera();
-		camHUD.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camHUD, false);
+		mousePos = FlxPoint.get();
 
 		super.create();
+		filenameNew = "New Character";
 
 		var bgYellow:FlxSprite = new FlxSprite(0, 56).makeGraphic(FlxG.width, 400, 0xFFF9CF51);
 		add(bgYellow);
 
-		if (newCharacter)
+		if (isNew)
 		{
-			myCharacterData =
+			characterData =
 			{
 				asset: newCharacterImage,
 				position: [0, 0],
@@ -113,301 +112,322 @@ class StoryCharacterEditorState extends MusicBeatState
 			}
 		}
 		else
-			myCharacterData = MenuCharacter.parseCharacter(curCharacter);
+			characterData = MenuCharacter.parseCharacter(id);
 
-		myCharacter = new FlxSprite();
+		character = new FlxSprite();
 		reloadAsset();
 
-		myCharacter.antialiasing = myCharacterData.antialias;
-		myCharacter.flipX = myCharacterData.flip;
+		character.antialiasing = characterData.antialias;
+		character.flipX = characterData.flip;
 
-		if (myCharacterData.scale != null && myCharacterData.scale.length == 2)
+		if (characterData.scale != null && characterData.scale.length == 2)
 		{
-			myCharacter.scale.x = myCharacterData.scale[0];
-			myCharacter.scale.y = myCharacterData.scale[1];
+			character.scale.x = characterData.scale[0];
+			character.scale.y = characterData.scale[1];
 		}
 		else
-			myCharacterData.scale = [1, 1];
-		myCharacter.updateHitbox();
+			characterData.scale = [1, 1];
+		character.updateHitbox();
 
-		animGhost = new FlxSprite(myCharacter.x, myCharacter.y);
-		animGhost.alpha = 0.5;
-		animGhost.visible = false;
-		animGhost.frames = myCharacter.frames;
-		animGhost.antialiasing = myCharacter.antialiasing;
-		animGhost.flipX = myCharacter.flipX;
+		characterGhost = new FlxSprite(character.x, character.y);
+		characterGhost.alpha = 0.5;
+		characterGhost.visible = false;
+		characterGhost.frames = character.frames;
+		characterGhost.antialiasing = character.antialiasing;
+		characterGhost.flipX = character.flipX;
 
 		refreshCharacterColor();
 
-		if (newCharacter)
+		if (isNew)
 		{
 			var idleIndex:String = allAnimPrefixes[0];
 			for (a in allAnimPrefixes)
 			{
-				if (a.toLowerCase().indexOf("idle") != -1 || a.toLowerCase().indexOf("dance") != -1)
+				if (a.toLowerCase().indexOf("idle") != -1 || a.toLowerCase().indexOf("dance") != -1 || a.toLowerCase().indexOf("dancing") != -1)
 				{
 					idleIndex = a;
 					break;
 				}
 			}
-			myCharacterData.animations.push({name: "idle", prefix: idleIndex, fps: 24, loop: false, offsets: [0, 0]});
-			myCharacterData.firstAnimation = "idle";
-			myCharacterData.idles = ["idle"];
+			characterData.animations.push({name: "idle", prefix: idleIndex, fps: 24, loop: false, offsets: [0, 0]});
+			characterData.firstAnimation = "idle";
+			characterData.idles = ["idle"];
 		}
 		reloadAnimations();
 
-		animGhost.scale.x = myCharacter.scale.x;
-		animGhost.scale.y = myCharacter.scale.y;
-		animGhost.updateHitbox();
+		characterGhost.scale.x = character.scale.x;
+		characterGhost.scale.y = character.scale.y;
+		characterGhost.updateHitbox();
 
-		otherAnimGhost = new Character(0, 0, TitleState.defaultVariables.player2);
-		otherAnimGhost.alpha = 0.5;
-		otherAnimGhost.visible = false;
+		add(characterGhost);
+		add(character);
 
-		add(animGhost);
-		add(myCharacter);
+
 
 		charAnimList = [];
-		for (i in 0...myCharacterData.animations.length)
-			charAnimList.push(myCharacterData.animations[i].name);
+		for (i in 0...characterData.animations.length)
+			charAnimList.push(characterData.animations[i].name);
 
-		if (myCharacterData.firstAnimation != null && myCharacterData.firstAnimation != "")
-		{
-			if (!charAnimList.contains(myCharacterData.firstAnimation))
-				myCharacterData.firstAnimation = charAnimList[0];
-
-			playAnim(myCharacterData.firstAnimation);
-			playAnim(myCharacterData.firstAnimation, false, true);
+		charAnims = new ObjectMenu(990, 250, "animationBox");
+		charAnims.onClicked = function(index:Int) {
+			var animData:CharacterAnimation = characterData.animations[index];
+			if (animData != null)
+			{
+				playAnim(animData.name, true);
+				animName.text = animData.name;
+				animPrefix.text = animData.prefix;
+				if (animData.indices != null && animData.indices.length > 0)
+					animIndices.text = Character.compactIndices(animData.indices).join(",");
+				else
+					animIndices.text = "";
+			}
 		}
-
-		charAnims = new FlxTypedSpriteGroup<FlxText>();
+		charAnims.onRightClicked = function(index:Int) {
+			var animationName:String = characterData.animations[index].name;
+			playAnim(animationName, true, true);
+			if (!showAnimGhost.checked)
+			{
+				showAnimGhost.checked = true;
+				showAnimGhost.onClicked();
+			}
+		}
 		charAnims.cameras = [camHUD];
 		add(charAnims);
-
-
-
-		tabMenu = new IsolatedTabMenu(50, 50, 250, 500);
-		tabMenu.cameras = [camHUD];
-		tabMenu.x = Std.int(FlxG.width - 425);
-		add(tabMenu);
 		refreshCharAnims();
 
-		var tabButtons:TabButtons = new TabButtons(0, 0, 425, ["General", "Properties", "Animations", "Offsets", "Help"]);
-		tabButtons.cameras = [camHUD];
-		tabButtons.menu = tabMenu;
-		add(tabButtons);
+		if (characterData.firstAnimation != null && characterData.firstAnimation != "")
+		{
+			if (!charAnimList.contains(characterData.firstAnimation))
+				characterData.firstAnimation = charAnimList[0];
+
+			playAnim(characterData.firstAnimation);
+			playAnim(characterData.firstAnimation, false, true);
+		}
 
 
 
-		var tabGroupGeneral = new TabGroup();
+		createUI("StoryCharacterEditor");
 
-		var loadCharacterButton:TextButton = new TextButton(10, 10, 115, 20, "Load");
-		loadCharacterButton.onClicked = loadCharacter;
-		tabGroupGeneral.add(loadCharacterButton);
 
-		var saveCharacterButton:TextButton = new TextButton(loadCharacterButton.x + 115, loadCharacterButton.y, 115, 20, "Save");
-		saveCharacterButton.onClicked = saveCharacter;
-		tabGroupGeneral.add(saveCharacterButton);
 
-		var changeAssetButton:TextButton = new TextButton(10, saveCharacterButton.y + 30, 230, 20, "Change Asset");
-		changeAssetButton.onClicked = function() {
+		var characterAsset:InputText = cast element("characterAsset");
+		characterAsset.text = characterData.asset;
+		characterAsset.condition = function() { return characterData.asset; }
+		characterAsset.focusLost = function() {
+			if (!changeAsset(characterAsset.text))
+				characterAsset.text = characterData.asset;
+		}
+
+		var loadAssetButton:Button = cast element("loadAssetButton");
+		loadAssetButton.onClicked = function() {
 			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = changeAssetCallback;
+			file.loadCallback = function(fullPath:String) {
+				var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
+				if (nameArray.contains("images"))
+				{
+					while (nameArray[0] != "images")
+						nameArray.shift();
+					nameArray.shift();
+
+					var finalName = nameArray.join("/");
+					finalName = finalName.substr(0, finalName.length - 4);
+
+					changeAsset(finalName);
+				}
+			}
 			file.load("png");
 		}
-		tabGroupGeneral.add(changeAssetButton);
 
-		var showAnimGhost:Checkbox = new Checkbox(10, changeAssetButton.y + 30, "Animation Ghost");
-		showAnimGhost.checked = false;
-		showAnimGhost.onClicked = function()
-		{
-			animGhost.visible = showAnimGhost.checked;
-		};
-		tabGroupGeneral.add(showAnimGhost);
+		showAnimGhost = cast element("showAnimGhost");
+		showAnimGhost.onClicked = function() { characterGhost.visible = showAnimGhost.checked; };
 
-		charPosDropdown = new DropdownMenu(10, showAnimGhost.y + 40, 230, 20, "left", ["left", "center", "right"]);
-		charPosDropdown.onChanged = function() {
-			switch (charPosDropdown.value)
-			{
-				case "left": tabMenu.x = Std.int(FlxG.width - 425);
-				case "center": tabMenu.x = 50;
-				case "right": tabMenu.x = 50;
-			}
-			resetCharPosition();
-			refreshCharAnims();
-		}
+		var charPosLeft:ToggleButton = cast element("charPosLeft");
+		charPosLeft.condition = function() { return charPos == "left"; }
+		charPosLeft.onClicked = function() { charPos = "left"; charPosOffset[0] = 0; resetCharPosition(); }
+
+		var charPosCenter:ToggleButton = cast element("charPosCenter");
+		charPosCenter.condition = function() { return charPos == "center"; }
+		charPosCenter.onClicked = function() { charPos = "center"; charPosOffset[0] = Std.int(FlxG.width / 3); resetCharPosition(); }
+
+		var charPosRight:ToggleButton = cast element("charPosRight");
+		charPosRight.condition = function() { return charPos == "right"; }
+		charPosRight.onClicked = function() { charPos = "right"; charPosOffset[0] = Std.int(FlxG.width * 2 / 3); resetCharPosition(); }
+
 		resetCharPosition();
-		tabGroupGeneral.add(charPosDropdown);
-		tabGroupGeneral.add(new Label("Preview Position:", charPosDropdown));
-
-		tabMenu.addGroup(tabGroupGeneral);
 
 
 
-		var tabGroupProperties = new TabGroup();
+		var charX:Stepper = cast element("charX");
+		charX.value = characterData.position[0];
+		charX.condition = function() { return characterData.position[0]; }
+		charX.onChanged = function() {
+			characterData.position[0] = charX.valueInt;
+			resetCharPosition();
+		}
 
-		charPositionText = new FlxText(10, 10, 150, "Position:", 18);
-		charPositionText.color = FlxColor.BLACK;
-		charPositionText.font = "VCR OSD Mono";
-		charPositionText.alignment = CENTER;
-		tabGroupProperties.add(charPositionText);
+		var charY:Stepper = cast element("charY");
+		charY.value = characterData.position[1];
+		charY.condition = function() { return characterData.position[1]; }
+		charY.onChanged = function() {
+			characterData.position[1] = charY.valueInt;
+			resetCharPosition();
+		}
 
-		posLocked = new Checkbox(charPositionText.x + 150, charPositionText.y + 10, "Lock", true);
-		tabGroupProperties.add(posLocked);
-
-		var charAntialias:Checkbox = new Checkbox(10, posLocked.y + 30, "Antialias", myCharacterData.antialias);
+		var charAntialias:Checkbox = cast element("charAntialias");
+		charAntialias.checked = characterData.antialias;
+		charAntialias.condition = function() { return characterData.antialias; }
 		charAntialias.onClicked = function()
 		{
-			myCharacterData.antialias = charAntialias.checked;
-			myCharacter.antialiasing = myCharacterData.antialias;
-			animGhost.antialiasing = myCharacter.antialiasing;
-		};
-		tabGroupProperties.add(charAntialias);
+			characterData.antialias = charAntialias.checked;
+			character.antialiasing = characterData.antialias;
+			characterGhost.antialiasing = character.antialiasing;
+		}
 
-		var charFlip:Checkbox = new Checkbox(charAntialias.x + 150, charAntialias.y, "Flip", myCharacterData.flip);
+		var charFlip:Checkbox = cast element("charFlip");
+		charFlip.checked = characterData.flip;
+		charFlip.condition = function() { return characterData.flip; }
 		charFlip.onClicked = function()
 		{
-			myCharacterData.flip = charFlip.checked;
-			myCharacter.flipX = myCharacterData.flip;
-			animGhost.flipX = myCharacter.flipX;
-		};
-		tabGroupProperties.add(charFlip);
+			characterData.flip = charFlip.checked;
+			character.flipX = characterData.flip;
+			characterGhost.flipX = character.flipX;
+		}
 
-		var charDanceSpeed:Stepper = new Stepper(10, charAntialias.y + 40, 230, 20, myCharacterData.danceSpeed, 0.25, 0, 9999, 2);
-		charDanceSpeed.onChanged = function() { myCharacterData.danceSpeed = charDanceSpeed.value; }
-		tabGroupProperties.add(charDanceSpeed);
-		tabGroupProperties.add(new Label("Dance Speed:", charDanceSpeed));
+		var charDanceSpeed:Stepper = cast element("charDanceSpeed");
+		charDanceSpeed.value = characterData.danceSpeed;
+		charDanceSpeed.condition = function() { return characterData.danceSpeed; }
+		charDanceSpeed.onChanged = function() { characterData.danceSpeed = charDanceSpeed.value; }
 
-		charScaleX = new Stepper(10, charDanceSpeed.y + 40, 115, 20, myCharacterData.scale[0], 0.05, 0, 9999, 3);
+		charScaleX = cast element("charScaleX");
+		charScaleX.value = characterData.scale[0];
+		charScaleX.condition = function() { return characterData.scale[0]; }
 		charScaleX.onChanged = function() {
-			myCharacterData.scale[0] = charScaleX.value;
-			myCharacter.scale.x = myCharacterData.scale[0];
-			animGhost.scale.x = myCharacter.scale.x;
-			myCharacter.updateHitbox();
-			animGhost.updateHitbox();
-			if (myCharacterData.animations.length > 0)
+			characterData.scale[0] = charScaleX.value;
+			character.scale.x = characterData.scale[0];
+			characterGhost.scale.x = character.scale.x;
+			character.updateHitbox();
+			characterGhost.updateHitbox();
+			if (characterData.animations.length > 0)
 			{
-				playAnim(myCharacterData.animations[curCharAnim].name, true);
-				if (animGhost.animation.curAnim.name == myCharacterData.animations[curCharAnim].name)
-					playAnim(myCharacterData.animations[curCharAnim].name, true, true);
+				playAnim(characterData.animations[curCharAnim].name, true);
+				if (characterGhost.animation.curAnim.name == characterData.animations[curCharAnim].name)
+					playAnim(characterData.animations[curCharAnim].name, true, true);
 			}
-		};
-		tabGroupProperties.add(charScaleX);
-		charScaleY = new Stepper(charScaleX.x + 115, charScaleX.y, 115, 20, myCharacterData.scale[1], 0.05, 0, 9999, 3);
+		}
+
+		charScaleY = cast element("charScaleY");
+		charScaleY.value = characterData.scale[1];
+		charScaleY.condition = function() { return characterData.scale[1]; }
 		charScaleY.onChanged = function() {
-			myCharacterData.scale[1] = charScaleY.value;
-			myCharacter.scale.y = myCharacterData.scale[1];
-			animGhost.scale.y = myCharacter.scale.y;
-			myCharacter.updateHitbox();
-			animGhost.updateHitbox();
-			if (myCharacterData.animations.length > 0)
+			characterData.scale[1] = charScaleY.value;
+			character.scale.y = characterData.scale[1];
+			characterGhost.scale.y = character.scale.y;
+			character.updateHitbox();
+			characterGhost.updateHitbox();
+			if (characterData.animations.length > 0)
 			{
-				playAnim(myCharacterData.animations[curCharAnim].name, true);
-				if (animGhost.animation.curAnim.name == myCharacterData.animations[curCharAnim].name)
-					playAnim(myCharacterData.animations[curCharAnim].name, true, true);
+				playAnim(characterData.animations[curCharAnim].name, true);
+				if (characterGhost.animation.curAnim.name == characterData.animations[curCharAnim].name)
+					playAnim(characterData.animations[curCharAnim].name, true, true);
 			}
-		};
-		tabGroupProperties.add(charScaleY);
-		tabGroupProperties.add(new Label("Scale:", charScaleX));
-
-		var idlesInput:InputText = new InputText(10, charScaleX.y + 40, 115);
-		idlesInput.focusGained = function() {
-			idlesInput.text = myCharacterData.idles.join(",");
 		}
-		idlesInput.focusLost = function() {
-			idlesInput.text = myCharacterData.idles.join(",");
-		}
-		idlesInput.callback = function(text:String, action:String) {
-			myCharacterData.idles = text.split(",");
-			var poppers:Array<String> = [];
-			var charLowerList:Array<String> = [];
-			for (a in charAnimList)
-				charLowerList.push(a.toLowerCase());
 
-			for (i in 0...myCharacterData.idles.length)
+		var idles:TextButton = cast element("idles");
+		idles.onClicked = function()
+		{
+			var window:PopupWindow = null;
+			var vbox:VBox = new VBox(35, 35);
+
+			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+			var scroll:VBox = menu.vbox;
+
+			for (i in 0...characterData.idles.length)
 			{
-				if (!charLowerList.contains(myCharacterData.idles[i].toLowerCase()))
-					poppers.push(myCharacterData.idles[i]);
-				else if (!charAnimList.contains(myCharacterData.idles[i]))
-					myCharacterData.idles[i] = charAnimList[charLowerList.indexOf(myCharacterData.idles[i].toLowerCase())];
+				var animHbox:HBox = new HBox();
+				var anim:DropdownMenu = new DropdownMenu(0, 0, characterData.idles[i], charAnimList, true);
+				anim.onChanged = function() { characterData.idles[i] = anim.value; }
+				animHbox.add(anim);
+				var _remove:Button = new Button(0, 0, "buttonTrash");
+				_remove.onClicked = function() {
+					characterData.idles.splice(i, 1);
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+				}
+				animHbox.add(_remove);
+				scroll.add(animHbox);
 			}
 
-			for (p in poppers)
-				myCharacterData.idles.remove(p);
+			if (characterData.idles.length > 0)
+				vbox.add(menu);
+
+			var _add:TextButton = new TextButton(0, 0, "Add");
+			_add.onClicked = function() {
+				if (characterData.idles.length > 0)
+					characterData.idles.push(characterData.idles[characterData.idles.length-1]);
+				else
+					characterData.idles.push(charAnimList[0]);
+				window.close();
+				new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+			}
+			vbox.add(_add);
+
+			var accept:TextButton = new TextButton(0, 0, "Accept", function() { window.close(); });
+			vbox.add(accept);
+
+			window = PopupWindow.CreateWithGroup(vbox);
 		}
-		tabGroupProperties.add(idlesInput);
-		tabGroupProperties.add(new Label("Idle Animations:", idlesInput));
 
 		var firstAnimList:Array<String> = [""];
 		if (charAnimList.length > 0)
 			firstAnimList = charAnimList;
-		firstAnimDropdown = new DropdownMenu(idlesInput.x + 115, idlesInput.y, 115, 20, myCharacterData.firstAnimation, firstAnimList, true);
+		firstAnimDropdown = cast element("firstAnimDropdown");
+		firstAnimDropdown.valueList = firstAnimList;
+		firstAnimDropdown.value = characterData.firstAnimation;
+		firstAnimDropdown.condition = function() { return characterData.firstAnimation; }
 		firstAnimDropdown.onChanged = function() {
-			myCharacterData.firstAnimation = firstAnimDropdown.value;
-		};
-		tabGroupProperties.add(firstAnimDropdown);
-		tabGroupProperties.add(new Label("First Animation:", firstAnimDropdown));
+			characterData.firstAnimation = firstAnimDropdown.value;
+		}
 
-		var autoAnimButton:TextButton = new TextButton(10, firstAnimDropdown.y + 30, 230, 20, "Fill Anim Fields");
+		var autoAnimButton:TextButton = cast element("autoAnimButton");
 		autoAnimButton.onClicked = function()
 		{
 			if (charAnimList.contains("danceLeft") && charAnimList.contains("danceRight"))
 			{
-				myCharacterData.idles = ["danceLeft", "danceRight"];
-				myCharacterData.firstAnimation = "danceLeft";
+				characterData.idles = ["danceLeft", "danceRight"];
+				characterData.firstAnimation = "danceLeft";
 			}
 			else if (charAnimList.contains("idle"))
 			{
-				myCharacterData.idles = ["idle"];
-				myCharacterData.firstAnimation = "idle";
+				characterData.idles = ["idle"];
+				characterData.firstAnimation = "idle";
 			}
-			else if (charAnimList.contains("firstDeath"))
-				myCharacterData.firstAnimation = "firstDeath";
-			idlesInput.text = myCharacterData.idles.join(",");
-		};
-		tabGroupProperties.add(autoAnimButton);
+		}
 
-		var matchColorCheckbox:Checkbox = new Checkbox(10, autoAnimButton.y + 30, "Match Color", myCharacterData.matchColor);
+		var matchColorCheckbox:Checkbox = cast element("matchColorCheckbox");
+		matchColorCheckbox.checked = characterData.matchColor;
+		matchColorCheckbox.condition = function() { return characterData.matchColor; }
 		matchColorCheckbox.onClicked = function()
 		{
-			myCharacterData.matchColor = matchColorCheckbox.checked;
+			characterData.matchColor = matchColorCheckbox.checked;
 			refreshCharacterColor();
-		};
-		tabGroupProperties.add(matchColorCheckbox);
-
-		tabMenu.addGroup(tabGroupProperties);
+		}
 
 
 
-		var tabGroupAnims = new TabGroup();
+		animName = cast element("animName");
 
-		animName = new InputText(10, 20);
-		tabGroupAnims.add(animName);
-		tabGroupAnims.add(new Label("Animation Name:", animName));
+		animPrefix = cast element("animPrefix");
 
-		var commonAnimations:Array<String> = Paths.textData("commonAnimations").replace("\r","").split("\n");
-		var animNameDropdown:DropdownMenu = new DropdownMenu(10, animName.y + 30, 230, 20, commonAnimations[0], commonAnimations, true);
-		animNameDropdown.onChanged = function() {
-			animName.text = animNameDropdown.value;
-		};
-		tabGroupAnims.add(animNameDropdown);
-
-		animPrefix = new InputText(10, animNameDropdown.y + 40);
-
-		tabGroupAnims.add(animPrefix);
-		tabGroupAnims.add(new Label("Prefix:", animPrefix));
-
-		animPrefixDropdown = new DropdownMenu(10, animPrefix.y + 30, 230, 20, allAnimPrefixes[0], allAnimPrefixes, true);
+		animPrefixDropdown = cast element("animPrefixDropdown");
+		animPrefixDropdown.valueList = allAnimPrefixes;
+		animPrefixDropdown.value = allAnimPrefixes[0];
 		animPrefixDropdown.onChanged = function() {
 			animPrefix.text = animPrefixDropdown.value;
 		};
-		tabGroupAnims.add(animPrefixDropdown);
 
-		animIndices = new InputText(10, animPrefixDropdown.y + 40);
-		tabGroupAnims.add(animIndices);
-		tabGroupAnims.add(new Label("Indices (Optional):", animIndices));
+		animIndices = cast element("animIndices");
 
-		var allIndices:TextButton = new TextButton(10, animIndices.y + 30, 230, 20, "All Indices");
+		var allIndices:TextButton = cast element("allIndices");
 		allIndices.onClicked = function()
 		{
 			if (animPrefix.text != "" && allAnimData.indexOf(animPrefix.text) != -1)
@@ -422,32 +442,78 @@ class StoryCharacterEditorState extends MusicBeatState
 				}
 			}
 		};
-		tabGroupAnims.add(allIndices);
 
-		animLooped = new Checkbox(10, animIndices.y + 70, "Loop");
-		animLooped.checked = false;
-		tabGroupAnims.add(animLooped);
+		animOffsetX = cast element("animOffsetX");
+		animOffsetX.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].offsets[0];
+			return animOffsetX.value;
+		}
+		animOffsetX.onChanged = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].offsets[0] = animOffsetX.valueInt;
+				refreshCharAnims();
+				updateOffsets();
+			}
+		}
 
-		animFPS = new Stepper(animLooped.x + 115, animLooped.y, 115, 20, 24, 1, 0);
-		tabGroupAnims.add(animFPS);
-		tabGroupAnims.add(new Label("FPS:", animFPS));
+		animOffsetY = cast element("animOffsetY");
+		animOffsetY.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].offsets[1];
+			return animOffsetY.value;
+		}
+		animOffsetY.onChanged = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].offsets[1] = animOffsetY.valueInt;
+				refreshCharAnims();
+				updateOffsets();
+			}
+		}
 
-		var addAnimButton:TextButton = new TextButton(10, animLooped.y + 30, 230, 20, "Add/Update Animation");
+		animLooped = cast element("animLooped");
+		animLooped.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].loop;
+			return animLooped.checked;
+		}
+		animLooped.onClicked = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].loop = animLooped.checked;
+				reloadSingleAnimation(curCharAnim);
+				playCurrentAnim();
+			}
+		}
+
+		animFPS = cast element("animFPS");
+		animFPS.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].fps;
+			return animFPS.value;
+		}
+		animFPS.onChanged = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].fps = animFPS.valueInt;
+				reloadSingleAnimation(curCharAnim);
+				playCurrentAnim();
+			}
+		}
+
+		var addAnimButton:TextButton = cast element("addAnimButton");
 		addAnimButton.onClicked = function()
 		{
-			var cause:Int = -1;
+			var cause:String = "";
 			if (animName.text.trim() == "")
-				cause = 0;
+				cause = "The animation name cannot be blank.";
 			if (allAnimData.indexOf(animPrefix.text) == -1)
-				cause = 1;
+				cause = "The spritesheet does not contain an animation with that prefix.";
 
-			var causes:Array<String> = ["The animation name cannot be blank.", "The spritesheet does not contain an animation with that prefix."];
-
-			if (cause > -1)
-			{
-				var notify:Notify = new Notify(300, 100, causes[cause], this);
-				notify.cameras = [camHUD];
-			}
+			if (cause != "")
+				new Notify(cause);
 			else
 			{
 				var newAnim:CharacterAnimation =
@@ -456,13 +522,7 @@ class StoryCharacterEditorState extends MusicBeatState
 					prefix: animPrefix.text,
 					fps: animFPS.valueInt,
 					loop: animLooped.checked,
-					offsets: [0, 0]
-				};
-
-				if (curCharAnim > -1)
-				{
-					newAnim.offsets[0] = myCharacterData.animations[curCharAnim].offsets[0];
-					newAnim.offsets[1] = myCharacterData.animations[curCharAnim].offsets[1];
+					offsets: [animOffsetX.valueInt, animOffsetY.valueInt]
 				}
 
 				if (animIndices.text != "")
@@ -475,433 +535,378 @@ class StoryCharacterEditorState extends MusicBeatState
 				}
 
 				var animToReplace:Int = -1;
-				for (i in 0...myCharacterData.animations.length)
+				for (i in 0...characterData.animations.length)
 				{
-					if (myCharacterData.animations[i].name == newAnim.name)
+					if (characterData.animations[i].name == newAnim.name)
 						animToReplace = i;
 				}
 
 				if (animToReplace > -1)
 				{
-					newAnim.offsets = myCharacterData.animations[animToReplace].offsets;
-					myCharacterData.animations[animToReplace] = newAnim;
+					newAnim.offsets = characterData.animations[animToReplace].offsets;
+					characterData.animations[animToReplace] = newAnim;
 				}
 				else
-					myCharacterData.animations.push(newAnim);
+					characterData.animations.push(newAnim);
 
 				if (newAnim.indices != null && newAnim.indices.length > 0)
 				{
-					myCharacter.animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
-					animGhost.animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
+					character.animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
+					characterGhost.animation.addByIndices(newAnim.name, newAnim.prefix, newAnim.indices, "", newAnim.fps, newAnim.loop);
 				}
 				else
 				{
-					myCharacter.animation.addByPrefix(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop);
-					animGhost.animation.addByPrefix(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop);
+					character.animation.addByPrefix(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop);
+					characterGhost.animation.addByPrefix(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop);
 				}
 
-				refreshCharAnims();
+				refreshCharAnimList();
 				playAnim(newAnim.name, true);
-				if (animGhost.animation.curAnim == null)
+				if (characterGhost.animation.curAnim == null)
 					playAnim(newAnim.name, true, true);
 				refreshCharAnims();
 				firstAnimDropdown.valueList = charAnimList;
-				if (myCharacterData.firstAnimation == "")
+				if (characterData.firstAnimation == "")
 				{
-					myCharacterData.firstAnimation = newAnim.name;
+					characterData.firstAnimation = newAnim.name;
 					firstAnimDropdown.value = newAnim.name;
 				}
 			}
-		};
-		tabGroupAnims.add(addAnimButton);
+		}
 
-		curFrameText = new FlxText(10, addAnimButton.y + 30, 230, "Frame: 0", 18);
-		curFrameText.color = FlxColor.BLACK;
-		curFrameText.font = "VCR OSD Mono";
-		curFrameText.alignment = CENTER;
-		tabGroupAnims.add(curFrameText);
+		var removeAnimButton:TextButton = cast element("removeAnimButton");
+		removeAnimButton.onClicked = tryDeleteAnim;
 
-		var toggleAnimButton:TextButton = new TextButton(10, curFrameText.y + 30, 230, 20, "Toggle");
+		curFrameText = cast element("curFrameText");
+		curFrameText.text = "Frame: 0";
+
+		var toggleAnimButton:TextButton = cast element("toggleAnimButton");
 		toggleAnimButton.onClicked = function()
 		{
-			if (myCharacter.animation.curAnim != null)
-				myCharacter.animation.curAnim.paused = !myCharacter.animation.curAnim.paused;
-		};
-		tabGroupAnims.add(toggleAnimButton);
+			if (character.animation.curAnim != null)
+				character.animation.curAnim.paused = !character.animation.curAnim.paused;
+		}
 
-		var prevFrame:TextButton = new TextButton(10, toggleAnimButton.y + 30, 115, 20, "Prev");
+		var prevFrame:TextButton = cast element("prevFrame");
 		prevFrame.onClicked = function()
 		{
-			if (myCharacter.animation.curAnim != null && myCharacter.animation.curAnim.curFrame > 0)
-				myCharacter.animation.curAnim.curFrame--;
-		};
-		tabGroupAnims.add(prevFrame);
+			if (character.animation.curAnim != null && character.animation.curAnim.curFrame > 0)
+				character.animation.curAnim.curFrame--;
+		}
 
-		var nextFrame:TextButton = new TextButton(prevFrame.x + 115, prevFrame.y, 115, 20, "Next");
+		var nextFrame:TextButton = cast element("nextFrame");
 		nextFrame.onClicked = function()
 		{
-			if (myCharacter.animation.curAnim != null && myCharacter.animation.curAnim.curFrame < myCharacter.animation.curAnim.numFrames - 1)
-				myCharacter.animation.curAnim.curFrame++;
-		};
-		tabGroupAnims.add(nextFrame);
-
-		tabMenu.addGroup(tabGroupAnims);
-
-
-
-		var tabGroupOffsets = new TabGroup();
-
-		var offsetStepper:Stepper = new Stepper(10, 10, 230, 20, 0, 1, -9999, 9999, 3);
-		tabGroupOffsets.add(offsetStepper);
-
-		var offsetAddX:TextButton = new TextButton(10, offsetStepper.y + 30, 115, 20, "Add X");
-		offsetAddX.onClicked = function() {
-			for (a in myCharacterData.animations)
-				a.offsets[0] += Std.int(offsetStepper.value);
-
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			refreshCharAnims();
+			if (character.animation.curAnim != null && character.animation.curAnim.curFrame < character.animation.curAnim.numFrames - 1)
+				character.animation.curAnim.curFrame++;
 		}
-		tabGroupOffsets.add(offsetAddX);
 
-		var offsetAddY:TextButton = new TextButton(offsetAddX.x + 115, offsetAddX.y, 115, 20, "Add Y");
-		offsetAddY.onClicked = function() {
-			for (a in myCharacterData.animations)
-				a.offsets[1] += Std.int(offsetStepper.value);
 
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			refreshCharAnims();
-		}
-		tabGroupOffsets.add(offsetAddY);
 
-		var offsetScaleX:TextButton = new TextButton(10, offsetAddX.y + 30, 115, 20, "Scale X");
-		offsetScaleX.onClicked = function() {
-			for (a in myCharacterData.animations)
-				a.offsets[0] = Std.int(a.offsets[0] * offsetStepper.value);
+		var tabOptions:Array<TopMenuOption> = [];
+		for (t in tabMenu.tabs)
+			tabOptions.push({label: t, action: function() { tabMenu.selectTabByName(t); }, condition: function() { return tabMenu.curTabName == t; }, icon: "bullet"});
 
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			refreshCharAnims();
-		}
-		tabGroupOffsets.add(offsetScaleX);
-
-		var offsetScaleY:TextButton = new TextButton(offsetScaleX.x + 115, offsetScaleX.y, 115, 20, "Scale Y");
-		offsetScaleY.onClicked = function() {
-			for (a in myCharacterData.animations)
-				a.offsets[1] = Std.int(a.offsets[1] * offsetStepper.value);
-
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			refreshCharAnims();
-		}
-		tabGroupOffsets.add(offsetScaleY);
-
-		var offsetZero:TextButton = new TextButton(10, offsetScaleY.y + 30, 230, 20, "Set current to 0");
-		offsetZero.onClicked = function() {
-			var offX:Int = myCharacterData.animations[curCharAnim].offsets[0];
-			var offY:Int = myCharacterData.animations[curCharAnim].offsets[1];
-			for (a in myCharacterData.animations)
+		var topmenu:TopMenu;
+		topmenu = new TopMenu([
 			{
-				a.offsets[0] -= offX;
-				a.offsets[1] -= offY;
+				label: "File",
+				options: [
+					{
+						label: "New",
+						action: function() { _confirm("make a new character", _new); },
+						shortcut: [FlxKey.CONTROL, FlxKey.N],
+						icon: "new"
+					},
+					{
+						label: "Open",
+						action: function() { _confirm("load another character", _open); },
+						shortcut: [FlxKey.CONTROL, FlxKey.O],
+						icon: "open"
+					},
+					{
+						label: "Save",
+						action: function() { _save(false); },
+						shortcut: [FlxKey.CONTROL, FlxKey.S],
+						icon: "save"
+					},
+					{
+						label: "Save As...",
+						action: function() { _save(true); },
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.S],
+						icon: "save"
+					},
+					null,
+					{
+						label: "Exit",
+						action: function() { _confirm("exit", function() { FlxG.switchState(new EditorMenuState()); }); },
+						shortcut: [FlxKey.ESCAPE]
+					}
+				]
+			},
+			{
+				label: "Edit",
+				options: [
+					{
+						label: "Undo",
+						action: undo,
+						shortcut: [FlxKey.CONTROL, FlxKey.Z],
+						icon: "undo"
+					},
+					{
+						label: "Redo",
+						action: redo,
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.Z],
+						icon: "redo"
+					},
+					null,
+					{
+						label: "Lock Click & Dragging",
+						condition: function() { return posLocked; },
+						action: function() { posLocked = !posLocked; },
+						shortcut: [FlxKey.CONTROL, FlxKey.L],
+						icon: "bullet"
+					}
+				]
+			},
+			{
+				label: "View",
+				options: [
+					{
+						label: "Information Panel",
+						condition: function() { return members.contains(infoBox); },
+						action: function() {
+							if (members.contains(infoBox))
+								remove(infoBox, true);
+							else
+								insert(members.indexOf(topmenu), infoBox);
+						},
+						icon: "bullet"
+					},
+					{
+						label: "Animations Panel",
+						condition: function() { return members.contains(charAnims); },
+						action: function() {
+							if (members.contains(charAnims))
+								remove(charAnims, true);
+							else
+								insert(members.indexOf(topmenu), charAnims);
+						},
+						icon: "bullet"
+					}
+				]
+			},
+			{
+				label: "Tab",
+				options: tabOptions
 			}
-			myCharacterData.position[0] -= offX;
-			myCharacterData.position[1] -= offY;
+		]);
+		topmenu.cameras = [camHUD];
+		add(topmenu);
 
-			resetCharPosition();
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			refreshCharAnims();
-		}
-		tabGroupOffsets.add(offsetZero);
-
-		tabMenu.addGroup(tabGroupOffsets);
-
-
-
-		var tabGroupHelp = new TabGroup();
-
-		var help:String = Paths.text("helpText").replace("\r","").split("!CharacterEditor\n")[1].split("\n\n")[0];
-		var helpText:FlxText = new FlxText(10, 10, 230, help + "\n", 12);
-		helpText.color = FlxColor.BLACK;
-		helpText.font = "VCR OSD Mono";
-		tabGroupHelp.add(helpText);
-
-		tabMenu.addGroup(tabGroupHelp);
+		dataLog = [Cloner.clone(characterData)];
 	}
 
 	override public function update(elapsed:Float)
 	{
-		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.S)
-			saveCharacter();
+		mousePos.x = FlxG.mouse.x;
+		mousePos.y = FlxG.mouse.y;
+
+		if (FlxG.mouse.justMoved)
+		{
+			if (posLocked)
+				UIControl.cursor = MouseCursor.ARROW;
+			else 
+			{
+				UIControl.cursor = MouseCursor.ARROW;
+				if (character.pixelsOverlapPoint(mousePos, 128, camGame))
+					UIControl.cursor = MouseCursor.HAND;
+			}
+		}
+
+		if (!pauseUndo && !DeepEquals.deepEquals(characterData, dataLog[undoPosition]))
+		{
+			if (undoPosition < dataLog.length - 1)
+				dataLog.resize(undoPosition + 1);
+			dataLog.push(Cloner.clone(characterData));
+			unsaved = true;
+			undoPosition = dataLog.length - 1;
+			refreshFilename();
+		}
 
 		super.update(elapsed);
 
-		charAnims.forEachAlive(function(anim:FlxText)
-		{
-			if (FlxG.mouse.overlaps(anim, camHUD))
-			{
-				anim.borderSize = 2;
-				anim.borderColor = FlxColor.GRAY;
-			}
-			else
-			{
-				anim.borderSize = 1;
-				anim.borderColor = FlxColor.BLACK;
-			}
-		});
-
 		if (movingCharacter)
 		{
-			dragOffset[0] += FlxG.mouse.drag.x;
-			dragOffset[1] += FlxG.mouse.drag.y;
+			dragOffset[0] += FlxG.mouse.deltaX;
+			dragOffset[1] += FlxG.mouse.deltaY;
 			if (movingAnimOffset)
 			{
-				myCharacterData.animations[curCharAnim].offsets = [Std.int(dragStart[0] - dragOffset[0]), Std.int(dragStart[1] - dragOffset[1])];
-				playAnim(myCharacterData.animations[curCharAnim].name, true);
-				if (animGhost.animation.curAnim.name == myCharacterData.animations[curCharAnim].name)
-					playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-				updateCharAnim(curCharAnim);
+				characterData.animations[curCharAnim].offsets = [Std.int(dragStart[0] - dragOffset[0]), Std.int(dragStart[1] - dragOffset[1])];
+				updateOffsets();
+				refreshCharAnims();
 			}
 			else
 			{
-				if (charPosDropdown.value == "right")
-					myCharacterData.position = [Std.int(dragStart[0] - dragOffset[0]), Std.int(dragStart[1] + dragOffset[1])];
-				else
-					myCharacterData.position = [Std.int(dragStart[0] + dragOffset[0]), Std.int(dragStart[1] + dragOffset[1])];
-				resetCharPositionForMenuCharacter();
-				myCharacter.y = myCharacterData.position[1] + charPosOffset[1];
-				animGhost.setPosition(myCharacter.x, myCharacter.y);
+				characterData.position = [Std.int(dragStart[0] + dragOffset[0]), Std.int(dragStart[1] + dragOffset[1])];
+				resetCharPosition();
 			}
 
 			if (Options.mouseJustReleased())
+			{
+				pauseUndo = false;
 				movingCharacter = false;
+			}
 		}
 		else
 		{
 			if (Options.mouseJustPressed())
 			{
-				var clickedOne:Bool = false;
-				var i:Int = 0;
-				charAnims.forEachAlive(function(anim:FlxText)
-				{
-					if (FlxG.mouse.overlaps(anim, camHUD))
-					{
-						var animData:CharacterAnimation = myCharacterData.animations[i];
-						if (animData != null)
-						{
-							playAnim(animData.name, true);
-							animName.text = animData.name;
-							animPrefix.text = animData.prefix;
-							if (animData.indices != null && animData.indices.length > 0)
-								animIndices.text = Character.compactIndices(animData.indices).join(",");
-							else
-								animIndices.text = "";
-							animLooped.checked = animData.loop;
-							animFPS.value = animData.fps;
-						}
-						clickedOne = true;
-					}
-					i++;
-				});
-
-				if (clickedOne)
-					refreshCharAnims();
-
-				if (!posLocked.checked && !clickedOne && !FlxG.mouse.overlaps(tabMenu, camHUD))
+				if (!posLocked && UIControl.cursor == MouseCursor.HAND && !FlxG.mouse.overlaps(tabMenu, camHUD) && (!members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox, camHUD)) && (!members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, camHUD)))
 				{
 					movingAnimOffset = FlxG.keys.pressed.SHIFT;
-					if (myCharacterData.animations.length <= 0)
+					if (characterData.animations.length <= 0)
 						movingAnimOffset = false;
 
 					movingCharacter = true;
+					pauseUndo = true;
 					if (movingAnimOffset)
-						dragStart = Reflect.copy(myCharacterData.animations[curCharAnim].offsets);
+						dragStart = Reflect.copy(characterData.animations[curCharAnim].offsets);
 					else
-						dragStart = Reflect.copy(myCharacterData.position);
+						dragStart = Reflect.copy(characterData.position);
 					dragOffset = [0, 0];
 				}
 			}
-			else if (Options.mouseJustPressed(true))
-			{
-				charAnims.forEachAlive(function(anim:FlxText)
-				{
-					if (FlxG.mouse.overlaps(anim, camHUD))
-					{
-						var animationName:String = anim.text.split(" ")[0];
-						if (animationName == ">")
-							animationName = anim.text.split(" ")[1];
-						playAnim(animationName, true, true);
-					}
-				});
-			}
 		}
 
-		if (FlxG.keys.justPressed.UP && FlxG.keys.pressed.CONTROL)
-		{
-			listOffset++;
-			listOffset = Std.int(Math.min(listOffset, myCharacterData.animations.length - 1));
-
-			for (i in 0...charAnims.members.length)
-				updateCharAnim(i);
-		}
-
-		if (FlxG.keys.justPressed.DOWN && FlxG.keys.pressed.CONTROL)
-		{
-			listOffset--;
-			listOffset = Std.int(Math.max(listOffset, 0));
-
-			for (i in 0...charAnims.members.length)
-				updateCharAnim(i);
-		}
-
-		if (!posLocked.checked)
-		{
-			if (FlxG.keys.justPressed.LEFT)
-				doMovement(-1, 0);
-
-			if (FlxG.keys.justPressed.RIGHT)
-				doMovement(1, 0);
-
-			if (FlxG.keys.justPressed.UP && !FlxG.keys.pressed.CONTROL)
-				doMovement(0, -1);
-
-			if (FlxG.keys.justPressed.DOWN && !FlxG.keys.pressed.CONTROL)
-				doMovement(0, 1);
-		}
-
-		if (FlxG.keys.justPressed.DELETE && myCharacterData.animations.length > 0)
-		{
-			var confirm:Confirm = new Confirm(300, 100, "Are you sure you want to delete the current animation?", this);
-			confirm.yesFunc = function() {
-				deleteAnim(charAnimList[curCharAnim]);
-			}
-			confirm.cameras = [camHUD];
-		}
-
-		var posTxt:String = "Position:\n" + Std.string(myCharacterData.position);
-		if (charPositionText.text != posTxt)
-			charPositionText.text = posTxt;
+		if (FlxG.keys.justPressed.DELETE)
+			tryDeleteAnim();
 
 		var frameText:String = "Frame: ";
-		if (myCharacter.animation.curAnim != null)
-			frameText += Std.string(myCharacter.animation.curAnim.curFrame);
+		if (character.animation.curAnim != null)
+			frameText += Std.string(character.animation.curAnim.curFrame);
 		else
 			frameText += "0";
 		if (curFrameText.text != frameText)
 			curFrameText.text = frameText;
 
-		if (FlxG.keys.justPressed.ESCAPE)
-			FlxG.switchState(new EditorMenuState());
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
 	}
 
-	function reloadAsset()
+	function reloadAsset():Bool
 	{
-		var asset:String = myCharacterData.asset;
-		asset = "ui/story_characters/" + asset;
+		var asset:String = characterData.asset;
 
 		if (!Paths.imageExists(asset))
 		{
-			Application.current.window.alert("The image asset does not exist: " + Paths.imagePath(asset), "Alert");
-			FlxG.switchState(new EditorMenuState());
-			return;
+			var choices:Array<Array<Dynamic>> = [["Return", function() { FlxG.switchState(new EditorMenuState()); }], ["Browse", function() {
+				var file:FileBrowser = new FileBrowser();
+				file.loadCallback = function(fullPath:String) {
+					var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
+					if (nameArray.indexOf("images") != -1)
+					{
+						while (nameArray[0] != "images")
+							nameArray.shift();
+						nameArray.shift();
+
+						var finalName = nameArray.join("/");
+						finalName = finalName.substr(0, finalName.length - 4);
+
+						changeAsset(finalName);
+					}
+				}
+				file.load("png");
+			}]];
+			new ChoiceWindow("The image asset does not exist:\n\"" + Paths.imagePath(asset) + "\"", choices);
+			return false;
 		}
 
 		allAnimData = "";
 		allAnimPrefixes = [];
 		if (Paths.sparrowExists(asset))
 		{
-			myCharacter.frames = Paths.sparrow(asset);
-			myCharacter.y = myCharacterData.position[1] + 56;
-			charPosOffset = [0, 56];
-			if (Paths.exists("images/ui/story_characters/" + myCharacterData.asset + ".txt"))
-				allAnimData = Paths.raw("images/ui/story_characters/" + myCharacterData.asset + ".txt");
+			character.frames = Paths.sparrow(asset);
+			if (Paths.exists("images/" + characterData.asset + ".txt"))
+				allAnimData = Paths.raw("images/" + characterData.asset + ".txt");
 			else
-				allAnimData = Paths.raw("images/ui/story_characters/" + myCharacterData.asset + ".xml");
-			allAnimPrefixes = Paths.sparrowAnimations("ui/story_characters/" + myCharacterData.asset);
+				allAnimData = Paths.raw("images/" + characterData.asset + ".xml");
+			allAnimPrefixes = Paths.sparrowAnimations(characterData.asset);
 			if (animPrefixDropdown != null)
 				animPrefixDropdown.valueList = allAnimPrefixes;
 		}
+
+		return true;
+	}
+
+	function changeAsset(asset:String):Bool
+	{
+		if (Paths.sparrowExists(asset))
+		{
+			characterData.asset = asset;
+			reloadAsset();
+			characterGhost.frames = character.frames;
+			reloadAnimations();
+
+			return true;
+		}
+		return false;
 	}
 
 	function reloadAnimations()
 	{
-		if (myCharacterData.animations.length > 0)
+		if (characterData.animations.length > 0)
 		{
 			var poppers:Array<CharacterAnimation> = [];
-			for (anim in myCharacterData.animations)
+			for (i in 0...characterData.animations.length)
 			{
+				var anim:CharacterAnimation = characterData.animations[i];
 				if (allAnimData.indexOf(anim.prefix) == -1)
 					poppers.push(anim);
 				else
-				{
-					if (anim.indices != null && anim.indices.length > 0)
-					{
-						myCharacter.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
-						animGhost.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
-					}
-					else
-					{
-						myCharacter.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-						animGhost.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-					}
-				}
+					reloadSingleAnimation(i);
 			}
 
 			for (p in poppers)
-				myCharacterData.animations.remove(p);
+				characterData.animations.remove(p);
+		}
+	}
+
+	function reloadSingleAnimation(a:Int)
+	{
+		if (characterData.animations.length > a)
+		{
+			var anim:CharacterAnimation = characterData.animations[a];
+			if (allAnimData.indexOf(anim.prefix) != -1)
+			{
+				if (anim.indices != null && anim.indices.length > 0)
+				{
+					character.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+					characterGhost.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+				}
+				else
+				{
+					character.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+					characterGhost.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+				}
+			}
 		}
 	}
 
 	function refreshCharacterColor()
 	{
-		if (myCharacterData.matchColor)
-			myCharacter.color = 0xFFF9CF51;
+		if (characterData.matchColor)
+			character.color = 0xFFF9CF51;
 		else
-			myCharacter.color = FlxColor.WHITE;
-		animGhost.color = myCharacter.color;
+			character.color = FlxColor.WHITE;
+		characterGhost.color = character.color;
 	}
 
 	function resetCharPosition()
 	{
-		resetCharPositionForMenuCharacter();
-		myCharacter.y = myCharacterData.position[1] + charPosOffset[1];
-		animGhost.x = myCharacter.x;
-		animGhost.y = myCharacter.y;
-	}
-
-	function resetCharPositionForMenuCharacter()
-	{
-		switch (charPosDropdown.value)
-		{
-			case "center": myCharacter.x = (FlxG.width - myCharacter.width + myCharacterData.position[0]) / 2;
-			case "right": myCharacter.x = FlxG.width - myCharacter.width - myCharacterData.position[0];
-			default: myCharacter.x = myCharacterData.position[0];
-		}
-	}
-
-	function doMovement(xDir:Int, yDir:Int)
-	{
-		if (FlxG.keys.pressed.SHIFT && myCharacterData.animations.length > 0)
-		{
-			myCharacterData.animations[curCharAnim].offsets[0] -= xDir;
-			myCharacterData.animations[curCharAnim].offsets[1] -= yDir;
-			playAnim(myCharacterData.animations[curCharAnim].name, true);
-			if (animGhost.animation.curAnim.name == myCharacterData.animations[curCharAnim].name)
-				playAnim(myCharacterData.animations[curCharAnim].name, true, true);
-			updateCharAnim(curCharAnim);
-		}
-		else
-		{
-			if (charPosDropdown.value == "right")
-				myCharacterData.position[0] -= xDir;
-			else
-				myCharacterData.position[0] += xDir;
-			myCharacterData.position[1] += yDir;
-			resetCharPosition();
-		}
+		character.x = characterData.position[0] + charPosOffset[0];
+		character.y = characterData.position[1] + charPosOffset[1];
+		characterGhost.setPosition(character.x, character.y);
 	}
 
 	function playAnim(animName:String, forced:Bool = false, ?ghost:Bool = false)
@@ -909,112 +914,215 @@ class StoryCharacterEditorState extends MusicBeatState
 		var charAnim:Int = charAnimList.indexOf(animName);
 		if (charAnim > -1)
 		{
-			var animData:CharacterAnimation = myCharacterData.animations[charAnim];
+			var animData:CharacterAnimation = characterData.animations[charAnim];
 			if (animData != null)
 			{
 				if (ghost)
 				{
-					animGhost.animation.play(animName, forced);
-					animGhost.offset.x = animData.offsets[0];
-					animGhost.offset.y = animData.offsets[1];
+					characterGhost.animation.play(animName, forced);
+					characterGhost.offset.x = animData.offsets[0];
+					characterGhost.offset.y = animData.offsets[1];
 				}
 				else
 				{
 					curCharAnim = charAnim;
-					myCharacter.animation.play(animName, forced);
-					myCharacter.offset.x = animData.offsets[0];
-					myCharacter.offset.y = animData.offsets[1];
+					charAnims.selected = curCharAnim;
+					refreshCharAnims();
+					character.animation.play(animName, forced);
+					character.offset.x = animData.offsets[0];
+					character.offset.y = animData.offsets[1];
 				}
 			}
 		}
 	}
 
+	function playCurrentAnim(?ghost:Bool = false)
+	{
+		if (ghost)
+		{
+			if (characterGhost.animation.curAnim != null)
+				playAnim(characterGhost.animation.curAnim.name, true, true);
+		}
+		else
+		{
+			if (character.animation.curAnim != null)
+				playAnim(character.animation.curAnim.name, true);
+		}
+	}
+
+	function updateOffsets()
+	{
+		if (characterData.animations.length > 0)
+		{
+			var animData:CharacterAnimation = characterData.animations[curCharAnim];
+			if (animData != null)
+			{
+				character.offset.x = animData.offsets[0];
+				character.offset.y = animData.offsets[1];
+			}
+		}
+	}
+
+	function tryDeleteAnim()
+	{
+		if (characterData.animations.length > 0)
+			new Confirm("Are you sure you want to delete the animation \"" + charAnimList[curCharAnim] + "\"?", function() { deleteAnim(charAnimList[curCharAnim]); });
+	}
+
 	function deleteAnim(animName:String)
 	{
-		var animData:CharacterAnimation = myCharacterData.animations[charAnimList.indexOf(animName)];
+		var animData:CharacterAnimation = characterData.animations[charAnimList.indexOf(animName)];
 		if (animData != null)
 		{
-			myCharacterData.animations.remove(animData);
+			characterData.animations.remove(animData);
 			if (curCharAnim >= charAnimList.length - 1)
+			{
 				curCharAnim = charAnimList.length - 2;
-			listOffset = Std.int(Math.min(listOffset, myCharacterData.animations.length - 1));
+				charAnims.selected = curCharAnim;
+			}
+			charAnims.listOffset = Std.int(Math.min(charAnims.listOffset, characterData.animations.length - 1));
 			refreshCharAnims();
 
 			firstAnimDropdown.valueList = charAnimList;
-			if (!charAnimList.contains(myCharacterData.firstAnimation))
+			if (!charAnimList.contains(characterData.firstAnimation))
 			{
-				myCharacterData.firstAnimation = charAnimList[0];
+				characterData.firstAnimation = charAnimList[0];
 				firstAnimDropdown.value = charAnimList[0];
 			}
 		}
 	}
 
-	function refreshCharAnims(forceRebuild:Bool = false)
+	function refreshCharAnimList()
 	{
-		if (charAnims.members.length != myCharacterData.animations.length || forceRebuild)
-		{
-			charAnims.forEachAlive(function(anim:FlxText)
-			{
-				anim.kill();
-				anim.destroy();
-			});
-			charAnims.clear();
-			charAnimList = [];
+		charAnimList = [];
+		for (i in 0...characterData.animations.length)
+			charAnimList.push(characterData.animations[i].name);
+	}
 
-			for (i in 0...myCharacterData.animations.length)
+	function refreshCharAnims()
+	{
+		refreshCharAnimList();
+
+		charAnims.items = [];
+		for (anim in characterData.animations)
+			charAnims.items.push(anim.name + " (" + Std.string(anim.offsets[0]) + ", " + Std.string(anim.offsets[1]) + ")");
+
+		charAnims.refreshText();
+	}
+
+	function undo()
+	{
+		if (undoPosition > 0)
+		{
+			var oldAsset:String = characterData.asset;
+			undoPosition--;
+			if (!unsaved)
 			{
-				charAnimList.push(myCharacterData.animations[i].name);
-				var txt:FlxText = new FlxText(0, 0, 0, "", 16);
-				txt.font = "VCR OSD Mono";
-				txt.borderColor = FlxColor.BLACK;
-				txt.borderStyle = OUTLINE;
-				charAnims.add(txt);
+				unsaved = true;
+				refreshFilename();
+			}
+			characterData = Cloner.clone(dataLog[undoPosition]);
+			if (characterData.asset != oldAsset)
+				changeAsset(characterData.asset);
+			postUndoRedo();
+		}
+	}
+
+	function redo()
+	{
+		if (undoPosition < dataLog.length - 1)
+		{
+			var oldAsset:String = characterData.asset;
+			undoPosition++;
+			if (!unsaved)
+			{
+				unsaved = true;
+				refreshFilename();
+			}
+			characterData = Cloner.clone(dataLog[undoPosition]);
+			if (characterData.asset != oldAsset)
+				changeAsset(characterData.asset);
+			postUndoRedo();
+		}
+	}
+
+	function postUndoRedo()
+	{
+		resetCharPosition();
+
+		character.scale.set(characterData.scale[0], characterData.scale[1]);
+		characterGhost.scale.set(characterData.scale[0], characterData.scale[1]);
+		character.updateHitbox();
+		characterGhost.updateHitbox();
+		character.antialiasing = characterData.antialias;
+		characterGhost.antialiasing = character.antialiasing;
+		character.flipX = characterData.flip;
+		characterGhost.flipX = character.flipX;
+		refreshCharacterColor();
+
+		refreshCharAnims();
+		reloadAnimations();
+
+		if (characterData.animations.length > 0)
+		{
+			playCurrentAnim();
+			if (characterGhost.animation.curAnim.name == characterData.animations[curCharAnim].name)
+				playCurrentAnim(true);
+		}
+	}
+
+
+
+	function _new()
+	{
+		var file:FileBrowser = new FileBrowser();
+		file.label = "Choose a spritesheet for your character";
+		file.loadCallback = function(fullPath:String)
+		{
+			var imageNameArray:Array<String> = fullPath.replace('\\','/').split('/');
+			if (imageNameArray.indexOf("images") == -1)
+				new Notify("The file you have selected is not a character asset.");
+			else
+			{
+				while (imageNameArray[0] != "images")
+					imageNameArray.shift();
+				imageNameArray.shift();
+
+				var finalImageName = imageNameArray.join('/').split('.png')[0];
+
+				StoryCharacterEditorState.newCharacterImage = finalImageName;
+				FlxG.switchState(new StoryCharacterEditorState(true, "", ""));
 			}
 		}
-
-		for (i in 0...charAnims.members.length)
-			updateCharAnim(i);
+		file.load("png");
 	}
 
-	function updateCharAnim(anim:Int)
+	function _open()
 	{
-		var txt:FlxText = charAnims.members[anim];
-		txt.y = 50 + ((anim - listOffset) * 25);
-		txt.text = myCharacterData.animations[anim].name + " " + Std.string(myCharacterData.animations[anim].offsets);
-		if (anim == curCharAnim)
-			txt.text = "> " + txt.text;
+		var file:FileBrowser = new FileBrowser();
+		file.loadCallback = function(fullPath:String) {
+			var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
+			if (jsonNameArray.indexOf("story_characters") == -1)
+				new Notify("The file you have selected is not a character.");
+			else
+			{
+				while (jsonNameArray[0] != "story_characters")
+					jsonNameArray.shift();
+				jsonNameArray.shift();
 
-		if (tabMenu.x > FlxG.width / 2)
-			txt.x = 20;
-		else
-			txt.x = Std.int(FlxG.width - 20 - txt.width);
-	}
+				var finalJsonName = jsonNameArray.join("/").split('.json')[0];
 
-	function changeAssetCallback(fullPath:String)
-	{
-		var imageNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (imageNameArray.contains("story_characters"))
-		{
-			while (imageNameArray[0] != "story_characters")
-				imageNameArray.remove(imageNameArray[0]);
-			imageNameArray.remove(imageNameArray[0]);
-
-			var finalImageName = imageNameArray.join('/').split('.png')[0];
-
-			myCharacterData.asset = finalImageName;
-			reloadAsset();
-			animGhost.frames = myCharacter.frames;
-			reloadAnimations();
+				FlxG.switchState(new StoryCharacterEditorState(false, finalJsonName, fullPath));
+			}
 		}
+		file.load();
 	}
 
-
-
-	function saveCharacter()
+	function _save(?browse:Bool = true)
 	{
-		var saveData:WeekCharacterData = Reflect.copy(myCharacterData);
+		var saveData:WeekCharacterData = Reflect.copy(characterData);
 		saveData.animations = [];
-		for (a in myCharacterData.animations)
+		for (a in characterData.animations)
 			saveData.animations.push(Reflect.copy(a));
 
 		if (saveData.scale[0] == 1 && saveData.scale[1] == 1)
@@ -1036,30 +1144,35 @@ class StoryCharacterEditorState extends MusicBeatState
 		if (Options.options.compactJsons)
 			data = Json.stringify(saveData);
 
-		if ((data != null) && (data.length > 0))
+		if (data != null && data.length > 0)
 		{
-			var file:FileBrowser = new FileBrowser();
-			file.saveCallback = changeCurCharacter;
-			file.save(curCharacter + ".json", data.trim());
+			if (browse || filename == "" || filename.replace("\\", "/").indexOf(id.replace("\\", "/")) == -1)
+			{
+				var file:FileBrowser = new FileBrowser();
+				file.saveCallback = changeCurCharacter;
+				file.save(id + ".json", data.trim());
+			}
+			else
+			{
+				FileBrowser.saveAs(filename, data.trim());
+				unsaved = false;
+				refreshFilename();
+			}
 		}
-	}
-
-	function loadCharacter()
-	{
-		var file:FileBrowser = new FileBrowser();
-		file.loadCallback = EditorMenuState.loadStoryCharacterCallback;
-		file.load();
 	}
 
 	function changeCurCharacter(path:String)
 	{
+		changeSaveName(path);
+
 		var jsonNameArray:Array<String> = path.replace('\\','/').split('/');
 		if (jsonNameArray.contains("story_characters"))
 		{
 			while (jsonNameArray[0] != "story_characters")
-				jsonNameArray.remove(jsonNameArray[0]);
+				jsonNameArray.shift();
+			jsonNameArray.shift();
 			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
-			curCharacter = finalJsonName;
+			id = finalJsonName;
 		}
 	}
 }

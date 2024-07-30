@@ -1,0 +1,48 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vboxscroll y="10">
+				<label text="Line:"/>
+				<hbox spacing="50">
+					<button id="previousLine" image="tabLeft" infoText="Go to the previous line of dialogue."/>
+					<label id="currentLine" text="1/1"/>
+					<button id="nextLine" image="tabRight" infoText="Go to the next line of dialogue."/>
+				</hbox>
+				<textbutton id="skipAnimation" text="Skip Animation" image="LONG" infoText="Skip to the end of the current line's letter-by-letter display."/>
+				<hbox>
+					<textbutton id="addLine" text="Add" infoText="Add a new line of dialogue after the current one."/>
+					<textbutton id="removeLine" text="Remove" infoText="Remove the current line of dialogue."/>
+				</hbox>
+				<label text="Dialogue:"/>
+				<input id="diaLine" infoText="The text that should display on the current line of dialogue."/>
+				<checkbox id="diaLineAppend" text="Append Line" infoText="If this is checked, the current line will be added to the end of the previous one instead of replacing it."/>
+				<label text="Character:"/>
+				<dropdown id="characterDropdown" blank="None" infoText="The character that should say the current line of dialogue."/>
+				<label text="Expression:"/>
+				<dropdown id="expressionDropdown" blank="None" infoText="The face that the character saying the line should make."/>
+				<label text="Character Side:"/>
+				<hbox>
+					<togglebutton id="sideLeft" text="Left" infoText="Put the character on the left side of the dialogue box."/>
+					<togglebutton id="sideRight" text="Right" infoText="Put the character on the right side of the dialogue box."/>
+				</hbox>
+			</vboxscroll>
+		</tab>
+		<tab name="Attributes">
+			<vboxscroll y="10">
+				<textbutton id="bgColor" text="Background Color" image="LONG" infoText="The color of the solid background behind the dialogue."/>
+				<stepper id="bgAlpha" text="Background Alpha:" step="0.05" min="0" max="1" decimals="3" infoText="The transparency of the solid background behind the dialogue."/>
+				<stepper id="fadeInTime" text="Fade In Time:" step="0.05" min="0" decimals="3" infoText="The amount of time it takes the background to fade in, in seconds."/>
+				<stepper id="fadeOutTime" text="Fade Out Time:" step="0.05" min="0" decimals="3" infoText="The amount of time it takes the dialogue to fade out, in seconds."/>
+				<label text="Box:"/>
+				<dropdown id="boxDropdown" infoText="The box that should be shown on the current line of dialogue."/>
+				<label text="Box Style:"/>
+				<dropdown id="moodDropdown" infoText="The style the dialogue box should use on the current line of dialogue."/>
+				<stepper id="rateStepper" text="Text Rate:" step="0.01" min="0" decimals="3" infoText="How fast the dialogue should show. A higher number means the dialogue shows slower."/>
+				<label text="Music:"/>
+				<dropdown id="musicDropdown" allowSearch="true" infoText="The music that should start on the current line of dialogue, or &quot;none&quot; to stop the music."/>
+				<stepper id="musicVolumeStepper" text="Volume:" step="0.05" min="0" max="1" decimals="3" infoText="The volume the music should play at."/>
+				<stepper id="musicTimeStepper" text="Fade Time:" step="0.05" min="0" decimals="3" infoText="The time it takes to fade the music in or out, in seconds."/>
+			</vboxscroll>
+		</tab>
+	</tabmenu>
+</root>

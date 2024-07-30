@@ -31,6 +31,9 @@ class FlxAnimate extends FlxSprite
 	 * When ever the animation is playing.
 	 */
 	public var isPlaying(default, null):Bool = false;
+	public var curAnim:String = "";
+	public var curAnimX:Float = 0;
+	public var curAnimY:Float = 0;
 
 	public var anim(default, null):FlxAnim;
 	
@@ -105,8 +108,8 @@ class FlxAnimate extends FlxSprite
 			anim.scale = scale;
 			anim.antialiasing = antialiasing;
 			anim.cameras = cameras;
-			anim.x = x;
-			anim.y = y;
+			anim.x = x - offset.x + curAnimX;
+			anim.y = y - offset.y + curAnimY;
 			anim.scrollFactor = scrollFactor;
 			anim.xFlip = flipX;
 			anim.yFlip = flipY;
@@ -135,8 +138,11 @@ class FlxAnimate extends FlxSprite
 			timeline = (curThing != null || curThing.timeline != null) ? curThing.timeline : anim.coolParse.AN.TL;
 			if (curThing != null)
 			{
+				curAnim = Name;
 				anim.x += curThing.X;
 				anim.y += curThing.Y;
+				curAnimX = curThing.X;
+				curAnimY = curThing.Y;
 			}
 			anim.frameLength = 0;
 			for (layer in curThing.timeline.L)
@@ -217,16 +223,16 @@ class FlxAnimate extends FlxSprite
 					{
 						if (anim.curFrame <= 0)
 						{
-							onComplete();
 							isPlaying = false;
+							onComplete();
 						}
 					}
 					else
 					{
 						if (anim.curFrame >= anim.frameLength - 1)
 						{
+							isPlaying = false;
 							onComplete();
-							isPlaying = false;	
 						}
 						
 					}

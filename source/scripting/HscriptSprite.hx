@@ -50,6 +50,11 @@ class HscriptSprite extends FlxSprite
 		myScript.execFunc(func, args);
 	}
 
+	public function execFuncReturn(func:String, args:Array<Dynamic>):Dynamic
+	{
+		return myScript.execFuncReturn(func, args);
+	}
+
 	public function setVar(vari:String, val:Dynamic)
 	{
 		myScript.setVar(vari, val);
@@ -107,6 +112,11 @@ class HscriptAnimatedSprite extends AnimatedSprite
 		myScript.execFunc(func, args);
 	}
 
+	public function execFuncReturn(func:String, args:Array<Dynamic>):Dynamic
+	{
+		return myScript.execFuncReturn(func, args);
+	}
+
 	public function setVar(vari:String, val:Dynamic)
 	{
 		myScript.setVar(vari, val);
@@ -126,10 +136,15 @@ class HscriptSpriteGroup extends FlxSpriteGroup
 	{
 		super();
 
-		myScript = new HscriptHandler("data/scripts/FlxSpriteGroup/" + script);
+		myScript = new HscriptHandler("data/scripts/FlxSpriteGroup/" + script, false);
 		myScript.setVar("this", this);
 		if (Std.isOfType(FlxG.state, PlayState))
 			myScript.setVar("game", PlayState.instance);
+
+		myScript.setVar("add", add);
+		myScript.setVar("insert", insert);
+		myScript.setVar("remove", remove);
+
 		myScript.execFunc("new", parameters);
 	}
 
@@ -160,6 +175,11 @@ class HscriptSpriteGroup extends FlxSpriteGroup
 	public function execFunc(func:String, args:Array<Dynamic>)
 	{
 		myScript.execFunc(func, args);
+	}
+
+	public function execFuncReturn(func:String, args:Array<Dynamic>):Dynamic
+	{
+		return myScript.execFuncReturn(func, args);
 	}
 
 	public function setVar(vari:String, val:Dynamic)

@@ -1,0 +1,6 @@
+limoRide|limo
+mainStage|stage
+mallXmas|mall
+phillyTrain|philly
+spookyMansion|spooky
+tankmanBattlefield|tank

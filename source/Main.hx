@@ -15,16 +15,22 @@ import sys.io.File;
 
 class Main extends Sprite
 {
-	static var fps_mem_shadow:FPS_Mem;
-	static var fps_mem:FPS_Mem;
+	static var fps_mems:Array<FPS_Mem> = [];
 	public static var fpsVisible(default, set):Bool = true;
-	public static var screenshotKeys:Array<FlxKey> = [FlxKey.F1];
+	public static var fpsOnRight(default, set):Bool = false;
+	public static var windowTitle:String = "Friday Night Funkin: Restructure Engine";
+	public static var screenshotKeys:Array<FlxKey> = [FlxKey.F3];
+	public static var fullscreenKeys:Array<FlxKey> = [FlxKey.F11];
 
 	public function new()
 	{
 		super();
 
+		FlxG.fixedTimestep = false;
+
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onCrash);
+
+		Application.current.window.onClose.add(onClose);
 
 		var game:FlxGame = new FlxGame(0, 0, VersionCheckerState, 1, 120, 120, true, false);
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, takeScreenshot);
@@ -32,18 +38,29 @@ class Main extends Sprite
 		game._customSoundTray = FunkSoundTray;
 		addChild(game);
 
-		fps_mem_shadow = new FPS_Mem(11, 11, 0x000000);
-		fps_mem = new FPS_Mem(10, 10, 0xffffff);
+		fps_mems.push(new FPS_Mem(11, 11, 0x000000));
+		fps_mems.push(new FPS_Mem(9, 11, 0x000000));
+		fps_mems.push(new FPS_Mem(11, 9, 0x000000));
+		fps_mems.push(new FPS_Mem(9, 9, 0x000000));
+		fps_mems.push(new FPS_Mem(10, 10, 0xffffff));
 
-		addChild(fps_mem_shadow);
-		addChild(fps_mem);
+		for (f in fps_mems)
+			addChild(f);
 	}
 
 	public static function set_fpsVisible(val:Bool):Bool
 	{
 		fpsVisible = val;
-		fps_mem.visible = val;
-		fps_mem_shadow.visible = val;
+		for (f in fps_mems)
+			f.visible = val;
+		return val;
+	}
+
+	public static function set_fpsOnRight(val:Bool):Bool
+	{
+		fpsOnRight = val;
+		for (f in fps_mems)
+			f.onRight = val;
 		return val;
 	}
 
@@ -77,6 +94,20 @@ class Main extends Sprite
 			var screen = Application.current.window.readPixels(new Rectangle(0, 0, Application.current.window.width, Application.current.window.height));
 			var screenBytes = screen.encode();
 			File.saveBytes(getScreenshotName(), screenBytes);
+			FlxG.sound.play(Paths.sound("ui/screenshot"));
+		}
+		else if (fullscreenKeys.contains(_key))
+			FlxG.fullscreen = !FlxG.fullscreen;
+	}
+
+	public static var onCloseCallback:Void->Bool = null;
+	function onClose()
+	{
+		if (onCloseCallback != null)
+		{
+			var ret = onCloseCallback();
+			if (ret)
+				Application.current.window.onClose.cancel();
 		}
 	}
 

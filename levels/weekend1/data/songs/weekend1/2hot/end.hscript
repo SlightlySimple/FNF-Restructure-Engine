@@ -1,0 +1,35 @@
+function create()
+{
+	if (PlayState.inStoryMode)
+		game.canEndSong = false;
+	game.hscriptAdd("video");
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		game.hscriptIdExec("video", "playVideo", ["2hotCutscene", true]);
+		black = game.hscriptIdGet("video", "black");
+		black.alpha = 0.001;
+		videoSprite = game.hscriptIdGet("video", "videoSprite");
+		videoSprite.alpha = 0.001;
+
+		FlxTween.tween(game.camHUD, {alpha: 0}, 0.5);
+
+		new FlxTimer().start(1, function(tmr) {
+			FlxTween.tween(game.camFollow, {x: 1539, y: 833.5}, 2, {ease: FlxEase.quadInOut});
+			FlxTween.tween(game.camFollowPos, {x: 1539, y: 833.5}, 2, {ease: FlxEase.quadInOut});
+			FlxTween.tween(FlxG.camera, {zoom: 0.69}, 2, {ease: FlxEase.quadInOut});
+		});
+
+		new FlxTimer().start(0.5, function(tmr) { game.gf.dance(); }, 10);
+		new FlxTimer().start(2, function(tmr) { game.player1.playAnim("intro1", true, true); });
+		new FlxTimer().start(2.5, function(tmr) { game.player2.playAnim("pissed", true, true); });
+
+		new FlxTimer().start(5.6, function(tmr) {
+			black.alpha = 1;
+			videoSprite.alpha = 1;
+		});
+	}
+}

@@ -4,6 +4,11 @@ import flixel.FlxG;
 import flixel.FlxSubState;
 import flixel.text.FlxText;
 import game.PlayState;
+import menus.MainMenuState;
+import editors.BaseEditorState;
+import newui.UIControl;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 
 using StringTools;
 
@@ -94,6 +99,8 @@ class HscriptSubState extends FlxSubState
 		super();
 
 		instance = this;
+		if (Std.isOfType(FlxG.state, MainMenuState))
+			MainMenuState.curSubstate = script;
 
 		if (!Paths.hscriptExists(script) && Paths.hscriptExists("data/states/" + script))
 			script = "data/states/" + script;
@@ -117,5 +124,80 @@ class HscriptSubState extends FlxSubState
 
 		if (!myScript.valid() && FlxG.keys.justPressed.BACKSPACE)
 			close();
+	}
+}
+
+class HscriptEditorState extends BaseEditorState
+{
+	public static var instance:HscriptEditorState;
+	public static var script:String = "";
+	public var myScript:HscriptHandler;
+
+	override public function new(isNew:Bool, id:String, filename:String, ?_script:String = null)
+	{
+		if (_script != null)
+			script = _script;
+		super(isNew, id, filename);
+	}
+
+	override public function create()
+	{
+		instance = this;
+
+		super.create();
+
+		if (!Paths.hscriptExists(script) && Paths.hscriptExists("data/states/" + script))
+			script = "data/states/" + script;
+		myScript = new HscriptHandler(script);
+		myScript.execFunc("create", []);
+
+		if (!myScript.valid())
+		{
+			var refreshText:FlxText = new FlxText(0, 0, FlxG.width - 100, "There was an error parsing the script.\nPress BACKSPACE to reload the state after the error has been resolved.", 32);
+			refreshText.alignment = CENTER;
+			refreshText.screenCenter();
+			add(refreshText);
+		}
+	}
+
+	override public function destroy()
+	{
+		myScript.execFunc("destroy", []);
+
+		if (MP4Handler.vlcBitmap != null && MP4Handler.vlcBitmap.isPlaying)
+			MP4Handler.vlcBitmap.stop();
+
+		super.destroy();
+	}
+
+	override public function update(elapsed:Float)
+	{
+		UIControl.cursor = MouseCursor.ARROW;
+
+		myScript.execFunc("update", [elapsed]);
+
+		if (!myScript.valid() && FlxG.keys.justPressed.BACKSPACE)
+			FlxG.switchState(new HscriptEditorState(isNew, id, filename));
+
+		super.update(elapsed);
+
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
+
+		myScript.execFunc("updatePost", [elapsed]);
+	}
+
+	override public function beatHit()
+	{
+		super.beatHit();
+
+		myScript.execFunc("beatHit", []);
+	}
+
+	override public function stepHit()
+	{
+		super.stepHit();
+
+		myScript.execFunc("stepHit", []);
 	}
 }

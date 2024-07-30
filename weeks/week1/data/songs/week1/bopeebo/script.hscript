@@ -1,8 +1,0 @@
-function beatHit()
-{
-	if (game.curBeat % 8 == 7)
-	{
-		game.player1.holdTimer = Conductor.beatLength;
-		game.player1.playAnim("hey", true);
-	}
-}

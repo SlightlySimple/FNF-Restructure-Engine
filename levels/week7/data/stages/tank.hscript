@@ -1,0 +1,8 @@
+function create()
+{
+	var clouds = stage.pieces['tankClouds'];
+	clouds.active = true;
+	clouds.x = FlxG.random.int(-700, -100);
+	clouds.y = FlxG.random.int(-20, 20);
+	clouds.velocity.x = FlxG.random.float(5, 15);
+}

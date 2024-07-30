@@ -146,8 +146,9 @@ class FlxBackdrop extends FlxSprite
 			if (_repeatX)
 			{
 				_ppoint.x = ((x - offset.x - camera.scroll.x * scrollFactor.x) % ssw);
+				_ppoint.x -= ssw;
 
-				if (_ppoint.x > 0)
+				if (_ppoint.x > -ssw)
 					_ppoint.x -= ssw;
 			}
 			else
@@ -159,8 +160,9 @@ class FlxBackdrop extends FlxSprite
 			if (_repeatY)
 			{
 				_ppoint.y = ((y - offset.y - camera.scroll.y * scrollFactor.y) % ssh);
+				_ppoint.y -= ssh;
 
-				if (_ppoint.y > 0)
+				if (_ppoint.y > -ssh)
 					_ppoint.y -= ssh;
 			}
 			else
@@ -231,9 +233,9 @@ class FlxBackdrop extends FlxSprite
 		var frameBitmap:BitmapData = null;
 
 		if (_repeatX)
-			w += FlxG.width;
+			w += (ssw * 2) + FlxG.width;
 		if (_repeatY)
-			h += FlxG.height;
+			h += (ssh * 2) + FlxG.height;
 
 		if (FlxG.renderBlit)
 		{

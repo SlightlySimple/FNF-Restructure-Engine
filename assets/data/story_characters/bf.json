@@ -1,1 +1,1 @@
-{"asset":"BF","position":[-120,-5],"scale":[0.9,0.9],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"animations":[{"offsets":[0,0],"prefix":"BF Dance","name":"idle"},{"offsets":[0,0],"prefix":"BF Hey","name":"hey"}],"idles":["idle"]}
+{"asset":"ui/story/characters/BF","position":[0,0],"scale":[0.9,0.9],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"animations":[{"offsets":[0,0],"prefix":"BF Dance","name":"idle"},{"offsets":[0,5],"prefix":"BF Hey","name":"hey"}],"idles":["idle"]}

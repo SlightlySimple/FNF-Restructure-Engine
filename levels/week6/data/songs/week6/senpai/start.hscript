@@ -1,0 +1,23 @@
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		lunchbox = new FlxSound().loadEmbedded(Paths.music("week6/Lunchbox"), true, true);
+		FlxG.sound.list.add(lunchbox);
+		lunchbox.volume = 0;
+		lunchbox.play();
+		lunchbox.fadeIn(1, 0, 0.8);
+
+		var black = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
+		black.scrollFactor.set();
+		add(black);
+
+		var dialogue = new Dialogue("dialogue");
+		FlxTween.tween(black, {alpha: 0}, 2.1, {ease: Util.pixelEase(6), onComplete: function(twn) { add(dialogue); remove(black, true); }});
+	}
+}
+
+function onDialogueFinished()
+{
+	lunchbox.fadeOut(2.2, 0);
+}

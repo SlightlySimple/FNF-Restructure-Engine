@@ -1,0 +1,100 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vbox y="10">
+				<vbox spacing="0">
+					<label text="Image File:"/>
+					<hbox>
+						<input id="characterAsset" width="200" infoText="The file path of the portrait's sprite sheet."/>
+						<button id="loadAssetButton" image="buttonLoad" infoText="Browse for a sprite sheet."/>
+					</hbox>
+				</vbox>
+				<label text="Position:"/>
+				<hbox>
+					<stepper id="charX" text="X:" step="5" infoText="The horizonal position of the portrait."/>
+					<stepper id="charY" text="Y:" step="5" infoText="The vertical position of the portrait."/>
+				</hbox>
+				<label text="Scale:"/>
+				<hbox>
+					<stepper id="scaleStepperX" text="X:" step="0.05" min="0" decimals="3" infoText="How much the portrait is stretched horizontally."/>
+					<stepper id="scaleStepperY" text="Y:" step="0.05" min="0" decimals="3" infoText="How much the portrait is stretched vertically."/>
+				</hbox>
+				<checkbox id="antialiasCheckbox" text="Antialiasing" infoText="Whether the character is smoothed out. Disable this for pixel portraits."/>
+				<checkbox id="flipCheckbox" text="Flip X" infoText="Whether the portrait is flipped horizontally. Does not affect offsets."/>
+			</vbox>
+		</tab>
+		<tab name="Guides">
+			<vbox y="10">
+				<label text="Dialogue Box:"/>
+				<dropdown id="boxType" allowSearch="true" infoText="The dialogue box that should be shown in front of the character."/>
+				<checkbox id="showOtherAnimGhost" text="Other Portrait Ghost" infoText="Shows a transparent version of another portrait to align the current portrait to."/>
+				<stepper id="otherGhostAlpha" text="Transparency:" min="0" max="1" step="0.05" decimals="2" infoText="How see-through the other portrait ghost should be."/>
+				<label text="Portrait:"/>
+				<dropdown id="otherGhostDropdown" allowSearch="true" infoText="The portrait used for the other portrait ghost."/>
+				<label text="Animation:"/>
+				<dropdown id="otherGhostAnimDropdown" allowSearch="true" infoText="The animation that the other portrait ghost should play."/>
+			</vbox>
+		</tab>
+		<tab name="Expressions">
+			<vbox y="10">
+				<dropdown id="expressionDropdown" infoText="The current expression to modify."/>
+				<label text="Expression Name:"/>
+				<input id="expressionName"/>
+				<label text="Enter:"/>
+				<dropdown id="expressionEnterAnim" blank="None" infoText="The animation (if any) this expression should play when the portrait enters the dialogue."/>
+				<label text="Talk:"/>
+				<dropdown id="expressionTalkAnim" blank="None" infoText="The animation (if any) this expression should use when the dialogue is still being typed."/>
+				<label text="Idle:"/>
+				<dropdown id="expressionIdleAnim" infoText="The animation this expression should play by default."/>
+				<textbutton id="addExpressionButton" text="Add/Update Expression" image="LONG" infoText="Add a new expression to the portrait, or replace an expression with the same name."/>
+				<textbutton id="removeExpressionButton" text="Remove Expression" image="LONG" infoText="Remove the currently selected expression from the portrait."/>
+			</vbox>
+		</tab>
+		<tab name="Animations">
+			<vbox y="10">
+				<label text="Animation Name:"/>
+				<input id="animName"/>
+				<label text="Prefix:"/>
+				<dropdown id="idlePrefix" infoText="The name of the animation as it appears in the sprite sheet."/>
+				<label text="Indices:"/>
+				<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the prefix to use."/>
+				<textbutton id="allIndices" text="All Indices" image="LONG" infoText="Automatically fill in the above field with all indices in the current prefix."/>
+				<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the portrait, or replace an animation with the same name."/>
+				<textbutton id="removeAnimButton" text="Remove Animation" image="LONG" infoText="Remove the currently selected animation from the portrait."/>
+			</vbox>
+		</tab>
+		<tab name="Anim. Properties">
+			<vbox y="10">
+				<label text="Offsets:"/>
+				<hbox>
+					<stepper id="idleOffsetX" text="X:" infoText="The horizontal position of this animation."/>
+					<stepper id="idleOffsetY" text="Y:" infoText="The vertical position of this animation."/>
+				</hbox>
+				<hbox>
+					<checkbox id="idleLoop" text="Loop" infoText="Whether the animation should repeat itself forever."/>
+					<stepper id="idleFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+				</hbox>
+			</vbox>
+		</tab>
+		<tab name="Transitions">
+			<vbox y="10">
+				<label text="Enter:"/>
+				<hbox>
+					<stepper id="enterX" text="X:" step="5" infoText="The horizonal offset the portrait starts at when entering."/>
+					<stepper id="enterY" text="Y:" step="5" infoText="The vertical offset the portrait starts at when entering."/>
+				</hbox>
+				<stepper id="enterAlpha" text="Alpha:" step="0.05" min="0" max="1" decimals="3" infoText="The transparency the portrait starts at when entering."/>
+				<textbutton id="enterEase" text="Ease" image="buttonPopupMenu" infoText="The ease used by the transition."/>
+				<stepper id="enterTime" text="Time:" default="0.3" min="0" step="0.05" decimals="3" infoText="The amount of time it takes the transition to play, in seconds."/>
+				<label text="Exit:"/>
+				<hbox>
+					<stepper id="exitX" text="X:" step="5" infoText="The horizonal offset the portrait starts at when entering."/>
+					<stepper id="exitY" text="Y:" step="5" infoText="The vertical offset the portrait starts at when entering."/>
+				</hbox>
+				<stepper id="exitAlpha" text="Alpha:" step="0.05" min="0" max="1" decimals="3" infoText="The transparency the portrait starts at when entering."/>
+				<textbutton id="exitEase" text="Ease" image="buttonPopupMenu" infoText="The ease used by the transition."/>
+				<stepper id="exitTime" text="Time:" default="0.3" min="0" step="0.05" decimals="3" infoText="The amount of time it takes the transition to play, in seconds."/>
+			</vbox>
+		</tab>
+	</tabmenu>
+</root>

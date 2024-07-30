@@ -1,0 +1,120 @@
+gunCocked = false;
+
+function create()
+{
+	black = new FlxSprite().makeGraphic(2000, 2000, FlxColor.BLACK);
+	black.screenCenter();
+	black.scrollFactor.set();
+	black.alpha = 0;
+	if (game.stage.pieces["phillyForeground"] != null)
+		insert(game.members.indexOf(game.stage.pieces["phillyForeground"]) + 1, black);
+
+	spraycanPile = game.stage.pieces['SpraycanPile'];
+
+	if (spraycanPile != null)
+	{
+		newCan = new FlxAnimate(spraycanPile.x - 430, spraycanPile.y - 840, Paths.atlas("weekend1/spraycanAtlas"));
+		newCan.anim.addByFrameName('Can Start', 'Can Start', 24);
+		newCan.anim.addByFrameName('Can Shot', 'Can Shot', 24);
+		newCan.anim.addByFrameName('Hit Pico', 'Hit Pico', 24);
+		newCan.visible = false;
+		insert(game.members.indexOf(spraycanPile), newCan);
+
+		newCan.onComplete = function()
+		{
+			switch (newCan.curAnim)
+			{
+				case "Can Start":
+					newCan.playAnim("Hit Pico");
+
+				case "Can Shot":
+					newCan.visible = false;
+
+				case "Hit Pico":
+					game.player1.playAnim("shootMISS", true, true);
+					PlaySound('weekend1/Pico_Bonk');
+					playHitExplosion();
+					newCan.visible = false;
+			}
+		}
+	}
+
+	FlxG.sound.cache(Paths.sound('weekend1/Gun_Prep'));
+	FlxG.sound.cache(Paths.sound('weekend1/shot1'));
+	FlxG.sound.cache(Paths.sound('weekend1/shot2'));
+	FlxG.sound.cache(Paths.sound('weekend1/shot3'));
+	FlxG.sound.cache(Paths.sound('weekend1/shot4'));
+	FlxG.sound.cache(Paths.sound('weekend1/Pico_Bonk'));
+}
+
+function onNoteSpawned(note)
+{
+	switch (note.noteType)
+	{
+		case "weekend-1-lightcan": note.hitAnim = "lightCan";
+		case "weekend-1-kickcan": note.hitAnim = "kickCan";
+		case "weekend-1-kneecan": note.hitAnim = "kneeCan";
+	}
+}
+
+function noteCanHit(note)
+{
+	if (note.noteType == "weekend-1-firegun" && !gunCocked)
+		return false;
+}
+
+function noteHit(note)
+{
+	switch (note.noteType)
+	{
+		case "weekend-1-kickcan":
+			if (spraycanPile != null)
+			{
+				newCan.visible = true;
+				newCan.playAnim("Can Start");
+			}
+
+		case "weekend-1-cockgun":
+			var picoFade = new FlxSprite(game.player1.x, game.player1.y);
+			picoFade.frames = game.player1.frames;
+			picoFade.frame = game.player1.frame;
+			picoFade.updateHitbox();
+			picoFade.alpha = 0.3;
+			insert(game.members.indexOf(game.player1), picoFade);
+			FlxTween.tween(picoFade.scale, {x: 1.3, y: 1.3}, 0.4);
+			FlxTween.tween(picoFade, {alpha: 0}, 0.4, {onComplete: function(twn) { remove(picoFade, true); }}); 
+
+			PlaySound('weekend1/Gun_Prep');
+			gunCocked = true;
+
+		case "weekend-1-firegun":
+			if (spraycanPile != null)
+				newCan.playAnim("Can Shot");
+			new FlxTimer().start(1 / 24, function(tmr) {
+				black.alpha = 0.93;
+				new FlxTimer().start(1 / 24, function(tmr) {
+					black.alpha = 0.86;
+					FlxTween.tween(black, {alpha: 0}, 1.4);
+				});
+			});
+			PlaySound('weekend1/shot' + Std.string(FlxG.random.int(1, 4)));
+			gunCocked = false;
+	}
+}
+
+function playHitExplosion()
+{
+    var explodeEZ = CreateSprite("weekend1/spraypaintExplosionEZ", spraycanPile.x - 430 + 1050, spraycanPile.y - 840 + 150);
+	explodeEZ.animation.addByPrefix("idle", "explosion round 1 short0", 24, false);
+	explodeEZ.animation.play("idle");
+
+	add(explodeEZ);
+	explodeEZ.animation.finishCallback = function(anim) { explodeEZ.kill(); }
+
+	game.health -= 50;
+	if (game.health <= 0)
+	{
+		GameOverSubState.sfx = "weekend1/fnf_loss_sfx-pico-explode";
+		GameOverSubState.gameOverMusic = "";
+	}
+}

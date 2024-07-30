@@ -1,0 +1,18 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay)
+		game.canStartCountdown = false;
+	game.hscriptAdd("cutscene");
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		game.hscriptIdExec("cutscene", "initCutscene", ["cutscene"]);
+
+		new FlxTimer().start(0.001, function(tmr) {
+			game.hscriptIdExec("cutscene", "startCutscene", []);
+		});
+	}
+}

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="checkmark.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="check0000" x="0" y="0" width="33" height="31"/>
+	<SubTexture name="check0001" x="35" y="0" width="33" height="31"/>
+	<SubTexture name="check0002" x="70" y="0" width="33" height="31"/>
+	<SubTexture name="check0003" x="105" y="0" width="33" height="31"/>
+	<SubTexture name="checked0000" x="140" y="0" width="33" height="31"/>
+	<SubTexture name="uncheck0000" x="175" y="0" width="33" height="31"/>
+	<SubTexture name="uncheck0001" x="210" y="0" width="33" height="31"/>
+	<SubTexture name="uncheck0002" x="0" y="33" width="33" height="31"/>
+	<SubTexture name="uncheck0003" x="35" y="33" width="33" height="31"/>
+	<SubTexture name="unchecked0000" x="70" y="33" width="33" height="31"/>
+</TextureAtlas>

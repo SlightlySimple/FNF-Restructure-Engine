@@ -1,208 +1,217 @@
 {
-	"label": "#optionsCatControls",
+	"label": "#options.category.controls",
 	"contents": [
 		{
 			"type": "function",
-			"label": "#optionsNameResetControls",
-			"description": "#optionsDescResetControls",
+			"label": "#options.controls.resetControls.name",
+			"description": "#options.controls.resetControls.desc",
 			"variable": "resetControls"
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameAltMouse",
-			"description": "#optionsDescAltMouse",
+			"label": "#options.controls.altMouse.name",
+			"description": "#options.controls.altMouse.desc",
 			"variable": "altMouse",
 			"defValue": false
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatNotes"
+			"label": "#options.controls.subCategory.notes"
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameLeft",
+			"label": "#options.controls.note_left.name",
 			"description": "",
 			"variable": "note_left",
 			"defValue": ["A", "LEFT"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameDown",
+			"label": "#options.controls.note_down.name",
 			"description": "",
 			"variable": "note_down",
 			"defValue": ["S", "DOWN"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameUp",
+			"label": "#options.controls.note_up.name",
 			"description": "",
 			"variable": "note_up",
 			"defValue": ["W", "UP"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameRight",
+			"label": "#options.controls.note_right.name",
 			"description": "",
 			"variable": "note_right",
 			"defValue": ["D", "RIGHT"]
 		},
 		{
 			"type": "testKeybinds",
-			"label": "#optionsNameTestKeybinds",
-			"description": "#optionsDescTestKeybinds",
+			"label": "#options.controls.testKeybinds.name",
+			"description": "#options.controls.testKeybinds.desc",
 			"variable": "default",
 			"options": ["note_left", "note_down", "note_up", "note_right"]
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatUIControls"
+			"label": "#options.controls.subCategory.ui"
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameLeft",
+			"label": "#options.controls.ui_left.name",
 			"description": "",
 			"variable": "ui_left",
 			"defValue": ["A", "LEFT"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameDown",
+			"label": "#options.controls.ui_down.name",
 			"description": "",
 			"variable": "ui_down",
 			"defValue": ["S", "DOWN"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameUp",
+			"label": "#options.controls.ui_up.name",
 			"description": "",
 			"variable": "ui_up",
 			"defValue": ["W", "UP"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameRight",
+			"label": "#options.controls.ui_right.name",
 			"description": "",
 			"variable": "ui_right",
 			"defValue": ["D", "RIGHT"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameAccept",
+			"label": "#options.controls.ui_accept.name",
 			"description": "",
 			"variable": "ui_accept",
 			"defValue": ["ENTER", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameBack",
+			"label": "#options.controls.ui_back.name",
 			"description": "",
 			"variable": "ui_back",
 			"defValue": ["ESCAPE", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameVolUp",
+			"label": "#options.controls.vol_up.name",
 			"description": "",
 			"variable": "vol_up",
 			"defValue": ["PLUS", "NUMPADPLUS"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameVolDown",
+			"label": "#options.controls.vol_down.name",
 			"description": "",
 			"variable": "vol_down",
 			"defValue": ["MINUS", "NUMPADMINUS"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameVolMute",
+			"label": "#options.controls.mute.name",
 			"description": "",
 			"variable": "mute",
 			"defValue": ["ZERO", "NUMPADZERO"]
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatOtherGame"
+			"label": "#options.controls.subCategory.otherGame"
 		},
 		{
 			"type": "control",
-			"label": "#optionsNamePause",
+			"label": "#options.controls.pause.name",
 			"description": "",
 			"variable": "pause",
 			"defValue": ["ESCAPE", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameRestart",
+			"label": "#options.controls.restart.name",
 			"description": "",
 			"variable": "restart",
 			"defValue": ["FIVE", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameSkipIntro",
+			"label": "#options.controls.introSkip.name",
 			"description": "",
 			"variable": "introSkip",
 			"defValue": ["SPACE", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameSwapIcon",
+			"label": "#options.controls.swapIcon.name",
 			"description": "",
 			"variable": "swapIcon",
 			"defValue": ["NINE", "NONE"]
 		},
 		{
 			"type": "label",
-			"label": ""
+			"label": "#options.controls.subCategory.window"
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.fullscreen.name",
+			"description": "",
+			"variable": "fullscreen",
+			"defValue": ["F11", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.screenshot.name",
+			"description": "",
+			"variable": "screenshot",
+			"defValue": ["F3", "NONE"]
 		},
 		{
 			"type": "label",
-			"label": "#optionsSubcatOtherMenu"
+			"label": "#options.controls.subCategory.menu"
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameFullscreen",
-			"description": "",
-			"variable": "fullscreen",
-			"defValue": ["F", "NONE"]
-		},
-		{
-			"type": "control",
-			"label": "#optionsNameScreenshot",
-			"description": "",
-			"variable": "screenshot",
-			"defValue": ["F1", "NONE"]
-		},
-		{
-			"type": "control",
-			"label": "#optionsNameReset",
-			"description": "",
-			"variable": "ui_reset",
-			"defValue": ["R", "NONE"]
-		},
-		{
-			"type": "control",
-			"label": "#optionsNameEditors",
+			"label": "#options.controls.editorMenu.name",
 			"description": "",
 			"variable": "editorMenu",
 			"defValue": ["E", "NONE"]
 		},
 		{
 			"type": "control",
-			"label": "#optionsNameSandbox",
+			"label": "#options.controls.ui_reset.name",
+			"description": "",
+			"variable": "ui_reset",
+			"defValue": ["R", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.filter_left.name",
+			"description": "",
+			"variable": "filter_left",
+			"defValue": ["Q", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.filter_right.name",
+			"description": "",
+			"variable": "filter_right",
+			"defValue": ["E", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.favoriteSong.name",
+			"description": "",
+			"variable": "favoriteSong",
+			"defValue": ["F", "NONE"]
+		},
+		{
+			"type": "control",
+			"label": "#options.controls.sandbox.name",
 			"description": "",
 			"variable": "sandbox",
 			"defValue": ["CONTROL", "NONE"]

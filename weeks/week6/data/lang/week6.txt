@@ -1,7 +1,0 @@
-// Week name
-"week6"				"HATING SIMULATOR FT. MOAWLING"
-
-// Song names
-"week6/senpai"		"Senpai"
-"week6/roses"		"Roses"
-"week6/thorns"		"Thorns"

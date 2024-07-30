@@ -116,7 +116,7 @@ class TitleState extends MusicBeatState
 			checkDefaultField("story1", "story_characters/", true);
 			checkDefaultField("story2", "story_characters/", true);
 			checkDefaultField("story3", "story_characters/", true);
-			checkDefaultFieldImages("storyimage", "ui/weeks/");
+			checkDefaultFieldImages("storyimage", "ui/story/weeks/");
 		}
 
 
@@ -244,9 +244,6 @@ class TitleState extends MusicBeatState
 
 		if (myScript != null)
 			myScript.execFunc("update", [elapsed]);
-
-		if (Options.keyJustPressed("fullscreen"))
-			FlxG.fullscreen = !FlxG.fullscreen;
 
 		if ((Options.keyJustPressed("ui_accept") || Options.mouseJustPressed()) && !transitioning)
 		{

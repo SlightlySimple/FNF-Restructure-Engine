@@ -1,0 +1,5 @@
+function create()
+{
+	game.strumNotes.forEachAlive(function(note) { note.resetPosition(Options.options.downscroll, true, game.columnDivisions); });
+	game.spawnLaneBackgrounds([[game.playerColumns[0], game.playerColumns[game.playerColumns.length - 1]]]);
+}

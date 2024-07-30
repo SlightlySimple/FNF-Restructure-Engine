@@ -13,7 +13,7 @@ function analyzeParams(params)
 
 function analyzeValue(val)
 {
-	if (Std.parseFloat(val) != null)
+	if (Std.parseFloat(val) != null && !Math.isNaN(Std.parseFloat(val)))
 		return Std.parseFloat(val);
 
 	if (val == "true")

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Pico.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Pico Dance0000" x="0" y="0" width="435" height="461" frameX="-18" frameY="-13" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0001" x="0" y="0" width="435" height="461" frameX="-18" frameY="-13" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0002" x="437" y="0" width="442" height="468" frameX="-11" frameY="-6" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0003" x="437" y="0" width="442" height="468" frameX="-11" frameY="-6" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0004" x="881" y="0" width="448" height="469" frameX="-1" frameY="-6" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0005" x="1331" y="0" width="444" height="469" frameX="-1" frameY="-6" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0006" x="0" y="471" width="444" height="474" frameX="-1" frameY="-1" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0007" x="446" y="471" width="442" height="474" frameX="-1" frameY="-1" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0008" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0009" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0010" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0011" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0012" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Dance0013" x="890" y="471" width="443" height="475" frameX="0" frameY="0" frameWidth="453" frameHeight="475"/>
+	<SubTexture name="Pico Hey0000" x="1335" y="471" width="513" height="474" frameX="-2" frameY="0" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0001" x="1335" y="471" width="513" height="474" frameX="-2" frameY="0" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0002" x="0" y="948" width="488" height="473" frameX="0" frameY="-3" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0003" x="0" y="948" width="488" height="473" frameX="0" frameY="-3" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0004" x="490" y="948" width="497" height="474" frameX="0" frameY="-2" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0005" x="490" y="948" width="497" height="474" frameX="0" frameY="-2" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0006" x="490" y="948" width="497" height="474" frameX="0" frameY="-2" frameWidth="515" frameHeight="476"/>
+	<SubTexture name="Pico Hey0007" x="490" y="948" width="497" height="474" frameX="0" frameY="-2" frameWidth="515" frameHeight="476"/>
+</TextureAtlas>

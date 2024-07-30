@@ -1,6 +1,7 @@
 {
 	"noteskinOverride": "Mine",
 	"hitSound": "ANGRY",
+	"placeSound": "ANGRY",
 	"p1ShouldMiss": true,
 	"p2ShouldMiss": true,
 	"noSustains": true,

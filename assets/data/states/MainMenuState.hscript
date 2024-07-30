@@ -17,7 +17,7 @@ function create()
 	bg.scale.set(1.1, 1.1);
 	bg.updateHitbox();
 	bg.screenCenter();
-	state.add(bg);
+	add(bg);
 
 	bgFlicker = CreateSprite('ui/' + MainMenuState.menuImages[1]);
 	bgFlicker.color = MainMenuState.menuColors[1];
@@ -26,17 +26,16 @@ function create()
 	bgFlicker.updateHitbox();
 	bgFlicker.screenCenter();
 	bgFlicker.visible = false;
-	state.add(bgFlicker);
+	add(bgFlicker);
 
 	menuButtons = new UIMenu();
-	menuButtons.onIdle = function(s) { s.playAnim("idle"); s.updateHitbox(); s.screenCenter(X); };
-	menuButtons.onHover = function(s) { s.playAnim("selected"); camFollow.setPosition(s.getGraphicMidpoint().x, s.getGraphicMidpoint().y); s.updateHitbox(); s.screenCenter(X); };
+	menuButtons.onIdle = function(s) { s.playAnim("idle"); s.updateHitbox(); s.screenCenter(X); }
+	menuButtons.onHover = function(s) { s.playAnim("selected"); camFollow.setPosition(s.getGraphicMidpoint().x, s.getGraphicMidpoint().y); s.updateHitbox(); s.screenCenter(X); }
 	menuButtons.onSelected = function(s) {
 		if (Options.options.flashingLights)
 			FlxFlicker.flicker(s, 1, 0.06, false, false);
-	};
-	menuButtons.onNotSelected = function(s) { FlxTween.tween(s, {alpha: 0}, 0.4, { ease: FlxEase.quadOut, onComplete: function(twn) { s.kill(); } }); };
-	state.add(menuButtons);
+	}
+	add(menuButtons);
 
 	var yy = Std.int((FlxG.height / 2) - ((menuButtonText.length / 2) * 160));
 	var yScroll = 0.2 * Math.max(0, menuButtonText.length - 4);
@@ -54,7 +53,7 @@ function create()
 	version.font = "VCR OSD Mono";
 	version.borderColor = FlxColor.BLACK;
 	version.borderStyle = FlxTextBorderStyle.OUTLINE;
-	state.add(version);
+	add(version);
 }
 
 function onAccept()
@@ -76,13 +75,29 @@ function proceed()
 
 	if (MainMenuState.curOption >= 0 && MainMenuState.curOption < state.menuButtonText.length)
 	{
+		for (i in 0...menuButtons.members.length)
+		{
+			menuButtons.members[i].visible = true;
+			if (i != MainMenuState.curOption && state.menuButtonText[MainMenuState.curOption] != "freeplay")
+				FlxTween.tween(menuButtons.members[i], {alpha: 0}, 0.4, { ease: FlxEase.quadOut });
+		}
+
 		switch (state.menuButtonText[MainMenuState.curOption])
 		{
 			case "story_mode": FlxG.switchState(new StoryMenuState());
-			case "freeplay": FlxG.switchState(new FreeplayMenuState());
+			case "freeplay":
+				state.persistentUpdate = false;
+				state.openSubState(new FreeplayMenuSubState(true));
 			case "options": FlxG.switchState(new OptionsMenuState());
 			case "credits": FlxG.switchState(new HscriptState("CreditsMenuState"));
 			case "quit": Sys.exit(0);
 		}
 	}
+}
+
+function closeSubState()
+{
+	var state = FlxG.state;
+
+	state.nav.locked = false;
 }

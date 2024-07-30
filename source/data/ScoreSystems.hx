@@ -2,6 +2,7 @@ package data;
 
 import flixel.FlxG;
 import flixel.util.FlxSave;
+import flixel.tweens.FlxEase;
 import game.PlayState;
 
 using StringTools;
@@ -19,12 +20,21 @@ typedef PlayResults =
 	var songLength:Float;
 }
 
+typedef ScoreData =
+{
+	var score:Int;
+	var clear:Float;
+	var rank:Int;
+}
+
 class ScoreSystems
 {
 	public static var save:FlxSave;
 
 	public var notes:Array<Float> = [];
+	public var sustainMS:Float = 0;
 	public static var judgeMS:Array<Float> = [];
+	static var rankThresholds:Array<Float> = [0, 0.6, 0.8, 0.9, 1];
 
 	public var judgements:Array<Int> = [0, 0, 0, 0, 0, 0];
 	public var sustains:Int = 0;
@@ -45,15 +55,15 @@ class ScoreSystems
 
 	public var results:PlayResults;
 
-	public static var songScores:Map<String, Map<String, Array<Int>>>;
-	public static var weekScores:Map<String, Map<String, Int>>;
+	public static var songScores:Map<String, Map<String, Array<ScoreData>>>;
+	public static var weekScores:Map<String, Map<String, ScoreData>>;
 	public static var resultsArray:Array<PlayResults>;
 
 	public function new()
 	{
 		results = { hitGraph: [], songLength: 0 };
 		judgeMS = [Options.options.msMV, Options.options.msSK, Options.options.msGD, Options.options.msBD, Options.options.msSH];
-		recalculcateRating();
+		recalculateRating();
 	}
 
 	public function update(elapsed:Float)
@@ -95,10 +105,13 @@ class ScoreSystems
 		notes.push(offset);
 		npsNotes.push((Conductor.songPosition / PlayState.instance.playbackRate) + 1000);
 		var ret:Int = judgeNote(Math.abs(offset));
-		recalculcateAccuracy();
-		recalculcateScore();
-		recalculcateRating();
-		combo++;
+		recalculateAccuracy();
+		recalculateScore();
+		recalculateRating();
+		if (ret >= 4)
+			combo = 0;
+		else
+			combo++;
 		if (highestCombo < combo)
 			highestCombo = combo;
 
@@ -113,11 +126,11 @@ class ScoreSystems
 
 	public function missNote(time:Float)
 	{
-		notes.push(-360);
+		notes.push(-judgeMS[4] * 2);
 		judgeNote(-1);
-		recalculcateAccuracy();
-		recalculcateScore();
-		recalculcateRating();
+		recalculateAccuracy();
+		recalculateScore();
+		recalculateRating();
 		combo = 0;
 
 		if (time != -1)
@@ -153,45 +166,97 @@ class ScoreSystems
 		return rating;
 	}
 
-	public function recalculcateAccuracy()
+	public function recalculateAccuracy()
 	{
 		var acc:Float = 0;
-		for (i in 0...notes.length)
-			acc += 1 - (Math.abs(notes[i]) / judgeMS[4]);
+		for (note in notes)
+			acc += 1 - (Math.abs(note) / judgeMS[4]);
 		acc /= notes.length;
-		accuracy = acc * 100;
+		if (acc > 0)
+			accuracy = FlxEase.quadIn(FlxEase.sineInOut(acc)) * 100;
+		else
+			accuracy = acc * 100;
 	}
 
-	public function recalculcateScore()
+	public function recalculateScore()
 	{
-		score = (judgements[0] * 350) + (judgements[1] * 350) + (judgements[2] * 200) + (judgements[3] * 100) + (judgements[4] * 50) + (judgements[5] * -10);
+		//score = (judgements[0] * 350) + (judgements[1] * 350) + (judgements[2] * 200) + (judgements[3] * 100) + (judgements[4] * 50) + (judgements[5] * -10);
+
+		var fScore:Float = 0;
+		for (note in notes)
+		{
+			if (note < -judgeMS[4])
+				fScore -= 10;
+			else
+			{
+				var absTiming:Float = Math.abs(note);
+
+				if (absTiming < 5)
+					fScore += 500;
+				else
+				{
+					var factor:Float = 1.0 - (1.0 / (1.0 + Math.exp(-0.080 * (((absTiming / judgeMS[4]) * 160) - 54.99))));
+					fScore += 500 * factor + 9;
+				}
+			}
+		}
+		fScore += (sustainMS / 1000) * 250;
+		score = Std.int(Math.round(fScore));
 	}
 
-	public function recalculcateRating()
+	public function recalculateRating()
 	{
 		rating = ratingFromJudgements(judgements);
 	}
 
 	public static function ratingFromJudgements(j:Array<Int>):String
 	{
-		if (j[5] > 9)
-			return Lang.get("#clear");
-		if (j[5] > 0)
-			return Lang.get("#sdcb");
-		if (j[3] > 0 || j[4] > 0)
-			return Lang.get("#fc");
+		if (j[4] + j[5] > 9)
+			return "clear";
+		if (j[4] + j[5] > 0)
+			return "sdcb";
+		if (j[3] > 0)
+			return "fc";
 		if (j[2] > 0)
-			return Lang.get("#gfc");
+			return "gfc";
 		if (j[1] > 0)
-			return Lang.get("#sfc");
+			return "sfc";
 		if (j[0] > 0)
-			return Lang.get("#mfc");
-		return Lang.get("#noRating");
+			return "mfc";
+		return "none";
+	}
+
+	public static function clearFromJudgements(j:Array<Int>):Float
+	{
+		return (j[0] + j[1] + j[2]) / (j[0] + j[1] + j[2] + j[3] + j[4] + j[5]);
+	}
+
+	public static function rankFromJudgements(j:Array<Int>):Int
+	{
+		var clear:Float = clearFromJudgements(j);
+		if (clear == 1 && j[2] == 0)
+			return 5;
+
+		return rankFromClear(clear);
+	}
+
+	public static function rankFromClear(clear:Float):Int
+	{
+		var ret:Int = -1;
+		if (clear > 0)
+		{
+			for (i in 0...rankThresholds.length)
+			{
+				if (clear >= rankThresholds[i])
+					ret = i;
+			}
+		}
+		return ret;
 	}
 
 	public function writeJudgementCounter():String
 	{
-		return Lang.get("#judgements", [Std.string(judgements[0]), Std.string(judgements[1]), Std.string(judgements[2]), Std.string(judgements[3]), Std.string(judgements[4]), Std.string(sustains), Std.string(judgements[5])]);
+		return Lang.get("#game.judgements", [Std.string(judgements[0]), Std.string(judgements[1]), Std.string(judgements[2]), Std.string(judgements[3]), Std.string(judgements[4]), Std.string(sustains), Std.string(judgements[5])]);
 	}
 
 	public static function initScores()
@@ -201,19 +266,48 @@ class ScoreSystems
 
 		if (save.data.songScores == null)
 		{
-			songScores = new Map<String, Map<String, Array<Int>>>();
+			songScores = new Map<String, Map<String, Array<ScoreData>>>();
 			save.data.songScores = songScores;
 		}
 		else
+		{
 			songScores = save.data.songScores;
+			for (k in songScores.keys())
+			{
+				for (l in songScores[k].keys())
+				{
+					if (Std.isOfType(songScores[k][l][0], Int))
+					{
+						for (i in 0...songScores[k][l].length)
+						{
+							var oldScore:Int = cast songScores[k][l][i];
+							songScores[k][l][i] = {score: oldScore, clear: 0, rank: -1};
+						}
+					}
+				}
+			}
+		}
 
 		if (save.data.weekScores == null)
 		{
-			weekScores = new Map<String, Map<String, Int>>();
+			weekScores = new Map<String, Map<String, ScoreData>>();
 			save.data.weekScores = weekScores;
 		}
 		else
+		{
 			weekScores = save.data.weekScores;
+			for (k in weekScores.keys())
+			{
+				for (l in weekScores[k].keys())
+				{
+					if (Std.isOfType(weekScores[k][l], Int))
+					{
+						var oldScore:Int = cast weekScores[k][l];
+						weekScores[k][l] = {score: oldScore, clear: 0.0, rank: -1};
+					}
+				}
+			}
+		}
 
 		save.flush();
 	}
@@ -221,17 +315,17 @@ class ScoreSystems
 	public static function saveSongScore(song:String, difficulty:String, score:Int, ?songScoreIndex:Int = 0)
 	{
 		if (!songScores.exists(song.toLowerCase()))
-			songScores.set(song.toLowerCase(), new Map<String, Array<Int>>());
+			songScores.set(song.toLowerCase(), new Map<String, Array<ScoreData>>());
 
-		var songScoreMap:Map<String, Array<Int>> = songScores[song.toLowerCase()];
+		var songScoreMap:Map<String, Array<ScoreData>> = songScores[song.toLowerCase()];
 
 		if (!songScoreMap.exists(difficulty.toLowerCase()))
 			songScoreMap[difficulty.toLowerCase()] = [];
 		while (songScoreMap[difficulty.toLowerCase()].length < songScoreIndex + 1)
-			songScoreMap[difficulty.toLowerCase()].push(0);
+			songScoreMap[difficulty.toLowerCase()].push({score: 0, clear: 0, rank: -1});
 
-		if (songScoreMap[difficulty.toLowerCase()][songScoreIndex] < score)
-			songScoreMap[difficulty.toLowerCase()][songScoreIndex] = score;
+		if (songScoreMap[difficulty.toLowerCase()][songScoreIndex].score < score)
+			songScoreMap[difficulty.toLowerCase()][songScoreIndex].score = score;
 		save.data.songScores = songScores;
 		save.flush();
 	}
@@ -240,11 +334,11 @@ class ScoreSystems
 	{
 		if (songScores.exists(song.toLowerCase()))
 		{
-			var songScoreMap:Map<String, Array<Int>> = songScores[song.toLowerCase()];
+			var songScoreMap:Map<String, Array<ScoreData>> = songScores[song.toLowerCase()];
 			if (songScoreMap.exists(difficulty.toLowerCase()))
 			{
 				if (songScoreMap[difficulty.toLowerCase()].length > songScoreIndex)
-					return songScoreMap[difficulty.toLowerCase()][songScoreIndex];
+					return songScoreMap[difficulty.toLowerCase()][songScoreIndex].score;
 			}
 		}
 		return 0;
@@ -254,29 +348,68 @@ class ScoreSystems
 	{
 		if (songScores.exists(song.toLowerCase()))
 		{
-			var songScoreMap:Map<String, Array<Int>> = songScores[song.toLowerCase()];
+			var songScoreMap:Map<String, Array<ScoreData>> = songScores[song.toLowerCase()];
 			if (songScoreMap.exists(difficulty.toLowerCase()))
 			{
 				if (songScoreMap[difficulty.toLowerCase()].length > songScoreIndex)
-					songScoreMap[difficulty.toLowerCase()][songScoreIndex] = 0;
+					songScoreMap[difficulty.toLowerCase()][songScoreIndex] = {score: 0, clear: 0, rank: -1};
 			}
 		}
 		save.flush();
 	}
 
+	public static function saveSongScoreData(song:String, difficulty:String, scoreData:ScoreData, ?songScoreIndex:Int = 0)
+	{
+		if (!songScores.exists(song.toLowerCase()))
+			songScores.set(song.toLowerCase(), new Map<String, Array<ScoreData>>());
+
+		var songScoreMap:Map<String, Array<ScoreData>> = songScores[song.toLowerCase()];
+
+		if (!songScoreMap.exists(difficulty.toLowerCase()))
+			songScoreMap[difficulty.toLowerCase()] = [];
+		while (songScoreMap[difficulty.toLowerCase()].length < songScoreIndex + 1)
+			songScoreMap[difficulty.toLowerCase()].push({score: 0, clear: 0, rank: -1});
+
+		if (songScoreMap[difficulty.toLowerCase()][songScoreIndex].score < scoreData.score)
+			songScoreMap[difficulty.toLowerCase()][songScoreIndex].score = scoreData.score;
+
+		if (songScoreMap[difficulty.toLowerCase()][songScoreIndex].clear < scoreData.clear)
+			songScoreMap[difficulty.toLowerCase()][songScoreIndex].clear = scoreData.clear;
+
+		if (songScoreMap[difficulty.toLowerCase()][songScoreIndex].rank < scoreData.rank)
+			songScoreMap[difficulty.toLowerCase()][songScoreIndex].rank = scoreData.rank;
+
+		save.data.songScores = songScores;
+		save.flush();
+	}
+
+	public static function loadSongScoreData(song:String, difficulty:String, ?songScoreIndex:Int = 0):ScoreData
+	{
+		if (songScores.exists(song.toLowerCase()))
+		{
+			var songScoreMap:Map<String, Array<ScoreData>> = songScores[song.toLowerCase()];
+			if (songScoreMap.exists(difficulty.toLowerCase()))
+			{
+				if (songScoreMap[difficulty.toLowerCase()].length > songScoreIndex)
+					return Reflect.copy(songScoreMap[difficulty.toLowerCase()][songScoreIndex]);		// It has to be a copy because this is used for the results screen and freeplay menu to find out what the old score was
+			}
+		}
+		return {score: 0, clear: 0, rank: -1};
+	}
+
 	public static function saveWeekScore(week:String, difficulty:String)
 	{
 		if (!weekScores.exists(week.toLowerCase()))
-			weekScores.set(week.toLowerCase(), new Map<String, Int>());
+			weekScores.set(week.toLowerCase(), new Map<String, ScoreData>());
 
-		var weekScoreMap:Map<String, Int> = weekScores.get(week.toLowerCase());
+		var weekScoreMap:Map<String, ScoreData> = weekScores[week.toLowerCase()];
 		if (weekScoreMap.exists(difficulty.toLowerCase()))
 		{
-			if (weekScoreMap.get(difficulty.toLowerCase()) < weekScore)
-				weekScoreMap.set(difficulty.toLowerCase(), weekScore);
+			if (weekScoreMap[difficulty.toLowerCase()].score < weekScore)
+				weekScoreMap[difficulty.toLowerCase()].score = weekScore;
 		}
 		else
-			weekScoreMap.set(difficulty.toLowerCase(), weekScore);
+			weekScoreMap[difficulty.toLowerCase()] = {score: weekScore, clear: 0.0, rank: -1};
 		save.data.weekScores = weekScores;
 		save.flush();
 	}
@@ -285,8 +418,8 @@ class ScoreSystems
 	{
 		if (weekScores.exists(week.toLowerCase()))
 		{
-			if (weekScores.get(week.toLowerCase()).exists(difficulty.toLowerCase()))
-				return weekScores.get(week.toLowerCase()).get(difficulty.toLowerCase());
+			if (weekScores[week.toLowerCase()].exists(difficulty.toLowerCase()))
+				return weekScores[week.toLowerCase()][difficulty.toLowerCase()].score;
 		}
 		return 0;
 	}
@@ -295,11 +428,24 @@ class ScoreSystems
 	{
 		if (weekScores.exists(week.toLowerCase()))
 		{
-			var weekScoreMap:Map<String, Int> = weekScores.get(week.toLowerCase());
+			var weekScoreMap:Map<String, ScoreData> = weekScores[week.toLowerCase()];
 			if (weekScoreMap.exists(difficulty.toLowerCase()))
 				weekScoreMap.remove(difficulty.toLowerCase());
 		}
 		save.data.weekScores = weekScores;
 		save.flush();
+	}
+
+	public static function weekBeaten(week:String):Bool
+	{
+		if (weekScores.exists(week.toLowerCase()))
+		{
+			for (diff in weekScores[week.toLowerCase()].keys())
+			{
+				if (weekScores[week.toLowerCase()][diff].score > 0)
+					return true;
+			}
+		}
+		return false;
 	}
 }

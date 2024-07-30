@@ -1,1 +1,1 @@
-{"camFollow":[640,360],"characters":[{"position":[770,100],"camPosition":[0,0],"scrollFactor":[1,1],"flip":true},{"position":[100,100],"camPosition":[0,0],"scrollFactor":[1,1],"flip":false},{"position":[400,130],"camPosition":[0,0],"scrollFactor":[0.95,0.95],"flip":false}],"camZoom":0.9,"pieces":[]}
+{"camFollow":[660,430],"camZoom":1.1,"characters":[{"position":[780,120],"flip":true,"layer":2},{"position":[120,120],"flip":false,"layer":1},{"scrollFactor":[0.95,0.95],"position":[540,50],"flip":false,"layer":0}],"fixes":1,"pieces":[],"searchDirs":[]}

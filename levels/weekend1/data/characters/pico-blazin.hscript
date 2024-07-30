@@ -1,0 +1,350 @@
+function gameOverCreate()
+{
+	if (this == GameOverSubState.character)
+	{
+		deadCharacter = GameOverSubState.instance.deadCharacter;
+
+		picoDeathConfirm = CreateSprite('characters/pico/picoBlazinDeathConfirm', deadCharacter.x - 642, deadCharacter.y - 370);
+		picoDeathConfirm.addAnim('confirm', "Pico Gut Punch Death0", 24, false);
+		picoDeathConfirm.scale.set(1.75, 1.75);
+		picoDeathConfirm.alpha = 0.001;
+		GameOverSubState.instance.add(picoDeathConfirm);
+	}
+}
+
+function gameOverConfirm()
+{
+	if (this == GameOverSubState.character)
+	{
+		deadCharacter.visible = false;
+		picoDeathConfirm.alpha = 1;
+		picoDeathConfirm.playAnim('confirm', true);
+	}
+}
+
+
+
+cantUppercut = false;
+
+function beatHit()
+{
+	if (this.curAnimName == "idle")
+		this.playAnim('idle');
+}
+
+function noteHit(note)
+{
+	var shouldDoUppercutPrep = wasNoteHitPoorly(note) && isPlayerLowHealth() && isDarnellPreppingUppercut();
+
+	if (shouldDoUppercutPrep)
+	{
+		playPunchHighAnim();
+		return;
+	}
+
+	if (cantUppercut)
+	{
+		playBlockAnim(4);
+		cantUppercut = false;
+		return;
+	}
+
+	switch (note.noteType)
+	{
+		case "weekend-1-punchlow":
+			playPunchLowAnim();
+		case "weekend-1-punchlowblocked":
+			playPunchLowAnim();
+		case "weekend-1-punchlowdodged":
+			playPunchLowAnim();
+		case "weekend-1-punchlowspin":
+			playPunchLowAnim();
+
+		case "weekend-1-punchhigh":
+			playPunchHighAnim();
+		case "weekend-1-punchhighblocked":
+			playPunchHighAnim();
+		case "weekend-1-punchhighdodged":
+			playPunchHighAnim();
+		case "weekend-1-punchhighspin":
+			playPunchHighAnim();
+
+		case "weekend-1-blockhigh":
+			playBlockAnim(note.hitData.rating);
+		case "weekend-1-blocklow":
+			playBlockAnim(note.hitData.rating);
+		case "weekend-1-blockspin":
+			playBlockAnim(note.hitData.rating);
+
+		case "weekend-1-dodgehigh":
+			playDodgeAnim();
+		case "weekend-1-dodgelow":
+			playDodgeAnim();
+		case "weekend-1-dodgespin":
+			playDodgeAnim();
+
+		case "weekend-1-hithigh":
+			playHitHighAnim();
+		case "weekend-1-hitlow":
+			playHitLowAnim();
+		case "weekend-1-hitspin":
+			playHitSpinAnim();
+
+		case "weekend-1-picouppercutprep":
+			playUppercutPrepAnim();
+		case "weekend-1-picouppercut":
+			playUppercutAnim(true);
+
+		case "weekend-1-darnelluppercutprep":
+			playIdleAnim();
+		case "weekend-1-darnelluppercut":
+			playUppercutHitAnim();
+
+		case "weekend-1-idle":
+			playIdleAnim();
+		case "weekend-1-fakeout":
+			playFakeoutAnim();
+		case "weekend-1-taunt":
+			playTauntConditionalAnim();
+		case "weekend-1-tauntforce":
+			playTauntAnim();
+		case "weekend-1-reversefakeout":
+			playIdleAnim();
+	}
+}
+
+function noteMissed(note)
+{
+	if (isDarnellInUppercut())
+	{
+		playUppercutHitAnim();
+		return;
+	}
+
+	if (willMissBeLethal(note))
+	{
+		playHitLowAnim();
+		return;
+	}
+
+	if (cantUppercut)
+	{
+		playHitHighAnim();
+		return;
+	}
+
+	switch (note.noteType)
+	{
+		case "weekend-1-punchlow":
+			playHitLowAnim();
+		case "weekend-1-punchlowblocked":
+			playHitLowAnim();
+		case "weekend-1-punchlowdodged":
+			playHitLowAnim();
+		case "weekend-1-punchlowspin":
+			playHitSpinAnim();
+
+		case "weekend-1-punchhigh":
+			playHitHighAnim();
+		case "weekend-1-punchhighblocked":
+			playHitHighAnim();
+		case "weekend-1-punchhighdodged":
+			playHitHighAnim();
+		case "weekend-1-punchhighspin":
+			playHitSpinAnim();
+
+		case "weekend-1-blockhigh":
+			playHitHighAnim();
+		case "weekend-1-blocklow":
+			playHitLowAnim();
+		case "weekend-1-blockspin":
+			playHitSpinAnim();
+
+		case "weekend-1-dodgehigh":
+			playHitHighAnim();
+		case "weekend-1-dodgelow":
+			playHitLowAnim();
+		case "weekend-1-dodgespin":
+			playHitSpinAnim();
+
+		case "weekend-1-hithigh":
+			playHitHighAnim();
+		case "weekend-1-hitlow":
+			playHitLowAnim();
+		case "weekend-1-hitspin":
+			playHitSpinAnim();
+
+		case "weekend-1-picouppercutprep":
+			playPunchHighAnim();
+			cantUppercut = true;
+		case "weekend-1-picouppercut":
+			playUppercutAnim(false);
+
+		case "weekend-1-darnelluppercutprep":
+			playIdleAnim();
+		case "weekend-1-darnelluppercut":
+			playUppercutHitAnim();
+
+		case "weekend-1-idle":
+			playIdleAnim();
+		case "weekend-1-fakeout":
+			playHitHighAnim();
+		case "weekend-1-taunt":
+			playTauntConditionalAnim();
+		case "weekend-1-tauntforce":
+			playTauntAnim();
+		case "weekend-1-reversefakeout":
+			playIdleAnim();
+	}
+}
+
+function willMissBeLethal(note)
+{
+	return (game.health + note.typeData.healthValues.miss) <= 0;
+}
+
+function getDarnell()
+{
+	return game.player2;
+}
+
+function moveToBack()
+{
+	game.remove(this, true);
+	game.insert(game.members.indexOf(game.player2), this);
+}
+
+function moveToFront()
+{
+	game.remove(this, true);
+	game.insert(game.members.indexOf(game.player2) + 1, this);
+}
+
+function isDarnellPreppingUppercut()
+{
+	return getDarnell().curAnimName == 'uppercutPrep';
+}
+
+function isDarnellInUppercut()
+{
+	return getDarnell().curAnimName == 'uppercut' || getDarnell().curAnimName == 'uppercut-hold';
+}
+
+function wasNoteHitPoorly(note)
+{
+	if (note.hitData != null)
+		return (note.hitData.rating >= 3);
+	return false;
+}
+
+function isPlayerLowHealth()
+{
+	return PlayState.instance.health <= 30;
+}
+
+var alternate = false;
+
+function doAlternate()
+{
+	alternate = !alternate;
+	return alternate ? '1' : '2';
+}
+
+function playBlockAnim(rating)
+{
+	this.playAnim('block', true, false);
+	FlxG.camera.shake(0.002, 0.1);
+	moveToBack();
+}
+
+function playCringeAnim()
+{
+	this.playAnim('cringe', true, false);
+	moveToBack();
+}
+
+function playDodgeAnim()
+{
+	this.playAnim('dodge', true, false);
+	moveToBack();
+}
+
+function playIdleAnim()
+{
+	this.playAnim('idle', false, false);
+	moveToBack();
+}
+
+function playFakeoutAnim()
+{
+	this.playAnim('fakeout', true, false);
+	moveToBack();
+}
+
+function playUppercutPrepAnim()
+{
+	this.playAnim('uppercutPrep', true, false);
+	moveToFront();
+}
+
+function playUppercutAnim(hit)
+{
+	this.playAnim('uppercut', true, false);
+	if (hit)
+		FlxG.camera.shake(0.005, 0.25);
+	moveToFront();
+}
+
+function playUppercutHitAnim()
+{
+	this.playAnim('uppercutHit', true, false);
+	FlxG.camera.shake(0.005, 0.25);
+	moveToBack();
+}
+
+function playHitHighAnim()
+{
+	this.playAnim('hitHigh', true, false);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}
+
+function playHitLowAnim()
+{
+	this.playAnim('hitLow', true, false);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}
+
+function playHitSpinAnim()
+{
+	this.playAnim('hitSpin', true, false, true);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}
+
+function playPunchHighAnim()
+{
+	this.playAnim('punchHigh' + doAlternate(), true, false);
+	moveToFront();
+}
+
+function playPunchLowAnim()
+{
+	this.playAnim('punchLow' + doAlternate(), true, false);
+	moveToFront();
+}
+
+function playTauntConditionalAnim()
+{
+	if (this.curAnimName == "fakeout")
+		playTauntAnim();
+	else
+		playIdleAnim();
+}
+
+function playTauntAnim()
+{
+	this.playAnim('taunt', true, false);
+	moveToBack();
+}

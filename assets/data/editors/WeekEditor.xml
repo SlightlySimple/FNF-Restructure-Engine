@@ -1,0 +1,91 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vbox y="10">
+				<checkbox id="visibleInStory" text="Show in Story Mode" infoText="Whether this week should show up in the Story Mode menu."/>
+				<checkbox id="visibleInFreeplay" text="Show in Freeplay" infoText="Whether this week's songs should show up in the Freeplay menu."/>
+				<textbutton id="difficulties" text="Difficulties" image="buttonPopupMenu" infoText="The difficulties the week has. This list only affects Story Mode as songs have their own difficulty lists."/>
+				<checkbox id="startsLockedCheck" text="Starts Locked" infoText="Whether this week starts locked. Weeks can be unlocked either by completing other weeks or by scripts."/>
+				<label text="Week to Unlock:"/>
+				<dropdown id="weekToUnlockDropdown" blank="None" allowSearch="true" infoText="The week that, when beaten, will unlock this week."/>
+				<checkbox id="hiddenWhenLockedCheck" text="Hidden When Locked" infoText="If checked, this week will not show up in Story Mode or Freeplay until it is unlocked."/>
+				<checkbox id="startsLockedInFreeplayCheck" text="Starts Locked in Freeplay" infoText="Whether this week starts locked in Freeplay. The week will unlock when it is beaten in Story Mode."/>
+			</vbox>
+		</tab>
+		<tab name="Songs">
+			<vboxscroll y="10">
+				<label text="Song:"/>
+				<hbox>
+					<textbutton id="addSong" text="Add" image="SHORT" infoText="Add a new song to the list."/>
+					<textbutton id="insertSong" text="Insert" image="SHORT" infoText="Insert a new song in the list before the current one."/>
+					<textbutton id="removeSong" text="Remove" image="SHORT" infoText="Remove the currently selected song from the list."/>
+				</hbox>
+				<hbox>
+					<textbutton id="prevSong" text="Previous" infoText="Select the previous song in the list."/>
+					<textbutton id="nextSong" text="Next" infoText="Select the next song in the list."/>
+				</hbox>
+				<label text="Song Order:"/>
+				<hbox>
+					<textbutton id="moveUp" text="Move Up" infoText="Move the currently selected song earlier in the list."/>
+					<textbutton id="moveDown" text="Move Down" infoText="Move the currently selected song later in the list."/>
+				</hbox>
+				<label text="Song ID:"/>
+				<dropdown id="songDropdown" blank="None" allowSearch="true" infoText="The ID of the current song."/>
+				<label text="Icon:"/>
+				<hbox>
+					<input id="iconNewInput" width="200" infoText="The icon to show on the left side of the song in Freeplay."/>
+					<button id="loadNewIconButton" image="buttonLoad" infoText="Browse for a png of an icon."/>
+				</hbox>
+				<label text="Icon (Old Menu):"/>
+				<hbox>
+					<input id="iconInput" width="200" infoText="The icon to show on the right side of the song in the old Freeplay menu."/>
+					<button id="loadIconButton" image="buttonLoad" infoText="Browse for a png of an icon."/>
+				</hbox>
+				<textbutton id="songAlbums" text="Albums" image="buttonPopupMenu" infoText="The album to show when the song is hovered over in Freeplay. If a certain difficulty uses a different version of the song, it may be from a different album."/>
+				<label text="Title:"/>
+				<input id="songTitle" infoText="The title of the song. This should only be used if the song ID is None."/>
+				<textbutton id="songDifficulties" text="Difficulties" image="buttonPopupMenu" infoText="The difficulties the song has. In Story Mode, a song will only be part of a week if that song has the week's currently selected difficulty."/>
+				<textbutton id="songCharLabels" text="Characters" image="buttonPopupMenu" infoText="The characters in the song as they're labelled in the Freeplay Sandbox."/>
+				<label text="Custom State:"/>
+				<dropdown id="songScriptDropdown" blank="None" allowSearch="true" infoText="The scripted state to go to when this song is selected, instead of the play state."/>
+				<textbutton id="makeAutoFile" text="Make &quot;_auto&quot; file" image="LONG" infoText="Create an &quot;_auto&quot; file for the current song. When this file is saved in the same folder as the song's charts, the song will appear in the freeplay menu without being part of a week."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Story">
+			<vboxscroll y="10">
+				<label text="Week Name:"/>
+				<input id="weekName" infoText="The title of the week as it's displayed in the Story Mode menu and the results screen."/>
+				<label text="Week Button Image:"/>
+				<dropdown id="weekImageDropdown" allowSearch="true" infoText="The image used for this week in the Story Mode menu."/>
+				<label text="Week Banner:"/>
+				<dropdown id="bannerImageDropdown" blank="None" allowSearch="true" infoText="The image, if any, used for the banner when this week is selected."/>
+				<label text="Banner Color:"/>
+				<hbox spacing="50">
+					<button id="menuColor" image="buttonColorSwatch" infoText="The color used for the banner when this week is selected. Also affects any characters that are told to use the same color as the banner."/>
+					<button id="menuColorPicker" image="buttonColorPicker" infoText="Pick the color of the banner from anywhere on the screen."/>
+				</hbox>
+				<textbutton id="menuColorDefault" text="Reset to Default" image="LONG" infoText="Reset the banner color to it's default setting."/>
+				<label text="Left Character:"/>
+				<dropdown id="charDropdown0" blank="None" allowSearch="true" infoText="The character to show on the left side of the banner."/>
+				<hbox>
+					<stepper id="charOffsetX0" text="X:" step="5" infoText="The character's offset from the left side of the banner."/>
+					<stepper id="charOffsetY0" text="Y:" step="5" infoText="The character's offset from the top of the banner."/>
+				</hbox>
+				<label text="Center Character:"/>
+				<dropdown id="charDropdown1" blank="None" allowSearch="true" infoText="The character to show in the center of the banner."/>
+				<hbox>
+					<stepper id="charOffsetX1" text="X:" step="5" infoText="The character's offset from the left side of the banner."/>
+					<stepper id="charOffsetY1" text="Y:" step="5" infoText="The character's offset from the top of the banner."/>
+				</hbox>
+				<label text="Right Character:"/>
+				<dropdown id="charDropdown2" blank="None" allowSearch="true" infoText="The character to show on the right side of the banner."/>
+				<hbox>
+					<stepper id="charOffsetX2" text="X:" step="5" infoText="The character's offset from the left side of the banner."/>
+					<stepper id="charOffsetY2" text="Y:" step="5" infoText="The character's offset from the top of the banner."/>
+				</hbox>
+				<label text="Custom State:"/>
+				<dropdown id="scriptDropdown" blank="None" allowSearch="true" infoText="The scripted state to go to when this week is selected, instead of the play state."/>
+			</vboxscroll>
+		</tab>
+	</tabmenu>
+</root>

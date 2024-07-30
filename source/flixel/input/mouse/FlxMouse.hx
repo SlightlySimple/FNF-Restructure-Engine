@@ -62,7 +62,7 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	/**
 	 * Tells flixel to use the default system mouse cursor instead of custom Flixel mouse cursors.
 	 */
-	public var useSystemCursor(default, set):Bool = false;
+	public var useSystemCursor(default, set):Bool = true;
 
 	/**
 	 * Check to see if the mouse has just been moved.
@@ -70,7 +70,9 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 	 */
 	public var justMoved(get, never):Bool;
 
-	public var drag:FlxPoint = new FlxPoint();			// How much the mouse has moved in the last tick
+	public var drag:FlxPoint = new FlxPoint();
+	public var deltaX(get, never):Int;
+	public var deltaY(get, never):Int;
 
 	/**
 	 * Check to see if the left mouse button is currently pressed.
@@ -547,6 +549,12 @@ class FlxMouse extends FlxPointer implements IFlxInputManager
 
 	inline function get_justMoved():Bool
 		return _prevX != x || _prevY != y;
+
+	inline function get_deltaX():Int
+		return x - _prevX;
+
+	inline function get_deltaY():Int
+		return y - _prevY;
 
 	inline function get_pressed():Bool
 		return _leftButton.pressed;

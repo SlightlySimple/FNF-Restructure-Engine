@@ -1,0 +1,1 @@
+{"events":[[39,0],[47,1]],"eventData":[{"type":"characterPlayAnim","parameters":{"rate":1,"anim":"cheer","id":"player2"}},{"type":"characterPlayAnim","parameters":{"rate":1,"anim":"cheer","id":"player1"}}]}

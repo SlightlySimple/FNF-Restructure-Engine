@@ -1,9 +1,11 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "camera",
 			"label": "Camera",
+			"infoText": "Whether to affect the main game camera or the hud camera.",
 			"type": "dropdown",
 			"defaultValue": "main",
 			"options": ["main", "hud"]
@@ -11,6 +13,7 @@
 		{
 			"id": "alpha",
 			"label": "Opacity",
+			"infoText": "How opaque the camera should be. 1 is fully visible, and 0 is fully invisible.",
 			"type": "stepper",
 			"defaultValue": 1,
 			"min": 0,
@@ -21,17 +24,19 @@
 		{
 			"id": "time",
 			"label": "Time (Seconds)",
+			"infoText": "How long the transition to this alpha should last, in seconds. Set to 0 to instantly snap to the target alpha.",
 			"type": "stepper",
 			"time": "seconds",
 			"defaultValue": 1,
 			"min": 0,
 			"max": 9999,
-			"increment": 0.1,
+			"increment": 0.05,
 			"decimals": 3
 		},
 		{
 			"id": "init",
 			"label": "Trigger at Start",
+			"infoText": "If checked, this event will trigger when the song first loads in instead of triggering where it's placed in the song.",
 			"type": "checkbox",
 			"defaultValue": false
 		}

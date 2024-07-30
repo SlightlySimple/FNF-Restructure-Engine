@@ -1,4 +1,7 @@
 function onEvent(event)
 {
-	game.bumpCamera(event.parameters.mainZoom, event.parameters.hudZoom, event.parameters.time);
+	if (event.parameters.mode == "multiplied")
+		game.bumpCamera(game.bumpIntensityMain * game.bumpMultiplierMain * event.parameters.mainZoom, game.bumpIntensityHUD * game.bumpMultiplierHUD * event.parameters.hudZoom, event.parameters.time);
+	else
+		game.bumpCamera(event.parameters.mainZoom, event.parameters.hudZoom, event.parameters.time);
 }

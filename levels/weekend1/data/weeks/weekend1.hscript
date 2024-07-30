@@ -1,0 +1,5 @@
+function listSongNames()
+{
+	if (FlxG.state.weekNames[StoryMenuState.curWeek] == scriptId && !ScoreSystems.weekBeaten(scriptId))
+		FlxG.state.tracks.text = FlxG.state.tracks.text.substr(0, FlxG.state.tracks.text.lastIndexOf("\n"));
+}

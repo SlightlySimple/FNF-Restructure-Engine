@@ -15,6 +15,7 @@ function onEvent(event)
 
 function eventGo(event)
 {
+	var val = analyzeValue(event.parameters.value);
 	if (event.parameters.variable.indexOf(".") > 0)
 	{
 		var varSplit = event.parameters.variable.split(".");
@@ -41,30 +42,32 @@ function eventGo(event)
 		}
 
 		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
+		var final = val;
 		switch (event.parameters.operation)
 		{
-			case "add": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev + analyzeValue(event.parameters.value));
-			case "multiply": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev * analyzeValue(event.parameters.value));
-			case "divide": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev / analyzeValue(event.parameters.value));
-			default: Reflect.setProperty(affect, varSplit[varSplit.length - 1], analyzeValue(event.parameters.value));
+			case "add": final = prev + val;
+			case "multiply": final = prev * val;
+			case "divide": final = prev / val;
 		}
+		Reflect.setProperty(affect, varSplit[varSplit.length - 1], final);
 	}
 	else
 	{
 		var prev = game.hscriptIdGet(event.parameters.id, event.parameters.variable);
+		var final = val;
 		switch (event.parameters.operation)
 		{
-			case "add": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev + analyzeValue(event.parameters.value));
-			case "multiply": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev * analyzeValue(event.parameters.value));
-			case "divide": game.hscriptIdSet(event.parameters.id, event.parameters.variable, prev / analyzeValue(event.parameters.value));
-			default: game.hscriptIdSet(event.parameters.id, event.parameters.variable, analyzeValue(event.parameters.value));
+			case "add": final = prev + val;
+			case "multiply": final = prev * val;
+			case "divide": final = prev / val;
 		}
+		game.hscriptIdSet(event.parameters.id, event.parameters.variable, final);
 	}
 }
 
 function analyzeValue(val)
 {
-	if (Std.parseFloat(val) != null)
+	if (Std.parseFloat(val) != null && !Math.isNaN(Std.parseFloat(val)))
 		return Std.parseFloat(val);
 
 	if (val == "true")
@@ -78,7 +81,7 @@ function analyzeValue(val)
 
 function analyzeArrayValue(val)
 {
-	if (Std.parseInt(val) != null)
+	if (Std.parseInt(val) != null && !Math.isNaN(Std.parseInt(val)))
 		return Std.parseInt(val);
 
 	if (StringTools.startsWith(val, "\"") && StringTools.endsWith(val, "\""))

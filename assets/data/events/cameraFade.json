@@ -1,9 +1,11 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "camera",
 			"label": "Camera",
+			"infoText": "Whether to affect the main game camera or the hud camera.",
 			"type": "dropdown",
 			"defaultValue": "main",
 			"options": ["main", "hud"]
@@ -11,6 +13,7 @@
 		{
 			"id": "r",
 			"label": "Color",
+			"infoText": "The color the camera should be filled with.",
 			"type": "color",
 			"defaultValue": 255
 		},
@@ -29,6 +32,7 @@
 		{
 			"id": "alpha",
 			"label": "Alpha",
+			"infoText": "How opaque the fade should be. 255 means it starts/ends fully visible, and 0 means it starts/ends fully invisible.",
 			"type": "stepper",
 			"defaultValue": 255,
 			"min": 0,
@@ -39,6 +43,7 @@
 		{
 			"id": "duration",
 			"label": "Duration (Seconds)",
+			"infoText": "How long it takes to fade the color in or out.",
 			"type": "stepper",
 			"time": "seconds",
 			"defaultValue": 1,
@@ -50,12 +55,14 @@
 		{
 			"id": "reverse",
 			"label": "Fade Out",
+			"infoText": "If checked, the fade will start out visible and fade to being invisible. Otherwise, the fade will start invisible and fade to being visible.",
 			"type": "checkbox",
 			"defaultValue": false
 		},
 		{
 			"id": "init",
 			"label": "Trigger at Start",
+			"infoText": "If checked, this event will trigger when the song first loads in instead of triggering where it's placed in the song.",
 			"type": "checkbox",
 			"defaultValue": false
 		}

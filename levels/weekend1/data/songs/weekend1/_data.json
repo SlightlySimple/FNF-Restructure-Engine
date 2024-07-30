@@ -1,0 +1,7 @@
+{
+	"music": {
+		"pause": "weekend1/breakfast-pico",
+		"gameOver": "weekend1/gameOver-pico",
+		"gameOverEnd": "weekend1/gameOverEnd-pico"
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"parameters":
+	[
+		{
+			"id": "sound1",
+			"label": "Sound 1",
+			"type": "dropdownSpecial",
+			"defaultValue": "week4/carPass0",
+			"options": ["sounds", ".ogg"]
+		},
+		{
+			"id": "sound2",
+			"label": "Sound 2",
+			"type": "dropdownSpecial",
+			"defaultValue": "week4/carPass1",
+			"options": ["sounds", ".ogg"]
+		}
+	]
+}

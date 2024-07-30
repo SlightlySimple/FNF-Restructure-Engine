@@ -7,11 +7,14 @@ import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxColor;
+import flixel.util.FlxAxes;
 import openfl.display.BlendMode;
 import haxe.Json;
 import haxe.ds.ArraySort;
+import lime.app.Application;
 import data.ObjectData;
 import data.Options;
+import data.Song;
 import game.PlayState;
 import scripting.HscriptSprite;
 
@@ -41,6 +44,7 @@ class Stage
 		if (data.boyfriend != null)			// This is a Psych Engine stage and must be converted to the Restructure Engine format
 		{
 			sData = {
+				fixes: 1,
 				characters: [{position: data.boyfriend, camPosition: [0, 0], flip: true},
 				{position: data.opponent, camPosition: [0, 0], flip: false},
 				{position: data.girlfriend, camPosition: [0, 0], flip: false, scrollFactor: [0.95, 0.95]}],
@@ -56,6 +60,9 @@ class Stage
 
 			if (Reflect.hasField(data, "camera_opponent"))
 				sData.characters[1].camPosition = data.camera_opponent;
+
+			sData.characters[2].position[0] += 140;
+			sData.characters[2].position[1] -= 80;
 
 			if (Reflect.hasField(data, "hide_girlfriend") && Reflect.field(data, "hide_girlfriend"))
 				sData.characters.pop();
@@ -86,6 +93,10 @@ class Stage
 				sData = cast Paths.json("stages/" + TitleState.defaultVariables.stage);
 		}
 
+		if (sData.fixes == null)
+			sData.fixes = 0;
+
+		var i:Int = 0;
 		for (c in sData.characters)
 		{
 			if (c.layer == null)
@@ -102,6 +113,71 @@ class Stage
 
 			if (c.scrollFactor == null || c.scrollFactor.length < 2)
 				c.scrollFactor = [1, 1];
+
+			if (sData.fixes == 0 && i == 2)
+			{
+				sData.fixes = 1;
+				c.position[0] += 140;
+				c.position[1] -= 80;
+			}
+
+			i++;
+		}
+
+		for (p in sData.pieces)
+		{
+			if (p.visible == null)
+				p.visible = true;
+
+			if (p.scale == null)
+			{
+				p.scale = [1, 1];
+				p.updateHitbox = true;
+			}
+
+			if (p.align == null)
+				p.align = "topleft";
+
+			if (p.scrollFactor == null)
+				p.scrollFactor = [1, 1];
+
+			if (p.flip == null)
+				p.flip = [false, false];
+
+			if (p.color == null)
+				p.color = [255, 255, 255];
+
+			if (p.alpha == null)
+				p.alpha = 1;
+
+			if (p.blend == null)
+				p.blend = "normal";
+
+			if (p.tile == null)
+				p.tile = [true, true];
+
+			if (p.tileCount == null)
+				p.tileCount = [1, 1];
+
+			if (p.scriptClass != null)
+			{
+				if (p.scriptParameters == null)
+					p.scriptParameters = {};
+
+				var type:String = (p.type == "animated" ? "AnimatedSprite" : "FlxSprite");
+				if (Paths.jsonExists("scripts/" + type + "/" + p.scriptClass))
+				{
+					var pieceParams:Array<EventParams> = cast Paths.json("scripts/" + type + "/" + p.scriptClass).parameters;
+					if (pieceParams != null && pieceParams.length > 0)
+					{
+						for (param in pieceParams)
+						{
+							if (param.type != "label" && !Reflect.hasField(p.scriptParameters, param.id))
+								Reflect.setField(p.scriptParameters, param.id, param.defaultValue);
+						}
+					}
+				}
+			}
 		}
 
 		ArraySort.sort(sData.pieces, sortStagePieces);
@@ -168,6 +244,9 @@ class Stage
 
 		if (Paths.jsonExists("stages/" + stage))
 			curStage = stage;
+		else
+			Application.current.window.alert("MISSING STAGE \"" + stage + "\"", "Alert");
+
 		stageData = parseStage(curStage);
 
 		for (i in 0...stageData.pieces.length)
@@ -187,7 +266,7 @@ class Stage
 					{
 						if (FlxG.state == PlayState.instance && stagePiece.scriptClass != null && stagePiece.scriptClass != "")
 						{
-							piece = new HscriptSprite(stagePiece.scriptClass, []).loadGraphic(image(stagePiece.asset));
+							piece = new HscriptSprite(stagePiece.scriptClass, [stagePiece.scriptParameters]).loadGraphic(image(stagePiece.asset));
 							piece.setPosition(stagePiece.position[0], stagePiece.position[1]);
 						}
 						else
@@ -231,7 +310,7 @@ class Stage
 						var aPiece:AnimatedSprite = null;
 						if (FlxG.state == PlayState.instance && stagePiece.scriptClass != null && stagePiece.scriptClass != "")
 						{
-							aPiece = new HscriptAnimatedSprite(stagePiece.scriptClass, []);
+							aPiece = new HscriptAnimatedSprite(stagePiece.scriptClass, [stagePiece.scriptParameters]);
 							aPiece.frames = pieceFrames;
 							aPiece.setPosition(stagePiece.position[0], stagePiece.position[1]);
 						}
@@ -306,6 +385,16 @@ class Stage
 					else
 						piece = new FlxSprite(0, 0).makeGraphic(1, 1, FlxColor.TRANSPARENT);
 
+				case "solid":
+					piece = new FlxSprite(stagePiece.position[0], stagePiece.position[1]).makeGraphic(Std.int(stagePiece.scale[0]), Std.int(stagePiece.scale[1]), FlxColor.fromRGB(stagePiece.color[0], stagePiece.color[1], stagePiece.color[2]));
+					if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
+					{
+						piece.scrollFactor.x = stagePiece.scrollFactor[0];
+						piece.scrollFactor.y = stagePiece.scrollFactor[1];
+					}
+					piece.active = false;
+					piece.antialiasing = false;
+
 				case "group":
 					piece = new FlxSpriteGroup();
 					if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
@@ -316,7 +405,12 @@ class Stage
 			}
 			piece.pixelPerfect = stageData.pixelPerfect;
 			piece.visible = stagePiece.visible;
-			piece.antialiasing = stagePiece.antialias;
+			if (stagePiece.type != "solid")
+			{
+				piece.antialiasing = stagePiece.antialias;
+				if (stagePiece.color != null && stagePiece.color.length > 2)
+					piece.color = FlxColor.fromRGB(stagePiece.color[0], stagePiece.color[1], stagePiece.color[2]);
+			}
 			if (stagePiece.alpha != null && stagePiece.alpha != 1)
 				piece.alpha = stagePiece.alpha;
 			if (stagePiece.blend != null && stagePiece.blend != "")

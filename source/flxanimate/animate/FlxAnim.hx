@@ -9,6 +9,7 @@ import flxanimate.data.AnimationData;
 import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFrame;
 
+using StringTools;
 
 typedef Effects = {var C:ColorEffects;};
 typedef SymbolStuff = {var timeline:Timeline; var X:Float; var Y:Float; var frameRate:Float;};
@@ -70,7 +71,7 @@ class FlxAnim extends FlxSprite
 			{
 				if ([loop, "loop"].indexOf(loopType) != -1)
 				{
-					curFrame -= (frameLength - 1);
+					curFrame -= frameLength;
 				}
 				else
 				{
@@ -98,7 +99,7 @@ class FlxAnim extends FlxSprite
 						}
 						var matrix:FlxMatrix = new FlxMatrix(m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]);
 						matrix.concat(_matrix);
-						var symbol:FlxLimb = new FlxLimb(matrix.tx + x, matrix.ty + y, this);
+						var symbol:FlxLimb = new FlxLimb((matrix.tx * scale.x) + x, (matrix.ty * scale.y) + y, this);
 						symbol.colorEffect = colorEffect;
 						symbol.symbolDictionary = symbolDictionary;
 						symbol.frameLength = setSymbolLength(timeline);
@@ -158,7 +159,7 @@ class FlxAnim extends FlxSprite
 						var matrix:FlxMatrix = new FlxMatrix(m3d[0], m3d[1], m3d[4], m3d[5], m3d[12], m3d[13]);
 
 						matrix.concat(_matrix);
-						var spr:FlxLimb = new FlxLimb(matrix.tx + x, matrix.ty + y,this);
+						var spr:FlxLimb = new FlxLimb((matrix.tx * scale.x) + x, (matrix.ty * scale.y) + y,this);
 
 						spr.frame = spr.frames.getByName(element.ASI.N);
 						spr.setSize(width, height);
@@ -246,9 +247,16 @@ class FlxAnim extends FlxSprite
 		renderSymbol(timeline);
 	}
 
+	public var callback:Void->Void = null;
+
 	@:noCompletion
 	function set_curFrame(value:Int):Int
 	{
+		if (callback != null && value != curFrame)
+		{
+			curFrame = value;
+			callback();
+		}
 		return curFrame = value;
 	}
 
@@ -387,6 +395,68 @@ class FlxAnim extends FlxSprite
 		}
 
 		animsMap.set(Name, {timeline: {L: layers}, X: 0, Y: 0, frameRate: FrameRate});
+	}
+	public function addByFrameName(Name:String, FrameName:String, FrameRate:Float = 30) 
+	{
+		var start:Int = -1;
+		var len:Int = -1;
+
+		for (layer in coolParse.AN.TL.L)
+		{
+			for (frame in layer.FR)
+			{
+				if (frame.N == FrameName)
+				{
+					start = frame.I;
+					len = frame.DU;
+				}
+			}
+		}
+
+		if (start > -1 && len > -1)
+		{
+			var Indices:Array<Int> = [];
+			for (i in start...start+len)
+				Indices.push(i);
+
+			var layers:Array<Layers> = [];
+			var timeline:Timeline = symbolDictionary.get(coolParse.AN.SN);
+
+			for (layer in timeline.L)
+			{
+				var frames:Array<Frame> = [];
+				for (i in Indices)
+				{
+					if (i > frameLength)
+						FlxG.log.error('The index exceeds the length of the anim, which is $frameLength!');
+					else
+						frames.push(layer.FR[i]);
+				}
+				layers.push({LN: layer.LN, FR: frames});
+			}
+
+			var element = coolParse.AN.STI;
+			var m3d = (element.SI.M3D is Array) ? element.SI.M3D : [element.SI.M3D.m00, element.SI.M3D.m01, 
+				element.SI.M3D.m02, element.SI.M3D.m03, element.SI.M3D.m10,element.SI.M3D.m11,
+				element.SI.M3D.m12,element.SI.M3D.m13,element.SI.M3D.m20,element.SI.M3D.m21,element.SI.M3D.m22,
+				element.SI.M3D.m23,element.SI.M3D.m30,element.SI.M3D.m31,element.SI.M3D.m32,element.SI.M3D.m33];
+			animsMap.set(Name, {timeline: {L: layers}, X: m3d[12], Y: m3d[13], frameRate: FrameRate});
+		}
+	}
+	public function frameNames():Array<String>
+	{
+		var ret:Array<String> = [];
+
+		for (layer in coolParse.AN.TL.L)
+		{
+			for (frame in layer.FR)
+			{
+				if (frame.N != null && frame.N.trim() != "" && !ret.contains(frame.N))
+					ret.push(frame.N);
+			}
+		}
+
+		return ret;
 	}
 	public function get_animLength()
 	{

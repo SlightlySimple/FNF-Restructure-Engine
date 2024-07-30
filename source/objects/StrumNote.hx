@@ -43,6 +43,8 @@ class StrumNote extends FlxSprite
 	public var modX:Float = 0;
 	public var modY:Float = 0;
 
+	public var isOptionsMenuStrum:Bool = false;
+
 	override public function new(column:Int, ?noteskinType:String = "default", ?strumColumn:Null<Int> = null)
 	{
 		super();
@@ -56,13 +58,6 @@ class StrumNote extends FlxSprite
 		if (noteskinOverride == "")
 			noteskinOverride = Noteskins.noteskinName;
 
-		switch (strumColumn % 4)
-		{
-			case 0: defaultCharAnims = ["singLEFT", "singLEFTmiss"];
-			case 1: defaultCharAnims = ["singDOWN", "singDOWNmiss"];
-			case 2: defaultCharAnims = ["singUP", "singUPmiss"];
-			case 3: defaultCharAnims = ["singRIGHT", "singRIGHTmiss"];
-		}
 		onNotetypeChanged(noteskinType);
 	}
 
@@ -77,16 +72,16 @@ class StrumNote extends FlxSprite
 			y = modBaseY + (modY * (Options.options.downscroll ? -1 : 1));
 		}
 
-		if ((!isPlayer || PlayState.botplay || doUnstick || Options.options.strumAnims == 1) && animation.curAnim.finished && animation.curAnim.name != "static")
+		if ((!isPlayer || PlayState.botplay || doUnstick || Options.options.strumAnims == 1) && animation.curAnim.finished && animation.curAnim.name != "static" && !isOptionsMenuStrum)
 		{
 			doUnstick = false;
 			playAnim("static");
 		}
 	}
 
-	public function playAnim(animName:String, forced:Bool = false, ?ignoreOptions:Bool = false, ?color:String = "")
+	public function playAnim(animName:String, forced:Bool = false, ?color:String = "")
 	{
-		if (Options.options.strumAnims == 0 && animName != "static" && !ignoreOptions)
+		if (Options.options.strumAnims == 0 && animName != "static" && !isOptionsMenuStrum)
 			return;
 
 		var aaName:String = animName;

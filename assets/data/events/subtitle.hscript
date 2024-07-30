@@ -1,16 +1,4 @@
-function create()
-{
-	subtitles = new FlxText(200, FlxG.height * 0.7, FlxG.width - 400, "", 32);
-	subtitles.font = "VCR OSD Mono";
-	subtitles.borderColor = FlxColor.BLACK;
-	subtitles.borderStyle = FlxTextBorderStyle.OUTLINE;
-	subtitles.alignment = CENTER;
-	subtitles.cameras = [game.camOther];
-	if (Options.options.subtitles)
-		game.add(subtitles);
-}
-
 function onEvent(event)
 {
-	subtitles.text = StringTools.replace(Lang.get(event.parameters.text),"\\n","\n");
+	game.subtitles = StringTools.replace(Lang.get(event.parameters.text),"\\n","\n");
 }

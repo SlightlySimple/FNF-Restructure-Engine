@@ -4,12 +4,12 @@ function convertEvent(type, param1, param2)
 	{
 		case "Hey!":
 		if (getPlayer(param1, 0) != "")
-			return { type: "characterPlayAnim", parameters: {id: getPlayer(param1, 0), anim: (getPlayer(param1, 0) == "gf" ? "cheer" : "hey")} };
-		return [{ type: "characterPlayAnim", parameters: {id: "player1", anim: "hey"} }, { type: "characterPlayAnim", parameters: {id: "gf", anim: "cheer"} }];
+			return { type: "characterPlayAnim", parameters: {id: getPlayer(param1, 0), anim: (getPlayer(param1, 0) == "gf" ? "cheer" : "hey"), rate: 1} };
+		return [{ type: "characterPlayAnim", parameters: {id: "player1", anim: "hey", rate: 1} }, { type: "characterPlayAnim", parameters: {id: "gf", anim: "cheer", rate: 1} }];
 		case "Set GF Speed": return { type: "characterDanceSpeed", parameters: {id: "gf", speed: parseFloat(param1, 1)} };
 		case "Blammed Lights": return { type: "blammedLights", parameters: {enabled: parseInt(param1, 6) != 0, color: blammedLightsColor(parseInt(param1, 6))} };
-		case "Add Camera Zoom": return { type: "cameraBump", parameters: {mainZoom: parseFloat(param1, 0), hudZoom: parseFloat(param2, 0), time: 1} };
-		case "Play Animation": return { type: "characterPlayAnim", parameters: {id: getPlayer(param2, 1), anim: param1} };
+		case "Add Camera Zoom": return { type: "cameraBump", parameters: {mainZoom: parseFloat(param1, 0), hudZoom: parseFloat(param2, 0), time: 1, mode: "absolute"} };
+		case "Play Animation": return { type: "characterPlayAnim", parameters: {id: getPlayer(param2, 1), anim: param1, rate: 1} };
 		case "Camera Follow Pos": return { type: "cameraPosition", parameters: {allow: (param1 != "" || param2 != ""), x: parseInt(param1, 0), y: parseInt(param2, 0), mode: "absolute"} };
 		case "Alt Idle Animation": return { type: "characterDanceSettings", parameters: {id: getPlayer(param1, 1), canDance: true, idleSuffix: param2} };
 		case "Screen Shake":

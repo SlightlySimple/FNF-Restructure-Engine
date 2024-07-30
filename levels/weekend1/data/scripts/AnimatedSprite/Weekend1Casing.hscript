@@ -1,0 +1,32 @@
+function new()
+{
+	this.frames = Paths.sparrow('weekend1/PicoBullet');
+
+	this.animation.addByPrefix('pop', "Pop0", 24, false);
+	this.animation.addByPrefix('idle', "Bullet0", 24, true);
+	this.animation.play('pop');
+	this.animation.callback = function(name, frameNumber) {
+		if (name == 'pop' && frameNumber == 40)
+			startRoll();
+	}
+}
+
+function startRoll()
+{
+	this.animation.callback = null;
+
+	this.x = this.x + this.frame.offset.x - 1;
+	this.y = this.y + this.frame.offset.y + 1;
+
+	this.angle = 125.1;
+
+	var randomFactorA = FlxG.random.float(3, 10);
+	var randomFactorB = FlxG.random.float(1.0, 2.0);
+	this.velocity.x = 20 * randomFactorB;
+	this.drag.x = randomFactorA * randomFactorB;
+
+	this.angularVelocity = 100;
+	this.angularDrag = (this.drag.x / this.velocity.x) * 100;
+
+	this.animation.play('idle');
+}

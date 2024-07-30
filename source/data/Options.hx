@@ -134,17 +134,17 @@ class Options
 	public static function keyString(keys:String):String
 	{
 		if (options.keys == null)
-			return "NONE";
+			return Lang.get("#options.key.none");
 
 		if (Reflect.getProperty(options.keys, keys) == null)
-			return "NONE";
+			return Lang.get("#options.key.none");
 
 		var keysArray:Array<FlxKey> = Reflect.getProperty(options.keys, keys);
 		if (keysArray[0] == FlxKey.NONE)
-			return keysArray[1].toString();
+			return Lang.get("#options.key." + keysArray[1].toString().toLowerCase(), keysArray[1].toString());
 		if (keysArray[1] == FlxKey.NONE)
-			return keysArray[0].toString();
-		return keysArray[0].toString() + " or " + keysArray[1].toString();
+			return Lang.get("#options.key." + keysArray[0].toString().toLowerCase(), keysArray[0].toString());
+		return Lang.get("#options.key." + keysArray[0].toString().toLowerCase(), keysArray[0].toString()) + " or " + Lang.get("#options.key." + keysArray[1].toString().toLowerCase(), keysArray[1].toString());
 	}
 
 	var allowAltMouse:Bool = false;
@@ -153,10 +153,14 @@ class Options
 	{
 		if (right)
 		{
+			if (options == null)
+				return FlxG.mouse.pressedRight;
 			if (options.altMouse && FlxG.keys.pressed.ALT)
 				return FlxG.mouse.pressed || FlxG.mouse.pressedRight;
 			return FlxG.mouse.pressedRight;
 		}
+		if (options == null)
+			return FlxG.mouse.pressed;
 		if (options.altMouse && FlxG.keys.pressed.ALT)
 			return false;
 		return FlxG.mouse.pressed;
@@ -166,10 +170,14 @@ class Options
 	{
 		if (right)
 		{
+			if (options == null)
+				return FlxG.mouse.justPressedRight;
 			if (options.altMouse && FlxG.keys.pressed.ALT)
 				return FlxG.mouse.justPressed || FlxG.mouse.justPressedRight;
 			return FlxG.mouse.justPressedRight;
 		}
+		if (options == null)
+			return FlxG.mouse.justPressed;
 		if (options.altMouse && FlxG.keys.pressed.ALT)
 			return false;
 		return FlxG.mouse.justPressed;
@@ -179,6 +187,8 @@ class Options
 	{
 		if (right)
 		{
+			if (options == null)
+				return FlxG.mouse.justReleasedRight;
 			if (options.altMouse)
 				return FlxG.mouse.justReleased || FlxG.mouse.justReleasedRight;
 			return FlxG.mouse.justReleasedRight;

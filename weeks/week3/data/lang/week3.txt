@@ -1,7 +1,0 @@
-// Week name
-"week3"				"PICO"
-
-// Song names
-"week3/pico"		"Pico"
-"week3/philly"		"Philly Nice"
-"week3/blammed"		"Blammed"

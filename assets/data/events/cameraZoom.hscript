@@ -1,19 +1,26 @@
 function onEvent(event)
 {
-	FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
+	FlxTween.cancelTweensOf(game, ["camZoom"]);
+	camZoom = 0;
 	switch (event.parameters.mode)
 	{
-		case "fromStage": game.camZoom = game.stage.stageData.camZoom + event.parameters.zoom;
-		case "fromCurrent": game.camZoom += event.parameters.zoom;
+		case "fromStage": camZoom = game.stage.stageData.camZoom + event.parameters.zoom;
+		case "fromStageMultiplied": camZoom = game.stage.stageData.camZoom * event.parameters.zoom;
+		case "fromCurrent": camZoom += event.parameters.zoom;
 		default:
 			if (event.parameters.zoom == 0)
-				game.camZoom = game.stage.stageData.camZoom;
+				camZoom = game.stage.stageData.camZoom;
 			else
-				game.camZoom = event.parameters.zoom;
+				camZoom = event.parameters.zoom;
 	}
-	if (game.camZoom <= 0)
-		game.camZoom = 0.001;
-	var twn = FlxTween.tween(FlxG.camera, {zoom: game.camZoom}, event.parameters.time, { ease: FlxEase.sineInOut });
-	twn._syncWithSong = true;
-	twn._startTime = event.time;
+	if (camZoom <= 0)
+		camZoom = 0.001;
+	if (event.parameters.time <= 0)
+		game.camZoom = camZoom;
+	else
+	{
+		var twn = FlxTween.tween(game, {camZoom: camZoom}, event.parameters.time, { ease: Reflect.field(FlxEase, event.parameters.ease) });
+		twn._syncWithSong = true;
+		twn._startTime = event.time;
+	}
 }

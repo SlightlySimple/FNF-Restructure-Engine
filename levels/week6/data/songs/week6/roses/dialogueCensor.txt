@@ -1,0 +1,11 @@
+!setting	fadeTimes	2	1
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	senpai
+!setting	mood	angrySenpai
+!setting	flip
+senpai-angry	normal	Not bad for an ugly worm.
+senpai-angry	normal	But this time I'm gonna make you scream...
+senpai-angry	normal	Almost as loud as I'll make your girlfriend scream later tonight, you fat midget.
+!setting	flip
+bf-pixel	normal	Bop beep be be skdoo bep

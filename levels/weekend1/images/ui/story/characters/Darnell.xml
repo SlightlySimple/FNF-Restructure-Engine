@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Darnell.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Darnell Dance0000" x="0" y="0" width="373" height="471" frameX="0" frameY="-16" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0001" x="375" y="0" width="373" height="471" frameX="0" frameY="-16" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0002" x="750" y="0" width="394" height="471" frameX="0" frameY="-16" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0003" x="750" y="0" width="394" height="471" frameX="0" frameY="-16" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0004" x="1146" y="0" width="391" height="482" frameX="-2" frameY="-5" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0005" x="1146" y="0" width="391" height="482" frameX="-2" frameY="-5" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0006" x="1539" y="0" width="387" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0007" x="1539" y="0" width="387" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0008" x="0" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0009" x="0" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0010" x="0" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0011" x="0" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0012" x="386" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+	<SubTexture name="Darnell Dance0013" x="386" y="489" width="384" height="487" frameX="-2" frameY="0" frameWidth="394" frameHeight="487"/>
+</TextureAtlas>

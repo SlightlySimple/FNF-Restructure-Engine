@@ -1,0 +1,22 @@
+function create()
+{
+	if (PlayState.inStoryMode)
+		game.canEndSong = false;
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		var red = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFFff1b31);
+		red.cameras = [game.camOther];
+		red.scrollFactor.set();
+		red.alpha = 0;
+		add(red);
+
+		FlxTween.tween(red, {alpha: 1}, 2, {ease: Util.pixelEase(6), onComplete: function(twn) {
+			game.canEndSong = true;
+			game.endSong();
+		}});
+	}
+}

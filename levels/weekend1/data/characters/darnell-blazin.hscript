@@ -1,0 +1,307 @@
+cantUppercut = false;
+
+function beatHit()
+{
+	if (this.curAnimName == "idle")
+		this.playAnim('idle');
+}
+
+function noteHit(note)
+{
+	var shouldDoUppercutPrep = wasNoteHitPoorly(note) && isPlayerLowHealth() && FlxG.random.bool(30);
+
+	if (shouldDoUppercutPrep)
+	{
+		playUppercutPrepAnim();
+		return;
+	}
+
+	if (cantUppercut)
+	{
+		playPunchHighAnim();
+		return;
+	}
+
+	switch (note.noteType)
+	{
+		case "weekend-1-punchlow":
+			playHitLowAnim();
+		case "weekend-1-punchlowblocked":
+			playBlockAnim();
+		case "weekend-1-punchlowdodged":
+			playDodgeAnim();
+		case "weekend-1-punchlowspin":
+			playSpinAnim();
+
+		case "weekend-1-punchhigh":
+			playHitHighAnim();
+		case "weekend-1-punchhighblocked":
+			playBlockAnim();
+		case "weekend-1-punchhighdodged":
+			playDodgeAnim();
+		case "weekend-1-punchhighspin":
+			playSpinAnim();
+
+		case "weekend-1-blockhigh":
+			playPunchHighAnim();
+		case "weekend-1-blocklow":
+			playPunchLowAnim();
+		case "weekend-1-blockspin":
+			playPunchHighAnim();
+
+		case "weekend-1-dodgehigh":
+			playPunchHighAnim();
+		case "weekend-1-dodgelow":
+			playPunchLowAnim();
+		case "weekend-1-dodgespin":
+			playPunchHighAnim();
+
+		case "weekend-1-hithigh":
+			playPunchHighAnim();
+		case "weekend-1-hitlow":
+			playPunchLowAnim();
+		case "weekend-1-hitspin":
+			playPunchHighAnim();
+
+		case "weekend-1-picouppercut":
+			playUppercutHitAnim();
+
+		case "weekend-1-darnelluppercutprep":
+			playUppercutPrepAnim();
+		case "weekend-1-darnelluppercut":
+			playUppercutAnim();
+
+		case "weekend-1-idle":
+			playIdleAnim();
+		case "weekend-1-fakeout":
+			playCringeAnim();
+		case "weekend-1-taunt":
+			playPissedConditionalAnim();
+		case "weekend-1-tauntforce":
+			playPissedAnim();
+		case "weekend-1-reversefakeout":
+			playFakeoutAnim();
+	}
+
+	cantUppercut = false;
+}
+
+function noteMissed(note)
+{
+	if (this.curAnimName == 'uppercutPrep')
+	{
+		playUppercutAnim();
+		return;
+	}
+
+	if (willMissBeLethal(note))
+	{
+		playPunchLowAnim();
+		return;
+	}
+
+	if (cantUppercut)
+	{
+		playPunchHighAnim();
+		return;
+	}
+
+	switch (note.noteType)
+	{
+		case "weekend-1-punchlow":
+			playPunchLowAnim();
+		case "weekend-1-punchlowblocked":
+			playPunchLowAnim();
+		case "weekend-1-punchlowdodged":
+			playPunchLowAnim();
+		case "weekend-1-punchlowspin":
+			playPunchLowAnim();
+
+		case "weekend-1-punchhigh":
+			playPunchHighAnim();
+		case "weekend-1-punchhighblocked":
+			playPunchHighAnim();
+		case "weekend-1-punchhighdodged":
+			playPunchHighAnim();
+		case "weekend-1-punchhighspin":
+			playPunchHighAnim();
+
+		case "weekend-1-blockhigh":
+			playPunchHighAnim();
+		case "weekend-1-blocklow":
+			playPunchLowAnim();
+		case "weekend-1-blockspin":
+			playPunchHighAnim();
+
+		case "weekend-1-dodgehigh":
+			playPunchHighAnim();
+		case "weekend-1-dodgelow":
+			playPunchLowAnim();
+		case "weekend-1-dodgespin":
+			playPunchHighAnim();
+
+		case "weekend-1-hithigh":
+			playPunchHighAnim();
+		case "weekend-1-hitlow":
+			playPunchLowAnim();
+		case "weekend-1-hitspin":
+			playPunchHighAnim();
+
+		case "weekend-1-picouppercutprep":
+			playHitHighAnim();
+			cantUppercut = true;
+		case "weekend-1-picouppercut":
+			playDodgeAnim();
+
+		case "weekend-1-darnelluppercutprep":
+			playUppercutPrepAnim();
+		case "weekend-1-darnelluppercut":
+			playUppercutAnim();
+
+		case "weekend-1-idle":
+			playIdleAnim();
+		case "weekend-1-fakeout":
+			playCringeAnim();
+		case "weekend-1-taunt":
+			playPissedConditionalAnim();
+		case "weekend-1-tauntforce":
+			playPissed();
+		case "weekend-1-reversefakeout":
+			playFakeoutAnim();
+	}
+
+	cantUppercut = false;
+}
+
+function willMissBeLethal(note)
+{
+	return (game.health + note.typeData.healthValues.miss) <= 0;
+}
+
+function moveToBack()
+{
+	game.remove(this, true);
+	game.insert(game.members.indexOf(game.player1), this);
+}
+
+function moveToFront()
+{
+	game.remove(this, true);
+	game.insert(game.members.indexOf(game.player1) + 1, this);
+}
+
+function wasNoteHitPoorly(note)
+{
+	if (note.hitData != null)
+		return (note.hitData.rating >= 3);
+	return false;
+}
+
+function isPlayerLowHealth()
+{
+	return PlayState.instance.health <= 30;
+}
+
+var alternate = false;
+
+function doAlternate()
+{
+	alternate = !alternate;
+	return alternate ? '1' : '2';
+}
+
+function playBlockAnim()
+{
+	this.playAnim('block', true, false);
+	FlxG.camera.shake(0.002, 0.1);
+	moveToBack();
+}
+
+function playCringeAnim()
+{
+	this.playAnim('cringe', true, false);
+	moveToBack();
+}
+
+function playDodgeAnim()
+{
+	this.playAnim('dodge', true, false);
+	moveToBack();
+}
+
+function playIdleAnim()
+{
+	this.playAnim('idle', false, false);
+	moveToBack();
+}
+
+function playFakeoutAnim()
+{
+	this.playAnim('fakeout', true, false);
+	moveToBack();
+}
+
+function playPissedConditionalAnim()
+{
+	if (this.curAnimName == "cringe")
+		playPissedAnim();
+	else
+		playIdleAnim();
+}
+
+function playPissedAnim()
+{
+	this.playAnim('pissed', true, false);
+	moveToBack();
+}
+
+function playUppercutPrepAnim()
+{
+	this.playAnim('uppercutPrep', true, false);
+	moveToFront();
+}
+
+function playUppercutAnim()
+{
+	this.playAnim('uppercut', true, false);
+	moveToFront();
+}
+
+function playUppercutHitAnim()
+{
+	this.playAnim('uppercutHit', true, false);
+	moveToBack();
+}
+
+function playHitHighAnim()
+{
+	this.playAnim('hitHigh', true, false);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}
+
+function playHitLowAnim()
+{
+	this.playAnim('hitLow', true, false);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}
+
+function playPunchHighAnim()
+{
+	this.playAnim('punchHigh' + doAlternate(), true, false);
+	moveToFront();
+}
+
+function playPunchLowAnim()
+{
+	this.playAnim('punchLow' + doAlternate(), true, false);
+	moveToFront();
+}
+
+function playSpinAnim()
+{
+	this.playAnim('hitSpin', true, false);
+	FlxG.camera.shake(0.0025, 0.15);
+	moveToBack();
+}

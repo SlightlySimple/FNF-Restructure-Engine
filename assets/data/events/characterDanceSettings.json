@@ -1,31 +1,33 @@
 {
+	"icon": "eventIconCharacter",
 	"parameters":
 	[
 		{
 			"id": "id",
 			"label": "Character",
-			"type": "string",
-			"defaultValue": ""
-		},
-		{
-			"type": "label",
-			"label": "Character can be \"player1,\" \"player2,\" etc. for however many characters are in the chart, and can also be \"gf\""
+			"infoText": "Which character to affect.",
+			"type": "dropdown",
+			"defaultValue": "player1",
+			"options": ["!players"]
 		},
 		{
 			"id": "canDance",
 			"label": "Can Dance",
+			"infoText": "Whether or not the character can dance at all.",
 			"type": "checkbox",
 			"defaultValue": true
 		},
 		{
 			"id": "idleSuffix",
-			"label": "Animation Suffix",
+			"label": "Dance Suffix",
+			"infoText": "The suffix to use for the character's dance animations, for example \"-alt\" to make the character play \"idle-alt\" instead of \"idle\".",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "init",
 			"label": "Trigger at Start",
+			"infoText": "If checked, this event will trigger when the song first loads in instead of triggering where it's placed in the song.",
 			"type": "checkbox",
 			"defaultValue": false
 		}

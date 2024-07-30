@@ -1,0 +1,75 @@
+function onEvent(event)
+{
+	var val = analyzeValue(event.parameters.value);
+	if (event.parameters.variable.indexOf(".") > 0)
+	{
+		var varSplit = event.parameters.variable.split(".");
+		var affect;
+		if (varSplit[0].indexOf("[") > -1)
+		{
+			affect = game.hscriptIdGet(event.parameters.id, varSplit[0].split("[")[0]);
+			affect = affect[analyzeArrayValue(varSplit[0].split("[")[1].split("]")[0])];
+		}
+		else
+			affect = game.hscriptIdGet(event.parameters.id, varSplit[0]);
+		if (varSplit.length > 2)
+		{
+			for (i in 1...varSplit.length - 1)
+			{
+				if (varSplit[i].indexOf("[") > -1)
+				{
+					affect = Reflect.getProperty(affect, varSplit[i].split("[")[0]);
+					affect = affect[analyzeArrayValue(varSplit[i].split("[")[1].split("]")[0])];
+				}
+				else
+					affect = Reflect.getProperty(affect, varSplit[i]);
+			}
+		}
+
+		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
+		applyProperty(function(v) { Reflect.setProperty(affect, varSplit[varSplit.length - 1], v); }, prev, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+	}
+	else
+	{
+		var prev = game.hscriptIdGet(event.parameters.id, event.parameters.variable);
+		applyProperty(function(v) { game.hscriptIdSet(event.parameters.id, event.parameters.variable, v); }, prev, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+	}
+}
+
+function analyzeValue(val)
+{
+	if (Std.parseFloat(val) != null && !Math.isNaN(Std.parseFloat(val)))
+		return Std.parseFloat(val);
+
+	if (val == "true")
+		return true;
+
+	if (val == "false")
+		return false;
+
+	return val;
+}
+
+function analyzeArrayValue(val)
+{
+	if (Std.parseInt(val) != null && !Math.isNaN(Std.parseInt(val)))
+		return Std.parseInt(val);
+
+	if (StringTools.startsWith(val, "\"") && StringTools.endsWith(val, "\""))
+		return val.substr(1, val.length - 2);
+
+	return val;
+}
+
+function applyProperty(func, oldValue, newValue, operation, time, ease)
+{
+	var prev = oldValue;
+	var final = newValue;
+	switch (operation)
+	{
+		case "add": final = prev + value;
+		case "multiply": final = prev * value;
+		case "divide": final = prev / value;
+	}
+	FlxTween.num(prev, final, time, {ease: ease}, func);
+}

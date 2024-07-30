@@ -5,147 +5,118 @@ import flixel.FlxSubState;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
-import flixel.FlxCamera;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
+import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxMath;
+import helpers.DeepEquals;
+import helpers.Cloner;
 import data.ObjectData;
 import data.Options;
 import data.Song;
 import menus.EditorMenuState;
 import menus.MainMenuState;
 import menus.StoryMenuState;
+import menus.FreeplayMenuSubState;
 import objects.Alphabet;
 import objects.Character;
 import objects.HealthIcon;
 import haxe.Json;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 import lime.app.Application;
 
-import funkui.TabMenu;
-import funkui.ColorSwatch;
-import funkui.DropdownMenu;
-import funkui.TextButton;
-import funkui.InputText;
-import funkui.Stepper;
-import funkui.Checkbox;
-import funkui.Label;
+import newui.UIControl;
+import newui.TopMenu;
+import newui.DropdownMenu;
+import newui.Button;
+import newui.Checkbox;
+import newui.ColorPickSubstate;
+import newui.InputText;
+import newui.Label;
+import newui.PopupWindow;
+import newui.Stepper;
 
 using StringTools;
 
-class WeekEditorState extends MusicBeatState
+class WeekEditorState extends BaseEditorState
 {
-	public static var newWeek:Bool = false;
-	public static var curWeek:String = "";
-
 	public var weekData:WeekData;
-
-	public var camFollow:FlxObject;
-	public var camGame:FlxCamera;
-	public var camHUD:FlxCamera;
+	var dataLog:Array<WeekData> = [];
 
 	var settingsStuff:FlxSpriteGroup;
 	var storyStuff:FlxSpriteGroup;
 
 	var allSongs:Array<String> = [];
-	var allIcons:Array<String> = [];
 	var allScripts:Array<String> = [];
 
 	var curSong:Int = 0;
-	var songList:FlxTypedSpriteGroup<Alphabet>;
-	var songIcons:FlxTypedSpriteGroup<HealthIcon>;
+	var hoveredCapsule:Int = -1;
+	var grpCapsules:FlxTypedSpriteGroup<FreeplayCapsule>;
 
-	var weekName:InputText;
 	public var bgYellow:FlxSprite;
 	var banner:FlxSprite;
 	var imageButton:FlxSprite;
 	var menuCharacters:FlxTypedSpriteGroup<MenuCharacter>;
-
-	var tabMenu:TabMenu;
-
-	var suspendControls:Bool = false;
-	var songDropdown:DropdownMenu;
-	var iconInput:InputText;
-	var iconDropdown:DropdownMenu;
-	var songTitle:InputText;
-	var songDiffs:InputText;
-	var songCharCount:Stepper;
-	var songCharLabels:InputText;
-	var songScriptDropdown:DropdownMenu;
+	var weekTitle:FlxText;
 
 	override public function create()
 	{
-		camGame = new FlxCamera();
-		FlxG.cameras.add(camGame);
-
-		camFollow = new FlxObject();
-		camFollow.screenCenter();
-		camGame.follow(camFollow, LOCKON, 1);
-
-		camHUD = new FlxCamera();
-		camHUD.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camHUD, false);
-
 		super.create();
+		filenameNew = "New Week";
 
 		settingsStuff = new FlxSpriteGroup();
 		add(settingsStuff);
 		storyStuff = new FlxSpriteGroup();
-		add(storyStuff);
 
 		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[2]));
 		settingsStuff.add(bg);
 
-		if (newWeek)
+		if (isNew)
 		{
 			weekData =
 			{
 				image: TitleState.defaultVariables.storyimage,
 				title: "",
-				characters: [TitleState.defaultVariables.story1, TitleState.defaultVariables.story2, TitleState.defaultVariables.story3],
+				color: [249, 207, 81],
+				characters: [[TitleState.defaultVariables.story1, 0, 0], [TitleState.defaultVariables.story2, Math.round((FlxG.width / 3) / 5) * 5, 0], [TitleState.defaultVariables.story3, Math.round((FlxG.width * 2 / 3) / 5) * 5, 0]],
 				songs: [],
+				difficulties: ["normal", "hard", "easy"],
+				difficultiesLocked: [],
+				condition: "",
 				startsLocked: false,
+				startsLockedInFreeplay: false,
 				weekToUnlock: "",
 				hiddenWhenLocked: false
 			}
 		}
 		else
-			weekData = StoryMenuState.convertWeek(curWeek, Paths.json("weeks/" + curWeek));
+			weekData = StoryMenuState.parseWeek(id, Paths.json("weeks/" + id));
 
 		allSongs = [""];
-		for (songFolder in Paths.listFilesSub("songs/", ""))
-		{
-			if (Paths.exists("songs/" + songFolder + "/Inst.ogg"))
-				allSongs.push(songFolder);
-		}
 		for (songFolder in Paths.listFilesSub("data/songs/", ""))
 		{
-			if (Paths.exists("data/songs/" + songFolder + "/Inst.ogg"))
+			if ((Paths.listFiles("songs/" + songFolder + "/", ".ogg").length > 0 || Paths.listFiles("data/songs/" + songFolder + "/", ".ogg").length > 0) && !allSongs.contains(songFolder))
 				allSongs.push(songFolder);
 		}
-		allIcons = HealthIcon.listIcons();
-		allIcons.unshift("none");
 
-		allScripts = Paths.listFilesSub("data/states/", ".hscript");
-		allScripts.unshift("");
+		allScripts = [""];
+		for (f in Paths.listFilesSub("data/states/", ".hscript"))
+		{
+			if (!f.endsWith("-story") && !f.endsWith("-freeplay") && !["TitleState", "MainMenuState", "CreditsMenuState", "ResultsState"].contains(f))
+				allScripts.push(f);
+		}
 
-		songList = new FlxTypedSpriteGroup<Alphabet>();
-		settingsStuff.add(songList);
-		songIcons = new FlxTypedSpriteGroup<HealthIcon>();
-		settingsStuff.add(songIcons);
+		grpCapsules = new FlxTypedSpriteGroup<FreeplayCapsule>();
+		settingsStuff.add(grpCapsules);
 		refreshSongs();
 
 		bgYellow = new FlxSprite(0, 56).makeGraphic(FlxG.width, 400, FlxColor.WHITE);
 		storyStuff.add(bgYellow);
 
 		banner = new FlxSprite(0, 56);
-		refreshWeekBanner();
 		storyStuff.add(banner);
-
-		weekName = new InputText(10, 10, FlxG.width - 20, weekData.title, 32);
-		weekName.alignment = RIGHT;
-		weekName.callback = function(text:String, action:String) {
-			weekData.title = text;
-		}
-		storyStuff.add(weekName);
 
 		imageButton = new FlxSprite(0, 480);
 		refreshImageButton();
@@ -158,123 +129,181 @@ class WeekEditorState extends MusicBeatState
 			var char:MenuCharacter = new MenuCharacter(i);
 			menuCharacters.add(char);
 		}
+		refreshWeekBanner();
 		refreshMenuCharacters();
 
+		weekTitle = new FlxText(0, 10, FlxG.width - 10, Lang.get(weekData.title), 32);
+		weekTitle.alpha = 0.7;
+		weekTitle.font = "VCR OSD Mono";
+		weekTitle.alignment = RIGHT;
+		storyStuff.add(weekTitle);
 
 
-		tabMenu = new TabMenu(50, 50, 250, 400, ["Settings", "Songs", "Story"]);
-		tabMenu.cameras = [camHUD];
+
+		createUI("WeekEditor");
+
 		tabMenu.onTabChanged = function() {
-			remove(settingsStuff);
-			remove(storyStuff);
-			switch (tabMenu.curTab)
+			remove(settingsStuff, true);
+			remove(storyStuff, true);
+			switch (tabMenu.curTabName)
 			{
-				case 2:
-					add(storyStuff);
-					weekName.text = weekData.title;
-					tabMenu.y = 300;
-
-				default: add(settingsStuff); tabMenu.y = 50;
+				case "Story": add(storyStuff);
+				default: add(settingsStuff);
 			}
 		}
-		add(tabMenu);
 
 
 
-		var tabGroupSettings = new TabGroup();
-
-		var loadButton:TextButton = new TextButton(10, 10, 115, 20, "Load");
-		loadButton.onClicked = loadWeek;
-		tabGroupSettings.add(loadButton);
-
-		var saveButton:TextButton = new TextButton(loadButton.x + 115, loadButton.y, 115, 20, "Save");
-		saveButton.onClicked = saveWeek;
-		tabGroupSettings.add(saveButton);
-
-		if (weekData.condition == null)
-			weekData.condition = "";
-		var conditionDropdown:DropdownMenu = new DropdownMenu(10, saveButton.y + 40, 230, 20, weekData.condition, ["", "storyOnly", "freePlayOnly"]);
-		conditionDropdown.onChanged = function() {
-			weekData.condition = conditionDropdown.value;
-		};
-		tabGroupSettings.add(conditionDropdown);
-		tabGroupSettings.add(new Label("Condition:", conditionDropdown));
-
-		var diffsText:String = "";
-		if (weekData.difficulties != null && weekData.difficulties.length > 0)
-			diffsText = weekData.difficulties.join(",");
-		var diffs:InputText = new InputText(10, conditionDropdown.y + 40, diffsText);
-		diffs.forceCase = 2;
-		diffs.customFilterPattern = ~/[^a-zA-Z,]*/g;
-		diffs.focusGained = function() {
-			suspendControls = true;
-			if (weekData.difficulties != null && weekData.difficulties.length > 0)
-				diffs.text = weekData.difficulties.join(",");
-			else
-				diffs.text = "";
+		var visibleInStory:Checkbox = cast element("visibleInStory");
+		visibleInStory.condition = function() {
+			return (weekData.condition == "" || weekData.condition.toLowerCase() == "storyonly");
 		}
-		diffs.focusLost = function() { suspendControls = false; }
-		diffs.callback = function(text:String, action:String) {
-			if (text == "")
-				weekData.difficulties = null;
-			else
-				weekData.difficulties = text.split(",");
-		}
-		tabGroupSettings.add(diffs);
-		tabGroupSettings.add(new Label("Difficulties (Optional):", diffs));
 
-		var startsLockedCheck:Checkbox = new Checkbox(10, diffs.y + 30, "Starts Locked");
+		var visibleInFreeplay:Checkbox = cast element("visibleInFreeplay");
+		visibleInFreeplay.condition = function() {
+			return (weekData.condition == "" || weekData.condition.toLowerCase() == "freeplayonly");
+		}
+
+		visibleInStory.onClicked = function() {
+			if (visibleInStory.checked && visibleInFreeplay.checked)
+				weekData.condition = "";
+			else if (visibleInStory.checked)
+				weekData.condition = "storyOnly";
+			else
+				weekData.condition = "freePlayOnly";
+		}
+
+		visibleInFreeplay.onClicked = function() {
+			if (visibleInStory.checked && visibleInFreeplay.checked)
+				weekData.condition = "";
+			else if (visibleInFreeplay.checked)
+				weekData.condition = "freePlayOnly";
+			else
+				weekData.condition = "storyOnly";
+		}
+
+		var difficulties:TextButton = cast element("difficulties");
+		difficulties.onClicked = function()
+		{
+			var window:PopupWindow = null;
+			var vbox:VBox = new VBox(35, 35);
+
+			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+			var scroll:VBox = menu.vbox;
+
+			for (i in 0...weekData.difficulties.length)
+			{
+				var diffHbox:HBox = new HBox();
+				var difficulty:InputText = new InputText(0, 0);
+				difficulty.text = weekData.difficulties[i];
+				difficulty.forceCase = 2;
+				difficulty.customFilterPattern = ~/[^a-zA-Z,]*/g;
+				difficulty.focusLost = function() {
+					if (weekData.difficultiesLocked.contains(weekData.difficulties[i]))
+					{
+						weekData.difficultiesLocked.remove(weekData.difficulties[i]);
+						weekData.difficultiesLocked.push(difficulty.text);
+					}
+					weekData.difficulties[i] = difficulty.text;
+				}
+				diffHbox.add(difficulty);
+
+				var diffLocked:Checkbox = new Checkbox(0, 0, "Locked until Week is Beaten");
+				diffLocked.checked = (weekData.difficultiesLocked.contains(weekData.difficulties[i]));
+				diffLocked.condition = function() { return (weekData.difficultiesLocked.contains(weekData.difficulties[i])); }
+				diffLocked.onClicked = function() {
+					if (diffLocked.checked && weekData.difficultiesLocked.length < weekData.difficulties.length - 1 && !weekData.difficultiesLocked.contains(weekData.difficulties[i]))
+						weekData.difficultiesLocked.push(weekData.difficulties[i]);
+					if (!diffLocked.checked && weekData.difficultiesLocked.contains(weekData.difficulties[i]))
+						weekData.difficultiesLocked.remove(weekData.difficulties[i]);
+				}
+				diffHbox.add(diffLocked);
+
+				if (weekData.difficulties.length > 1)
+				{
+					var _remove:Button = new Button(0, 0, "buttonTrash");
+					_remove.onClicked = function() {
+						weekData.difficulties.splice(i, 1);
+						window.close();
+						new FlxTimer().start(0.01, function(tmr:FlxTimer) { difficulties.onClicked(); });
+					}
+					diffHbox.add(_remove);
+				}
+
+				scroll.add(diffHbox);
+			}
+
+			vbox.add(menu);
+
+			var applyToSongs:TextButton = new TextButton(0, 0, "Apply to Songs", Button.LONG);
+			applyToSongs.onClicked = function() {
+				for (song in weekData.songs)
+					song.difficulties = weekData.difficulties.copy();
+			}
+			vbox.add(applyToSongs);
+
+			var _add:TextButton = new TextButton(0, 0, "Add");
+			_add.onClicked = function() {
+				weekData.difficulties.push(weekData.difficulties[weekData.difficulties.length-1]);
+				window.close();
+				new FlxTimer().start(0.01, function(tmr:FlxTimer) { difficulties.onClicked(); });
+			}
+			vbox.add(_add);
+
+			var accept:TextButton = new TextButton(0, 0, "Accept", function() { window.close(); });
+			vbox.add(accept);
+
+			window = PopupWindow.CreateWithGroup(vbox);
+		}
+
+		var startsLockedCheck:Checkbox = cast element("startsLockedCheck");
 		startsLockedCheck.checked = weekData.startsLocked;
-		startsLockedCheck.onClicked = function() {
-			weekData.startsLocked = startsLockedCheck.checked;
-		}
-		tabGroupSettings.add(startsLockedCheck);
+		startsLockedCheck.condition = function() { return weekData.startsLocked; }
+		startsLockedCheck.onClicked = function() { weekData.startsLocked = startsLockedCheck.checked; }
+
+		var startsLockedInFreeplayCheck:Checkbox = cast element("startsLockedInFreeplayCheck");
+		startsLockedInFreeplayCheck.checked = weekData.startsLockedInFreeplay;
+		startsLockedInFreeplayCheck.condition = function() { return weekData.startsLockedInFreeplay; }
+		startsLockedInFreeplayCheck.onClicked = function() { weekData.startsLockedInFreeplay = startsLockedCheck.checked; }
 
 		if (weekData.weekToUnlock == null)
 			weekData.weekToUnlock = "";
 		var weekList:Array<String> = Paths.listFilesSub("data/weeks/", ".json");
 		weekList.unshift("");
-		var weekToUnlockDropdown:DropdownMenu = new DropdownMenu(10, startsLockedCheck.y + 40, 230, 20, weekData.weekToUnlock, weekList, true);
-		weekToUnlockDropdown.onChanged = function() {
-			weekData.weekToUnlock = weekToUnlockDropdown.value;
-		};
-		tabGroupSettings.add(weekToUnlockDropdown);
-		tabGroupSettings.add(new Label("Week to Unlock (Optional):", weekToUnlockDropdown));
+		var weekToUnlockDropdown:DropdownMenu = cast element("weekToUnlockDropdown");
+		weekToUnlockDropdown.valueList = weekList;
+		weekToUnlockDropdown.value = weekData.weekToUnlock;
+		weekToUnlockDropdown.condition = function() { return weekData.weekToUnlock; }
+		weekToUnlockDropdown.onChanged = function() { weekData.weekToUnlock = weekToUnlockDropdown.value; }
 
-		var hiddenWhenLockedCheck:Checkbox = new Checkbox(10, weekToUnlockDropdown.y + 30, "Hidden When Locked");
+		var hiddenWhenLockedCheck:Checkbox = cast element("hiddenWhenLockedCheck");
 		hiddenWhenLockedCheck.checked = weekData.hiddenWhenLocked;
-		hiddenWhenLockedCheck.onClicked = function() {
-			weekData.hiddenWhenLocked = hiddenWhenLockedCheck.checked;
-		}
-		tabGroupSettings.add(hiddenWhenLockedCheck);
-
-		tabMenu.addGroup(tabGroupSettings);
+		hiddenWhenLockedCheck.condition = function() { return weekData.hiddenWhenLocked; }
+		hiddenWhenLockedCheck.onClicked = function() { weekData.hiddenWhenLocked = hiddenWhenLockedCheck.checked; }
 
 
 
-		var tabGroupSong = new TabGroup();
-
-		var addSong:TextButton = new TextButton(10, 20, 75, 20, "Add");
+		var addSong:TextButton = cast element("addSong");
 		addSong.onClicked = function() {
 			if (weekData.songs.length > 0)
-				weekData.songs.push({songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]});
+				weekData.songs.push({songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			else
-				weekData.songs.push({songId: songDropdown.value, icon: iconInput.text, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]});
+				weekData.songs.push({songId: "test", icon: "none", iconNew: "none", difficulties: weekData.difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			curSong = weekData.songs.length - 1;
 			refreshSongs();
 		}
-		tabGroupSong.add(addSong);
-		var insertSong:TextButton = new TextButton(addSong.x + 75, addSong.y, 75, 20, "Insert");
+
+		var insertSong:TextButton = cast element("insertSong");
 		insertSong.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
-				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, characters: 3, characterLabels: ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"]};
+				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]};
 				weekData.songs.insert(curSong, newSong);
 				refreshSongs();
 			}
 		}
-		tabGroupSong.add(insertSong);
-		var removeSong:TextButton = new TextButton(insertSong.x + 75, insertSong.y, 75, 20, "Remove");
+
+		var removeSong:TextButton = cast element("removeSong");
 		removeSong.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
@@ -284,10 +313,18 @@ class WeekEditorState extends MusicBeatState
 				refreshSongs();
 			}
 		}
-		tabGroupSong.add(removeSong);
-		tabGroupSong.add(new Label("Song:", addSong));
 
-		var moveUp:TextButton = new TextButton(10, removeSong.y + 40, 115, 20, "Move Up");
+		var prevSong:TextButton = cast element("prevSong");
+		prevSong.onClicked = function() {
+			changeSelection(-1);
+		}
+
+		var nextSong:TextButton = cast element("nextSong");
+		nextSong.onClicked = function() {
+			changeSelection(1);
+		}
+
+		var moveUp:TextButton = cast element("moveUp");
 		moveUp.onClicked = function() {
 			if (weekData.songs.length > 0 && curSong > 0)
 			{
@@ -298,8 +335,8 @@ class WeekEditorState extends MusicBeatState
 				refreshSongs();
 			}
 		}
-		tabGroupSong.add(moveUp);
-		var moveDown:TextButton = new TextButton(moveUp.x + 115, moveUp.y, 115, 20, "Move Down");
+
+		var moveDown:TextButton = cast element("moveDown");
 		moveDown.onClicked = function() {
 			if (weekData.songs.length > 0 && curSong < weekData.songs.length - 1)
 			{
@@ -310,312 +347,587 @@ class WeekEditorState extends MusicBeatState
 				refreshSongs();
 			}
 		}
-		tabGroupSong.add(moveDown);
-		tabGroupSong.add(new Label("Song Order:", moveUp));
-		
 
-		songDropdown = new DropdownMenu(10, moveDown.y + 40, 230, 20, allSongs[1], allSongs, true);
+		var songDropdown:DropdownMenu = cast element("songDropdown");
+		songDropdown.valueList = allSongs;
+		songDropdown.value = allSongs[1];
+		songDropdown.condition = function() {
+			if (weekData.songs.length > 0)
+				return weekData.songs[curSong].songId;
+			return songDropdown.value;
+		}
 		songDropdown.onChanged = function() {
 			if (weekData.songs.length > 0)
 			{
 				weekData.songs[curSong].songId = songDropdown.value;
-				var songData:SongData = Song.loadSong(songDropdown.value, (weekData.songs[curSong].difficulties == null ? "normal" : weekData.songs[curSong].difficulties[0]), false);
-				if (Paths.jsonExists("characters/" + songData.player2))
-				{
-					var iconName:String = Character.parseCharacter(songData.player2).icon;
-					if (iconName == null || iconName == "")
-					{
-						iconName = songData.player2;
-						if (!Paths.iconExists(iconName) && Paths.iconExists(iconName.split("-")[0]))
-							iconName = iconName.split("-")[0];
-					}
-					if (Paths.iconExists(iconName))
-					{
-						weekData.songs[curSong].icon = iconName;
-						iconInput.text = iconName;
-					}
-				}
 				refreshSongs();
 			}
 		}
-		tabGroupSong.add(songDropdown);
-		tabGroupSong.add(new Label("Song ID:", songDropdown));
 
-		var iconInputText = "";
-		if (weekData.songs.length > curSong && weekData.songs[curSong].icon != null)
-			iconInputText = weekData.songs[curSong].icon;
-		iconInput = new InputText(10, songDropdown.y + 40, iconInputText);
-		iconInput.focusGained = function() {
-			suspendControls = true;
+		var iconNewInput:InputText = cast element("iconNewInput");
+		iconNewInput.condition = function() {
+			if (weekData.songs.length > 0)
+				return weekData.songs[curSong].iconNew;
+			return iconNewInput.text;
+		}
+		iconNewInput.focusLost = function() {
 			if (weekData.songs.length > 0)
 			{
-				if (weekData.songs[curSong].icon != null)
-					iconInput.text = weekData.songs[curSong].icon;
+				if (iconNewInput.text.trim() != "" && Paths.imageExists("ui/freeplay/icons/" + iconNewInput.text + "pixel"))
+					weekData.songs[curSong].iconNew = iconNewInput.text;
 				else
-					iconInput.text = "";
+					weekData.songs[curSong].iconNew = "none";
+				refreshSongs();
 			}
 		}
-		iconInput.focusLost = function() { suspendControls = false; refreshSongs(); }
-		iconInput.callback = function(text:String, action:String) {
-			if (weekData.songs.length > 0)
-			{
-				if (text.trim() != "" && Paths.iconExists(text))
-					weekData.songs[curSong].icon = text;
-				else
-					weekData.songs[curSong].icon = allIcons[0];
-			}
-		}
-		tabGroupSong.add(iconInput);
-		iconDropdown = new DropdownMenu(10, iconInput.y + 30, 230, 20, allIcons[0], allIcons, true);
-		iconDropdown.onChanged = function() {
-			if (weekData.songs.length > 0)
-			{
-				iconInput.text = iconDropdown.value;
-				iconInput.callback(iconInput.text, "");
-				iconInput.focusLost();
-			}
-		}
-		tabGroupSong.add(iconDropdown);
-		tabGroupSong.add(new Label("Icon:", iconInput));
 
-		var songTitleText:String = "";
-		if (weekData.songs.length > curSong && weekData.songs[curSong].title != null)
-			songTitleText = weekData.songs[curSong].title;
-		songTitle = new InputText(10, iconDropdown.y + 40, songTitleText);
-		songTitle.focusGained = function() {
-			suspendControls = true;
+		var loadNewIconButton:Button = cast element("loadNewIconButton");
+		loadNewIconButton.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
-				if (weekData.songs[curSong].title != null)
-					songTitle.text = weekData.songs[curSong].title;
-				else
-					songTitle.text = "";
-			}
-		}
-		songTitle.focusLost = function() { suspendControls = false; refreshSongs(); }
-		songTitle.callback = function(text:String, action:String) {
-			if (weekData.songs.length > 0)
-			{
-				if (text.trim() != "")
-					weekData.songs[curSong].title = text;
-				else if (Reflect.hasField(weekData.songs[curSong], "title"))
-					Reflect.deleteField(weekData.songs[curSong], "title");
-			}
-		}
-		tabGroupSong.add(songTitle);
-		tabGroupSong.add(new Label("Title (Optional):", songTitle));
+				var file:FileBrowser = new FileBrowser();
+				file.loadCallback = function(fullPath:String) {
+					var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
+					if (nameArray.indexOf("icons") != -1)
+					{
+						while (nameArray[0] != "icons")
+							nameArray.shift();
+						nameArray.shift();
 
-		var songDiffsText:String = "";
-		if (weekData.songs.length > curSong && weekData.songs[curSong].difficulties != null && weekData.songs[curSong].difficulties.length > 0)
-			songDiffsText = weekData.songs[curSong].difficulties.join(",");
-		songDiffs = new InputText(10, songTitle.y + 40, songDiffsText);
-		songDiffs.forceCase = 2;
-		songDiffs.customFilterPattern = ~/[^a-zA-Z,]*/g;
-		songDiffs.focusGained = function() {
-			suspendControls = true;
-			if (weekData.songs.length > 0)
-			{
-				if (weekData.songs[curSong].difficulties != null && weekData.songs[curSong].difficulties.length > 0)
-					songDiffs.text = weekData.songs[curSong].difficulties.join(",");
-				else
-					songDiffs.text = "";
-			}
-		}
-		songDiffs.focusLost = function() { suspendControls = false; }
-		songDiffs.callback = function(text:String, action:String) {
-			if (weekData.songs.length > 0)
-			{
-				if (text != "")
-					weekData.songs[curSong].difficulties = text.split(",");
-				else if (Reflect.hasField(weekData.songs[curSong], "difficulties"))
-					Reflect.deleteField(weekData.songs[curSong], "difficulties");
-			}
-		}
-		tabGroupSong.add(songDiffs);
-		tabGroupSong.add(new Label("Difficulties (Optional):", songDiffs));
-
-		songCharCount = new Stepper(10, songDiffs.y + 40, 230, 20, 3, 1, 3);
-		songCharCount.onChanged = function() {
-			if (weekData.songs.length > 0)
-				weekData.songs[curSong].characters = Std.int(songCharCount.value);
-		}
-		tabGroupSong.add(songCharCount);
-		tabGroupSong.add(new Label("Character Count:", songCharCount));
-
-		var songCharLabelsText:String = "";
-		if (weekData.songs.length > curSong)
-		{
-			if (weekData.songs[curSong].characterLabels != null && weekData.songs[curSong].characterLabels.length > 0)
-			{
-				var cLabels:Array<String> = weekData.songs[curSong].characterLabels;
-				if (cLabels.length == 3 && cLabels[0] == "#fpSandboxCharacter0" && cLabels[1] == "#fpSandboxCharacter1" && cLabels[2] == "#fpSandboxCharacter2")
-					songCharLabelsText = "";
-				else
-					songCharLabelsText = weekData.songs[curSong].characterLabels.join(",");
-			}
-		}
-		songCharLabels = new InputText(10, songCharCount.y + 40, songCharLabelsText);
-		songCharLabels.focusGained = function() {
-			suspendControls = true;
-			if (weekData.songs.length > 0)
-			{
-				if (weekData.songs[curSong].characterLabels != null && weekData.songs[curSong].characterLabels.length > 0)
-				{
-					var cLabels:Array<String> = weekData.songs[curSong].characterLabels;
-					if (cLabels.length == 3 && cLabels[0] == "#fpSandboxCharacter0" && cLabels[1] == "#fpSandboxCharacter1" && cLabels[2] == "#fpSandboxCharacter2")
-						songCharLabels.text = "";
-					else
-						songCharLabels.text = weekData.songs[curSong].characterLabels.join(",");
+						var finalName = nameArray.join("/");
+						finalName = finalName.substr(0, finalName.length - 9);
+						weekData.songs[curSong].iconNew = finalName;
+						refreshSongs();
+					}
 				}
-				else
-					songCharLabels.text = "";
+				file.load("png;*.json");
 			}
 		}
-		songCharLabels.focusLost = function() { suspendControls = false; }
-		songCharLabels.callback = function(text:String, action:String) {
+
+		var iconInput:InputText = cast element("iconInput");
+		iconInput.condition = function() {
+			if (weekData.songs.length > 0)
+				return weekData.songs[curSong].icon;
+			return iconInput.text;
+		}
+		iconInput.focusLost = function() {
 			if (weekData.songs.length > 0)
 			{
-				if (text == "")
-					weekData.songs[curSong].characterLabels = ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"];
+				if (iconInput.text.trim() != "" && Paths.iconExists(iconInput.text))
+					weekData.songs[curSong].icon = iconInput.text;
 				else
-					weekData.songs[curSong].characterLabels = text.split(",");
+					weekData.songs[curSong].icon = "none";
 			}
 		}
-		tabGroupSong.add(songCharLabels);
-		tabGroupSong.add(new Label("Character Labels:", songCharLabels));
 
-		songScriptDropdown = new DropdownMenu(10, songCharLabels.y + 40, 230, 20, "", allScripts, true);
+		var loadIconButton:Button = cast element("loadIconButton");
+		loadIconButton.onClicked = function() {
+			if (weekData.songs.length > 0)
+			{
+				var file:FileBrowser = new FileBrowser();
+				file.loadCallback = function(fullPath:String) {
+					var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
+					if (nameArray.indexOf("icons") != -1)
+					{
+						while (nameArray[0] != "images")
+							nameArray.remove(nameArray[0]);
+						nameArray.remove(nameArray[0]);
+						nameArray.remove("icons");
+						if (nameArray[nameArray.length - 1].startsWith("icon-"))
+							nameArray[nameArray.length - 1] = nameArray[nameArray.length - 1].substr(5);
+
+						var finalName = nameArray.join("/");
+						if (finalName.endsWith(".json"))
+							finalName = finalName.substr(0, finalName.length - 5);
+						else
+							finalName = finalName.substr(0, finalName.length - 4);
+						weekData.songs[curSong].icon = finalName;
+					}
+				}
+				file.load("png;*.json");
+			}
+		}
+
+		var songTitle:InputText = cast element("songTitle");
+		songTitle.condition = function() {
+			if (weekData.songs.length > 0 && weekData.songs[curSong].title != null)
+				return weekData.songs[curSong].title;
+			return songTitle.text;
+		}
+		songTitle.focusLost = function() {
+			if (weekData.songs.length > 0)
+			{
+				weekData.songs[curSong].title = songTitle.text;
+				refreshSongs();
+			}
+		}
+
+		var songAlbums:TextButton = cast element("songAlbums");
+		songAlbums.onClicked = function()
+		{
+			if (weekData.songs.length > 0)
+			{
+				if (weekData.songs[curSong].albums == null)
+					weekData.songs[curSong].albums = [];
+
+				var window:PopupWindow = null;
+				var vbox:VBox = new VBox(35, 35);
+
+				var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+				var scroll:VBox = menu.vbox;
+
+				var albums:Array<String> = [""];
+				for (album in Paths.listFilesSub("images/ui/freeplay/albums", ""))
+					albums.push(album);
+
+				var difficulties:Array<String> = [""];
+				for (diff in weekData.songs[curSong].difficulties)
+					difficulties.push(diff);
+
+				for (i in 0...weekData.songs[curSong].albums.length)
+				{
+					var albumHbox:HBox = new HBox();
+					albumHbox.add(new Label("Album " + Std.string(i + 1) + ":"));
+					var album:DropdownMenu = new DropdownMenu(0, 0, weekData.songs[curSong].albums[i][1], albums, "None");
+					album.onChanged = function() { weekData.songs[curSong].albums[i][1] = album.value; }
+					albumHbox.add(album);
+					var _remove:Button = new Button(0, 0, "buttonTrash");
+					_remove.onClicked = function() {
+						weekData.songs[curSong].albums.splice(i, 1);
+						window.close();
+						new FlxTimer().start(0.01, function(tmr:FlxTimer) { songAlbums.onClicked(); });
+					}
+					albumHbox.add(_remove);
+					scroll.add(albumHbox);
+
+					var difficultyHbox:HBox = new HBox();
+					difficultyHbox.add(new Label("Difficulty:"));
+					var difficulty:DropdownMenu = new DropdownMenu(0, 0, weekData.songs[curSong].albums[i][0], difficulties, "Default");
+					difficulty.onChanged = function() { weekData.songs[curSong].albums[i][0] = difficulty.value; }
+					difficultyHbox.add(difficulty);
+					scroll.add(difficultyHbox);
+				}
+
+				if (weekData.songs[curSong].albums.length > 0)
+					vbox.add(menu);
+
+				var _add:TextButton = new TextButton(0, 0, "Add");
+				_add.onClicked = function() {
+					if (weekData.songs[curSong].albums.length > 0)
+						weekData.songs[curSong].albums.push(weekData.songs[curSong].albums[weekData.songs[curSong].albums.length-1].copy());
+					else
+						weekData.songs[curSong].albums.push(["",""]);
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songAlbums.onClicked(); });
+				}
+				vbox.add(_add);
+
+				var accept:TextButton = new TextButton(0, 0, "Accept");
+				accept.onClicked = function() { window.close(); }
+				vbox.add(accept);
+
+				window = PopupWindow.CreateWithGroup(vbox);
+			}
+		}
+
+		var songDifficulties:TextButton = cast element("songDifficulties");
+		songDifficulties.onClicked = function()
+		{
+			if (weekData.songs.length > 0)
+			{
+				var window:PopupWindow = null;
+				var vbox:VBox = new VBox(35, 35);
+
+				var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+				var scroll:VBox = menu.vbox;
+
+				for (i in 0...weekData.songs[curSong].difficulties.length)
+				{
+					var diffHbox:HBox = new HBox();
+					var difficulty:InputText = new InputText(0, 0);
+					difficulty.text = weekData.songs[curSong].difficulties[i];
+					difficulty.forceCase = 2;
+					difficulty.customFilterPattern = ~/[^a-zA-Z,]*/g;
+					difficulty.focusLost = function() { weekData.songs[curSong].difficulties[i] = difficulty.text; }
+					diffHbox.add(difficulty);
+					if (weekData.songs[curSong].difficulties.length > 1)
+					{
+						var _remove:Button = new Button(0, 0, "buttonTrash");
+						_remove.onClicked = function() {
+							weekData.songs[curSong].difficulties.splice(i, 1);
+							window.close();
+							new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+						}
+						diffHbox.add(_remove);
+					}
+					scroll.add(diffHbox);
+				}
+
+				vbox.add(menu);
+
+				var sameAsWeek:TextButton = new TextButton(0, 0, "Same as Week", Button.LONG);
+				sameAsWeek.onClicked = function() {
+					weekData.songs[curSong].difficulties = weekData.difficulties.copy();
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+				}
+				vbox.add(sameAsWeek);
+
+				var _add:TextButton = new TextButton(0, 0, "Add");
+				_add.onClicked = function() {
+					weekData.songs[curSong].difficulties.push(weekData.songs[curSong].difficulties[weekData.songs[curSong].difficulties.length-1]);
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+				}
+				vbox.add(_add);
+
+				var accept:TextButton = new TextButton(0, 0, "Accept");
+				accept.onClicked = function() { window.close(); }
+				vbox.add(accept);
+
+				window = PopupWindow.CreateWithGroup(vbox);
+			}
+		}
+
+		var songCharLabels:TextButton = cast element("songCharLabels");
+		songCharLabels.onClicked = function()
+		{
+			if (weekData.songs.length > 0)
+			{
+				if (weekData.songs[curSong].characterLabels.length > weekData.songs[curSong].characters)
+					weekData.songs[curSong].characterLabels.resize(weekData.songs[curSong].characters);
+
+				if (weekData.songs[curSong].characterLabels.length < weekData.songs[curSong].characters)
+				{
+					while (weekData.songs[curSong].characterLabels.length < weekData.songs[curSong].characters)
+					{
+						if (weekData.songs[curSong].characterLabels.length < 3)
+							weekData.songs[curSong].characterLabels.push("#freeplay.sandbox.character" + Std.string(weekData.songs[curSong].characterLabels.length));
+						else
+							weekData.songs[curSong].characterLabels.push("Singer " + Std.string(weekData.songs[curSong].characterLabels.length + 1) + ":");
+					}
+				}
+
+				var window:PopupWindow = null;
+				var vbox:VBox = new VBox(35, 35);
+
+				var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+				var scroll:VBox = menu.vbox;
+
+				for (i in 0...weekData.songs[curSong].characterLabels.length)
+				{
+					var charHbox:HBox = new HBox();
+					var charLabel:InputText = new InputText(0, 0);
+					charLabel.text = weekData.songs[curSong].characterLabels[i];
+					charLabel.focusLost = function() { weekData.songs[curSong].characterLabels[i] = charLabel.text; }
+					charHbox.add(charLabel);
+					if (weekData.songs[curSong].characterLabels.length > 3)
+					{
+						var _remove:Button = new Button(0, 0, "buttonTrash");
+						_remove.onClicked = function() {
+							weekData.songs[curSong].characterLabels.splice(i, 1);
+							weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
+							window.close();
+							new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+						}
+						charHbox.add(_remove);
+					}
+					scroll.add(charHbox);
+				}
+
+				vbox.add(menu);
+
+				var _default:TextButton = new TextButton(0, 0, "Default", Button.LONG);
+				_default.onClicked = function() {
+					weekData.songs[curSong].characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
+					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+				}
+				vbox.add(_default);
+
+				var _add:TextButton = new TextButton(0, 0, "Add");
+				_add.onClicked = function() {
+					weekData.songs[curSong].characterLabels.push(weekData.songs[curSong].characterLabels[weekData.songs[curSong].characterLabels.length-1]);
+					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+				}
+				vbox.add(_add);
+
+				var accept:TextButton = new TextButton(0, 0, "Accept", function() { window.close(); });
+				vbox.add(accept);
+
+				window = PopupWindow.CreateWithGroup(vbox);
+			}
+		}
+
+		var songScriptDropdown:DropdownMenu = cast element("songScriptDropdown");
+		songScriptDropdown.valueList = allScripts;
+		songScriptDropdown.condition = function() {
+			if (weekData.songs.length > 0 && weekData.songs[curSong].hscript != null)
+				return weekData.songs[curSong].hscript;
+			return songScriptDropdown.value;
+		}
 		songScriptDropdown.onChanged = function() {
-			if (songScriptDropdown.value != "")
+			if (weekData.songs.length > 0)
 				weekData.songs[curSong].hscript = songScriptDropdown.value;
-			else if (Reflect.hasField(weekData.songs[curSong], "hscript"))
-				Reflect.deleteField(weekData.songs[curSong], "hscript");
-		};
-		tabGroupSong.add(songScriptDropdown);
-		tabGroupSong.add(new Label("Custom State (Optional):", songScriptDropdown));
+		}
 
-		refreshSongTab(false);
-		tabMenu.addGroup(tabGroupSong);
+		var makeAutoFile:Button = cast element("makeAutoFile");
+		makeAutoFile.onClicked = function() {
+			if (weekData.songs.length > 0)
+			{
+				var _auto:WeekSongData = {
+					songId: weekData.songs[curSong].songId,
+					iconNew: weekData.songs[curSong].iconNew
+				}
+
+				if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, ["normal", "hard", "easy"]))
+					_auto.difficulties = weekData.songs[curSong].difficulties;
+
+				if (weekData.songs[curSong].title != null && weekData.songs[curSong].title.trim() != "")
+					_auto.title = weekData.songs[curSong].title;
+
+				if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
+				{
+					_auto.characters = weekData.songs[curSong].characters;
+					_auto.characterLabels = weekData.songs[curSong].characterLabels;
+				}
+
+				Reflect.deleteField(_auto, "songId");
+				var data:String = Json.stringify(_auto);
+				var file:FileBrowser = new FileBrowser();
+				file.save("_auto.json", data.trim());
+			}
+		}
 
 
 
-		var tabGroupStory = new TabGroup();
+		var weekName:InputText = cast element("weekName");
+		weekName.text = weekData.title;
+		weekName.condition = function() { return weekData.title; }
+		weekName.focusLost = function() {
+			weekData.title = weekName.text;
+			weekTitle.text = Lang.get(weekData.title);
+		}
 
-		var imageList:Array<String> = Paths.listFilesSub("images/ui/weeks/", ".png");
-		var weekImageDropdown:DropdownMenu = new DropdownMenu(10, 20, 230, 20, weekData.image, imageList, true);
+		var imageList:Array<String> = Paths.listFilesSub("images/ui/story/weeks/", ".png");
+		var weekImageDropdown:DropdownMenu = cast element("weekImageDropdown");
+		weekImageDropdown.valueList = imageList;
+		weekImageDropdown.value = weekData.image;
+		weekImageDropdown.condition = function() { return weekData.image; }
 		weekImageDropdown.onChanged = function() {
 			weekData.image = weekImageDropdown.value;
 			refreshImageButton();
 		};
-		tabGroupStory.add(weekImageDropdown);
-		tabGroupStory.add(new Label("Week Button Image:", weekImageDropdown));
 
-		var bannerList:Array<String> = Paths.listFilesSub("images/ui/story_banners/", ".png");
+		var bannerList:Array<String> = Paths.listFilesSub("images/ui/story/banners/", ".png");
 		bannerList.unshift("");
 		if (weekData.banner == null)
 			weekData.banner = "";
-		var bannerImageDropdown:DropdownMenu = new DropdownMenu(10, weekImageDropdown.y + 40, 230, 20, weekData.banner, bannerList, true);
+		var bannerImageDropdown:DropdownMenu = cast element("bannerImageDropdown");
+		bannerImageDropdown.valueList = bannerList;
+		bannerImageDropdown.value = weekData.banner;
+		bannerImageDropdown.condition = function() { return weekData.banner; }
 		bannerImageDropdown.onChanged = function() {
 			weekData.banner = bannerImageDropdown.value;
 			refreshWeekBanner();
-		};
-		tabGroupStory.add(bannerImageDropdown);
-		tabGroupStory.add(new Label("Week Banner (Optional):", bannerImageDropdown));
+		}
 
-		if (weekData.color == null)
-			weekData.color = [249, 207, 81];
-		bgYellow.color = FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]);
-		var menuColor:TextButton = new TextButton(10, bannerImageDropdown.y + 30, 230, 20, "Banner Color");
+		var menuColor:Button = cast element("menuColor");
 		menuColor.onClicked = function() {
+			new ColorPicker(FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]), function(clr:FlxColor) {
+				weekData.color = [clr.red, clr.green, clr.blue];
+				refreshWeekBanner();
+			});
+		}
+
+		var menuColorPicker:Button = cast element("menuColorPicker");
+		menuColorPicker.onClicked = function() {
 			persistentUpdate = false;
-			openSubState(new WeekColorSubState(this));
-		};
-		tabGroupStory.add(menuColor);
+			openSubState(new ColorPickSubstate(function(px:FlxColor) {
+				weekData.color = [px.red, px.green, px.blue];
+				refreshWeekBanner();
+			}));
+		}
+
+		var menuColorDefault:TextButton = cast element("menuColorDefault");
+		menuColorDefault.onClicked = function() {
+			weekData.color = [249, 207, 81];
+			refreshWeekBanner();
+		}
 
 		var characterList:Array<String> = Paths.listFilesSub("data/story_characters/", ".json");
 		characterList.unshift("");
-		var charLeftDropdown:DropdownMenu = new DropdownMenu(10, menuColor.y + 40, 230, 20, weekData.characters[0], characterList, true);
-		charLeftDropdown.onChanged = function() {
-			weekData.characters[0] = charLeftDropdown.value;
-			refreshMenuCharacters();
-		};
-		tabGroupStory.add(charLeftDropdown);
-		tabGroupStory.add(new Label("Left Character:", charLeftDropdown));
 
-		var charCenterDropdown:DropdownMenu = new DropdownMenu(10, charLeftDropdown.y + 40, 230, 20, weekData.characters[1], characterList, true);
-		charCenterDropdown.onChanged = function() {
-			weekData.characters[1] = charCenterDropdown.value;
-			refreshMenuCharacters();
-		};
-		tabGroupStory.add(charCenterDropdown);
-		tabGroupStory.add(new Label("Center Character:", charCenterDropdown));
+		for (i in 0...3)
+		{
+			var charDropdown:DropdownMenu = cast element("charDropdown" + Std.string(i));
+			charDropdown.valueList = characterList;
+			charDropdown.value = weekData.characters[i][0];
+			charDropdown.condition = function() { return weekData.characters[i][0]; }
+			charDropdown.onChanged = function() {
+				weekData.characters[i][0] = charDropdown.value;
+				refreshMenuCharacter(i);
+			}
 
-		var charRightDropdown:DropdownMenu = new DropdownMenu(10, charCenterDropdown.y + 40, 230, 20, weekData.characters[2], characterList, true);
-		charRightDropdown.onChanged = function() {
-			weekData.characters[2] = charRightDropdown.value;
-			refreshMenuCharacters();
-		};
-		tabGroupStory.add(charRightDropdown);
-		tabGroupStory.add(new Label("Right Character:", charRightDropdown));
+			var charOffsetX:Stepper = cast element("charOffsetX" + Std.string(i));
+			charOffsetX.value = weekData.characters[i][1];
+			charOffsetX.condition = function() { return weekData.characters[i][1]; }
+			charOffsetX.onChanged = function() {
+				weekData.characters[i][1] = charOffsetX.value;
+				refreshMenuCharacter(i);
+			}
 
-		var scriptDropdown:DropdownMenu = new DropdownMenu(10, charRightDropdown.y + 40, 230, 20, (weekData.hscript == null ? "" : weekData.hscript), allScripts, true);
-		scriptDropdown.onChanged = function() {
-			if (scriptDropdown.value != "")
-				weekData.hscript = scriptDropdown.value;
-			else if (Reflect.hasField(weekData, "hscript"))
-				Reflect.deleteField(weekData, "hscript");
-		};
-		tabGroupStory.add(scriptDropdown);
-		tabGroupStory.add(new Label("Custom State (Optional):", scriptDropdown));
+			var charOffsetY:Stepper = cast element("charOffsetY" + Std.string(i));
+			charOffsetY.value = weekData.characters[i][2];
+			charOffsetY.condition = function() { return weekData.characters[i][2]; }
+			charOffsetY.onChanged = function() {
+				weekData.characters[i][2] = charOffsetY.value;
+				refreshMenuCharacter(i);
+			}
+		}
 
-		tabMenu.addGroup(tabGroupStory);
+		var scriptDropdown:DropdownMenu = cast element("scriptDropdown");
+		scriptDropdown.valueList = allScripts;
+		scriptDropdown.value = (weekData.hscript == null ? "" : weekData.hscript);
+		scriptDropdown.condition = function() { return (weekData.hscript == null ? "" : weekData.hscript); }
+		scriptDropdown.onChanged = function() { weekData.hscript = scriptDropdown.value; }
+
+
+
+		var tabOptions:Array<TopMenuOption> = [];
+		for (t in tabMenu.tabs)
+			tabOptions.push({label: t, action: function() { tabMenu.selectTabByName(t); }, condition: function() { return tabMenu.curTabName == t; }, icon: "bullet"});
+
+		var topmenu:TopMenu;
+		topmenu = new TopMenu([
+			{
+				label: "File",
+				options: [
+					{
+						label: "New",
+						action: function() { _confirm("make a new week", _new); },
+						shortcut: [FlxKey.CONTROL, FlxKey.N],
+						icon: "new"
+					},
+					{
+						label: "Open",
+						action: function() { _confirm("load another week", _open); },
+						shortcut: [FlxKey.CONTROL, FlxKey.O],
+						icon: "open"
+					},
+					{
+						label: "Save",
+						action: function() { _save(false); },
+						shortcut: [FlxKey.CONTROL, FlxKey.S],
+						icon: "save"
+					},
+					{
+						label: "Save As...",
+						action: function() { _save(true); },
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.S],
+						icon: "save"
+					},
+					null,
+					{
+						label: "Exit",
+						action: function() { _confirm("exit", function() { FlxG.switchState(new EditorMenuState()); }); },
+						shortcut: [FlxKey.ESCAPE]
+					}
+				]
+			},
+			{
+				label: "Edit",
+				options: [
+					{
+						label: "Undo",
+						action: undo,
+						shortcut: [FlxKey.CONTROL, FlxKey.Z],
+						icon: "undo"
+					},
+					{
+						label: "Redo",
+						action: redo,
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.Z],
+						icon: "redo"
+					}
+				]
+			},
+			{
+				label: "View",
+				options: [
+					{
+						label: "Information Panel",
+						condition: function() { return members.contains(infoBox); },
+						action: function() {
+							if (members.contains(infoBox))
+								remove(infoBox, true);
+							else
+								insert(members.indexOf(topmenu), infoBox);
+						},
+						icon: "bullet"
+					}
+				]
+			},
+			{
+				label: "Tab",
+				options: tabOptions
+			}
+		]);
+		topmenu.cameras = [camHUD];
+		add(topmenu);
+
+		dataLog = [Cloner.clone(weekData)];
 	}
 
 	override public function update(elapsed:Float)
 	{
-		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.S)
-			saveWeek();
+		UIControl.cursor = MouseCursor.ARROW;
+
+		if (!DeepEquals.deepEquals(weekData, dataLog[undoPosition]))
+		{
+			if (undoPosition < dataLog.length - 1)
+				dataLog.resize(undoPosition + 1);
+			dataLog.push(Cloner.clone(weekData));
+			unsaved = true;
+			undoPosition = dataLog.length - 1;
+			refreshFilename();
+		}
 
 		super.update(elapsed);
 
-		if (tabMenu.curTab < 2 && weekData.songs.length > 0)
+		if (FlxG.mouse.justMoved)
 		{
-			songList.x = FlxMath.lerp(songList.x, curSong * -20, 0.16 * elapsed * 60);
-			songList.y = FlxMath.lerp(songList.y, curSong * 1.3 * -120, 0.16 * elapsed * 60);
-			songIcons.setPosition(songList.x, songList.y);
-
-			if (!suspendControls)
+			hoveredCapsule = -1;
+			if (tabMenu.curTabName != "Story" && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu, camHUD))
 			{
-				if (FlxG.mouse.wheel != 0)
-					changeSelection(-FlxG.mouse.wheel);
-
-				if (Options.keyJustPressed("ui_up"))
-					changeSelection(-1);
-
-				if (Options.keyJustPressed("ui_down"))
-					changeSelection(1);
+				var i:Int = 0;
+				grpCapsules.forEachAlive(function(capsule:FreeplayCapsule) {
+					if (FlxG.mouse.overlaps(capsule) && hoveredCapsule == -1)
+					{
+						hoveredCapsule = i;
+						UIControl.cursor = MouseCursor.BUTTON;
+					}
+					i++;
+				});
 			}
 		}
 
-		if (FlxG.keys.justPressed.ESCAPE)
-			FlxG.switchState(new EditorMenuState());
+		if (Options.mouseJustPressed() && hoveredCapsule > -1)
+		{
+			curSong = hoveredCapsule;
+			changeSelection();
+		}
+
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
 	}
 
 	function refreshSongs()
 	{
-		songList.forEachAlive(function(txt:Alphabet)
-		{
-			txt.kill();
-			txt.destroy();
-		});
-		songList.clear();
-
-		songIcons.forEachAlive(function(icon:HealthIcon)
-		{
-			icon.kill();
-			icon.destroy();
-		});
-		songIcons.clear();
+		grpCapsules.forEachAlive(function(capsule:FreeplayCapsule) { capsule.kill(); });
 
 		if (weekData.songs.length > 0)
 		{
@@ -624,28 +936,22 @@ class WeekEditorState extends MusicBeatState
 				if (!allSongs.contains(weekData.songs[i].songId))
 					weekData.songs[i].songId = allSongs[1];
 				if (!Paths.iconExists(weekData.songs[i].icon))
-					weekData.songs[i].icon = allIcons[0];
-				if (Paths.iconExists(weekData.songs[i].icon) && !allIcons.contains(weekData.songs[i].icon) && weekData.songs[i].icon.indexOf("/") > 0)
-				{
-					for (h in HealthIcon.listIcons(weekData.songs[i].icon.substring(0, weekData.songs[i].icon.indexOf("/")+1)))
-						allIcons.push(weekData.songs[i].icon.substring(0, weekData.songs[i].icon.indexOf("/")+1) + h);
-					if (iconDropdown != null)
-						iconDropdown.valueList = allIcons.copy();
-				}
+					weekData.songs[i].icon = "none";
 
-				var diffs:Array<String> = (weekData.songs[i].difficulties == null || weekData.songs[i].difficulties.length < 1 ? ["normal"] : weekData.songs[i].difficulties);
+				var diffs:Array<String> = weekData.songs[i].difficulties;
 				var songName:String = "None";
 				if (weekData.songs[i].songId != "")
 					songName = Song.getSongName(weekData.songs[i].songId, diffs[0]);
 				if (weekData.songs[i].title != null && weekData.songs[i].title != "")
 					songName = Lang.get(weekData.songs[i].title);
-				var textButton:Alphabet = new Alphabet(Std.int((i * 20) + 340), Std.int((i * 1.3 * 120) + (FlxG.height * 0.48)), songName, "bold", Std.int(FlxG.width * 0.9) - 250);
-				songList.add(textButton);
 
-				var icon:HealthIcon = new HealthIcon(Std.int(textButton.x - songList.x + textButton.width + 85), Std.int(textButton.y - songList.y + 45), weekData.songs[i].icon);
-				icon.x -= icon.width / 2;
-				icon.y -= icon.height / 2;
-				songIcons.add(icon);
+				var capsule:FreeplayCapsule = grpCapsules.recycle(FreeplayCapsule);
+				capsule.songId = weekData.songs[i].songId;
+				capsule.songInfo = weekData.songs[i];
+				capsule.icon = weekData.songs[i].iconNew;
+				capsule.text = songName;
+				capsule.lit = true;
+				grpCapsules.add(capsule);
 			}
 		}
 		changeSelection();
@@ -653,65 +959,27 @@ class WeekEditorState extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
-		if (DropdownMenu.isOneActive)
-			return;
-
-		var oldCurSong:Int = curSong;
-
-		curSong += change;
-		if (curSong < 0)
-			curSong = weekData.songs.length - 1;
-		if (curSong >= weekData.songs.length)
-			curSong = 0;
-
-		if (oldCurSong != curSong)
-			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
-
-		var i:Int = 0;
-		songList.forEachAlive(function(button:Alphabet)
+		if (!DropdownMenu.isOneActive)
 		{
-			if (i == curSong)
-				button.alpha = 1;
-			else
-				button.alpha = 0.6;
-			i++;
-		});
+			var oldCurSong:Int = curSong;
 
-		i = 0;
-		songIcons.forEachAlive(function(icon:HealthIcon)
-		{
-			if (i == curSong)
-				icon.alpha = 1;
-			else
-				icon.alpha = 0.6;
-			i++;
-		});
-
-		if (oldCurSong != curSong)
-			refreshSongTab();
-	}
-
-	function refreshSongTab(?fillInputText:Bool = true)
-	{
-		if (weekData.songs.length > 0)
-		{
-			songDropdown.value = weekData.songs[curSong].songId;
-			if (fillInputText)
-			{
-				iconInput.focusGained();
-				songTitle.focusGained();
-				songDiffs.focusGained();
-				songCharLabels.focusGained();
-				suspendControls = false;
-			}
-			songCharCount.value = weekData.songs[curSong].characters;
-			songScriptDropdown.value = (weekData.songs[curSong].hscript == null ? "" : weekData.songs[curSong].hscript);
+			curSong += change;
+			if (curSong < 0)
+				curSong = weekData.songs.length - 1;
+			if (curSong >= weekData.songs.length)
+				curSong = 0;
 		}
+
+		var i:Int = -curSong;
+		grpCapsules.forEachAlive(function(capsule:FreeplayCapsule) {
+			i++;
+			capsule.index = i;
+		});
 	}
 
 	function refreshImageButton()
 	{
-		imageButton.loadGraphic(Paths.image("ui/weeks/" + weekData.image));
+		imageButton.loadGraphic(Paths.image("ui/story/weeks/" + weekData.image));
 		imageButton.screenCenter(X);
 	}
 
@@ -719,7 +987,7 @@ class WeekEditorState extends MusicBeatState
 	{
 		if (weekData.banner != null && weekData.banner != "")
 		{
-			banner.loadGraphic(Paths.image("ui/story_banners/" + weekData.banner));
+			banner.loadGraphic(Paths.image("ui/story/banners/" + weekData.banner));
 			banner.setGraphicSize(1280);
 			banner.updateHitbox();
 			banner.visible = true;
@@ -730,119 +998,169 @@ class WeekEditorState extends MusicBeatState
 			banner.visible = false;
 			bgYellow.visible = true;
 		}
+		bgYellow.color = FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]);
+
+		menuCharacters.forEachAlive(function(char:MenuCharacter)
+		{
+			if (char.characterData.matchColor)
+				char.color = bgYellow.color;
+			else
+				char.color = FlxColor.WHITE;
+		});
 	}
 
 	function refreshMenuCharacters()
 	{
 		for (i in 0...weekData.characters.length)
+			refreshMenuCharacter(i);
+	}
+
+	function refreshMenuCharacter(index:Int)
+	{
+		if (index >= 0 && index < weekData.characters.length && index < menuCharacters.members.length)
 		{
-			if (weekData.characters[i] == "")
-				menuCharacters.members[i].visible = false;
+			var char:MenuCharacter = menuCharacters.members[index];
+			if (weekData.characters[index][0] == "")
+				char.visible = false;
 			else
 			{
-				menuCharacters.members[i].visible = true;
-				menuCharacters.members[i].refreshCharacter(weekData.characters[i]);
+				char.visible = true;
+				char.setPosition(weekData.characters[index][1], 56 + weekData.characters[index][2]);
+				char.refreshCharacter(weekData.characters[index][0]);
+				if (char.characterData.matchColor)
+					char.color = bgYellow.color;
+				else
+					char.color = FlxColor.WHITE;
 			}
 		}
 	}
 
-
-
-	function saveWeek()
+	function undo()
 	{
-		var saveData:WeekData = Reflect.copy(weekData);
-		saveData.songs = [];
-		for (s in weekData.songs)
-			saveData.songs.push(Reflect.copy(s));
+		if (undoPosition > 0)
+		{
+			undoPosition--;
+			if (!unsaved)
+			{
+				unsaved = true;
+				refreshFilename();
+			}
+			weekData = Cloner.clone(dataLog[undoPosition]);
+			postUndoRedo();
+		}
+	}
 
-		if (saveData.color[0] == 249 && saveData.color[1] == 207 && saveData.color[2] == 81)
+	function redo()
+	{
+		if (undoPosition < dataLog.length - 1)
+		{
+			undoPosition++;
+			if (!unsaved)
+			{
+				unsaved = true;
+				refreshFilename();
+			}
+			weekData = Cloner.clone(dataLog[undoPosition]);
+			postUndoRedo();
+		}
+	}
+
+	function postUndoRedo()
+	{
+		refreshSongs();
+		refreshImageButton();
+		refreshWeekBanner();
+		refreshMenuCharacters();
+		weekTitle.text = Lang.get(weekData.title);
+	}
+
+
+
+	function _new()
+	{
+		FlxG.switchState(new WeekEditorState(true, "", ""));
+	}
+
+	function _open()
+	{
+		var file:FileBrowser = new FileBrowser();
+		file.loadCallback = function(fullPath:String)
+		{
+			var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
+			if (jsonNameArray.indexOf("weeks") == -1)
+				new Notify("The file you have selected is not a week.");
+			else
+			{
+				while (jsonNameArray[0] != "weeks")
+					jsonNameArray.shift();
+				jsonNameArray.shift();
+
+				var finalJsonName = jsonNameArray.join("/").split('.json')[0];
+
+				FlxG.switchState(new WeekEditorState(false, finalJsonName, fullPath));
+			}
+		}
+		file.load();
+	}
+
+	function _save(?browse:Bool = true)
+	{
+		var saveData:WeekData = Cloner.clone(weekData);
+
+		if (DeepEquals.deepEquals(saveData.color, [249, 207, 81]))
 			Reflect.deleteField(saveData, "color");
+
+		if (saveData.hscript != null && saveData.hscript.trim() == "")
+			Reflect.deleteField(saveData, "hscript");
 
 		for (s in saveData.songs)
 		{
+			if (s.difficulties.length <= 0 || DeepEquals.deepEquals(s.difficulties, saveData.difficulties))
+				Reflect.deleteField(s, "difficulties");
+
+			if (s.albums != null && s.albums.length <= 0)
+				Reflect.deleteField(s, "albums");
+
+			if (s.title != null && s.title.trim() == "")
+				Reflect.deleteField(s, "title");
+
+			if (s.hscript != null && s.hscript.trim() == "")
+				Reflect.deleteField(s, "hscript");
+
 			if (s.characters == 3)
 				Reflect.deleteField(s, "characters");
 
 			if (s.characterLabels.length <= 0)
 				Reflect.deleteField(s, "characterLabels");
 
-			if (s.characterLabels.length == 3 && s.characterLabels[0] == "#fpSandboxCharacter0" && s.characterLabels[1] == "#fpSandboxCharacter1" && s.characterLabels[2] == "#fpSandboxCharacter2")
+			if (DeepEquals.deepEquals(s.characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
 				Reflect.deleteField(s, "characterLabels");
 		}
+
+		if (DeepEquals.deepEquals(saveData.difficulties, ["normal", "hard", "easy"]))
+			Reflect.deleteField(saveData, "difficulties");
+
+		if (saveData.difficultiesLocked.length <= 0)
+			Reflect.deleteField(saveData, "difficultiesLocked");
 
 		var data:String = Json.stringify(saveData, null, "\t");
 		if (Options.options.compactJsons)
 			data = Json.stringify(saveData);
 
-		if ((data != null) && (data.length > 0))
+		if (data != null && data.length > 0)
 		{
-			var file:FileBrowser = new FileBrowser();
-			file.save(curWeek + ".json", data.trim());
+			if (browse || filename == "")
+			{
+				var file:FileBrowser = new FileBrowser();
+				file.saveCallback = changeSaveName;
+				file.save(id + ".json", data.trim());
+			}
+			else
+			{
+				FileBrowser.saveAs(filename, data.trim());
+				unsaved = false;
+				refreshFilename();
+			}
 		}
-	}
-
-	function loadWeek()
-	{
-		var file:FileBrowser = new FileBrowser();
-		file.loadCallback = EditorMenuState.loadWeekCallback;
-		file.load();
-	}
-}
-
-class WeekColorSubState extends FlxSubState
-{
-	override public function new(state:WeekEditorState)
-	{
-		super();
-
-		var tabMenu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, 300, 260);
-		tabMenu.screenCenter();
-		add(tabMenu);
-
-		var tabGroupColor = new TabGroup();
-
-		var ol1:FlxSprite = new FlxSprite(48, 8).makeGraphic(204, 34, FlxColor.BLACK);
-		tabGroupColor.add(ol1);
-
-		var ol2:FlxSprite = new FlxSprite(48, 48).makeGraphic(144, 144, FlxColor.BLACK);
-		tabGroupColor.add(ol2);
-
-		var ol3:FlxSprite = new FlxSprite(218, 48).makeGraphic(34, 144, FlxColor.BLACK);
-		tabGroupColor.add(ol3);
-
-		var colorThing:FlxSprite = new FlxSprite(50, 10).makeGraphic(200, 30, FlxColor.WHITE);
-		colorThing.color = FlxColor.fromRGB(state.weekData.color[0], state.weekData.color[1], state.weekData.color[2]);
-		tabGroupColor.add(colorThing);
-
-		var colorSwatch:ColorSwatch = new ColorSwatch(50, 50, 140, 140, 30, colorThing.color);
-		tabGroupColor.add(colorSwatch);
-
-		var stepperR:Stepper = new Stepper(20, 200, 80, 20, colorThing.color.red, 5, 0, 255);
-		var stepperG:Stepper = new Stepper(110, 200, 80, 20, colorThing.color.green, 5, 0, 255);
-		var stepperB:Stepper = new Stepper(200, 200, 80, 20, colorThing.color.blue, 5, 0, 255);
-
-		stepperR.onChanged = function() { colorSwatch.r = stepperR.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperR);
-
-		stepperG.onChanged = function() { colorSwatch.g = stepperG.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperG);
-
-		stepperB.onChanged = function() { colorSwatch.b = stepperB.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperB);
-
-		colorSwatch.onChanged = function() { colorThing.color = colorSwatch.swatchColor; stepperR.value = colorSwatch.r; stepperG.value = colorSwatch.g; stepperB.value = colorSwatch.b; }
-
-		var acceptButton:TextButton = new TextButton(20, 230, 260, 20, "#accept");
-		acceptButton.onClicked = function()
-		{
-			state.weekData.color = [colorThing.color.red, colorThing.color.green, colorThing.color.blue];
-			state.bgYellow.color = colorThing.color;
-			close();
-		};
-		tabGroupColor.add(acceptButton);
-
-		tabMenu.addGroup(tabGroupColor);
-
-		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
 	}
 }

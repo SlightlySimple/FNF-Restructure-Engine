@@ -1,14 +1,14 @@
 {
-	"label": "#optionsCatGameplay",
+	"label": "#options.category.gameplay",
 	"contents": [
 		{
 			"type": "label",
-			"label": "#optionsSubcatNotes"
+			"label": "#options.gameplay.subCategory.notes"
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameOffset",
-			"description": "#optionsDescOffset",
+			"label": "#options.gameplay.offset.name",
+			"description": "#options.gameplay.offset.desc",
 			"variable": "offset",
 			"range": [-2000, 2000],
 			"changeValue": 1,
@@ -16,29 +16,35 @@
 			"defValue": 0
 		},
 		{
+			"type": "function",
+			"label": "#options.gameplay.calibrateOffset.name",
+			"description": "#options.gameplay.calibrateOffset.desc",
+			"variable": "calibrateOffset"
+		},
+		{
 			"type": "choicesPopulate",
-			"label": "#optionsNameNoteskin",
-			"description": "#optionsDescNoteskin",
+			"label": "#options.gameplay.noteskin.name",
+			"description": "#options.gameplay.noteskin.desc",
 			"variable": "noteskin",
 			"defValue": "Arrows"
 		},
 		{
 			"type": "noteColors",
-			"label": "#optionsNameNoteColors",
-			"description": "#optionsDescNoteColors",
+			"label": "#options.gameplay.default.name",
+			"description": "#options.gameplay.default.desc",
 			"variable": "default"
 		},
 		{
 			"type": "choicesPopulate",
-			"label": "#optionsNameHitSound",
-			"description": "#optionsDescHitSound",
+			"label": "#options.gameplay.hitsound.name",
+			"description": "#options.gameplay.hitsound.desc",
 			"variable": "hitsound",
 			"defValue": "None"
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameHitVolume",
-			"description": "#optionsDescHitVolume",
+			"label": "#options.gameplay.hitvolume.name",
+			"description": "#options.gameplay.hitvolume.desc",
 			"variable": "hitvolume",
 			"range": [0, 1],
 			"changeValue": 0.05,
@@ -47,8 +53,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameMissVolume",
-			"description": "#optionsDescMissVolume",
+			"label": "#options.gameplay.missvolume.name",
+			"description": "#options.gameplay.missvolume.desc",
 			"variable": "missvolume",
 			"range": [0, 1],
 			"changeValue": 0.05,
@@ -57,8 +63,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameScrollSpeed",
-			"description": "#optionsDescScrollSpeed",
+			"label": "#options.gameplay.scrollSpeed.name",
+			"description": "#options.gameplay.scrollSpeed.desc",
 			"variable": "scrollSpeed",
 			"range": [0.5, 5],
 			"changeValue": 0.05,
@@ -67,31 +73,31 @@
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameScrollType",
-			"description": "#optionsDescScrollType",
+			"label": "#options.gameplay.scrollSpeedType.name",
+			"description": "#options.gameplay.scrollSpeedType.desc",
 			"variable": "scrollSpeedType",
-			"options": ["#optionsChoiceScrollType1", "#optionsChoiceScrollType2"],
+			"options": ["#options.gameplay.scrollSpeedType.choice.0", "#options.gameplay.scrollSpeedType.choice.1"],
 			"defValue": 1
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameQuantizaton",
-			"description": "#optionsDescQuantizaton",
+			"label": "#options.gameplay.quantization.name",
+			"description": "#options.gameplay.quantization.desc",
 			"variable": "quantization",
-			"options": ["#optionsChoiceQuantizaton1", "#optionsChoiceQuantizaton2"],
+			"options": ["#options.gameplay.quantization.choice.0", "#options.gameplay.quantization.choice.1"],
 			"defValue": false
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameMirror",
-			"description": "#optionsDescMirror",
+			"label": "#options.gameplay.mirrorMode.name",
+			"description": "#options.gameplay.mirrorMode.desc",
 			"variable": "mirrorMode",
 			"defValue": false
 		},
 		{
 			"type": "percent",
-			"label": "#optionsNameNoteScale",
-			"description": "#optionsDescNoteScale",
+			"label": "#options.gameplay.noteScale.name",
+			"description": "#options.gameplay.noteScale.desc",
 			"variable": "noteScale",
 			"range": [0.05, 2],
 			"changeValue": 0.05,
@@ -100,38 +106,34 @@
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatStrumline"
+			"label": "#options.gameplay.subCategory.strumline"
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameDownscroll",
-			"description": "#optionsDescDownscroll",
+			"label": "#options.gameplay.downscroll.name",
+			"description": "#options.gameplay.downscroll.desc",
 			"variable": "downscroll",
-			"options": ["#optionsChoiceDownscroll1", "#optionsChoiceDownscroll2"],
+			"options": ["#options.gameplay.downscroll.choice.0", "#options.gameplay.downscroll.choice.1"],
 			"defValue": false
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameFlipSustains",
-			"description": "#optionsDescFlipSustains",
+			"label": "#options.gameplay.flipSustains.name",
+			"description": "#options.gameplay.flipSustains.desc",
 			"variable": "flipSustains",
 			"defValue": false
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameMiddlescroll",
-			"description": "#optionsDescMiddlescroll",
+			"label": "#options.gameplay.middlescroll.name",
+			"description": "#options.gameplay.middlescroll.desc",
 			"variable": "middlescroll",
 			"defValue": false
 		},
 		{
 			"type": "percent",
-			"label": "#optionsNameLaneOpacity",
-			"description": "#optionsDescLaneOpacity",
+			"label": "#options.gameplay.laneOpacity.name",
+			"description": "#options.gameplay.laneOpacity.desc",
 			"variable": "laneOpacity",
 			"range": [0, 1],
 			"changeValue": 0.05,
@@ -140,8 +142,8 @@
 		},
 		{
 			"type": "int",
-			"label": "#optionsNameLaneWidth",
-			"description": "#optionsDescLaneWidth",
+			"label": "#options.gameplay.laneBorder.name",
+			"description": "#options.gameplay.laneBorder.desc",
 			"variable": "laneBorder",
 			"range": [0, 50],
 			"changeValue": 1,
@@ -150,16 +152,12 @@
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatJudgements"
+			"label": "#options.gameplay.subCategory.judgements"
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameJudgementMV",
-			"description": "#optionsDescJudgementMV",
+			"label": "#options.gameplay.msMV.name",
+			"description": "#options.gameplay.msMV.desc",
 			"variable": "msMV",
 			"range": [0, 22.5],
 			"changeValue": 0.5,
@@ -168,8 +166,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameJudgementSK",
-			"description": "#optionsDescJudgementSK",
+			"label": "#options.gameplay.msSK.name",
+			"description": "#options.gameplay.msSK.desc",
 			"variable": "msSK",
 			"range": [22.5, 45],
 			"changeValue": 0.5,
@@ -178,8 +176,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameJudgementGD",
-			"description": "#optionsDescJudgementGD",
+			"label": "#options.gameplay.msGD.name",
+			"description": "#options.gameplay.msGD.desc",
 			"variable": "msGD",
 			"range": [45, 90],
 			"changeValue": 0.5,
@@ -188,8 +186,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameJudgementBD",
-			"description": "#optionsDescJudgementBD",
+			"label": "#options.gameplay.msBD.name",
+			"description": "#options.gameplay.msBD.desc",
 			"variable": "msBD",
 			"range": [90, 135],
 			"changeValue": 0.5,
@@ -198,8 +196,8 @@
 		},
 		{
 			"type": "float",
-			"label": "#optionsNameJudgementSH",
-			"description": "#optionsDescJudgementSH",
+			"label": "#options.gameplay.msSH.name",
+			"description": "#options.gameplay.msSH.desc",
 			"variable": "msSH",
 			"range": [135, 180],
 			"changeValue": 0.5,
@@ -208,16 +206,12 @@
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatOther"
+			"label": "#options.gameplay.subCategory.other"
 		},
 		{
 			"type": "int",
-			"label": "#optionsNameFPS",
-			"description": "#optionsDescFPS",
+			"label": "#options.gameplay.framerate.name",
+			"description": "#options.gameplay.framerate.desc",
 			"variable": "framerate",
 			"range": [1, 999],
 			"changeValue": 1,
@@ -226,22 +220,22 @@
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameDistractions",
-			"description": "#optionsDescDistractions",
+			"label": "#options.gameplay.distractions.name",
+			"description": "#options.gameplay.distractions.desc",
 			"variable": "distractions",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameInstantRetry",
-			"description": "#optionsDescInstantRetry",
+			"label": "#options.gameplay.instantRetry.name",
+			"description": "#options.gameplay.instantRetry.desc",
 			"variable": "instantRetry",
 			"defValue": false
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameBotplay",
-			"description": "#optionsDescBotplay",
+			"label": "#options.gameplay.botplay.name",
+			"description": "#options.gameplay.botplay.desc",
 			"variable": "botplay",
 			"defValue": false
 		}

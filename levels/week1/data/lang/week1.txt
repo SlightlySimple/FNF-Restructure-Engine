@@ -1,0 +1,25 @@
+// Week name
+"level.tutorial"	"TEACHING TIME"
+"level.week1"		"DADDY DEAREST"
+
+// Song names
+"song.tutorial.tutorial"	"Tutorial"
+"song.week1.bopeebo"		"Bopeebo"
+"song.week1.fresh"			"Fresh"
+"song.week1.dadbattle"		"DadBattle"
+
+// Character names
+"character.dad"			"Daddy Dearest"
+
+// Stage names
+"stage.stage"			"Main Stage"
+
+// Subtitles
+"subtitles.tutorial.1"	"Left."
+"subtitles.tutorial.2"	"Right."
+"subtitles.tutorial.3"	"That's how you do it!"
+"subtitles.tutorial.4"	"Up."
+"subtitles.tutorial.5"	"Down."
+"subtitles.tutorial.6"	"Down, Down, Up!"
+"subtitles.tutorial.7"	"Down, Down, Right."
+"subtitles.tutorial.8"	"Down, Up, Right, Up."

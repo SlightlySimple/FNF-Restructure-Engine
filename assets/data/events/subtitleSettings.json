@@ -4,6 +4,7 @@
 		{
 			"id": "r",
 			"label": "Color",
+			"infoText": "The color the subtitle text should be.",
 			"type": "color",
 			"defaultValue": 255
 		},
@@ -22,12 +23,14 @@
 		{
 			"id": "font",
 			"label": "Font",
+			"infoText": "The font to use for the subtitle text.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "size",
 			"label": "Size",
+			"infoText": "The font size of the subtitle text.",
 			"type": "stepper",
 			"defaultValue": 0,
 			"min": 0,
@@ -38,6 +41,7 @@
 		{
 			"id": "width",
 			"label": "Width",
+			"infoText": "The maximum width the subtitles are allowed to be before word wrapping.",
 			"type": "stepper",
 			"defaultValue": 0,
 			"min": 0,

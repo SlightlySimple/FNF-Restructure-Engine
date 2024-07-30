@@ -23,10 +23,20 @@ class Paths
 	static var assets:Array<String> = [];
 	static var DEFAULT_IMAGE:String = "assets/images/logo/default.png";
 
-	public static function file(path:String, ext:String):String
+	public static function file(path:String, ext:String, ?allowCensor:Bool = true):String
 	{
-		if (Options.options != null && !Options.options.naughtiness && exists(path + "Censor" + ext))
-			return "assets/" + path + "Censor" + ext;
+		if (Options.options != null)
+		{
+			if (Options.options.language != "")
+			{
+				if (allowCensor && !Options.options.naughtiness && exists("languages/" + Options.options.language + "/" + path + "Censor" + ext))
+					return "assets/languages/" + Options.options.language + "/" + path + "Censor" + ext;
+				if (exists("languages/" + Options.options.language + "/" + path + ext))
+					return "assets/languages/" + Options.options.language + "/" + path + ext;
+			}
+			if (allowCensor && !Options.options.naughtiness && exists(path + "Censor" + ext))
+				return "assets/" + path + "Censor" + ext;
+		}
 		return "assets/" + path + ext;
 	}
 
@@ -35,16 +45,24 @@ class Paths
 		#if ALLOW_MODS
 		for (mod in ModLoader.modListLoaded)
 		{
-			if (Options.options != null && !Options.options.naughtiness && FileSystem.exists("mods/" + mod + "/" + path + "Censor" + ext))
-				return "mods/" + mod + "/" + path + "Censor" + ext;
+			if (Options.options != null)
+			{
+				if (Options.options.language != "")
+				{
+					if (!Options.options.naughtiness && FileSystem.exists("mods/" + mod + "/languages/" + Options.options.language + "/" + path + "Censor" + ext))
+						return "mods/" + mod + "/languages/" + Options.options.language + "/" + path + "Censor" + ext;
+					if (FileSystem.exists("mods/" + mod + "/languages/" + Options.options.language + "/" + path + ext))
+						return "mods/" + mod + "/languages/" + Options.options.language + "/" + path + ext;
+				}
+				if (!Options.options.naughtiness && FileSystem.exists("mods/" + mod + "/" + path + "Censor" + ext))
+					return "mods/" + mod + "/" + path + "Censor" + ext;
+			}
 			if (FileSystem.exists("mods/" + mod + "/" + path + ext))
 				return "mods/" + mod + "/" + path + ext;
 		}
 		#end
 
-		if (Options.options != null && !Options.options.naughtiness && exists(path + "Censor" + ext))
-			return "assets/" + path + "Censor" + ext;
-		return "assets/" + path + ext;
+		return file(path, ext);
 	}
 
 	public static function raw(path:String, ?includeAssets:Bool = true):String
@@ -133,12 +151,12 @@ class Paths
 
 	public static function sound(path:String):String
 	{
-		return "assets/sounds/" + path + ".ogg";
+		return file("sounds/" + path, ".ogg");
 	}
 
 	public static function music(path:String):String
 	{
-		return "assets/music/" + path + ".ogg";
+		return file("music/" + path, ".ogg");
 	}
 
 	public static function hitsound():String
@@ -148,11 +166,11 @@ class Paths
 		return "assets/hitsounds/" + Options.options.hitsound + ".ogg";
 	}
 
-	public static function song(path:String, file:String):String
+	public static function song(path:String, asset:String):String
 	{
-		if (exists("data/songs/" + path + "/" + file + ".ogg"))
-			return "assets/data/songs/" + path + "/" + file + ".ogg";
-		return "assets/songs/" + path + "/" + file + ".ogg";
+		if (exists("data/songs/" + path + "/" + asset + ".ogg"))
+			return file("data/songs/" + path + "/" + asset, ".ogg");
+		return file("songs/" + path + "/" + asset, ".ogg");
 	}
 
 	public static function smSong(folder:String, path:String):String
@@ -728,24 +746,50 @@ class Paths
 	{
 		var returnArray:Array<String> = [];
 
-		#if ALLOW_MODS
-		var modArray:Array<String> = [];
-		if (FileSystem.isDirectory("mods/" + mod + "/" + path))
+		if (mod == "")
 		{
-			for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+			var baseArray:Array<String> = [];
+			if (FileSystem.isDirectory("assets/" + path))
 			{
-				if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file))) && !returnArray.contains(file.substr(0, file.length - ext.length)))
-					modArray.push(chain + file.substr(0, file.length - ext.length));
-			}
+				for (file in FileSystem.readDirectory("assets/" + path))
+				{
+					if ((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("assets/" + path + "/" + file)))
+					{
+						if (baseArray.filter(function(a) return a == file.substr(0, file.length - ext.length)).length <= 0)
+							baseArray.push(chain + file.substr(0, file.length - ext.length));
+					}
+				}
 
-			for (dir in FileSystem.readDirectory("mods/" + mod + "/" + path))
-			{
-				if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + dir))
-					modArray = modArray.concat(listFilesFromModSub(mod, path + "/" + dir, ext, chain + dir + "/"));
+				for (dir in FileSystem.readDirectory("assets/" + path))
+				{
+					if (FileSystem.isDirectory("assets/" + path + "/" + dir))
+						baseArray = baseArray.concat(listFilesFromModSub("", path + "/" + dir, ext, chain + dir + "/"));
+				}
 			}
+			baseArray.sort(listFilesSort);
+			returnArray = returnArray.concat(baseArray);
 		}
-		modArray.sort(listFilesSort);
-		returnArray = returnArray.concat(modArray);
+		#if ALLOW_MODS
+		else
+		{
+			var modArray:Array<String> = [];
+			if (FileSystem.isDirectory("mods/" + mod + "/" + path))
+			{
+				for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+				{
+					if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file))) && !returnArray.contains(file.substr(0, file.length - ext.length)))
+						modArray.push(chain + file.substr(0, file.length - ext.length));
+				}
+
+				for (dir in FileSystem.readDirectory("mods/" + mod + "/" + path))
+				{
+					if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + dir))
+						modArray = modArray.concat(listFilesFromModSub(mod, path + "/" + dir, ext, chain + dir + "/"));
+				}
+			}
+			modArray.sort(listFilesSort);
+			returnArray = returnArray.concat(modArray);
+		}
 		#end
 
 		return returnArray;

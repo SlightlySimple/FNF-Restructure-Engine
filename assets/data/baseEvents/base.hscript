@@ -1,0 +1,97 @@
+cameraFocused = false;
+cameraBumpMultiplier = 1;
+
+function convertEvent(event, timing)
+{
+	switch (event.e)
+	{
+		case "FocusCamera":
+			var correctedEvent = { x: 0, y: 0, char: 0, ease: "CLASSIC", duration: 0 }
+			if (event.v.char == null)
+				correctedEvent.char = Std.parseInt(event.v);
+			else
+			{
+				if (event.v.x != null)
+					correctedEvent.x = Std.parseInt(event.v.x);
+				if (event.v.y != null)
+					correctedEvent.y = Std.parseInt(event.v.y);
+				correctedEvent.char = Std.parseInt(event.v.char);
+				if (event.v.ease != null)
+					correctedEvent.ease = event.v.ease;
+				if (event.v.duration != null && correctedEvent.ease != "CLASSIC" && correctedEvent.ease != "INSTANT")
+					correctedEvent.duration = event.v.duration;
+			}
+
+			var cameraShouldFocus = true;
+			if ((correctedEvent.char == 0 || correctedEvent.char == 1) && correctedEvent.x == 0 && correctedEvent.y == 0 && correctedEvent.ease == "CLASSIC")
+				cameraShouldFocus = false;
+
+			if (cameraShouldFocus)
+			{
+				cameraFocused = true;
+				var movement = "tween";
+				var ease = "linear";
+				var mode = "player" + Std.string(correctedEvent.char + 1);
+				if (correctedEvent.char == 2)
+					mode = "gf";
+				if (correctedEvent.ease == "CLASSIC")
+					movement = "gradual";
+				else if (correctedEvent.ease == "INSTANT")
+					movement = "instant";
+				else
+					ease = correctedEvent.ease;
+				return { type: "cameraPosition", parameters: {allow: true, x: correctedEvent.x, y: correctedEvent.y, mode: mode, cameraPos: true, movement: movement, time: stepsToSeconds(event.t, correctedEvent.duration, timing), ease: ease} };
+			}
+			else if (cameraFocused)
+			{
+				cameraFocused = false;
+				return { type: "cameraPosition", parameters: {allow: false, x: 0, y: 0, mode: "absolute", cameraPos: false, movement: "gradual", time: 0, ease: "linear"} };
+			}
+			return [];
+
+		case "ZoomCamera":
+			var mode = "absolute";
+			if (event.v.mode == "stage")
+				mode = "fromStageMultiplied";
+			if (event.v.ease == "INSTANT")
+				return { type: "cameraZoom", parameters: {zoom: event.v.zoom, time: 0, mode: mode, ease: "linear"} };
+			return { type: "cameraZoom", parameters: {zoom: event.v.zoom, time: stepsToSeconds(event.t, event.v.duration, timing), mode: mode, ease: event.v.ease} };
+
+		case "SetCameraBop":
+			var intensity = 1;
+			if (event.v.intensity != null)
+				intensity = event.v.intensity;
+			if (intensity != cameraBumpMultiplier)
+			{
+				cameraBumpMultiplier = intensity;
+				return [{ type: "cameraBumpRate", beat: Math.round(timing.beatFromTime(event.t)), parameters: {rate: event.v.rate} }, { type: "setGameVariable", parameters: {variable: "bumpMultiplierMain", value: Std.string(intensity), operation: "set", init: false} }, { type: "setGameVariable", parameters: {variable: "bumpMultiplierHUD", value: Std.string(intensity), operation: "set", init: false} }];
+			}
+			return { type: "cameraBumpRate", beat: Math.round(timing.beatFromTime(event.t)), parameters: {rate: event.v.rate} };
+
+		case "PlayAnimation": return { type: "characterPlayAnim", parameters: {id: getCharacterID(event.v.target), anim: event.v.anim, rate: 1} };
+	}
+	return null;
+}
+
+function stepsToSeconds(start, steps, timing)
+{
+	if (steps == 0)
+		return 0;
+	return Math.round(timing.timeFromStep(timing.stepFromTime(start) + steps) - start) / 1000;
+}
+
+function getCharacterID(id)
+{
+	switch (id)
+	{
+		case "bf": return "player1";
+		case "boyfriend": return "player1";
+		case "player": return "player1";
+		case "dad": return "player2";
+		case "opponent": return "player2";
+		case "gf": return "gf";
+		case "girlfriend": return "gf";
+	}
+
+	return "player1";
+}

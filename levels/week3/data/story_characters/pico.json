@@ -1,0 +1,1 @@
+{"asset":"ui/story/characters/Pico","position":[20,-30],"scale":[0.7,0.7],"danceSpeed":1,"firstAnimation":"idle","flip":true,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Pico Dance","name":"idle"}]}

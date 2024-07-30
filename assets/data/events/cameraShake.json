@@ -1,9 +1,11 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "camera",
 			"label": "Camera",
+			"infoText": "Whether to affect the main game camera or the hud camera.",
 			"type": "dropdown",
 			"defaultValue": "main",
 			"options": ["main", "hud"]
@@ -11,6 +13,7 @@
 		{
 			"id": "intensity",
 			"label": "Intensity",
+			"infoText": "How intense the camera shake should be. Note that high values may cause the camera shake to become distracting.",
 			"type": "stepper",
 			"defaultValue": 0.05,
 			"min": 0,
@@ -21,6 +24,7 @@
 		{
 			"id": "duration",
 			"label": "Duration (Seconds)",
+			"infoText": "How long the shake should last.",
 			"type": "stepper",
 			"time": "seconds",
 			"defaultValue": 1,

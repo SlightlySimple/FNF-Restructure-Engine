@@ -4,6 +4,7 @@
 		{
 			"id": "tick",
 			"label": "Tick",
+			"infoText": "Which tick of the countdown should be simulated.",
 			"type": "stepper",
 			"defaultValue": 0,
 			"min": 0,
@@ -14,6 +15,7 @@
 		{
 			"id": "sound",
 			"label": "Play Sound",
+			"infoText": "Whether or not to play the associated countdown sound.",
 			"type": "checkbox",
 			"defaultValue": true
 		}

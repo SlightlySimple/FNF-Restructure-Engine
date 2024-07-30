@@ -14,6 +14,9 @@ class BackgroundChart extends FlxBasic
 	public var sustains:Array<BackgroundChartNote> = [];
 	public var singers:Array<Character> = [];
 
+	public var noteHit:BackgroundChartNote->Void = null;
+	public var sustainHit:BackgroundChartNote->Void = null;
+
 	override public function new(singers:Array<Character>, id:String, difficulty:String, ?ignoreMustHit:Bool = true)
 	{
 		super();
@@ -28,10 +31,10 @@ class BackgroundChart extends FlxBasic
 				var newNote:BackgroundChartNote = { strumTime: note[0], column: Std.int(note[1]), sustainLength: note[2], anim: noteAnims[Std.int(note[1]) % noteAnims.length] };
 				if ((!ignoreMustHit && section.mustHitSection) || (ignoreMustHit && song.useMustHit && section.camOn == 0))
 				{
-					if (newNote.column >= song.columnDivisions.length / 2)
-						newNote.column -= Std.int(song.columnDivisions.length / 2);
+					if (newNote.column >= song.columns.length / 2)
+						newNote.column -= Std.int(song.columns.length / 2);
 					else
-						newNote.column += Std.int(song.columnDivisions.length / 2);
+						newNote.column += Std.int(song.columns.length / 2);
 				}
 
 				if (note.length > 3 && Paths.jsonExists("notetypes/" + note[3]))
@@ -64,6 +67,8 @@ class BackgroundChart extends FlxBasic
 						s.holdTimer = Conductor.beatLength;
 						s.playAnim(n.anim, true);
 					}
+					if (noteHit != null)
+						noteHit(n);
 					poppers.push(n);
 				}
 			}
@@ -78,9 +83,12 @@ class BackgroundChart extends FlxBasic
 				{
 					for (s in singers)
 					{
-						s.holdTimer = Conductor.stepLength;
+						if (s.holdTimer < Conductor.stepLength)
+							s.holdTimer = Conductor.stepLength;
 						s.sustain = true;
 					}
+					if (sustainHit != null)
+						sustainHit(n);
 					if (Conductor.songPosition >= n.strumTime + n.sustainLength)
 					{
 						for (s in singers)

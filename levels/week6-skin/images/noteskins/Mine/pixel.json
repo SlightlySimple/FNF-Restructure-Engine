@@ -1,0 +1,29 @@
+{
+	"assets": [
+		["pixel", 1, 1]
+	],
+	"antialias": false,
+	"scale": -1,
+	"animations":
+	[
+		{"name": "mine", "indices": [0], "fps": 24, "loop": true}
+	],
+	"slots": [
+		{"color": "mine", "angle": 0}
+	],
+	"colors": [
+		{"color": "mine", "noteAnim": "mine", "angle": 0}
+	],
+	"splashes": {
+		"assets": [
+			["pixelMineExplosion", 4, 2]
+		],
+		"animations": [
+			{"name": "splash1", "indices": [0, 1, 2, 3], "fps": 24, "loop": false},
+			{"name": "splash2", "indices": [4, 5, 6, 7], "fps": 24, "loop": false}
+		],
+		"colors": [
+			{"color": "mine", "alpha": 0.6, "anims": ["splash1", "splash2"]}
+		]
+	}
+}

@@ -1,0 +1,12 @@
+function create()
+{
+	if (PlayState.inStoryMode)
+		game.canEndSong = false;
+	game.hscriptAdd("video");
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+		game.hscriptIdExec("video", "playVideo", ["blazinCutscene", true]);
+}

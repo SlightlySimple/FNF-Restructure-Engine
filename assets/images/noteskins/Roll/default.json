@@ -15,5 +15,18 @@
 	],
 	"colors": [
 		{"color": "roll", "holdAnim": "hold", "endAnim": "holdEnd", "angle": 0}
-	]
+	],
+	"splashes": {
+		"assets": [
+			["holdCoverGreen"]
+		],
+		"scale": 1,
+		"animations": [
+			{"name": "hold", "prefix": "holdCoverGreen", "fps": 24, "loop": true, "offsets": [160, 150]},
+			{"name": "holdEnd", "prefix": "holdCoverEndGreen", "fps": 24, "loop": false, "offsets": [160, 150]}
+		],
+		"colors": [
+			{"color": "roll", "alpha": 0.6, "holdAnim": "hold", "holdEndAnims": ["holdEnd"]}
+		]
+	}
 }

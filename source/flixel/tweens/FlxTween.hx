@@ -472,7 +472,7 @@ class FlxTween implements IFlxDestroyable
 
 	function update(elapsed:Float):Void
 	{
-		if (_syncWithSong && !PlayState.instance.paused)
+		if (_syncWithSong && !PlayState.instance.paused && !PlayState.instance.restarting)
 			_secondsSinceStart = (Conductor.songPosition - _startTime) / 1000.0;
 		else
 			_secondsSinceStart += elapsed;
@@ -519,7 +519,7 @@ class FlxTween implements IFlxDestroyable
 
 		if (FlxG.state is PlayState)
 		{
-			if (PlayState.instance.tracks.length > 0 && PlayState.instance.tracks[0].playing)
+			if (PlayState.instance.tracks.length > 0 && PlayState.instance.tracks[0].playing && !PlayState.instance.restarting)
 			{
 				_syncWithSong = true;
 				_startTime = Conductor.songPosition + (_delayToUse * 1000);

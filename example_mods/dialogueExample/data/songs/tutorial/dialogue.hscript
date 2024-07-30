@@ -11,7 +11,8 @@ function startCountdown()
 	if (!game.canStartCountdown)
 	{
 		game.camHUD.alpha = 0;
-		new FlxTimer().start(0.8, function(tmr) { game.add(new DialogueBox("dialogue")); });
+		var dialogue = new Dialogue("dialogue");
+		new FlxTimer().start(0.8, function(tmr) { add(dialogue); });
 	}
 }
 
@@ -20,7 +21,7 @@ function endSong()
 	if (!game.canEndSong)
 	{
 		FlxTween.tween(game.camHUD, {alpha: 0}, 0.5);
-		game.add(new DialogueBox("dialogueEnd"));
+		add(new Dialogue("dialogueEnd"));
 	}
 }
 

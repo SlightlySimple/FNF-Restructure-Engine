@@ -1,3 +1,22 @@
+trackedAnimations = new StringMap();
+
+function update(elapsed)
+{
+	for (k in trackedAnimations.keys())
+	{
+		var v = trackedAnimations[k];
+		var char = game.allCharacters[getSlot(k)];
+		if (char.animation.curAnim.name == v[0] && !char.animation.curAnim.finished)
+		{
+			var desiredFrame = Std.int(Math.round((game.songProgress - v[2]) * v[1] / 1000));
+			if (desiredFrame < char.animation.curAnim.numFrames && char.animation.curAnim.curFrame != desiredFrame)
+				char.animation.curAnim.curFrame = desiredFrame;
+		}
+		else
+			trackedAnimations.remove(k);
+	}
+}
+
 function onEvent(event)
 {
 	var char = game.allCharacters[getSlot(event.parameters.id.toLowerCase())];
@@ -9,11 +28,26 @@ function onEvent(event)
 		var a = char.animation.getByName(event.parameters.anim);
 		if (a != null)
 		{
-			var desiredFrame = Std.int(Math.round((game.songProgress - event.time) * a.frameRate / 1000));
+			var desiredFrame = Std.int(Math.round((game.songProgress - event.time) * (a.frameRate * event.parameters.rate) / 1000));
 			if (desiredFrame < a.frames.length)
 			{
 				char.playAnim(event.parameters.anim, true, true);
 				char.animation.curAnim.curFrame = desiredFrame;
+				trackedAnimations[event.parameters.id.toLowerCase()] = [char.animation.curAnim.name, a.frameRate * event.parameters.rate, event.time];
+			}
+		}
+		else if (char.animData.exists(event.parameters.anim))
+		{
+			char.playAnim(event.parameters.anim, true, true);
+			a = char.animation.getByName(event.parameters.anim);
+			if (a != null)
+			{
+				var desiredFrame = Std.int(Math.round((game.songProgress - event.time) * (a.frameRate * event.parameters.rate) / 1000));
+				if (desiredFrame < a.frames.length)
+				{
+					char.animation.curAnim.curFrame = desiredFrame;
+					trackedAnimations[event.parameters.id.toLowerCase()] = [char.animation.curAnim.name, a.frameRate * event.parameters.rate, event.time];
+				}
 			}
 		}
 	}

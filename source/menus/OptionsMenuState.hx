@@ -1,14 +1,21 @@
 package menus;
 
 import flixel.FlxG;
+import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.tweens.FlxTween;
+import flixel.system.FlxSound;
 import flixel.math.FlxMath;
+import flixel.math.FlxRect;
 import flixel.input.keyboard.FlxKey;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
+import openfl.events.KeyboardEvent;
 import data.Noteskins;
 import data.Options;
 import menus.UINavigation;
@@ -17,10 +24,9 @@ import objects.Note;
 import objects.StrumNote;
 import shaders.ColorSwap;
 
-import funkui.TabMenu;
-import funkui.ColorSwatch;
-import funkui.TextButton;
-import funkui.Stepper;
+import newui.PopupWindow;
+
+using StringTools;
 
 typedef OptionMenuStuff =
 {
@@ -45,7 +51,7 @@ class OptionsMenuState extends MusicBeatState
 {
 	override public function create()
 	{
-		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[3]));
+		var bg:FlxSprite = new FlxSprite(Paths.image("ui/" + MainMenuState.menuImages[3]));
 		bg.color = MainMenuState.menuColors[3];
 		add(bg);
 
@@ -69,14 +75,19 @@ class OptionsMenuSubState extends FlxSubState
 	{
 		super.create();
 		var menu = new OptionsMenu(from);
-		menu.state = this;
+		switch (from)
+		{
+			case 1: menu.exitCallback = function() { close(); }
+			case 2: menu.exitCallback = function() { FlxG.save.data.setupOptions = true; FlxG.save.flush(); MusicBeatState.doTransIn = false; FlxG.switchState(new TitleState()); }
+			default: menu.exitCallback = function() { FlxG.switchState(new MainMenuState()); }
+		}
 		add(menu);
 	}
 }
 
 
 
-class OptionsMenuCurs extends FlxText
+class OptionsMenuCursor extends FlxText
 {
 	public var pos:Array<Float> = [0, 0];
 
@@ -85,6 +96,7 @@ class OptionsMenuCurs extends FlxText
 		super(0, 0, 0, text, size);
 		setFormat("VCR OSD Mono", size, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 		offset.set(width * _offset, height / 2);
+		pixelPerfect = true;
 	}
 
 	override public function update(elapsed:Float)
@@ -102,36 +114,136 @@ class OptionsMenuCurs extends FlxText
 	}
 }
 
+class OptionsMenuItem extends FlxSpriteGroup
+{
+	public var ystart:Float = 0;
+	public var goalY:Float = 0;
+
+	public var text(default, set):String = "";
+	public var textR(default, set):String = "";
+	public var size(default, set):Int = 32;
+	public var showCheck(default, set):Bool = false;
+	public var checked(default, set):Bool = false;
+	public var isLabel(default, set):Bool = false;
+
+	var textObject:FlxText;
+	var textObjectR:FlxText;
+	var check:AnimatedSprite;
+
+	override public function new(?x:Float = 0, ?y:Float = 0)
+	{
+		super(x, y);
+		ystart = y;
+		goalY = y;
+
+		textObject = new FlxText(0, 0, 0, "", 32);
+		textObject.font = "VCR OSD Mono";
+		textObject.borderColor = FlxColor.BLACK;
+		textObject.borderStyle = OUTLINE;
+		add(textObject);
+
+		textObjectR = new FlxText(0, 0, 0, "", 32);
+		textObjectR.font = "VCR OSD Mono";
+		textObjectR.borderColor = FlxColor.BLACK;
+		textObjectR.borderStyle = OUTLINE;
+		add(textObjectR);
+
+		check = new AnimatedSprite(9999, 0, Paths.sparrow("ui/checkmark"));
+		check.addAnim("unchecked", "unchecked", 24, false);
+		check.addAnim("checked", "checked", 24, false);
+		check.addAnim("uncheck", "uncheck", 24, false);
+		check.addAnim("check", "check0", 24, false);
+		check.playAnim("unchecked");
+		check.animation.finishCallback = function(anim:String) {
+			if (!anim.endsWith("ed"))
+				check.playAnim(anim + "ed");
+		}
+		add(check);
+	}
+
+	public override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		y = FlxMath.lerp(y, goalY, FlxG.elapsed * 20);
+	}
+
+	public function set_text(val:String):String
+	{
+		textObject.text = val;
+		showCheck = showCheck;
+		check.y = textObject.y + ((textObject.height - check.height) / 2);
+		textObjectR.x = x + textObject.width + 50;
+		return text = val;
+	}
+
+	public function set_textR(val:String):String
+	{
+		textObjectR.text = val;
+		return textR = val;
+	}
+
+	public function set_size(val:Int):Int
+	{
+		textObject.size = val;
+		textObjectR.size = val;
+		showCheck = showCheck;
+		check.y = textObject.y + Math.round(textObject.height - check.height);
+		textObjectR.x = x + textObject.width + 50;
+		return size = val;
+	}
+
+	public function set_showCheck(val:Bool):Bool
+	{
+		if (val)
+			check.x = x + textObject.width + 25;
+		else
+			check.x = 9999;
+		return showCheck = val;
+	}
+
+	public function set_checked(val:Bool):Bool
+	{
+		var anim:String = val ? "check" : "uncheck";
+		if (!check.animation.curAnim.name.startsWith(anim))
+			check.playAnim(anim);
+		return checked = val;
+	}
+
+	public function set_isLabel(val:Bool):Bool
+	{
+		if (val)
+		{
+			size = 40;
+			textObject.borderSize = 2;
+		}
+		else
+		{
+			size = 32;
+			textObject.borderSize = 1;
+		}
+		return isLabel = val;
+	}
+}
+
 class OptionsMenu extends FlxGroup
 {
-	var optMenuData:Array<OptionsMenuCategory>;
+	var optMenuData:Array<OptionsMenuCategory> = [];
 
 	var optionsGroupList:FlxSpriteGroup;
 	var optionsGroupTextList:FlxTypedSpriteGroup<FlxText>;
 
-	var optionsMenuBG:FlxSprite;
-	var optionsDisplay:FlxTypedSpriteGroup<FlxText>;
-	var optionsCheckmarks:FlxTypedSpriteGroup<AnimatedSprite>;
-	var optionsDescBox:FlxSprite;
-	var optionsDescText:FlxText;
+	var optionsCategories:Array<OptionsCategory> = [];
 
-	var cursLeft:OptionsMenuCurs;
-	var cursRight:OptionsMenuCurs;
-	var cursMenu:OptionsMenuCurs;
+	var cursLeft:OptionsMenuCursor;
+	var cursRight:OptionsMenuCursor;
 
 	var curCat:Int = 0;
-	var curOption:Int = 0;
-	var inCat:Bool = false;
-	var secondColumn:Bool = false;
-	var holding:Bool = false;
-	var holdTimer:Float = 0;
-	var holdTick:Float = 0;
 
 	var nav:UINumeralNavigation;
-	var nav2:UINumeralNavigation;
 
 	var from:Int = 0;
-	public var state:FlxSubState = null;
+	public var exitCallback:Void->Void = null;
 
 	public function new(from:Int = 0)
 	{
@@ -151,7 +263,11 @@ class OptionsMenu extends FlxGroup
 		var hitsoundOptions:Array<String> = Paths.listFiles("hitsounds/",".ogg");
 		hitsoundOptions.unshift("None");
 
-		optMenuData = [];
+		var languageOptions:Array<String> = Paths.listFiles("languages/", "");
+		languageOptions.unshift("");
+
+		var editorMusicOptions:Array<String> = Paths.listFiles("music/editors/",".ogg");
+
 		var cats:Array<OptionsMenuCategory> = Options.getOptionsData();
 		for (c in cats)
 		{
@@ -164,36 +280,16 @@ class OptionsMenu extends FlxGroup
 					{
 						case "noteskin": o.options = noteskinOptions;
 						case "hitsound": o.options = hitsoundOptions;
+						case "language": o.options = languageOptions;
+						case "editorMusic": o.options = editorMusicOptions;
 					}
 				}
 			}
 		}
 
-		optionsMenuBG = new FlxSprite(300, 50).makeGraphic(Std.int(FlxG.width - 350), Std.int(FlxG.height - 100), FlxColor.BLACK);
-		optionsMenuBG.alpha = 0.6;
-		add(optionsMenuBG);
-
-		optionsDisplay = new FlxTypedSpriteGroup<FlxText>();
-		add(optionsDisplay);
-
-		optionsCheckmarks = new FlxTypedSpriteGroup<AnimatedSprite>();
-		add(optionsCheckmarks);
-
-		optionsDescBox = new FlxSprite(300, Std.int(FlxG.height - 100)).makeGraphic(Std.int(FlxG.width - 350), 50, FlxColor.BLACK);
-		optionsDescBox.alpha = 0.5;
-		optionsDescBox.visible = false;
-		add(optionsDescBox);
-
-		optionsDescText = new FlxText(Std.int(optionsDescBox.x + 15), Std.int(optionsDescBox.y + 3), Std.int(optionsDescBox.width - 30), '', 20);
-		optionsDescText.font = "VCR OSD Mono";
-		optionsDescText.borderColor = FlxColor.BLACK;
-		optionsDescText.borderStyle = OUTLINE;
-		if (from == 1)
-			optionsDescText.text = Lang.get("#optInGameNotice");
-		add(optionsDescText);
-
 		optionsGroupList = new FlxSpriteGroup();
 		add(optionsGroupList);
+
 		optionsGroupTextList = new FlxTypedSpriteGroup<FlxText>();
 		add(optionsGroupTextList);
 
@@ -207,321 +303,41 @@ class OptionsMenu extends FlxGroup
 			optGroupTxt.x += (optGroup.width - optGroupTxt.width) / 2;
 			optGroupTxt.y += (optGroup.height - optGroupTxt.height) / 2;
 			optionsGroupTextList.add(optGroupTxt);
+
+			var optCategory:OptionsCategory = new OptionsCategory(optMenuData[i], from);
+			optCategory.exitCallback = function() {
+				exitCat();
+				Options.refreshSaveData();
+			}
+			optCategory.showCallback = showOptionsMenu;
+			optCategory.hideCallback = hideOptionsMenu;
+			optionsCategories.push(optCategory);
 		}
 
-		cursLeft = new OptionsMenuCurs(">", 32, 1);
+		cursLeft = new OptionsMenuCursor(">", 32, 1);
 		add(cursLeft);
 
-		cursRight = new OptionsMenuCurs("<", 32, 0);
+		cursRight = new OptionsMenuCursor("<", 32, 0);
 		add(cursRight);
-
-		cursMenu = new OptionsMenuCurs(">", 24, 0);
-		cursMenu.visible = false;
-		add(cursMenu);
 
 		selectCat();
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		nav = new UINumeralNavigation(null, selectCat, function() {enterCat();}, function() {
-			switch (from)
-			{
-				case 1: state.close();
-				case 2: FlxG.save.data.setupOptions = true; FlxG.save.flush(); MusicBeatState.doTransIn = false; FlxG.switchState(new TitleState());
-				default: FlxG.switchState(new MainMenuState());
-			}
-		}, selectCat, function() {enterCat();});
+		nav = new UINumeralNavigation(null, selectCat, enterCat, function() {
+			if (exitCallback != null)
+				exitCallback();
+			else
+				FlxG.switchState(new MainMenuState());
+		}, selectCat, enterCat);
 		nav.rightClick = nav.back;
 		add(nav);
-
-		nav2 = new UINumeralNavigation(changeCurrentOption, selectOption, doAcceptCurrentOption, function() {
-			exitCat();
-			Options.refreshSaveData();
-		}, selectOption, doAcceptCurrentOption);
-		nav2.uiSounds = [false, false, true];
-		nav2.rightClick = nav2.back;
-		nav2.locked = true;
-		add(nav2);
-	}
-
-	var menuState:Int = 0;
-
-	override function update(elapsed:Float) {
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[curOption];
-		switch (menuState)
-		{
-			case 1:
-				var keyPressed:Int = FlxG.keys.firstJustPressed();
-				if (keyPressed > -1)
-				{
-					var keysArray:Array<FlxKey> = Reflect.getProperty(Options.options.keys, opt.variable);
-					var keyPressedKey:FlxKey = cast keyPressed;
-					keysArray[secondColumn ? 1 : 0] = keyPressedKey;
-
-					var opposite:Int = (secondColumn ? 0 : 1);
-					if(keysArray[opposite] == keysArray[1 - opposite]) {
-						keysArray[opposite] = FlxKey.NONE;
-					}
-					Reflect.setProperty(Options.options.keys, opt.variable, keysArray);
-
-					switch (opt.variable)
-					{
-						case "vol_up":
-							FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
-						case "vol_down":
-							FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
-						case "mute":
-							FlxG.sound.muteKeys = Options.getKeys("mute");
-						case "screenshot":
-							Main.screenshotKeys = Options.getKeys("screenshot");
-					}
-
-					FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-					menuState = 0;
-					nav2.locked = false;
-					updateOptionText(curOption);
-				}
-
-			case 2:
-				for (i in 0...testBinds.length)
-				{
-					if (Options.keyJustPressed(testBinds[i]))
-						keybindStrums.members[i].playAnim("press", true, true);
-
-					if (Options.keyJustReleased(testBinds[i]))
-						keybindStrums.members[i].playAnim("static", true, true);
-				}
-
-				if (Options.keyJustPressed("ui_back"))
-				{
-					FlxG.sound.play(Paths.sound('ui/cancelMenu'));
-
-					remove(keybindStrums);
-					remove(helpText);
-
-					showOptionsMenu();
-					selectCat();
-					enterCat(false);
-					menuState = 0;
-					nav2.locked = false;
-				}
-
-			case 3:
-				if (noteColorState == 0)
-				{
-					if (Options.keyJustPressed("ui_left"))
-					{
-						FlxG.sound.play(Paths.sound('ui/scrollMenu'));
-						curColorNote--;
-						if (curColorNote < 0)
-							curColorNote = colorNotes.members.length - 1;
-
-						for (c in colorNotes.members)
-							c.alpha = 0.5;
-						colorNotes.members[curColorNote].alpha = 1;
-					}
-
-					if (Options.keyJustPressed("ui_right"))
-					{
-						FlxG.sound.play(Paths.sound('ui/scrollMenu'));
-						curColorNote++;
-						if (curColorNote >= colorNotes.members.length)
-							curColorNote = 0;
-
-						for (c in colorNotes.members)
-							c.alpha = 0.5;
-						colorNotes.members[curColorNote].alpha = 1;
-					}
-
-					if (Options.keyJustPressed("ui_accept"))
-					{
-						FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-						noteColorState = 1;
-						noteColorSelection = 0;
-						if (!Reflect.hasField(Options.options.noteColors, colorNames[curColorNote]))
-							Reflect.setProperty(Options.options.noteColors, colorNames[curColorNote], [0, true, 0, 0]);
-
-						noteColorsUpdate();
-						for (i in 0...colorOptions.members.length)
-							colorOptions.members[i].alpha = 0.5;
-						colorOptions.members[0].alpha = 1;
-					}
-
-					if (Options.keyJustPressed("ui_back"))
-					{
-						FlxG.sound.play(Paths.sound('ui/cancelMenu'));
-
-						remove(colorNotes);
-						remove(colorOptions);
-						remove(helpText);
-
-						showOptionsMenu();
-						selectCat();
-						enterCat(false);
-						menuState = 0;
-						nav2.locked = false;
-					}
-				}
-				else
-				{
-					if (Options.keyJustPressed("ui_up"))
-					{
-						FlxG.sound.play(Paths.sound('ui/scrollMenu'));
-						noteColorSelection--;
-						if (noteColorSelection < 0)
-							noteColorSelection = colorOptions.members.length - 1;
-
-						for (c in colorOptions.members)
-							c.alpha = 0.5;
-						colorOptions.members[noteColorSelection].alpha = 1;
-					}
-
-					if (Options.keyJustPressed("ui_down"))
-					{
-						FlxG.sound.play(Paths.sound('ui/scrollMenu'));
-						noteColorSelection++;
-						if (noteColorSelection >= colorOptions.members.length)
-							noteColorSelection = 0;
-
-						for (c in colorOptions.members)
-							c.alpha = 0.5;
-						colorOptions.members[noteColorSelection].alpha = 1;
-					}
-
-					var change:Float = -FlxG.mouse.wheel;
-					if (Options.keyJustPressed("ui_left"))
-						change = -1;
-					if (Options.keyJustPressed("ui_right"))
-						change = 1;
-
-					if (change != 0)
-					{
-						FlxG.sound.play(Paths.sound('ui/scrollMenu'));
-						var col:Array<Dynamic> = Reflect.getProperty(Options.options.noteColors, colorNames[curColorNote]);
-						if (noteColorSelection == 1)
-							col[noteColorSelection] = !col[noteColorSelection];
-						else
-						{
-							col[noteColorSelection] += change * 0.01;
-							if (noteColorSelection == 0)
-							{
-								if (col[noteColorSelection] < 0)
-									col[noteColorSelection] += 1;
-								if (col[noteColorSelection] >= 1)
-									col[noteColorSelection] -= 1;
-							}
-							else
-							{
-								if (col[noteColorSelection] < -1)
-									col[noteColorSelection] = -1;
-								if (col[noteColorSelection] > 1)
-									col[noteColorSelection] = 1;
-							}
-						}
-						noteColorsUpdate();
-						noteShadersUpdate();
-					}
-
-					if (Options.keyJustPressed("ui_accept") || Options.keyJustPressed("ui_back"))
-					{
-						if (Note.cs.exists(colorNames[curColorNote]))
-						{
-							Note.cs.remove(colorNames[curColorNote]);
-							Note.getShader(colorNames[curColorNote]);
-						}
-
-						FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-						noteColorState = 0;
-						for (c in colorOptions.members)
-							c.text = "";
-					}
-				}
-
-			case 4:
-				switch (comboAdjustState)
-				{
-					case 1:
-						Options.options.judgementOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
-						resetComboPositionStuff();
-						if (Options.mouseJustReleased())
-							comboAdjustState = 0;
-
-					case 2:
-						Options.options.comboOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
-						resetComboPositionStuff();
-						if (Options.mouseJustReleased())
-							comboAdjustState = 0;
-
-					default:
-						if (Options.mouseJustPressed())
-						{
-							lastMousePos = [FlxG.mouse.screenX, FlxG.mouse.screenY];
-							if (displayCombo.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))
-							{
-								comboAdjustState = 2;
-								lastMousePos[0] -= Std.int(Options.options.comboOffset[0]);
-								lastMousePos[1] -= Std.int(Options.options.comboOffset[1]);
-							}
-							else if (displayJudgement.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))
-							{
-								comboAdjustState = 1;
-								lastMousePos[0] -= Std.int(Options.options.judgementOffset[0]);
-								lastMousePos[1] -= Std.int(Options.options.judgementOffset[1]);
-							}
-						}
-
-						if (FlxG.keys.justPressed.R)
-						{
-							Options.options.judgementOffset = [0, 0];
-							Options.options.comboOffset = [0, 0];
-							resetComboPositionStuff();
-						}
-
-						if (Options.keyJustPressed("ui_back"))
-						{
-							FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-
-							remove(displayJudgement);
-							remove(displayCombo);
-							remove(helpText);
-
-							showOptionsMenu();
-							selectCat();
-							enterCat(false);
-							FlxG.mouse.visible = false;
-							menuState = 0;
-							nav2.locked = false;
-						}
-				}
-
-			default:
-				if (holding && !nav2.locked)
-				{
-					holdTimer -= elapsed;
-					holdTick -= elapsed;
-					if (holdTimer <= 0 && holdTick <= 0)
-					{
-						if (Options.keyPressed("ui_left"))
-							changeCurrentOption(-1);
-						if (Options.keyPressed("ui_right"))
-							changeCurrentOption(1);
-						holdTick = opt.scrollSpeed;
-					}
-					if (FlxG.keys.justReleased.LEFT || FlxG.keys.justReleased.RIGHT)
-						holding = false;
-				}
-		}
-
-		super.update(elapsed);
-	}
-
-	function quickLerp(s:FlxSprite, goal:Array<Int>)
-	{
-		s.x = FlxMath.lerp(s.x, goal[0], (s.x == 0 ? 1 : FlxG.elapsed * 20));
-		s.y = FlxMath.lerp(s.y, goal[1], (s.y == 0 ? 1 : FlxG.elapsed * 20));
 	}
 
 	function selectCat(change:Int = 0)
 	{
+		if (members.contains(optionsCategories[curCat]))
+			remove(optionsCategories[curCat], true);
+
 		curCat = Util.loop(curCat + change, 0, optMenuData.length - 1);
 
 		for (i in 0...optMenuData.length)
@@ -542,117 +358,261 @@ class OptionsMenu extends FlxGroup
 			}
 		}
 
+		add(optionsCategories[curCat]);
+	}
 
+	function enterCat()
+	{
+		nav.locked = true;
+		optionsCategories[curCat].menuActive = true;
+	}
 
-		optionsDisplay.forEachAlive(function(txt:FlxText) {
-			txt.destroy();
-			txt.kill();
-		});
+	function exitCat()
+	{
+		nav.locked = false;
+		optionsCategories[curCat].menuActive = false;
+	}
 
-		optionsDisplay.clear();
+	public function showOptionsMenu()
+	{
+		optionsGroupList.visible = true;
+		optionsGroupTextList.visible = true;
+		cursLeft.visible = true;
+		cursRight.visible = true;
+	}
 
-		optionsCheckmarks.forEachAlive(function(check:AnimatedSprite) {
-			check.destroy();
-			check.kill();
-		});
+	public function hideOptionsMenu()
+	{
+		optionsGroupList.visible = false;
+		optionsGroupTextList.visible = false;
+		cursLeft.visible = false;
+		cursRight.visible = false;
+	}
+}
 
-		optionsCheckmarks.clear();
+class OptionsCategory extends FlxGroup
+{
+	var data:OptionsMenuCategory;
+	public var menuActive(default, set):Bool = false;
 
-		var yy:Int = 80;
-		for (i in 0...optMenuData[curCat].contents.length)
+	var curOption:Int = 0;
+	var secondColumn:Bool = false;
+	var holding:Bool = false;
+	var holdTimer:Float = 0;
+	var holdTick:Float = 0;
+
+	var menuState:Int = 0;
+
+	var bg:FlxSprite;
+	var optionsDisplay:FlxTypedSpriteGroup<OptionsMenuItem>;
+	var descBox:FlxSprite;
+	var descText:FlxText;
+	var cursor:OptionsMenuCursor;
+	var yOffset:Float = 0;
+	var maxY:Float = 0;
+
+	var nav:UINumeralNavigation;
+
+	var from:Int = 0;
+	public var exitCallback:Void->Void = null;
+	public var showCallback:Void->Void = null;
+	public var hideCallback:Void->Void = null;
+
+	public override function new(data:OptionsMenuCategory, ?from:Int = 0)
+	{
+		super();
+		this.data = data;
+		this.from = from;
+
+		bg = new FlxSprite(300, 50).makeGraphic(Std.int(FlxG.width - 350), Std.int(FlxG.height - 100), FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
+
+		optionsDisplay = new FlxTypedSpriteGroup<OptionsMenuItem>(300, 50);
+		optionsDisplay.clipRect = new FlxRect(0, 30, FlxG.width, FlxG.height - 160);
+		add(optionsDisplay);
+
+		descBox = new FlxSprite(300, Std.int(FlxG.height - 100)).makeGraphic(Std.int(FlxG.width - 350), 50, FlxColor.BLACK);
+		descBox.alpha = 0.5;
+		descBox.visible = false;
+		add(descBox);
+
+		descText = new FlxText(Std.int(descBox.x + 15), Std.int(descBox.y + 3), Std.int(descBox.width - 30), '', 20);
+		descText.font = "VCR OSD Mono";
+		descText.borderColor = FlxColor.BLACK;
+		descText.borderStyle = OUTLINE;
+		if (from == 1)
+			descText.text = Lang.get("#options.menu.inGameNotice");
+		add(descText);
+
+		cursor = new OptionsMenuCursor(">", 32, 0);
+		cursor.visible = false;
+		add(cursor);
+
+		var yy:Int = 30;
+		for (i in 0...data.contents.length)
 		{
-			var opt = optMenuData[curCat].contents[i];
-			var optTxt:FlxText = new FlxText(330, yy, 0, "", 24);
-			optTxt.font = "VCR OSD Mono";
-			optTxt.borderColor = FlxColor.BLACK;
-			optTxt.borderStyle = OUTLINE;
-			optTxt.alpha = 0.5;
-			if (opt.type == 'label')
+			var opt = data.contents[i];
+			var optItem:OptionsMenuItem = new OptionsMenuItem(30, yy);
+			optItem.alpha = 0.4;
+			if (opt.type == "label" && opt.label != "")
 			{
 				yy += 10;
-				optTxt.size = 32;
+				optItem.isLabel = true;
+				optItem.alpha = 0.5;
+				if (i > 0)
+				{
+					yy += 20;
+					optItem.y += 20;
+				}
 			}
-			optionsDisplay.add(optTxt);
-
-			var optCheck:AnimatedSprite = new AnimatedSprite(-9999, optTxt.y, Paths.tiles("ui/checkmark", 2, 1));
-			optCheck.animation.add('unchecked', [0]);
-			optCheck.animation.add('checked', [1]);
-			optCheck.alpha = 0.5;
-			optionsCheckmarks.add(optCheck);
+			optionsDisplay.add(optItem);
+			optItem.ystart = optItem.y;
+			optItem.goalY = optItem.y;
 
 			updateOptionText(i);
 
-			yy += 30;
+			if (opt.label != "")
+				yy += 35;
+		}
+
+		maxY = Math.max(0, yy - FlxG.height + 150);
+
+		nav = new UINumeralNavigation(changeCurrentOption, selectOption, doAcceptCurrentOption, function() {
+			if (exitCallback != null)
+				exitCallback();
+		}, selectOption, doAcceptCurrentOption);
+		nav.uiSounds = [false, false, true];
+		nav.rightClick = nav.back;
+		nav.locked = true;
+		add(nav);
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		optionsDisplay.clipRect = optionsDisplay.clipRect;
+
+		var opt:OptionMenuStuff = data.contents[curOption];
+		if (menuState == 1)
+		{
+			var keyPressed:Int = FlxG.keys.firstJustPressed();
+			if (keyPressed > -1)
+			{
+				var keysArray:Array<FlxKey> = Reflect.getProperty(Options.options.keys, opt.variable);
+				var keyPressedKey:FlxKey = cast keyPressed;
+				keysArray[secondColumn ? 1 : 0] = keyPressedKey;
+
+				var opposite:Int = (secondColumn ? 0 : 1);
+				if(keysArray[opposite] == keysArray[1 - opposite]) {
+					keysArray[opposite] = FlxKey.NONE;
+				}
+				Reflect.setProperty(Options.options.keys, opt.variable, keysArray);
+
+				switch (opt.variable)
+				{
+					case "vol_up": FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
+					case "vol_down": FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
+					case "mute": FlxG.sound.muteKeys = Options.getKeys("mute");
+					case "screenshot": Main.screenshotKeys = Options.getKeys("screenshot");
+					case "fullscreen": Main.fullscreenKeys = Options.getKeys("fullscreen");
+				}
+
+				FlxG.sound.play(Paths.sound('ui/confirmMenu'));
+				menuState = 0;
+				nav.locked = false;
+				updateOptionText(curOption);
+			}
+		}
+		else if (holding && !nav.locked)
+		{
+			holdTimer -= elapsed;
+			holdTick -= elapsed;
+			if (holdTimer <= 0 && holdTick <= 0)
+			{
+				if (Options.keyPressed("ui_left"))
+					changeCurrentOption(-1);
+				if (Options.keyPressed("ui_right"))
+					changeCurrentOption(1);
+				holdTick = opt.scrollSpeed;
+			}
+			if (FlxG.keys.justReleased.LEFT || FlxG.keys.justReleased.RIGHT)
+				holding = false;
 		}
 	}
 
 	function selectOption(change:Int = 0)
 	{
-		curOption = Util.loop(curOption + change, 0, optMenuData[curCat].contents.length - 1);
+		curOption = Util.loop(curOption + change, 0, data.contents.length - 1);
 
-		if (optMenuData[curCat].contents[curOption].type == "label")
+		if (data.contents[curOption].type == "label")
 		{
-			while (optMenuData[curCat].contents[curOption].type == "label")
+			while (data.contents[curOption].type == "label")
 			{
 				if (change == 0)
 					curOption++;
 				else
 					curOption += Std.int(change / Math.abs(change));
 
-				curOption = Util.loop(curOption, 0, optMenuData[curCat].contents.length - 1);
+				curOption = Util.loop(curOption, 0, data.contents.length - 1);
 			}
 		}
 
 		if (change != 0)
 			FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 
-		var yShift:Int = 0;
 		var optionY:Int = Std.int(optionsDisplay.members[curOption].y);
-		if (optionY < 100 && optionsDisplay.members[0].y < 80)
+		if (optionY < (FlxG.height / 2) - 125)
 		{
-			while (optionY < 100 && optionsDisplay.members[0].y < 80)
+			while (optionY < (FlxG.height / 2) - 125)
 			{
-				yShift += 30;
+				yOffset += 30;
 				optionY += 30;
 			}
 		}
-		if (optionY > FlxG.height - 150)
+		if (optionY > (FlxG.height / 2) + 125)
 		{
-			while (optionY > FlxG.height - 150)
+			while (optionY > (FlxG.height / 2) + 125)
 			{
-				yShift -= 30;
+				yOffset -= 30;
 				optionY -= 30;
 			}
 		}
-		cursMenu.y += yShift;
+		yOffset = Math.min(0, Math.max(-maxY, yOffset));
 
 		var i:Int = 0;
-		optionsDisplay.forEachAlive(function(txt:FlxText) {
-			txt.x = 330;
-			txt.y += yShift;
+		optionsDisplay.forEachAlive(function(txt:OptionsMenuItem) {
+			txt.x = optionsDisplay.x + 30;
+			txt.goalY = txt.ystart + yOffset;
+			if (txt.isLabel)
+				txt.alpha = 1;
+			else
+				txt.alpha = 0.7;
 			if (i == curOption)
 			{
-				cursMenu.pos[0] = txt.x;
-				cursMenu.pos[1] = txt.getMidpoint().y;
+				cursor.pos[0] = txt.x;
+				cursor.pos[1] = txt.goalY + (txt.height / 2);
 				txt.x += 30;
+				txt.alpha = 1;
 			}
 			updateOptionText(i);
 			i++;
 		});
 
-		optionsDescText.text = Lang.get(optMenuData[curCat].contents[curOption].description);
+		descText.text = Lang.get(data.contents[curOption].description);
 	}
 
-	function changeCurrentOption( change:Int = 0 )
+	function changeCurrentOption(change:Int = 0)
 	{
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[curOption];
+		var opt:OptionMenuStuff = data.contents[curOption];
 
 		switch (opt.type)
 		{
 			case "bool":
 				if (opt.options != null && opt.options.length == 2)
 				{
-					setOptVal(curOption, !getOptVal(curOption));
+					setOptionValue(curOption, !getOptionValue(curOption));
 					switch (opt.variable)
 					{
 						case "autoPause":
@@ -664,10 +624,10 @@ class OptionsMenu extends FlxGroup
 				}
 
 			case "choicesPopulate":
-				var valInt:Int = opt.options.indexOf(getOptVal(curOption));
+				var valInt:Int = opt.options.indexOf(getOptionValue(curOption));
 				valInt = Util.loop(valInt + change, 0, opt.options.length - 1);
 
-				setOptVal(curOption, opt.options[valInt]);
+				setOptionValue(curOption, opt.options[valInt]);
 				if (opt.variable == "noteskin")
 				{
 					Noteskins.noteskinName = Options.options.noteskin;
@@ -676,14 +636,14 @@ class OptionsMenu extends FlxGroup
 				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 
 			case "choices":
-				var valInt:Int = getOptVal(curOption);
+				var valInt:Int = getOptionValue(curOption);
 				valInt = Util.loop(valInt + change, 0, opt.options.length - 1);
 
-				setOptVal(curOption, valInt);
+				setOptionValue(curOption, valInt);
 				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 
 			case "float" | "int" | "percent":
-				var start:Float = getOptVal(curOption);
+				var start:Float = getOptionValue(curOption);
 				var goal:Float = start + (opt.changeValue * change);
 				if (opt.changeValue != Math.round(opt.changeValue))
 					goal = Math.round(goal / opt.changeValue) * opt.changeValue;
@@ -691,9 +651,9 @@ class OptionsMenu extends FlxGroup
 					goal = opt.range[0];
 				if (goal > opt.range[1])
 					goal = opt.range[1];
-				setOptVal(curOption, goal);
+				setOptionValue(curOption, goal);
 				if (opt.type == "int")
-					setOptVal(curOption, Std.int(goal));
+					setOptionValue(curOption, Std.int(goal));
 				if (start != goal)
 					FlxG.sound.play(Paths.sound('ui/scrollMenu'));
 				if (opt.scrollSpeed > 0 && !holding)
@@ -719,14 +679,14 @@ class OptionsMenu extends FlxGroup
 
 	function doAcceptCurrentOption()
 	{
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[curOption];
+		var opt:OptionMenuStuff = data.contents[curOption];
 
 		switch (opt.type)
 		{
 			case "bool":
 				if (opt.options == null || opt.options.length != 2)
 				{
-					setOptVal(curOption, !getOptVal(curOption));
+					setOptionValue(curOption, !getOptionValue(curOption));
 					switch (opt.variable)
 					{
 						case "autoPause":
@@ -740,61 +700,21 @@ class OptionsMenu extends FlxGroup
 			case "control":
 				FlxG.sound.play(Paths.sound('ui/confirmMenu'));
 				menuState = 1;
-				nav2.locked = true;
+				nav.locked = true;
 
 			case "color":
 				FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-				nav2.locked = true;
+				nav.locked = true;
 				FlxG.mouse.visible = true;
 
-				var tabMenu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, 300, 260);
-				tabMenu.screenCenter();
-				add(tabMenu);
-
-				var tabGroupColor = new TabGroup();
-
-				var ol1:FlxSprite = new FlxSprite(48, 8).makeGraphic(204, 34, FlxColor.BLACK);
-				tabGroupColor.add(ol1);
-
-				var ol2:FlxSprite = new FlxSprite(48, 48).makeGraphic(144, 144, FlxColor.BLACK);
-				tabGroupColor.add(ol2);
-
-				var ol3:FlxSprite = new FlxSprite(218, 48).makeGraphic(34, 144, FlxColor.BLACK);
-				tabGroupColor.add(ol3);
-
-				var colorThing:FlxSprite = new FlxSprite(50, 10).makeGraphic(200, 30, FlxColor.WHITE);
-				colorThing.color = getOptVal(curOption);
-				tabGroupColor.add(colorThing);
-
-				var colorSwatch:ColorSwatch = new ColorSwatch(50, 50, 140, 140, 30, getOptVal(curOption));
-				tabGroupColor.add(colorSwatch);
-
-				var stepperR:Stepper = new Stepper(20, 200, 80, 20, colorThing.color.red, 5, 0, 255);
-				var stepperG:Stepper = new Stepper(110, 200, 80, 20, colorThing.color.green, 5, 0, 255);
-				var stepperB:Stepper = new Stepper(200, 200, 80, 20, colorThing.color.blue, 5, 0, 255);
-
-				stepperR.onChanged = function() { colorSwatch.r = stepperR.valueInt; colorThing.color = colorSwatch.swatchColor; }
-				tabGroupColor.add(stepperR);
-
-				stepperG.onChanged = function() { colorSwatch.g = stepperG.valueInt; colorThing.color = colorSwatch.swatchColor; }
-				tabGroupColor.add(stepperG);
-
-				stepperB.onChanged = function() { colorSwatch.b = stepperB.valueInt; colorThing.color = colorSwatch.swatchColor; }
-				tabGroupColor.add(stepperB);
-
-				colorSwatch.onChanged = function() { colorThing.color = colorSwatch.swatchColor; stepperR.value = colorSwatch.r; stepperG.value = colorSwatch.g; stepperB.value = colorSwatch.b; }
-
-				var acceptButton:TextButton = new TextButton(20, 230, 260, 20, "#accept");
-				acceptButton.onClicked = function()
-				{
-					setOptVal(curOption, colorThing.color);
-					nav2.locked = false;
-					remove(tabMenu);
+				new ColorPicker(getOptionValue(curOption), function(clr:FlxColor) {
+					setOptionValue(curOption, clr);
+					nav.locked = false;
 					FlxG.mouse.visible = false;
-				};
-				tabGroupColor.add(acceptButton);
-
-				tabMenu.addGroup(tabGroupColor);
+				}, function() {
+					nav.locked = false;
+					FlxG.mouse.visible = false;
+				});
 
 			case "function":
 				var func = Reflect.getProperty(this, opt.variable);
@@ -812,151 +732,142 @@ class OptionsMenu extends FlxGroup
 		updateOptionText(curOption);
 	}
 
-	function enterCat(?resetCurOption:Bool = true)
+	function setOptionValue(option:Int, value:Dynamic)
 	{
-		nav.locked = true;
-		if (menuState <= 0)
-			nav2.locked = false;
-		inCat = true;
-		optionsDescBox.visible = true;
-		cursMenu.visible = true;
-
-		optionsDisplay.forEachAlive(function(txt:FlxText) {
-			txt.alpha = 1;
-		});
-
-		optionsCheckmarks.forEachAlive(function(check:AnimatedSprite) {
-			check.alpha = 1;
-		});
-
-		if (resetCurOption)
-			curOption = 0;
-		selectOption();
-	}
-
-	function exitCat()
-	{
-		nav.locked = false;
-		nav2.locked = true;
-		inCat = false;
-		optionsDescBox.visible = false;
-		if (from == 1)
-			optionsDescText.text = Lang.get("#optInGameNotice");
-		else
-			optionsDescText.text = "";
-
-		var i:Int = 0;
-		optionsDisplay.forEachAlive(function(txt:FlxText) {
-			txt.x = 330;
-			txt.alpha = 0.5;
-			updateOptionText(i);
-			i++;
-		});
-
-		optionsCheckmarks.forEachAlive(function(check:AnimatedSprite) {
-			check.alpha = 0.5;
-		});
-
-		cursMenu.setPosition();
-		cursMenu.visible = false;
-	}
-
-	function setOptVal(option:Int, value:Dynamic)
-	{
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[option];
+		var opt:OptionMenuStuff = data.contents[option];
 		Reflect.setProperty(Options.options, opt.variable, value);
 	}
 
-	function getOptVal(option:Int):Dynamic
+	function getOptionValue(option:Int):Dynamic
 	{
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[option];
+		var opt:OptionMenuStuff = data.contents[option];
 		return Reflect.getProperty(Options.options, opt.variable);
 	}
 
 	function updateOptionText(option:Int)
 	{
-		var opt:OptionMenuStuff = optMenuData[curCat].contents[option];
+		var opt:OptionMenuStuff = data.contents[option];
+		var item:OptionsMenuItem = optionsDisplay.members[option];
+		item.text = Lang.get(opt.label);
+		item.textR = "";
+		item.showCheck = false;
 
 		switch (opt.type)
 		{
 			case "bool":
 				if (opt.options == null || opt.options.length != 2)
 				{
-					optionsDisplay.members[option].text = Lang.get(opt.label);
-					optionsCheckmarks.members[option].animation.play(getOptVal(option) ? "checked" : "unchecked");
-					optionsCheckmarks.members[option].x = optionsDisplay.members[option].x + optionsDisplay.members[option].width + 20;
-					optionsCheckmarks.members[option].y = optionsDisplay.members[option].y;
+					item.showCheck = true;
+					item.checked = getOptionValue(option);
 				}
 				else
-					optionsDisplay.members[option].text = Lang.get(opt.label) + "   < " + Lang.get(opt.options[getOptVal(option) ? 0 : 1]) + " >";
+				{
+					item.textR = Lang.get(opt.options[getOptionValue(option) ? 0 : 1]);
+					if (menuActive && option == curOption)
+						item.textR = "< " + item.textR + " >";
+				}
 
-			case "choicesPopulate": optionsDisplay.members[option].text = Lang.get(opt.label) + "   < " + getOptVal(option) + " >";
-			case "choices": optionsDisplay.members[option].text = Lang.get(opt.label) + "   < " + Lang.get(opt.options[getOptVal(option)]) + " >";
-			case "float" | "int": optionsDisplay.members[option].text = Lang.get(opt.label) + "   < " + Std.string(getOptVal(option)) + " >";
-			case "percent": optionsDisplay.members[option].text = Lang.get(opt.label) + "   < " + Std.string(getOptVal(option) * 100) + "% >";
+			case "choicesPopulate":
+				item.textR = (getOptionValue(option) == "" ? Lang.get(opt.label.replace(".name", ".blank")) : getOptionValue(option));
+				if (menuActive && option == curOption)
+					item.textR = "< " + item.textR + " >";
+
+			case "choices":
+				item.textR = Lang.get(opt.options[getOptionValue(option)]);
+				if (menuActive && option == curOption)
+					item.textR = "< " + item.textR + " >";
+
+			case "float" | "int":
+				item.textR = Std.string(getOptionValue(option));
+				if (menuActive && option == curOption)
+					item.textR = "< " + item.textR + " >";
+
+			case "percent":
+				item.textR = Std.string(getOptionValue(option) * 100) + "%";
+				if (menuActive && option == curOption)
+					item.textR = "< " + item.textR + " >";
 
 			case "control":
 				var keys:Array<FlxKey> = Reflect.getProperty(Options.options.keys, opt.variable);
-				var keyStrings:Array<String> = [keys[0].toString(), keys[1].toString()];
+				var keyStrings:Array<String> = [Lang.get("#options.key." + keys[0].toString().toLowerCase(), keys[0].toString()), Lang.get("#options.key." + keys[1].toString().toLowerCase(), keys[1].toString())];
 				if (keys[0] == FlxKey.NONE)
-					keyStrings[0] = "None";
+					keyStrings[0] = Lang.get("#options.key.none");
 				if (keys[1] == FlxKey.NONE)
-					keyStrings[1] = "None";
-				if (inCat && option == curOption)
+					keyStrings[1] = Lang.get("#options.key.none");
+				if (menuActive && option == curOption)
 				{
 					if (secondColumn)
 					{
 						if (menuState == 1)
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | >   <";
+							item.textR = keyStrings[0] + " | >   <";
 						else
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | > " + keyStrings[1] + " <";
+							item.textR = keyStrings[0] + " | > " + keyStrings[1] + " <";
 					}
 					else
 					{
 						if (menuState == 1)
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   >   < | " + keyStrings[1];
+							item.textR = ">   < | " + keyStrings[1];
 						else
-							optionsDisplay.members[option].text = Lang.get(opt.label) + "   > " + keyStrings[0] + " < | " + keyStrings[1];
+							item.textR = "> " + keyStrings[0] + " < | " + keyStrings[1];
 					}
 				}
 				else
-					optionsDisplay.members[option].text = Lang.get(opt.label) + "   " + keyStrings[0] + " | " + keyStrings[1];
-
-			default: optionsDisplay.members[option].text = Lang.get(opt.label);
+					item.textR = keyStrings[0] + " | " + keyStrings[1];
 		}
-
-		if (optionsDisplay.members[option].y < 50 || optionsDisplay.members[option].y + optionsDisplay.members[option].height > FlxG.height - 50)
-			optionsDisplay.members[option].visible = false;
-		else
-			optionsDisplay.members[option].visible = true;
-		optionsCheckmarks.members[option].visible = optionsDisplay.members[option].visible;
 	}
 
 	function showOptionsMenu()
 	{
-		optionsMenuBG.visible = true;
-		optionsGroupList.visible = true;
-		optionsGroupTextList.visible = true;
+		if (showCallback != null)
+			showCallback();
+		bg.visible = true;
 		optionsDisplay.visible = true;
-		optionsCheckmarks.visible = true;
-		optionsDescBox.visible = true;
-		optionsDescText.visible = true;
-		cursLeft.visible = true;
-		cursRight.visible = true;
+		descBox.visible = true;
+		descText.visible = true;
+		cursor.visible = true;
+		selectOption();
 	}
 
 	function hideOptionsMenu()
 	{
-		optionsMenuBG.visible = false;
-		optionsGroupList.visible = false;
-		optionsGroupTextList.visible = false;
+		if (hideCallback != null)
+			hideCallback();
+		bg.visible = false;
 		optionsDisplay.visible = false;
-		optionsCheckmarks.visible = false;
-		optionsDescBox.visible = false;
-		optionsDescText.visible = false;
-		cursLeft.visible = false;
-		cursRight.visible = false;
-		cursMenu.visible = false;
+		descBox.visible = false;
+		descText.visible = false;
+		cursor.visible = false;
+	}
+
+	public function set_menuActive(val:Bool):Bool
+	{
+		nav.locked = !val;
+		descBox.visible = val;
+		cursor.visible = val;
+		menuActive = val;
+
+		if (val)
+			selectOption();
+		else
+		{
+			if (from == 1)
+				descText.text = Lang.get("#options.menu.inGameNotice");
+			else
+				descText.text = "";
+
+			var i:Int = 0;
+			optionsDisplay.forEachAlive(function(txt:OptionsMenuItem) {
+				txt.x = optionsDisplay.x + 30;
+				if (txt.isLabel)
+					txt.alpha = 0.5;
+				else
+					txt.alpha = 0.4;
+				updateOptionText(i);
+				i++;
+			});
+		}
+
+		return val;
 	}
 
 	function resetControls()
@@ -974,36 +885,80 @@ class OptionsMenu extends FlxGroup
 
 					switch (o.variable)
 					{
-						case "vol_up":
-							FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
-						case "vol_down":
-							FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
-						case "mute":
-							FlxG.sound.muteKeys = Options.getKeys("mute");
-						case "screenshot":
-							Main.screenshotKeys = Options.getKeys("screenshot");
+						case "vol_up": FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");
+						case "vol_down": FlxG.sound.volumeDownKeys = Options.getKeys("vol_down");
+						case "mute": FlxG.sound.muteKeys = Options.getKeys("mute");
+						case "screenshot": Main.screenshotKeys = Options.getKeys("screenshot");
+						case "fullscreen": Main.fullscreenKeys = Options.getKeys("fullscreen");
 					}
 				}
 			}
 		}
 
 		var i:Int = 0;
-		optionsDisplay.forEachAlive(function(txt:FlxText) {
+		optionsDisplay.forEachAlive(function(txt:OptionsMenuItem) {
 			updateOptionText(i);
 			i++;
 		});
 	}
 
+	function testKeybinds(noteskinType:String, binds:Array<String>)
+	{
+		hideOptionsMenu();
+		new OptionsSubMenuTestKeybinds(noteskinType, binds).exitCallback = showOptionsMenu;
+	}
+
+	function noteColors(noteskinType:String)
+	{
+		hideOptionsMenu();
+		new OptionsSubMenuNoteColors(noteskinType).exitCallback = showOptionsMenu;
+	}
+
+	function calibrateOffset()
+	{
+		hideOptionsMenu();
+		new OptionsSubMenuCalibrateOffset().exitCallback = showOptionsMenu;
+	}
+
+	function adjustComboPosition()
+	{
+		hideOptionsMenu();
+		new OptionsSubMenuComboPosition().exitCallback = showOptionsMenu;
+	}
+}
+
+class OptionsSubMenu extends FlxSubState
+{
+	public var exitCallback:Void->Void;
+
+	override public function new()
+	{
+		super();
+
+		var state:FlxState = FlxG.state;
+		if (state.subState != null)
+		{
+			while (state.subState != null)
+				state = state.subState;
+		}
+		state.persistentUpdate = false;
+		state.openSubState(this);
+
+		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+	}
+}
+
+class OptionsSubMenuTestKeybinds extends OptionsSubMenu
+{
 	var testBinds:Array<String> = [];
 	var keybindStrums:FlxTypedSpriteGroup<StrumNote>;
 	var helpText:FlxText;
-	function testKeybinds(noteskinType:String, binds:Array<String>)
-	{
-		menuState = 2;
-		nav2.locked = true;
-		testBinds = binds;
 
-		hideOptionsMenu();
+	override public function new(noteskinType:String, binds:Array<String>)
+	{
+		super();
+
+		testBinds = binds;
 
 		keybindStrums = new FlxTypedSpriteGroup<StrumNote>();
 		add(keybindStrums);
@@ -1016,38 +971,64 @@ class OptionsMenu extends FlxGroup
 		{
 			var strum:StrumNote = new StrumNote(i, noteskinType);
 			strum.resetPosition(Options.options.downscroll, true, ints);
+			strum.isOptionsMenuStrum = true;
 			keybindStrums.add(strum);
 		}
 
 		if (binds.length == 4)
 		{
-			helpText = new FlxText(0, 0, 0, Lang.get("#optKeybindTestNotice"), 32);
+			helpText = new FlxText(0, 0, 0, Lang.get("#options.menu.keybindTestNotice"), 32);
 			helpText.font = "VCR OSD Mono";
 			helpText.borderColor = FlxColor.BLACK;
 			helpText.borderStyle = OUTLINE;
 			helpText.screenCenter();
+			helpText.setPosition(Math.round(helpText.x), Math.round(helpText.y));
 			add(helpText);
 		}
 	}
 
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		for (i in 0...testBinds.length)
+		{
+			if (Options.keyJustPressed(testBinds[i]))
+				keybindStrums.members[i].playAnim("press", true);
+
+			if (Options.keyJustReleased(testBinds[i]))
+				keybindStrums.members[i].playAnim("static", true);
+		}
+
+		if (Options.keyJustPressed("ui_back"))
+		{
+			FlxG.sound.play(Paths.sound('ui/cancelMenu'));
+
+			if (exitCallback != null)
+				exitCallback();
+			close();
+		}
+	}
+}
+
+class OptionsSubMenuNoteColors extends OptionsSubMenu
+{
 	var colorNotes:FlxSpriteGroup;
 	var colorNoteShaders:Array<ColorSwap>;
 	var colorOptions:FlxTypedSpriteGroup<FlxText>;
-	var colorOptionText:Array<String> = ["#optNoteColorsHue", "", "#optNoteColorsSaturation", "#optNoteColorsBrightness"];
+	var colorOptionText:Array<String> = ["#options.noteColors.hue", "", "#options.noteColors.saturation", "#options.noteColors.brightness"];
 	var colorNames:Array<String>;
 	var curColorNote:Int = 0;
 	var noteColorState:Int = 0;
 	var noteColorSelection:Int = 0;
-	function noteColors(noteskinType:String)
+	var helpText:FlxText;
+
+	override public function new(noteskinType:String)
 	{
-		menuState = 3;
-		nav2.locked = true;
-		hideOptionsMenu();
+		super();
 
 		colorNotes = new FlxSpriteGroup();
 		add(colorNotes);
-		curColorNote = 0;
-		noteColorState = 0;
 
 		var noteskinData:NoteskinTypedef = Noteskins.getData(Noteskins.noteskinName, noteskinType);
 		var colors:Array<NoteskinColor> = [];
@@ -1070,7 +1051,7 @@ class OptionsMenu extends FlxGroup
 			note.animation.play("idle");
 
 			var s:ColorSwap = new ColorSwap();
-			note.shader = s.shader;
+			note.shader = s;
 			colorNoteShaders.push(s);
 
 			note.scale.set(noteskinData.scale * 2, noteskinData.scale * 2);
@@ -1094,15 +1075,125 @@ class OptionsMenu extends FlxGroup
 			colorOption.font = "VCR OSD Mono";
 			colorOption.borderColor = FlxColor.BLACK;
 			colorOption.borderStyle = OUTLINE;
+			colorOption.borderSize = 3;
 			colorOptions.add(colorOption);
 		}
+		noteColorsUpdate();
 
-		helpText = new FlxText(0, FlxG.height * 0.9, 0, Lang.get("#optNoteColorsNotice"), 32);
+		helpText = new FlxText(0, FlxG.height * 0.9, FlxG.width * 0.9, Lang.get("#options.noteColors.helpText"), 24);
 		helpText.font = "VCR OSD Mono";
+		helpText.alignment = CENTER;
 		helpText.borderColor = FlxColor.BLACK;
 		helpText.borderStyle = OUTLINE;
 		helpText.screenCenter(X);
 		add(helpText);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (noteColorState == 0)
+		{
+			if (Options.keyJustPressed("ui_left"))
+				changeNote(-1);
+
+			if (Options.keyJustPressed("ui_right"))
+				changeNote(1);
+
+			if (Options.keyJustPressed("ui_accept"))
+			{
+				FlxG.sound.play(Paths.sound('ui/confirmMenu'));
+				noteColorState = 1;
+				noteColorSelection = 0;
+				if (!Reflect.hasField(Options.options.noteColors, colorNames[curColorNote]))
+					Reflect.setProperty(Options.options.noteColors, colorNames[curColorNote], [0, true, 0, 0]);
+
+				noteColorsUpdate();
+			}
+
+			if (Options.keyJustPressed("ui_back"))
+			{
+				FlxG.sound.play(Paths.sound('ui/cancelMenu'));
+
+				if (exitCallback != null)
+					exitCallback();
+				close();
+			}
+		}
+		else
+		{
+			if (Options.keyJustPressed("ui_up"))
+				changeColorOption(-1);
+
+			if (Options.keyJustPressed("ui_down"))
+				changeColorOption(1);
+
+			var change:Float = -FlxG.mouse.wheel;
+			if (Options.keyJustPressed("ui_left"))
+				change = -1;
+			if (Options.keyJustPressed("ui_right"))
+				change = 1;
+			if (FlxG.keys.pressed.SHIFT)
+				change *= 5;
+
+			if (change != 0)
+			{
+				FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+				var col:Array<Dynamic> = Reflect.getProperty(Options.options.noteColors, colorNames[curColorNote]);
+				if (noteColorSelection == 1)
+					col[noteColorSelection] = !col[noteColorSelection];
+				else
+				{
+					col[noteColorSelection] += change * 0.01;
+					col[noteColorSelection] = Math.round(col[noteColorSelection] * 100) / 100;
+					if (noteColorSelection == 0)
+					{
+						if (col[noteColorSelection] < 0)
+							col[noteColorSelection] += 1;
+						if (col[noteColorSelection] >= 1)
+							col[noteColorSelection] -= 1;
+					}
+					else
+						col[noteColorSelection] = Math.min(1, Math.max(-1, col[noteColorSelection]));
+				}
+				noteColorsUpdate();
+				noteShadersUpdate();
+			}
+
+			if (Options.keyJustPressed("ui_accept") || Options.keyJustPressed("ui_back"))
+			{
+				if (Note.cs.exists(colorNames[curColorNote]))
+				{
+					Note.cs.remove(colorNames[curColorNote]);
+					Note.getShader(colorNames[curColorNote]);
+				}
+
+				FlxG.sound.play(Paths.sound('ui/confirmMenu'));
+				noteColorState = 0;
+				noteColorsUpdate();
+			}
+		}
+	}
+
+	function changeNote(?val:Int = 0)
+	{
+		FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+		curColorNote = Util.loop(curColorNote + val, 0, colorNotes.members.length - 1);
+
+		for (c in colorNotes.members)
+			c.alpha = 0.5;
+		colorNotes.members[curColorNote].alpha = 1;
+
+		noteColorsUpdate();
+	}
+
+	function changeColorOption(?val:Int = 0)
+	{
+		FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+		noteColorSelection = Util.loop(noteColorSelection + val, 0, colorOptions.members.length - 1);
+
+		noteColorsUpdate();
 	}
 
 	function noteColorsUpdate()
@@ -1111,11 +1202,24 @@ class OptionsMenu extends FlxGroup
 		for (i in 0...colorOptions.members.length)
 		{
 			if (i == 1)
-				colorOptions.members[i].text = Lang.get(col[i] ? "#optNoteColorsHueSettingB" : "#optNoteColorsHueSettingA");
+			{
+				colorOptions.members[i].text = Lang.get(col[i] ? "#options.noteColors.hue.setting.1" : "#options.noteColors.hue.setting.0");
+				if (noteColorState == 1 && i == noteColorSelection)
+					colorOptions.members[i].text = "< " + colorOptions.members[i].text + " >";
+			}
 			else
-				colorOptions.members[i].text = Lang.get(colorOptionText[i], [Std.string(Std.int(col[i] * 100))]);
+			{
+				if (noteColorState == 1 && i == noteColorSelection)
+					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " < " + Std.string(Math.round(col[i] * 100)) + " >";
+				else
+					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " " + Std.string(Math.round(col[i] * 100));
+			}
 			colorOptions.members[i].screenCenter(X);
+			colorOptions.members[i].alpha = 0.5;
 		}
+
+		if (noteColorState == 1)
+			colorOptions.members[noteColorSelection].alpha = 1;
 	}
 
 	function noteShadersUpdate()
@@ -1127,21 +1231,22 @@ class OptionsMenu extends FlxGroup
 			colorNoteShaders[i].hAdd = Options.noteColor(colorNames[i])[1];
 		}
 	}
+}
 
-
-
+class OptionsSubMenuComboPosition extends OptionsSubMenu
+{
 	var displayJudgement:FlxSprite;
 	var displayCombo:FlxSpriteGroup;
 
 	var lastMousePos:Array<Int> = [];
 	var comboAdjustState:Int = 0;
-	function adjustComboPosition()
-	{
-		menuState = 4;
-		nav2.locked = true;
-		FlxG.mouse.visible = true;
+	var helpText:FlxText;
 
-		hideOptionsMenu();
+	override public function new()
+	{
+		super();
+
+		FlxG.mouse.visible = true;
 
 		displayJudgement = new FlxSprite(Paths.image("ui/skins/default/sick"));
 		add(displayJudgement);
@@ -1171,12 +1276,74 @@ class OptionsMenu extends FlxGroup
 
 		resetComboPositionStuff();
 
-		helpText = new FlxText(0, FlxG.height * 0.9, 0, Lang.get("#optAdjustComboNotice"), 32);
+		helpText = new FlxText(0, FlxG.height * 0.9, FlxG.width * 0.9, Lang.get("#options.adjustCombo.helpText"), 32);
 		helpText.font = "VCR OSD Mono";
 		helpText.borderColor = FlxColor.BLACK;
 		helpText.borderStyle = OUTLINE;
 		helpText.screenCenter(X);
 		add(helpText);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		switch (comboAdjustState)
+		{
+			case 1:
+				Options.options.judgementOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
+				resetComboPositionStuff();
+				if (Options.mouseJustReleased())
+					comboAdjustState = 0;
+
+			case 2:
+				Options.options.comboOffset = [FlxG.mouse.screenX - lastMousePos[0], FlxG.mouse.screenY - lastMousePos[1]];
+				resetComboPositionStuff();
+				if (Options.mouseJustReleased())
+					comboAdjustState = 0;
+
+			default:
+				if (FlxG.mouse.justMoved)
+				{
+					Mouse.cursor = MouseCursor.ARROW;
+					if (displayCombo.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera) || displayJudgement.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))
+						Mouse.cursor = MouseCursor.HAND;
+				}
+
+				if (Options.mouseJustPressed())
+				{
+					lastMousePos = [FlxG.mouse.screenX, FlxG.mouse.screenY];
+					if (displayCombo.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))
+					{
+						comboAdjustState = 2;
+						lastMousePos[0] -= Std.int(Options.options.comboOffset[0]);
+						lastMousePos[1] -= Std.int(Options.options.comboOffset[1]);
+					}
+					else if (displayJudgement.overlapsPoint(FlxG.mouse.getWorldPosition(camera), true, camera))
+					{
+						comboAdjustState = 1;
+						lastMousePos[0] -= Std.int(Options.options.judgementOffset[0]);
+						lastMousePos[1] -= Std.int(Options.options.judgementOffset[1]);
+					}
+				}
+
+				if (FlxG.keys.justPressed.R)
+				{
+					Options.options.judgementOffset = [0, 0];
+					Options.options.comboOffset = [0, 0];
+					resetComboPositionStuff();
+				}
+
+				if (Options.keyJustPressed("ui_back"))
+				{
+					FlxG.sound.play(Paths.sound('ui/confirmMenu'));
+					FlxG.mouse.visible = false;
+
+					if (exitCallback != null)
+						exitCallback();
+					close();
+				}
+		}
 	}
 
 	function resetComboPositionStuff()
@@ -1196,5 +1363,117 @@ class OptionsMenu extends FlxGroup
 		displayJudgement.y -= displayJudgement.height / 2;
 
 		displayCombo.setPosition(Options.options.comboOffset[0], Options.options.comboOffset[1]);
+	}
+}
+
+class OptionsSubMenuCalibrateOffset extends OptionsSubMenu
+{
+	var soundTest:FlxSound;
+	var offsetText:FlxText;
+	var offsetInputs:Array<Float> = [];
+	var curTick:Float = 0;
+
+	var strum:StrumNote;
+	var note:Note;
+
+	override public function new()
+	{
+		super();
+		FlxTween.tween(FlxG.sound.music, {volume: 0}, 0.2);
+
+		strum = new StrumNote(0, "default");
+		strum.resetPosition(Options.options.downscroll, true, [0]);
+		strum.isOptionsMenuStrum = true;
+		strum.screenCenter();
+		add(strum);
+
+		note = new Note(0, 0);
+		note.screenCenter();
+		add(note);
+
+		offsetText = new FlxText(0, 600, 0, "< Offset: 0 >").setFormat("VCR OSD Mono", 48, CENTER, OUTLINE, FlxColor.BLACK);
+		add(offsetText);
+		resetOffsetText();
+
+		soundTest = new FlxSound().loadEmbedded(Paths.sound("ui/soundTest"), true);
+		FlxG.sound.list.add(soundTest);
+		soundTest.play();
+
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyPressed);
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyReleased);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		var prevTick:Float = curTick;
+		var tickTime:Float = soundTest.time - Options.options.offset;
+		curTick = Math.floor(tickTime / 500);
+		if (curTick != prevTick)
+			strum.playAnim("confirm", true, note.noteColor);
+		if (tickTime >= (curTick * 500) + 100 && strum.animation.curAnim.name != "static")
+			strum.playAnim("static", true);
+
+		note.x = strum.x + (tickTime - ((curTick + 1) * 500));
+
+		if (Options.keyJustPressed("ui_left"))
+		{
+			FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+			Options.options.offset--;
+			offsetInputs = [];
+			resetOffsetText();
+		}
+
+		if (Options.keyJustPressed("ui_right"))
+		{
+			FlxG.sound.play(Paths.sound('ui/scrollMenu'));
+			Options.options.offset++;
+			offsetInputs = [];
+			resetOffsetText();
+		}
+
+		if (Options.keyJustPressed("ui_back"))
+		{
+			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyPressed);
+			FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyReleased);
+
+			soundTest.stop();
+			soundTest.destroy();
+
+			FlxG.sound.play(Paths.sound('ui/confirmMenu'));
+			FlxTween.tween(FlxG.sound.music, {volume: 0.7}, 0.2);
+
+			if (exitCallback != null)
+				exitCallback();
+			close();
+		}
+	}
+
+	function resetOffsetText()
+	{
+		offsetText.text = "< Offset: " + Std.string(Options.options.offset) + " >";
+		offsetText.screenCenter(X);
+	}
+
+	function onKeyPressed(event:KeyboardEvent)
+	{
+		var _key:FlxKey = cast event.keyCode;
+		if (Options.getKeys("ui_accept").contains(_key))
+		{
+			var closestBeat:Float = Math.round(soundTest.time / 500) * 500;
+			var offsetInput:Float = soundTest.time - closestBeat;
+			offsetInputs.push(offsetInput);
+			var finalOffset:Float = 0;
+			for (i in offsetInputs)
+				finalOffset += i;
+			finalOffset /= offsetInputs.length;
+			Options.options.offset = Math.round(finalOffset);
+			resetOffsetText();
+		}
+	}
+
+	function onKeyReleased(event:KeyboardEvent)
+	{
 	}
 }

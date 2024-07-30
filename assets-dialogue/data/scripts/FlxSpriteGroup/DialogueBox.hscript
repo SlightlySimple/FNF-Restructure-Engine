@@ -1,221 +1,202 @@
-doingDialogue = false;
-myDia = "";
+canFlip = true;
+mood = "normal";
+textType = "alphabet";
+talking = false;
+completeCallback = null;
 
-defaultSound = "dialogueTick";
-clickSound = "ui/cancelMenu";
-
-curCharacter = "";
-prevCharacter = "";
-curMood = "normal";
-prevMood = "";
-
-dialogueList = [];
-dialogueProgress = 0;
-
-right = true;
-rate = 0.04;
-music = null;
-
-function new(dialogue)
+function new(type)
 {
-	this.cameras = [game.camOther];
+	data = Paths.json("dialogue/boxes/" + type);
+	if (data.canFlip != null)
+		canFlip = data.canFlip;
 
-	myDia = dialogue;
-	var diaDirectory = "songs/"+PlayState.songId+"/"+dialogue;
-	if (!Paths.exists("data/" + diaDirectory + ".txt"))
-		diaDirectory = dialogue;
-	var allDialogue = Paths.text(diaDirectory);
-	dialogueList = Util.splitFile(allDialogue);
-	doingDialogue = true;
+	this.setPosition(data.position[0], data.position[1]);
+	box = CreateSprite(data.asset);
+	if (data.scale != null && data.scale.length > 1)
+	{
+		box.scale.x = data.scale[0];
+		box.scale.y = data.scale[1];
+		box.updateHitbox();
+	}
+	if (data.antialias != null)
+		box.antialiasing = data.antialias;
+	add(box);
 
-	bgFade = new FlxSprite(-200, -200).makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.WHITE);
-	bgFade.alpha = 0;
-	FlxTween.tween(bgFade, {alpha: 0.5}, 0.8);
-	this.add(bgFade);
+	box.baseOffset.set(box.offset.x, box.offset.y);
+	for (a in data.animations)
+	{
+		box.addAnim(a.name, a.prefix, a.fps, a.loop, a.indices);
+		box.addOffsets(a.name, [a.offsets[0], a.offsets[1]]);
+	}
 
-	box = CreateSprite("ui/speech_bubble_talking", 60, 350);
+	moods = new StringMap();
 
-	box.addAnim("normalOpen", "Speech Bubble Normal Open", 24, false);
-	box.addAnim("normal", "speech bubble normal0", 24);
-	box.addAnim("angryOpen", "speech bubble loud open", 24, false);
-	box.addAnim("angry", "AHH speech bubble", 24);
-	box.addOffsets("normalOpen", [60, 0]);
-	box.addOffsets("angryOpen", [30, 70]);
-	box.addOffsets("angry", [30, 70]);
+	for (m in data.moods)
+		moods[m.name] = m;
 
 	box.animation.finishCallback = function(anim) {
-		if (StringTools.endsWith(anim, "Open"))
-			box.playAnim(anim.substr(0, anim.length - 4));
+		if (moods[mood].enter != null && anim == moods[mood].enter)
+			playIdle();
+		else if (moods[mood].open != null && anim == moods[mood].open)
+			playIdle();
+		else if (moods[mood].talkingToIdle != null && anim == moods[mood].talkingToIdle)
+			playIdle();
+		else if (moods[mood].idleToTalking != null && anim == moods[mood].idleToTalking)
+			playIdle();
 	}
 
-	bksp = new AnimatedSprite(FlxG.width * 0.65, 30, Paths.sparrow("ui/backspace"));
-	bksp.addAnim("idle", "backspace to exit0", 24);
-	bksp.addAnim("press", "backspace PRESSED", 24, false);
-	bksp.addOffsets("press", [30, 45]);
-	bksp.playAnim("idle");
-	this.add(bksp);
 
-	ports = new StringMap();
-	portNames = [];
-	for (d in dialogueList)
+
+	if (data.text.font != null && data.text.font != "")
 	{
-		var diaSplit = d.split("::");
-		if (diaSplit[0] != "!setting" && !portNames.contains(diaSplit[0]))
-			portNames.push(diaSplit[0]);
-	}
-
-	for (p in portNames)
-	{
-		var port = new DialoguePort(p);
-		this.add(port);
-		ports[p] = port;
-	}
-
-	this.add(box);
-
-	diaText = new TypedAlphabet(140, 465, "", "default", Std.int(FlxG.width * 0.8), true, 0.8);
-	diaText.sounds = [FlxG.sound.load(Paths.sound(defaultSound), 0.6)];
-	this.add(diaText);
-
-	continueDialogue();
-}
-
-function update(elapsed)
-{
-	if (doingDialogue)
-	{
-		if (FlxG.keys.justPressed.BACKSPACE)
+		diaText = new FlxTypeText(data.text.position[0], data.text.position[1], data.text.width, "", data.text.size);
+		diaText.font = Paths.font(data.text.font);
+		diaText.color = FlxColor.fromRGB(data.text.color[0], data.text.color[1], data.text.color[2]);
+		if (data.text.border != null)
 		{
-			if (dialogueProgress+1 < dialogueList.length)
-			{
-				for (i in dialogueProgress+1...dialogueList.length)
-				{
-					game.hscriptExec("onDialogueLine", [myDia, i]);
-					game.hscriptExec("onDialogueLineShown", [myDia, i]);
-				}
-			}
-			PlaySound(clickSound, 0.8);
-			bksp.playAnim("press");
-			bksp.animation.finishCallback = function(anim) { this.remove(bksp); }
-			endDialogue();
-		}
-		else if (FlxG.keys.justPressed.ANY)
-		{
-			PlaySound(clickSound, 0.8);
-			if (!diaText.paused)
-				diaText.skip();
-			else if (dialogueProgress + 1 >= dialogueList.length)
-				endDialogue();
+			if (data.text.border.style == "shadow")
+				diaText.borderStyle = SHADOW;
 			else
-			{
-				dialogueProgress++;
-				continueDialogue();
-			}
+				diaText.borderStyle = OUTLINE;
+			diaText.borderColor = FlxColor.fromRGB(data.text.border.color[0], data.text.border.color[1], data.text.border.color[2]);
+			diaText.borderSize = data.text.border.size;
 		}
-	}
-}
-
-function continueDialogue()
-{
-	var diaSplit = dialogueList[dialogueProgress].split("::");
-	curCharacter = diaSplit[0];
-
-	if (curCharacter == "!setting")
-	{
-		switch (diaSplit[1])
-		{
-			case "music": playMusic(diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4]));
-			case "bgColor": bgFade.makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.fromString(diaSplit[2]));
-			case "mood": curMood = diaSplit[2];
-			case "flip": box.playAnim("normal", true); box.flip(); prevMood = ""; right = !right;
-			case "rate": rate = Std.parseFloat(diaSplit[2]);
-		}
-		dialogueProgress++;
-		continueDialogue();
+		textType = "font";
 	}
 	else
-	{
-		if (curCharacter != prevCharacter || curMood != prevMood)
-		{
-			box.playAnim(curMood + "Open", true);
-			prevMood = curMood;
-		}
+		diaText = new TypedAlphabet(data.text.position[0], data.text.position[1], "", "default", data.text.width, true, data.text.size / 75);
+	if (data.antialias != null)
+		diaText.antialiasing = data.antialias;
+	add(diaText);
 
-		if (curCharacter != prevCharacter)
-		{
-			if (ports.exists(prevCharacter))
-				ports[prevCharacter].execFunc("exit", []);
-			ports[curCharacter].execFunc("enter", [right]);
 
-			var charSounds = Paths.listFiles("sounds/portraits/" + curCharacter, ".ogg");
-			if (charSounds.length > 0)
-			{
-				diaText.sounds = [];
-				for (s in charSounds)
-					diaText.sounds.push(FlxG.sound.load(Paths.sound("portraits/" + curCharacter + "/" + s), 0.6));
-			}
-			else
-				diaText.sounds = [FlxG.sound.load(Paths.sound(defaultSound), 0.6)];
-		}
-		ports[curCharacter].execFunc("playTalk", [diaSplit[1]]);
 
-		diaText.resetText(diaSplit[2]);
-		diaText.start(rate, true);
-		game.hscriptExec("onDialogueLine", [myDia, dialogueProgress]);
-		diaText.completeCallback = function() { ports[curCharacter].execFunc("playIdle", [diaSplit[1]]); game.hscriptExec("onDialogueLineShown", [myDia, dialogueProgress]); }
-		prevCharacter = curCharacter;
-	}
-}
-
-function endDialogue()
-{
-	doingDialogue = false;
-
-	for (m in this.members)
-		FlxTween.tween(m, {alpha: 0}, 0.7);
-
-	if (music != null)
-		music.fadeOut(0.5, 0, function(twn) { music.stop(); music = null; });
-
-	new FlxTimer().start(0.7, function(tmr)
-	{
-		game.remove(this);
-		game.hscriptExec("onDialogueFinished", [myDia]);
-		this.kill();
-	});
-}
-
-function playMusic(track, volume, fadeTime)
-{
-	if (track == "none")
-	{
-		if (music != null)
-		{
-			if (fadeTime > 0)
-				music.fadeOut(fadeTime, 0, function(twn) { music.stop(); music = null; });
-			else
-			{
-				music.stop();
-				music = null;
-			}
-		}
-	}
+	skip = new FlxText(data.skipPosition[0], data.skipPosition[1], 0, "Press BACKSPACE to skip", data.text.size / 2);
+	if (data.text.font != null && data.text.font != "")
+		skip.font = Paths.font(data.text.font);
 	else
+		skip.font = "FNF Dialogue";
+	skip.color = FlxColor.fromRGB(data.text.color[0], data.text.color[1], data.text.color[2]);
+	if (data.text.border != null)
 	{
-		if (music != null)
-		{
-			music.stop();
-			music = null;
-		}
-
-		music = new FlxSound().loadEmbedded(Paths.music(track), true, true);
-		FlxG.sound.list.add(music);
-		if (fadeTime > 0)
-			music.volume = 0;
+		if (data.text.border.style == "shadow")
+			skip.borderStyle = SHADOW;
 		else
-			music.volume = volume;
-		music.play();
-		if (fadeTime > 0)
-			music.fadeIn(fadeTime, 0, volume);
+			skip.borderStyle = OUTLINE;
+		skip.borderColor = FlxColor.fromRGB(data.text.border.color[0], data.text.border.color[1], data.text.border.color[2]);
+		skip.borderSize = data.text.border.size / 2;
 	}
+	if (data.antialias != null)
+		skip.antialiasing = data.antialias;
+	add(skip);
+}
+
+function flip()
+{
+	if (canFlip)
+	{
+		box.playAnim(data.animations[0].name, true);
+		box.flip();
+		setMood(mood);
+	}
+}
+
+function enter()
+{
+	if (moods[mood].enter != null)
+		box.playAnim(moods[mood].enter, true);
+	else
+		setMood(mood);
+}
+
+function setMood(newMood)
+{
+	mood = newMood;
+	if (moods[mood].enter != null && box.animation.curAnim.name == moods[mood].enter)
+		return;
+	if (moods[mood].idleToTalking != null && box.animation.curAnim.name == moods[mood].idleToTalking)
+		return;
+
+	if (moods[mood].open != null)
+		box.playAnim(moods[mood].open, true);
+	else
+		playIdle();
+}
+
+function playIdle()
+{
+	if (talking && moods[mood].talkingIdle != null)
+		box.playAnim(moods[mood].talkingIdle);
+	else
+		box.playAnim(moods[mood].idle);
+}
+
+function startText(text, rate, append)
+{
+	talking = true;
+	if (append)
+	{
+		if (textType == "font")
+		{
+			diaText.prefix = diaText.text;
+			diaText.resetText(text);
+			diaText.start(rate, true);
+		}
+		else
+		{
+			prevIndex = diaText.text.length;
+			diaText.resetText(diaText.text + text);
+			diaText.start(rate, true);
+			diaText.index = prevIndex;
+			for (i in 0...prevIndex)
+				diaText.members[i].visible = diaText.members[i].active;
+		}
+	}
+	else
+	{
+		if (textType == "font")
+			diaText.prefix = "";
+		diaText.resetText(text);
+		diaText.start(rate, true);
+	}
+	diaText.completeCallback = textFullyShown;
+}
+
+function proceed()
+{
+	if (textType == "alphabet")
+	{
+		if (!diaText.paused)
+		{
+			diaText.skip();
+			return false;
+		}
+	}
+	else
+	{
+		if (diaText._length < diaText._finalText.length)
+		{
+			diaText.skip();
+			return false;
+		}
+	}
+
+	if (moods[mood].idleToTalking != null)
+		box.playAnim(moods[mood].idleToTalking, true);
+	else
+		playIdle();
+
+	return true;
+}
+
+function textFullyShown()
+{
+	talking = false;
+	if (moods[mood].talkingToIdle != null)
+		box.playAnim(moods[mood].talkingToIdle, true);
+	else
+		playIdle();
+
+	if (completeCallback != null)
+		completeCallback();
 }

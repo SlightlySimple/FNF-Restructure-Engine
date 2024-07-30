@@ -27,6 +27,19 @@ class FileBrowser
 		fileDialog.browse(SAVE, Path.extension(filename), filename, label);
 	}
 
+	public static function saveAs(filename:String, content:String)
+	{
+		File.saveContent(filename, content);
+	}
+
+	public function savePath(filename:String)
+	{
+		var fileDialog = new FileDialog();
+		fileDialog.onSelect.add(onSavePathComplete);
+		fileDialog.onCancel.add(onCancel);
+		fileDialog.browse(SAVE, Path.extension(filename), filename, label);
+	}
+
 	public function load(?filterType:String = "json")
 	{
 		var fileDialog = new FileDialog();
@@ -40,6 +53,17 @@ class FileBrowser
 		File.saveContent(path, content);
 
 		if (saveCallback != null)
+			saveCallback(path);
+	}
+
+	function onSavePathComplete(path:String)
+	{
+		if (path == null)
+		{
+			if (failureCallback != null)
+				failureCallback();
+		}
+		else if (saveCallback != null)
 			saveCallback(path);
 	}
 

@@ -1,0 +1,195 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vbox y="10">
+				<label text="Camera Starting Position:"/>
+				<hbox>
+					<stepper id="camFollowXStepper" text="X:" step="5" infoText=""/>
+					<stepper id="camFollowYStepper" text="Y:" step="5" infoText=""/>
+				</hbox>
+				<textbutton id="camCenterOnChars" text="Center on Characters" image="LONG" infoText="Set the camera's starting point exactly in the middle between Boyfriend and the opponent."/>
+				<textbutton id="camCenterOnGF" text="Center on Girlfriend" image="LONG" infoText="Set the camera's starting point to the location of Girlfriend's focus camera."/>
+				<stepper id="camZoomStepper" text="Camera Zoom:" step="0.05" min="0.001" decimals="3" infoText="How zoomed in the camera is by default."/>
+				<textbutton id="searchDirsButton" text="Asset Folders" image="buttonPopupMenu" infoText="The folders where the stage's images are stored. If images from different folders have the same names, the image from the folder higher in the list is used."/>
+				<label text="Background Color:"/>
+				<hbox spacing="50">
+					<button id="bgColor" image="buttonColorSwatch" infoText="The background color shown behind all characters and pieces."/>
+					<button id="bgColorPicker" image="buttonColorPicker" infoText="Pick the background color from anywhere on the screen."/>
+				</hbox>
+				<checkbox id="pixelPerfectCheckbox" text="Pixel Perfect" infoText="If this is checked, all characters and pieces will be aligned based on their scale. It is highly recommended to check this if making a pixel art stage."/>
+				<label text="Script:"/>
+				<dropdown id="scriptDropdown" blank="Default" allowSearch="true" infoText="The script this stage runs when it's used in-game."/>
+			</vbox>
+		</tab>
+		<tab name="Pieces">
+			<vbox y="10">
+				<label text="ID:"/>
+				<input id="pieceId" infoText="A unique identifier for this piece to be used by the game and by scripts. If left blank, the Asset will be the ID. Has no effect on characters."/>
+				<label text="Type:"/>
+				<dropdown id="typeDropdown" infoText="&quot;static&quot; pieces do nothing. &quot;animated&quot; pieces have animation, either from an xml, or tiles. &quot;tiled&quot; pieces repeat infinitely in one or both directions. &quot;group&quot; pieces are empty and are meant to be added to with scripts."/>
+				<label text="Asset:"/>
+				<dropdown id="imageDropdown" allowSearch="true" infoText="The image the next created piece will use. Changing this will automatically change the Type to &quot;static&quot; or &quot;animated&quot; depending on if the image has an xml, but the Type can be changed again afterward."/>
+				<textbutton id="addPieceButton" text="Add Piece" image="LONG" infoText="Add a new piece to the stage, placing it in front of everything else."/>
+				<textbutton id="addPieceBehindCharacters" text="Add Behind Characters" image="LONG" infoText="Add a new piece to the stage, placing it behind every character but in front of everything else."/>
+				<textbutton id="insertPieceButton" text="Insert Piece" image="LONG" infoText="Add a new piece to the stage, placing it directly behind the currently selected piece."/>
+				<textbutton id="deletePieceButton" text="Delete Piece" image="LONG" infoText="Remove the currently selected piece from the stage."/>
+			</vbox>
+		</tab>
+		<tab name="Piece Properties">
+			<vboxscroll y="10" id="pieceProperties">
+				<vbox id="piecePropertiesSlot">
+					<label id="piecePropertiesBlank" text="No Piece Selected"/>
+					<vbox id="piecePropertiesGroup">
+						<label text="Position:"/>
+						<hbox>
+							<stepper id="pieceX" text="X:" step="5" infoText="The horizonal position of the piece."/>
+							<stepper id="pieceY" text="Y:" step="5" infoText="The vertical position of the piece."/>
+						</hbox>
+						<label text="Scroll Factor:"/>
+						<hbox>
+							<stepper id="pieceScrollX" text="X:" default="1" step="0.05" min="0" decimals="3" infoText="The horizontal scroll factor of this piece. Affects how closely the piece follows the camera's position. Used to create a fake 3D parallax effect."/>
+							<stepper id="pieceScrollY" text="Y:" default="1" step="0.05" min="0" decimals="3" infoText="The vertical scroll factor of this piece. Affects how closely the piece follows the camera's position. Used to create a fake 3D parallax effect."/>
+						</hbox>
+						<vbox id="piecePropertiesSubSlot">
+							<vbox id="piecePropertiesSubGroup">
+								<vbox id="piecePropertiesNonSolidSlot">
+									<vbox id="piecePropertiesNonSolidGroup">
+										<hbox>
+											<checkbox id="pieceFlipX" text="Flip X" infoText="Whether this piece should be flipped horizontally."/>
+											<checkbox id="pieceFlipY" text="Flip Y" infoText="Whether this piece should be flipped vertically."/>
+										</hbox>
+										<label text="Scale:"/>
+										<hbox>
+											<stepper id="pieceScaleX" text="X:" default="1" step="0.05" min="0" decimals="3" infoText="How much the piece is stretched horizontally."/>
+											<stepper id="pieceScaleY" text="Y:" default="1" step="0.05" min="0" decimals="3" infoText="How much the piece is stretched vertically."/>
+										</hbox>
+										<checkbox id="pieceUpdateHitbox" text="Update Hitbox" checked="true" infoText="Whether or not to adjust the hitbox for the piece after scaling it. This usually only needs to be unchecked if you're porting a stage from another mod and the piece is in the wrong position."/>
+									</vbox>
+								</vbox>
+								<vbox id="piecePropertiesSolidSlot">
+									<vbox id="piecePropertiesSolidGroup">
+										<label text="Size:"/>
+										<hbox>
+											<stepper id="pieceSizeX" text="X:" default="0" step="5" min="0" infoText="How big the piece is horizontally."/>
+											<stepper id="pieceSizeY" text="Y:" default="0" step="5" min="0" infoText="How big the piece is vertically."/>
+										</hbox>
+									</vbox>
+								</vbox>
+								<vbox id="piecePropertiesNonTiledSlot">
+									<vbox id="piecePropertiesNonTiledGroup">
+										<label text="Alignment:"/>
+										<hbox>
+											<togglebutton id="alignmentLeft" text="Left" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+											<togglebutton id="alignmentCenter" text="Center" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+											<togglebutton id="alignmentRight" text="Right" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+										</hbox>
+										<hbox>
+											<togglebutton id="alignmentTop" text="Top" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+											<togglebutton id="alignmentMiddle" text="Middle" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+											<togglebutton id="alignmentBottom" text="Bottom" image="SHORT" infoText='Where to align the piece compared to the "Position" parameter.'/>
+										</hbox>
+									</vbox>
+								</vbox>
+								<checkbox id="pieceAntialias" text="Antialiasing" checked="true" infoText="Whether the piece is smoothed out. Disable this for pixel stages/art."/>
+								<vbox id="piecePropertiesTiledSlot">
+									<vbox id="piecePropertiesTiledGroup">
+										<hbox>
+											<checkbox id="pieceTileX" text="Tile X" checked="true" infoText="Whether the piece should repeat infinitely left and right."/>
+											<checkbox id="pieceTileY" text="Tile Y" checked="true" infoText="Whether the piece should repeat infinitely up and down."/>
+										</hbox>
+									</vbox>
+								</vbox>
+								<vbox id="piecePropertiesAnimatedTiledSlot">
+									<vbox id="piecePropertiesAnimatedTiledGroup">
+										<label text="Tile Count:"/>
+										<hbox>
+											<stepper id="pieceTileCountX" text="X:" default="1" min="1" infoText="The amount of tiles that are in the sprite sheet horizontally."/>
+											<stepper id="pieceTileCountY" text="Y:" default="1" min="1" infoText="The amount of tiles that are in the sprite sheet vertically."/>
+										</hbox>
+									</vbox>
+								</vbox>
+								<checkbox id="pieceVisible" text="Starts Visible" checked="true" infoText="Whether the piece can be seen when the stage is first loaded. If unchecked, the piece can be made visible via script."/>
+								<label text="Color:"/>
+								<hbox spacing="50">
+									<button id="pieceColor" image="buttonColorSwatch" infoText="The color to be blended with this piece."/>
+									<button id="pieceColorPicker" image="buttonColorPicker" infoText="Pick the piece color from anywhere on the screen."/>
+								</hbox>
+								<stepper id="pieceAlpha" text="Alpha:" default="1" step="0.05" min="0" max="1" decimals="3" infoText="The transparency of the piece, or in other words, how see through it is."/>
+								<label text="Blend Mode:"/>
+								<dropdown id="pieceBlend" infoText="How the piece affects the look of everything it's on top of. Note that not all blend modes work."/>
+							</vbox>
+						</vbox>
+					</vbox>
+					<vbox id="piecePropertiesCharacterGroup">
+						<label text="Preview Character:"/>
+						<dropdown id="charIndex" allowSearch="true" infoText="The character used to preview this slot in the editor. This is not saved, and has no effect in-game."/>
+						<label text="Preview Animation:"/>
+						<dropdown id="charAnim" allowSearch="true" infoText="The animation the character in this slot should play in the editor. This is not saved, and has no effect in-game."/>
+						<label text="Position:"/>
+						<hbox>
+							<stepper id="charX" text="X:" step="5" infoText="The horizonal position of the character."/>
+							<stepper id="charY" text="Y:" step="5" infoText="The vertical position of the character."/>
+						</hbox>
+						<label text="Facing:"/>
+						<hbox>
+							<togglebutton id="charFacingLeft" text="Left" image="buttonBlue" textBorder="#01538C" infoText="Controls which direction the character will be facing by default."/>
+							<togglebutton id="charFacingRight" text="Right" image="buttonPurple" textBorder="#521086" infoText="Controls which direction the character will be facing by default."/>
+						</hbox>
+						<label text="Scroll Factor:"/>
+						<hbox>
+							<stepper id="charScrollX" text="X:" step="0.05" min="0" decimals="3" infoText="The horizontal scroll factor of this character. Affects how closely the character follows the camera's position. Used to create a fake 3D parallax effect."/>
+							<stepper id="charScrollY" text="Y:" step="0.05" min="0" decimals="3" infoText="The vertical scroll factor of this character. Affects how closely the character follows the camera's position. Used to create a fake 3D parallax effect."/>
+						</hbox>
+						<label text="Scale:"/>
+						<hbox>
+							<stepper id="charScaleX" text="X:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched horizontally."/>
+							<stepper id="charScaleY" text="Y:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched vertically."/>
+						</hbox>
+						<label text="Camera Offset:"/>
+						<hbox>
+							<stepper id="charCamX" text="X:" step="5" infoText="The left or right position or offset of the camera when it's looking at this character."/>
+							<stepper id="charCamY" text="Y:" step="5" infoText="The up or down position or offset of the camera when it's looking at this character."/>
+						</hbox>
+						<checkbox id="charCamAbsolute" text="Absolute" infoText="If this is checked, the above coordinates will be the exact position of the camera. If not, the above coordinates will be an offset from the character's center position."/>
+						<hbox>
+							<textbutton id="camTestCharButton" text="Test" infoText="Teleport the camera to the position it will be in when looking at this character."/>
+							<textbutton id="camSetCharButton" text="Set" infoText="Set the above offsets based on the camera's current position."/>
+						</hbox>
+					</vbox>
+				</vbox>
+			</vboxscroll>
+		</tab>
+		<tab name="Animations">
+			<vboxscroll y="10" id="pieceAnimations">
+				<vbox id="pieceAnimationsSlot">
+					<label id="pieceAnimationsBlank" text="No Valid Piece Selected"/>
+					<vbox id="pieceAnimationsGroup">
+						<label text="Animation Name:"/>
+						<input id="animName" infoText="The name of the animation as the game understands it."/>
+						<label text="Prefix:"/>
+						<input id="animPrefix" infoText="The name of the animation as it appears in the sprite sheet."/>
+						<dropdown id="animPrefixes" allowSearch="true" infoText="A list of all prefixes detected in the sprite sheet."/>
+						<label text="Indices:"/>
+						<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the prefix to use."/>
+						<textbutton id="allIndices" text="All Indices" image="LONG" infoText="Automatically fill in the above field with all indices in the current prefix."/>
+						<checkbox id="animLooped" text="Loop" infoText="Whether the animation should repeat itself forever."/>
+						<stepper id="animFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+						<label text="Offsets:"/>
+						<hbox>
+							<stepper id="animOffsetX" text="X:" infoText="The horizontal position of this animation."/>
+							<stepper id="animOffsetY" text="Y:" infoText="The vertical position of this animation."/>
+						</hbox>
+						<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the piece, or replace an animation with the sane name."/>
+						<label text="Current Animation:"/>
+						<dropdown id="curAnimDropdown" allowSearch="true" infoText="The animation the piece is currently playing in the stage editor"/>
+						<textbutton id="deleteAnimButton" text="Remove Animation" image="LONG"/>
+						<label text="Initial Animation:"/>
+						<dropdown id="firstAnimDropdown" allowSearch="true" infoText="The animation the piece plays when the stage is initially loaded."/>
+						<textbutton id="beatAnimButton" text="Idle Animations" image="buttonPopupMenu" infoText="An animation that will play on every beat of the song. This can also be a list of multiple animations that will be played one after the other. If an animation is in the list twice, it will be allowed to interrupt itself."/>
+						<stepper id="beatAnimSpeed" text="Dance Speed:" default="1" step="0.25" min="0.25" decimals="2" infoText="How often the piece's idle animations are played. (1 means every beat, 2 means every other beat, etc.)"/>
+					</vbox>
+				</vbox>
+			</vboxscroll>
+		</tab>
+	</tabmenu>
+</root>

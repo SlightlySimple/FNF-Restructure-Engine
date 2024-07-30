@@ -91,7 +91,10 @@ class ModLoader
 				modList.push([modString, true]);
 
 			if (packageData.windowName != null)
+			{
 				Application.current.window.title = packageData.windowName;
+				Main.windowTitle = packageData.windowName;
+			}
 			if (FileSystem.exists("packages/" + packagePath + "/icon.png"))
 				Application.current.window.setIcon(Image.fromFile("packages/" + packagePath + "/icon.png"));
 		}

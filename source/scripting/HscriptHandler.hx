@@ -16,6 +16,8 @@ import flixel.tweens.FlxTween;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.text.FlxText;
+import flixel.text.FlxBitmapText;
+import flixel.graphics.frames.FlxBitmapFont;
 import flixel.addons.text.FlxTypeText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
@@ -32,16 +34,18 @@ import openfl.display.BlendMode;
 import openfl.filters.ShaderFilter;
 import openfl.filters.BlurFilter;
 import openfl.filters.GlowFilter;
+import openfl.ui.MouseCursor;
 import flxanimate.FlxAnimate;
 import data.Options;
 import data.ScoreSystems;
 import data.Song;
 import game.PlayState;
 import game.GameOverSubState;
-import game.ResultsSubState;
+import game.ResultsState;
 import menus.MainMenuState;
 import menus.StoryMenuState;
 import menus.FreeplayMenuState;
+import menus.FreeplayMenuSubState;
 import menus.PauseSubState;
 import menus.UINavigation;
 import objects.Alphabet;
@@ -65,6 +69,36 @@ import hscript.Interp as HSInterp;
 import lime.app.Application;
 
 using StringTools;
+
+class ScriptedClass
+{
+	public var baseClass:Class<Dynamic>;
+	public var script:String;
+
+	public function new(baseClass:Class<Dynamic>, script:String)
+	{
+		this.baseClass = baseClass;
+		this.script = script;
+	}
+}
+
+class CustomInterp extends HSInterp
+{
+	override function cnew(cl:String, args:Array<Dynamic>):Dynamic
+	{
+		if (variables.exists(cl))
+		{
+			if (Std.isOfType(variables.get(cl), ScriptedClass))
+			{
+				var scriptedClass:ScriptedClass = cast variables.get(cl);
+				return Type.createInstance(scriptedClass.baseClass, [scriptedClass.script, args]);
+			}
+		}
+		return super.cnew(cl, args);
+	}
+}
+
+
 
 class HscriptColor			// FlxColor can't be used with hscript directly so we gotta make our own
 {
@@ -307,12 +341,30 @@ class HscriptTextAlign
 	public static var JUSTIFY:String = "justify";
 }
 
+class HscriptMouseCursor
+{
+	public static var ARROW = MouseCursor.ARROW;
+	public static var AUTO = MouseCursor.AUTO;
+	public static var BUTTON = MouseCursor.BUTTON;
+	public static var HAND = MouseCursor.HAND;
+	public static var IBEAM = MouseCursor.IBEAM;
+	public static var __CROSSHAIR = "crosshair";
+	public static var __CUSTOM = "custom";
+	public static var __MOVE = "move";
+	public static var __RESIZE_NESW = "resize_nesw";
+	public static var __RESIZE_NS = "resize_ns";
+	public static var __RESIZE_NWSE = "resize_nwse";
+	public static var __RESIZE_WE = "resize_we";
+	public static var __WAIT = "wait";
+	public static var __WAIT_ARROW = "waitarrow";
+}
+
 
 
 class HscriptHandler
 {
 	var script:String = "";
-	var interp:HSInterp = null;
+	var interp:CustomInterp = null;
 	var errorFuncs:Array<String> = [];
 	public static var persistent:Dynamic = {};
 	public static var _static:Map<String, Dynamic> = new Map<String, Dynamic>();
@@ -321,6 +373,17 @@ class HscriptHandler
 	public static function parseClass(theClass:String)
 	{
 		return Type.resolveClass(theClass);
+	}
+
+	public static function parseScriptedClass(theClass:String)
+	{
+		if (Paths.hscriptExists("data/scripts/FlxSprite/" + theClass.replace(".", "/")))
+			return new ScriptedClass(HscriptSprite, theClass.replace(".", "/"));
+		if (Paths.hscriptExists("data/scripts/AnimatedSprite/" + theClass.replace(".", "/")))
+			return new ScriptedClass(HscriptAnimatedSprite, theClass.replace(".", "/"));
+		if (Paths.hscriptExists("data/scripts/FlxSpriteGroup/" + theClass.replace(".", "/")))
+			return new ScriptedClass(HscriptSpriteGroup, theClass.replace(".", "/"));
+		return null;
 	}
 
 	public static var curMenu:String = "main";
@@ -334,37 +397,14 @@ class HscriptHandler
 		}
 	}
 
-	public static function doScriptedClass(code:String, classFolder:String, scriptedClass:String):String
+	public static function doScriptedClass(code:CustomInterp, classFolder:String, scriptedClass:String)
 	{
-		var newCode:String = code;
 		var scriptedClasses:Array<String> = Paths.listFiles("data/scripts/" + classFolder, ".hscript");
 		if (scriptedClasses.length > 0)
 		{
 			for (s in scriptedClasses)
-			{
-				while (newCode.indexOf("new " + s) > -1)
-				{
-					var startInd:Int = newCode.indexOf("new " + s);
-					var endInd:Int = startInd + 4 + s.length;
-					var parenthesisCount:Int = 0;
-					while (parenthesisCount >= 0)
-					{
-						endInd++;
-						var ch:String = newCode.charAt(endInd);
-						switch (ch)
-						{
-							case "(": parenthesisCount++;
-							case ")": parenthesisCount--;
-						}
-					}
-
-					var args:String = newCode.substring(startInd + 5 + s.length, endInd);
-					newCode = newCode.substring(0, startInd) + "new " + scriptedClass + "(\"" + s + "\", [" + args + "]" + newCode.substring(endInd, newCode.length);
-				}
-			}
+				code.variables.set(s, new ScriptedClass(Type.resolveClass("scripting." + scriptedClass), s));
 		}
-
-		return newCode;
 	}
 
 	public static function CreateStrip(x:Float, y:Float, vertices:Array<Float>, indices:Array<Int>, uvtData:Array<Float>):FlxStrip
@@ -378,17 +418,31 @@ class HscriptHandler
 
 	public static function ModifyStrip(strip:FlxStrip, mod:String, slot:Int, type:String, val:Float)
 	{
-		switch (type)
+		switch (mod)
 		{
-			case "add":
-				strip.vertices[slot] += val;
+			case "uv":
+				switch (type)
+				{
+					case "add":
+						strip.uvtData[slot] += val;
+
+					default:
+						strip.uvtData[slot] = val;
+				}
 
 			default:
-				strip.vertices[slot] = val;
+				switch (type)
+				{
+					case "add":
+						strip.vertices[slot] += val;
+
+					default:
+						strip.vertices[slot] = val;
+				}
 		}
 	}
 
-	public function new(scriptFile:String)
+	public function new(scriptFile:String, ?doAddFunctions:Bool = true)
 	{
 		script = scriptFile;
 		if (!_static.exists(script))
@@ -402,12 +456,11 @@ class HscriptHandler
 
 			var classString:String = myCode.substring(startInd + 7, endInd);
 			var classParts:Array<String> = classString.split(".");
-			myCode = myCode.substring(0, startInd) + "var " + classParts[classParts.length-1] + " = parseClass(\"" + classString + "\")" + myCode.substring(endInd, myCode.length);
+			if (Paths.hscriptExists("data/scripts/FlxSprite/" + classParts.join("/")) || Paths.hscriptExists("data/scripts/AnimatedSprite/" + classParts.join("/")) || Paths.hscriptExists("data/scripts/FlxSpriteGroup/" + classParts.join("/")))
+				myCode = myCode.substring(0, startInd) + classParts[classParts.length-1] + " = parseScriptedClass(\"" + classString + "\")" + myCode.substring(endInd, myCode.length);
+			else
+				myCode = myCode.substring(0, startInd) + "var " + classParts[classParts.length-1] + " = parseClass(\"" + classString + "\")" + myCode.substring(endInd, myCode.length);
 		}
-
-		myCode = HscriptHandler.doScriptedClass(myCode, "FlxSprite", "HscriptSprite");
-		myCode = HscriptHandler.doScriptedClass(myCode, "AnimatedSprite", "HscriptAnimatedSprite");
-		myCode = HscriptHandler.doScriptedClass(myCode, "FlxSpriteGroup", "HscriptSpriteGroup");
 
 		var parser:HSParser = new HSParser();
 		parser.allowTypes = true;
@@ -420,8 +473,13 @@ class HscriptHandler
 
 		if (program != null)
 		{
-			interp = new HSInterp();
-			refreshVariables();
+			interp = new CustomInterp();
+
+			HscriptHandler.doScriptedClass(interp, "FlxSprite", "HscriptSprite");
+			HscriptHandler.doScriptedClass(interp, "AnimatedSprite", "HscriptAnimatedSprite");
+			HscriptHandler.doScriptedClass(interp, "FlxSpriteGroup", "HscriptSpriteGroup");
+
+			refreshVariables(doAddFunctions);
 
 			interp.execute(program);
 		}
@@ -432,7 +490,7 @@ class HscriptHandler
 		return (interp != null);
 	}
 
-	public function refreshVariables()
+	public function refreshVariables(?doAddFunctions:Bool = true)
 	{
 		if (interp == null)
 			return;
@@ -470,6 +528,8 @@ class HscriptHandler
 		interp.variables.set("FlxPoint", FlxPoint);
 		interp.variables.set("FlxText", FlxText);
 		interp.variables.set("FlxTextBorderStyle", FlxTextBorderStyle);
+		interp.variables.set("FlxBitmapText", FlxBitmapText);
+		interp.variables.set("FlxBitmapFont", FlxBitmapFont);
 		interp.variables.set("SHADOW", FlxTextBorderStyle.SHADOW);
 		interp.variables.set("OUTLINE", FlxTextBorderStyle.OUTLINE);
 		interp.variables.set("OUTLINE_FAST", FlxTextBorderStyle.OUTLINE_FAST);
@@ -486,6 +546,7 @@ class HscriptHandler
 		interp.variables.set("FlxAxes", FlxAxes);
 		interp.variables.set("BlendMode", HscriptBlendMode);
 		interp.variables.set("FlxKey", HscriptKey);
+		interp.variables.set("MouseCursor", HscriptMouseCursor);
 		interp.variables.set("X", FlxAxes.X);
 		interp.variables.set("Y", FlxAxes.Y);
 		interp.variables.set("XY", FlxAxes.XY);
@@ -512,6 +573,7 @@ class HscriptHandler
 		interp.variables.set("GlowFilter", GlowFilter);
 		interp.variables.set("Paths", Paths);
 		interp.variables.set("parseClass", HscriptHandler.parseClass);
+		interp.variables.set("parseScriptedClass", HscriptHandler.parseScriptedClass);
 		interp.variables.set("persistent", HscriptHandler.persistent);
 		interp.variables.set("static", HscriptHandler._static[script]);
 		interp.variables.set("Character", Character);
@@ -534,11 +596,13 @@ class HscriptHandler
 		interp.variables.set("GameOverSubState", GameOverSubState);
 		interp.variables.set("HscriptState", HscriptState);
 		interp.variables.set("HscriptSubState", HscriptSubState);
+		interp.variables.set("HscriptEditorState", HscriptEditorState);
 		interp.variables.set("curMenu", curMenu);
 		interp.variables.set("GotoMenu", GotoMenu);
 		interp.variables.set("MainMenuState", MainMenuState);
 		interp.variables.set("StoryMenuState", StoryMenuState);
 		interp.variables.set("FreeplayMenuState", FreeplayMenuState);
+		interp.variables.set("FreeplayMenuSubState", FreeplayMenuSubState);
 		interp.variables.set("FreeplaySandbox", FreeplaySandbox);
 		interp.variables.set("FreeplayChartInfo", FreeplayChartInfo);
 		interp.variables.set("PauseSubState", PauseSubState);
@@ -546,7 +610,14 @@ class HscriptHandler
 		interp.variables.set("UINumeralNavigation", UINumeralNavigation);
 		interp.variables.set("UIMenu", UIMenu);
 		interp.variables.set("ScoreSystems", ScoreSystems);
-		interp.variables.set("ResultsSubState", ResultsSubState);
+		interp.variables.set("ResultsState", ResultsState);
+
+		if (doAddFunctions)
+		{
+			interp.variables.set("add", FlxG.state.add);
+			interp.variables.set("insert", FlxG.state.insert);
+			interp.variables.set("remove", FlxG.state.remove);
+		}
 	}
 
 	public function get_variables():Map<String, Dynamic>
@@ -626,7 +697,7 @@ class HscriptHandler
 
 class HscriptHandlerSimple
 {
-	var interp:HSInterp;
+	var interp:CustomInterp;
 
 	public function new(scriptFile:String)
 	{
@@ -635,7 +706,7 @@ class HscriptHandlerSimple
 		parser.allowTypes = true;
 		var program = parser.parseString(myCode);
 
-		interp = new HSInterp();
+		interp = new CustomInterp();
 		refreshVariables();
 		interp.execute(program);
 	}
@@ -650,6 +721,7 @@ class HscriptHandlerSimple
 		interp.variables.set("FlxMath", FlxMath);
 		interp.variables.set("Std", Std);
 		interp.variables.set("Paths", Paths);
+		interp.variables.set("Conductor", Conductor);
 	}
 
 	public function execFunc(func:String, args:Array<Dynamic>)

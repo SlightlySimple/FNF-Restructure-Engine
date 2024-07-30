@@ -5,12 +5,14 @@ import flixel.FlxSprite;
 import flixel.animation.FlxAnimationController;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.util.FlxAxes;
+import flixel.math.FlxPoint;
 import data.Options;
 import game.PlayState;
 
 class AnimatedSprite extends FlxSprite
 {
 	var animOffsets:Map<String, Array<Int>>;
+	var baseOffset:FlxPoint;
 	var hasOffsets:Bool = false;
 
 	public var idles:Array<String> = [];
@@ -32,6 +34,7 @@ class AnimatedSprite extends FlxSprite
 			this.frames = frames;
 
 		animOffsets = new Map<String, Array<Int>>();
+		baseOffset = FlxPoint.get();
 	}
 
 	public function addOffsets(anim:String, pos:Array<Int>)
@@ -47,10 +50,10 @@ class AnimatedSprite extends FlxSprite
 			if (animOffsets.exists(animation.curAnim.name))
 			{
 				var offsets:Array<Int> = animOffsets.get(animation.curAnim.name);
-				offset.set(offsets[0], offsets[1]);
+				offset.set(offsets[0] + baseOffset.x, offsets[1] + baseOffset.y);
 			}
 			else
-				offset.set();
+				offset.set(baseOffset.x, baseOffset.y);
 		}
 	}
 

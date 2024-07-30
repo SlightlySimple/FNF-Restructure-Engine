@@ -1,0 +1,213 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vboxscroll y="10">
+				<label text="Character ID:"/>
+				<input id="characterId" infoText="The internal name of the character, and the name of their JSON file."/>
+				<vbox spacing="0">
+					<label text="Image File:"/>
+					<hbox>
+						<input id="characterAsset" width="200" infoText="The file path of the character's sprite sheet."/>
+						<button id="loadAssetButton" image="buttonLoad" infoText="Browse for a sprite sheet."/>
+					</hbox>
+				</vbox>
+				<if condition="1">
+					<label text="Tile Count:"/>
+					<hbox>
+						<stepper id="charTileX" text="X:" min="1" infoText="The amount of tiles that are in the sprite sheet horizontally."/>
+						<stepper id="charTileY" text="Y:" min="1" infoText="The amount of tiles that are in the sprite sheet vertically."/>
+					</hbox>
+				</if>
+				<label text="Character Template:"/>
+				<hbox>
+					<button id="charTemplateBF" image="buttonBF" infoText="Fill in the fields for a player-type character.\nWARNING: This will completely replace all animations in the character."/>
+					<button id="charTemplateGF" image="buttonGF" infoText="Fill in the fields for a Girlfriend-type character.\nWARNING: This will completely replace all animations in the character."/>
+					<button id="charTemplateDad" image="buttonDad" infoText="Fill in the fields for an opponent-type character.\nWARNING: This will completely replace all animations in the character."/>
+				</hbox>
+				<textbutton id="positionFixGF" text="Fix Position for GF" image="LONG" infoText="Fix the position of a Girlfriend-type character made in Psych Engine or in an old version of Restructure Engine."/>
+				<label text="Position:"/>
+				<hbox>
+					<stepper id="charX" text="X:" step="5" infoText="The horizonal position of the character."/>
+					<stepper id="charY" text="Y:" step="5" infoText="The vertical position of the character."/>
+				</hbox>
+				<label text="Scale:"/>
+				<hbox>
+					<stepper id="charScaleX" text="X:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched horizontally."/>
+					<stepper id="charScaleY" text="Y:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched vertically."/>
+				</hbox>
+				<label text="Camera Position:"/>
+				<hbox>
+					<stepper id="camPosX" text="X:" step="5" infoText="The left or right offset of the camera when it's looking at this character."/>
+					<stepper id="camPosY" text="Y:" step="5" infoText="The up or down offset of the camera when it's looking at this character."/>
+				</hbox>
+			</vboxscroll>
+		</tab>
+		<tab name="Guides">
+			<vboxscroll y="10">
+				<label text="Preview Stage:"/>
+				<dropdown id="stageDropdown" blank="None" allowSearch="true" infoText="The stage that should be used for the background. If one is selected, the character will be positioned based on where in the stage they should be."/>
+				<checkbox id="showAnimGhost" text="Character Ghost" infoText="Shows a transparent version of the character for the purpose of aligning animation offsets."/>
+				<stepper id="ghostAlpha" text="Transparency:" min="0" max="1" step="0.05" decimals="2" infoText="How see-through the character ghost should be."/>
+				<stepper id="charPosStepper" text="Preview Position:" min="0" max="1" infoText="The position in the stage this character should be aligned with.\nUsually, 0 will be Boyfriend's position, 1 will be the opponent's position, and 2 will be Girlfriend's position."/>
+				<checkbox id="showOtherAnimGhost" text="Other Character Ghost" infoText="Shows a transparent version of another character to align the current character to."/>
+				<stepper id="otherCharAlpha" text="Transparency:" min="0" max="1" step="0.05" decimals="2" infoText="How see-through the other character ghost should be."/>
+				<stepper id="otherCharPosStepper" text="Preview Position:" min="0" max="1" infoText="The position in the stage the other character should be in.\nUsually, 0 will be Boyfriend's position, 1 will be the opponent's position, and 2 will be Girlfriend's position."/>
+				<label text="Character:"/>
+				<dropdown id="otherCharacterDropdown" allowSearch="true" infoText="The character used for the other character ghost."/>
+				<label text="Animation:"/>
+				<dropdown id="otherCharAnimDropdown" allowSearch="true" infoText="The animation that the other character ghost should play."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Attributes">
+			<vbox y="10">
+				<hbox>
+					<checkbox id="charAntialias" text="Antialiasing" infoText="Whether the character is smoothed out. Disable this for pixel characters."/>
+					<checkbox id="charFlip" text="Flip X" infoText="Whether the character is flipped horizontally. Does not affect offsets."/>
+				</hbox>
+				<label text="Facing:"/>
+				<hbox>
+					<togglebutton id="charFacingLeft" text="Left" image="buttonBlue" textBorder="#01538C" infoText="Controls which direction a character will be facing by default, and when they will be flipped."/>
+					<togglebutton id="charFacingCenter" text="Center" image="buttonRed" textBorder="#440006" infoText="Controls which direction a character will be facing by default, and when they will be flipped. Center-facing characters will never be flipped."/>
+					<togglebutton id="charFacingRight" text="Right" image="buttonPurple" textBorder="#521086" infoText="Controls which direction a character will be facing by default, and when they will be flipped."/>
+				</hbox>
+				<vbox spacing="0">
+					<label text="Health Icon:"/>
+					<hbox>
+						<input id="iconInput" width="200" infoText="The icon shown on this character's side of the health bar. If blank, it will be the same as the Character ID."/>
+						<button id="loadIconButton" image="buttonLoad" infoText="Browse for a health icon's PNG or JSON file."/>
+					</hbox>
+				</vbox>
+				<label text="Healthbar Color:"/>
+				<hbox spacing="50">
+					<button id="healthbarColorSwatch" image="buttonColorSwatch" infoText="Change the color of the health bar using a color swatch."/>
+					<button id="healthbarColorPicker" image="buttonColorPicker" infoText="Pick the color of the health bar from anywhere on the screen."/>
+				</hbox>
+				<textbutton id="idles" text="Idle Animations" image="buttonPopupMenu" infoText="An animation that will play on every beat of the song. This can also be a list of multiple animations that will be played one after the other. If an animation is in the list twice, it will be allowed to interrupt itself."/>
+				<label text="Initial Animation:"/>
+				<dropdown id="firstAnimDropdown" allowSearch="true" infoText="The animation the character plays when they're initially loaded."/>
+				<textbutton id="autoAnimButton" text="Auto-Assign Animations" image="LONG" infoText="Automatically fills in the Idle Animations and Initial Animation based on the animations present in the animation list."/>
+			</vbox>
+		</tab>
+		<tab name="Adv. Properties">
+			<vbox y="10">
+				<stepper id="charDanceSpeed" text="Dance Speed:" step="0.25" min="0" decimals="2" infoText="How often the character's idle animations are played. (1 means every beat, 2 means every other beat, etc.)"/>
+				<label text="Game Over Camera Position:"/>
+				<hbox>
+					<stepper id="camPosDeadX" text="X:" step="5" infoText="The horizontal offset of the camera when it's looking at this character in the game over screen."/>
+					<stepper id="camPosDeadY" text="Y:" step="5" infoText="The vertical offset of the camera when it's looking at this character in the game over screen."/>
+				</hbox>
+				<hbox>
+					<textbutton id="camTestDeadButton" text="Test" infoText="Teleport the camera to it's position when looking at this character in the game over screen.\n(Note: The animation &quot;firstDeath&quot; should be playing for accuracy.)"/>
+					<textbutton id="camSetDeadButton" text="Set" infoText="Set the camera's position in the game over screen based on it's current location.\n(Note: The animation &quot;firstDeath&quot; should be playing for accuracy.)"/>
+				</hbox>
+				<label text="Game Over Character:"/>
+				<dropdown id="gameOverCharDropdown" blank="Default" allowSearch="true" infoText="The character used in the game over screen if the player loses while playing as this character. Set this to &quot;Self&quot; if this character contains their own game over animations."/>
+				<label text="Game Over Sound:"/>
+				<dropdown id="gameOverSFXDropdown" blank="Default" allowSearch="true" infoText="The sound effect that plays in the game over screen if this character is the game over character."/>
+				<label text="Death Counter Text:"/>
+				<input id="deathCounterInput" infoText="The text that's used for the game over counter in the pause menu when playing as this character."/>
+				<label text="Script:"/>
+				<dropdown id="scriptDropdown" blank="Default" allowSearch="true" infoText="The script this character runs when they appear in-game."/>
+			</vbox>
+		</tab>
+		<tab name="Animations">
+			<vboxscroll y="10">
+				<label text="Animation Name:"/>
+				<input id="animName" infoText="The name of the animation as the game understands it."/>
+				<dropdown id="animNameDropdown" infoText="A list of common animation names characters use."/>
+				<if condition="0">
+					<vbox spacing="0">
+						<label text="Image File:"/>
+						<hbox>
+							<input id="animAsset" width="200" infoText="The file path of the animation's sprite sheet."/>
+							<button id="loadAnimAssetButton" image="buttonLoad" infoText="Browse for a sprite sheet."/>
+						</hbox>
+					</vbox>
+					<label text="Prefix:"/>
+					<input id="animPrefix" infoText="The name of the animation as it appears in the sprite sheet."/>
+					<dropdown id="animPrefixDropdown" allowSearch="true" infoText="A list of all prefixes detected in the sprite sheet."/>
+					<label text="Indices:"/>
+					<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the prefix to use."/>
+					<textbutton id="allIndices" text="All Indices" image="LONG" infoText="Automatically fill in the above field with all indices in the current prefix."/>
+				</if>
+				<if condition="1">
+					<label text="Indices:"/>
+					<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the sprite sheet to use."/>
+					<stepper id="indRangeStart" text="Start:" min="0" infoText="The start of a range of indices to fill the above field with."/>
+					<stepper id="indRangeLength" text="Length:" min="1" infoText="How many indices to use in the auto-filled sequence."/>
+					<textbutton id="rangeIndices" text="Generate Range" image="LONG" infoText="Fill the above field with a number of indices starting at and going for as long as you have chosen."/>
+				</if>
+				<if condition="2">
+					<label text="Prefix:"/>
+					<input id="animPrefix" infoText="The name, if any, of the animation as it appears in the texture atlas."/>
+					<dropdown id="animPrefixDropdown" allowSearch="true" infoText="A list of all prefixes detected in the texture atlas."/>
+					<label text="Indices:"/>
+					<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the texture atlas to use."/>
+					<stepper id="indRangeStart" text="Start:" min="0" infoText="The start of a range of indices to fill the above field with."/>
+					<stepper id="indRangeLength" text="Length:" min="1" infoText="How many indices to use in the auto-filled sequence."/>
+					<textbutton id="rangeIndices" text="Generate Range" image="LONG" infoText="Fill the above field with a number of indices starting at and going for as long as you have chosen."/>
+				</if>
+				<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the character, or replace an animation with the same name."/>
+				<textbutton id="removeAnimButton" text="Remove Animation" image="LONG" infoText="Remove the currently selected animation from the character."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Anim. Properties">
+			<vbox y="10">
+				<label text="Offsets:"/>
+				<hbox>
+					<stepper id="animOffsetX" text="X:" infoText="The horizontal position of this animation."/>
+					<stepper id="animOffsetY" text="Y:" infoText="The vertical position of this animation."/>
+				</hbox>
+				<checkbox id="animLooped" text="Loop" infoText="Whether the animation should repeat itself forever."/>
+				<stepper id="animFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+				<stepper id="animLoopedFrames" text="Trailing frames:" min="0" infoText="If the animation does not loop, this amount of frames at the end of the animation will repeat forever."/>
+				<stepper id="animSustainFrame" text="Held frame:" default="-1" min="-1" infoText="If the animation is a singing animation, it will stop on this frame while a held note is being pressed."/>
+				<checkbox id="animImportant" text="Prevents Idle" infoText="If checked, this animation will never be interrupted by the idle animation."/>
+				<label text="Next Animation:"/>
+				<dropdown id="animNextDropdown" blank="None" allowSearch="true" infoText="An animation to always play immediately after this one finishes."/>
+			</vbox>
+		</tab>
+		<tab name="Anim. Preview">
+			<vbox y="10">
+				<label id="curFrameText" text="Frame: 0"/>
+				<textbutton id="toggleAnimButton" text="Toggle"/>
+				<hbox>
+					<textbutton id="prevFrame" text="Prev"/>
+					<textbutton id="nextFrame" text="Next"/>
+				</hbox>
+				<hbox>
+					<textbutton id="firstFrame" text="First"/>
+					<textbutton id="lastFrame" text="Last"/>
+				</hbox>
+			</vbox>
+		</tab>
+		<tab name="Offsets">
+			<vbox y="10">
+				<stepper id="offsetStepper" text="Value:" decimals="3"/>
+				<hbox>
+					<textbutton id="offsetAddX" text="Add X" infoText="Add the above value to the horizontal offset of every animation."/>
+					<textbutton id="offsetAddY" text="Add Y" infoText="Add the above value to the vertical offset of every animation."/>
+				</hbox>
+				<hbox>
+					<textbutton id="offsetScaleX" text="Scale X" infoText="Multiply the horizontal offset of every animation by the above value."/>
+					<textbutton id="offsetScaleY" text="Scale Y" infoText="Multiply the vertical offset of every animation by the above value."/>
+				</hbox>
+				<textbutton id="offsetZero" text="Set current to 0" image="LONG" infoText="Set the offsets of the current animation to 0, adjusting the character's position, camera position, and all other offsets to match."/>
+				<button id="flipCharacter" image="buttonFlip" infoText='Horizontally flip the character, adjusting their "Facing" parameter, flipping animation names, and preserving offsets. (Does not work on center-facing characters)'/>
+				<if condition="2" inverted="true">
+					<label text="Alignment:"/>
+					<hbox>
+						<togglebutton id="alignmentLeft" text="Left" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+						<togglebutton id="alignmentCenter" text="Center" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+						<togglebutton id="alignmentRight" text="Right" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+					</hbox>
+					<hbox>
+						<togglebutton id="alignmentTop" text="Top" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+						<togglebutton id="alignmentMiddle" text="Middle" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+						<togglebutton id="alignmentBottom" text="Bottom" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
+					</hbox>
+				</if>
+			</vbox>
+		</tab>
+	</tabmenu>
+</root>

@@ -13,10 +13,13 @@ typedef CharacterData =
 	var position:Array<Int>;
 	var camPosition:Array<Int>;
 	var scale:Array<Float>;
+	var fixes:Null<Int>;
 	var antialias:Bool;
+	var ?offsetAlign:Array<String>;
 	var animations:Array<CharacterAnimation>;
 	var firstAnimation:String;
 	var idles:Array<String>;
+	var ?healthbarColor:Array<Int>;
 	var ?danceSpeed:Null<Float>;
 	var ?gameOverCharacter:String;
 	var ?gameOverSFX:String;
@@ -30,7 +33,8 @@ typedef CharacterData =
 typedef CharacterAnimation =
 {
 	var name:String;
-	var prefix:String;
+	var ?asset:String;
+	var ?prefix:String;
 	var ?fps:Null<Int>;
 	var ?loop:Null<Bool>;
 	var ?loopedFrames:Null<Int>;
@@ -79,6 +83,7 @@ typedef StageData =
 	var ?parent:String;
 	var ?script:String;
 	var ?searchDirs:Array<String>;
+	var fixes:Null<Int>;
 	var characters:Array<StageCharacter>;
 	var camZoom:Null<Float>;
 	var camFollow:Array<Int>;
@@ -105,6 +110,7 @@ typedef StagePiece =
 	var asset:String;
 	var ?tileCount:Array<Int>;
 	var ?scriptClass:String;
+	var ?scriptParameters:Dynamic;
 	var position:Array<Int>;
 	var ?scale:Array<Float>;
 	var ?align:String;
@@ -119,6 +125,7 @@ typedef StagePiece =
 	var ?beatAnimationSpeed:Null<Float>;
 	var layer:Null<Int>;
 	var antialias:Bool;
+	var ?color:Array<Int>;
 	var ?alpha:Null<Float>;
 	var ?blend:String;
 }
@@ -144,10 +151,11 @@ typedef NoteTypeData =
 	var animationSuffix:String;
 	var hitSound:String;
 	var hitSoundVolume:Null<Float>;
+	var placeSound:String;
 	var healthValues:NoteHealthValues;
 	var p1ShouldMiss:Bool;
 	var p2ShouldMiss:Bool;
-	var noSustains:Bool;
+	var noSustains:Null<Bool>;
 	var ?singers:Array<Int>;
 	var ?alwaysSplash:Null<Bool>;
 	var ?splashMin:Null<Int>;
@@ -181,12 +189,14 @@ typedef WeekData =
 {
 	var image:String;
 	var title:String;
-	var characters:Array<String>;
+	var characters:Array<Array<Dynamic>>;
 	var ?color:Array<Int>;
 	var ?banner:String;
 	var ?difficulties:Array<String>;
+	var ?difficultiesLocked:Array<String>;
 	var songs:Array<WeekSongData>;
 	var startsLocked:Bool;
+	var startsLockedInFreeplay:Null<Bool>;
 	var weekToUnlock:String;
 	var hiddenWhenLocked:Bool;
 	var ?condition:String;
@@ -196,12 +206,14 @@ typedef WeekData =
 typedef WeekSongData =
 {
 	var songId:String;
-	var icon:String;
+	var ?icon:String;
+	var ?iconNew:String;
 	var ?difficulties:Array<String>;
 	var ?characters:Null<Int>;
 	var ?characterLabels:Array<String>;
 	var ?title:String;
 	var ?hscript:String;
+	var ?albums:Array<Array<String>>;
 }
 
 typedef WeekCharacterData =
@@ -216,6 +228,16 @@ typedef WeekCharacterData =
 	var ?danceSpeed:Null<Float>;
 	var flip:Null<Bool>;
 	var matchColor:Null<Bool>;
+}
+
+// Freeplay
+
+typedef FavoriteSongData =
+{
+	var song:WeekSongData;
+	var title:String;
+	var artist:String;
+	var group:String;
 }
 
 // UI Skins

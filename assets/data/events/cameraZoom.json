@@ -1,37 +1,41 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "zoom",
 			"label": "Camera Zoom",
+			"infoText": "How far to zoom the camera in. Higher values zoom the camera in more. Set to 0 to reset the zoom to default.",
 			"type": "stepper",
 			"defaultValue": 1,
-			"min": -9999,
-			"max": 9999,
-			"increment": 0.01,
+			"increment": 0.05,
 			"decimals": 3
-		},
-		{
-			"type": "label",
-			"label": "Set Camera Zoom to 0 to reset the zoom to default"
 		},
 		{
 			"id": "time",
 			"label": "Time (Seconds)",
+			"infoText": "How long it takes for the camera to fully zoom.",
 			"type": "stepper",
 			"time": "seconds",
 			"defaultValue": 1,
-			"min": 0.01,
-			"max": 9999,
-			"increment": 0.01,
+			"min": 0,
+			"increment": 0.05,
 			"decimals": 3
 		},
 		{
 			"id": "mode",
 			"label": "Mode",
+			"infoText": "Whether the value should be the exact zoom, the zoom relative to the stage's default, the zoom multiplied by the stage's default, or the zoom compared to the current zoom when the event occurs.",
 			"type": "dropdown",
 			"defaultValue": "absolute",
-			"options": ["absolute", "fromStage", "fromCurrent"]
+			"options": ["absolute", "fromStage", "fromCurrent", "fromStageMultiplied"]
+		},
+		{
+			"id": "ease",
+			"label": "Ease",
+			"infoText": "The type of transition to use for the tween.",
+			"type": "ease",
+			"defaultValue": "sineInOut"
 		}
 	]
 }

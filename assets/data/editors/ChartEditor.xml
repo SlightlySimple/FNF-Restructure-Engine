@@ -1,0 +1,160 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vboxscroll y="10">
+				<label text="Song Name:"/>
+				<input id="songNameInput" infoText="The title of the song as it's displayed in-game and in menus. Note that this doesn't have to match the file name of the song or the chart."/>
+				<label text="Song Artist:"/>
+				<input id="songArtistInput" infoText="The person or people who created the song. Will show up at the start of the song and in Freeplay."/>
+				<label text="Song Charter:"/>
+				<input id="songCharterInput" infoText="The person or people who charted the song. If you're reading this, it's probably you."/>
+				<if condition="0" inverted="true">
+					<textbutton id="tracksButton" text="Tracks" image="buttonPopupMenu" infoText="Every track in the song and it's properties. By default, this will be the instrumental and voices. The &quot;Singer&quot; controls whether a track is muted if a note is missed, and who has to miss the note for the track to be muted."/>
+				</if>
+				<hbox>
+					<stepper id="offsetStepper" text="Offset:" infoText="How many milliseconds the song should be offset to account for delay. A positive number means the song will play later relative to the chart, while a negative number means the song will play earlier."/>
+					<textbutton id="bakeOffsetButton" text="Bake" image="SHORT" infoText="Moves the notes by however many milliseconds the offset is at, and set the offset to 0."/>
+				</hbox>
+				<stepper id="bpmStepper" text="BPM:" default="150" min="0" decimals="3" infoText="The speed of the song, in Beats Per Minute. Only affects the song on and after the beat specified below."/>
+				<stepper id="scrollSpeedStepper" text="Scroll Speed:" default="1" step="0.05" min="0" decimals="3" infoText="The speed at which the notes travel towards the strumline. A higher number means the notes will travel faster. Only affects the song on and after the beat specified below."/>
+				<hbox>
+					<textbutton id="scrollSpeedHalfButton" text="Half" infoText="Set the scroll speed to half of it's current value."/>
+					<textbutton id="scrollSpeedDoubleButton" text="Double" infoText="Set the scroll speed to double it's current value."/>
+				</hbox>
+				<vbox spacing="0">
+					<stepper id="bpmOnBeatStepper" text="Change on Beat:" default="0" min="0" decimals="3" infoText="Which beat to change the BPM and Scroll Speed on."/>
+					<hbox>
+						<textbutton id="bpmOnBeatZero" text="Zero" infoText='Set the "Change on Beat" value to zero.'/>
+						<textbutton id="bpmOnBeatCurrent" text="Current" infoText='Set the "Change on Beat" value to the beat the strumline is currently on.'/>
+					</hbox>
+				</vbox>
+				<textbutton id="ratingList" text="Difficulty Ratings" image="buttonPopupMenu" infoText="The chart's difficulty ratings in the Freeplay menu."/>
+				<vbox spacing="0">
+					<stepper id="previewStartStepper" text="Preview Start:" default="0" min="0" decimals="3" infoText="Which beat to start the song on when previewing it in Freeplay."/>
+					<hbox>
+						<textbutton id="previewStartZero" text="Zero" infoText='Set the "Preview Start" value to zero.'/>
+						<textbutton id="previewStartCurrent" text="Current" infoText='Set the "Preview Start" value to the beat the strumline is currently on.'/>
+					</hbox>
+				</vbox>
+				<vbox spacing="0">
+					<stepper id="previewEndStepper" text="Preview End:" default="0" min="0" decimals="3" infoText="Which beat to end the song on when previewing it in Freeplay."/>
+					<textbutton id="previewEndCurrent" text="Current" infoText='Set the "Preview End" value to the beat the strumline is currently on.'/>
+				</vbox>
+				<checkbox id="skipCountdownCheckbox" text="Skip Countdown" infoText="Whether or not to skip the countdown at the start of the song."/>
+				<checkbox id="useBeatsCheckbox" text="New Chart Format" infoText="Use a more compact chart format for a smaller file size. Uncheck this if you're making a chart meant to be played in another engine."/>
+				<checkbox id="scrollSpeedCalc" text="Beat-Based Scroll Speed" infoText="If unchecked, notes will be positioned purely on their time in the song. If checked, notes will be positioned based on what beat they fall on. This also means that the scroll speed will increase and decrease with BPM."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Visuals">
+			<vbox y="10">
+				<textbutton id="charactersButton" text="Characters" image="buttonPopupMenu" infoText='All characters that appear on the stage and their note types. "Note Types" refers to a comma-separated list of types that, if a note is this type, will cause the associated character to sing it.'/>
+				<label text="Stage:"/>
+				<dropdown id="stageDropdown" allowSearch="true" infoText="The stage that the song takes place on."/>
+				<textbutton id="noteskinTypeButton" text="Noteskin Types" image="buttonPopupMenu" infoText="The types of noteskin that the notes should use, divided by strumline."/>
+				<label text="UI Skin:"/>
+				<dropdown id="uiSkinDropdown" blank="Default" allowSearch="true" infoText="The skin that the countdown and rating/combo popups should use."/>
+			</vbox>
+		</tab>
+		<tab name="Music">
+			<vbox y="10">
+				<label text="Pause Menu:"/>
+				<dropdown id="pauseDropdown" blank="Default" allowSearch="true" infoText="The music that plays in the pause menu."/>
+				<label text="Game Over:"/>
+				<dropdown id="gameOverDropdown" blank="Default" allowSearch="true" infoText="The music that plays in the game over screen."/>
+				<label text="Game Over Confirm:"/>
+				<dropdown id="gameOverEndDropdown" blank="Default" allowSearch="true" infoText="The music that plays when restarting the song in the game over screen."/>
+				<label text="Results Screen:"/>
+				<dropdown id="resultsDropdown" blank="Default" allowSearch="true" infoText="The music that plays in the results screen."/>
+			</vbox>
+		</tab>
+		<tab name="Adv. Properties">
+			<vbox y="10">
+				<label text="Events File:"/>
+				<input id="eventFileInput" infoText="The file where events are read from. Events can not be saved in chart files themselves, so if this file is not saved, the song will have no events."/>
+				<checkbox id="useMustHitCheckbox" text='Use "Must Hit Section"' infoText="Whether or not to use the base Friday Night Funkin system for section camera characters. It's recommended to uncheck this if the chart's strumlines have different numbers of notes."/>
+				<checkbox id="notetypeOverridesCamCheckbox" text="Notetypes Control Camera" infoText="If checked, when a section's default note type changes who is singing (for example, gfSing) and that section's camera focus character is the one who would normally sing, the camera will instead focus on the note type's singer."/>
+				<textbutton id="columnDivisionNamesButton" text="Chart Side Names" image="buttonPopupMenu" infoText="The names of the chart's sides/strumlines as they're shown in the Freeplay Sandbox."/>
+			</vbox>
+		</tab>
+		<tab name="Section">
+			<vboxscroll y="10" id="sectionTab">
+				<stepper id="sectionCamOnStepper" text="Camera Character:" default="1" min="1" infoText="Which character the camera should focus on in this section. By default, 1 is Boyfriend and 2 is the opponent."/>
+				<hbox>
+					<togglebutton id="sectionCamOn1" image="buttonDad" infoText="Make the camera focus on the opponent in this section."/>
+					<togglebutton id="sectionCamOn2" image="buttonGF" infoText="Make the camera focus on Girlfriend in this section."/>
+					<togglebutton id="sectionCamOn0" image="buttonBF" infoText="Make the camera focus on Boyfriend in this section."/>
+				</hbox>
+				<stepper id="sectionLengthStepper" text="Section Length:" default="16" min="1" infoText="How long (in steps) this section should be."/>
+				<textbutton id="splitSectionButton" text="Split Section" image="LONG" infoText="Split the current section at the position of the strumline, creating two new identical but shorter sections."/>
+				<stepper id="copyLastStepper" text="Copy Last:" infoText="How many sections earlier to copy notes from. A negative value will mean that notes from later sections are copied."/>
+				<hbox>
+					<textbutton id="copyLastButton0" text="Left" image="SHORT" infoText="Copy every note on the left side of another section into this section."/>
+					<textbutton id="copyLastButton1" text="Right" image="SHORT" infoText="Copy every note on the right side of another section into this section."/>
+					<textbutton id="copyLastButton2" text="Both" image="SHORT" infoText="Copy every note in another section into this section."/>
+				</hbox>
+				<checkbox id="maintainSidesCheckbox" text="Maintain Sides" infoText="If this is not checked, and the &quot;Camera Character&quot; of the section being copied from doesn't match the current section, the left and right sides of the copied notes will be swapped."/>
+				<textbutton id="swapSectionButton" text="Swap Section" image="LONG" infoText="Swap the notes on the left and right sides of the current section."/>
+				<textbutton id="flipSectionButton" text="Flip Section" image="LONG" infoText="Flip the notes of the current section to their opposites. (Left becomes right, up becomes down, etc.)"/>
+				<label text="Clear Section:"/>
+				<hbox>
+					<textbutton id="clearNotesButton0" text="Left" image="SHORT" infoText="Delete every note on the left side of the section."/>
+					<textbutton id="clearNotesButton1" text="Right" image="SHORT" infoText="Delete every note on the right side of the section."/>
+					<textbutton id="clearNotesButton2" text="Both" image="SHORT" infoText="Delete every note in the section."/>
+				</hbox>
+				<textbutton id="deleteSectionButton" text="Delete Section" image="LONG" infoText="Remove the current section entirely, getting rid of every note in it and moving every section after it earlier in the chart."/>
+				<vbox id="defaultNotetypesVbox">
+				</vbox>
+			</vboxscroll>
+		</tab>
+		<tab name="Events">
+			<vboxscroll y="10" id="eventsTab">
+				<label text="Selected Event:"/>
+				<label id="curEventText" text="None"/>
+				<hbox>
+					<button id="prevEventButton" image="tabLeft" infoText="Select the previous event in the song."/>
+					<button id="nextEventButton" image="tabRight" infoText="Select the next event in the song."/>
+				</hbox>
+				<hbox>
+					<textbutton id="selectEventButton" text="Select" infoText="Select an event in the song from a list."/>
+					<textbutton id="jumpToEventButton" text="Jump To" infoText="Teleport the strumline to the currently selected event's position in the song."/>
+				</hbox>
+				<hbox>
+					<textbutton id="moveEventButton" text="Move" infoText="Move the selected event's position to the current position of the strumline."/>
+					<textbutton id="deleteEventButton" text="Delete" infoText="Delete the selected event."/>
+				</hbox>
+				<label text="Type:"/>
+				<dropdown id="eventTypeDropdown" allowSearch="true" infoText="The type of the new event to create, or the currently selected event."/>
+				<textbutton id="addEventButton" text="Add Event" image="LONG" infoText="Create a new event with the currently selected type and the properties below."/>
+				<label id="eventPropertiesText" text="Properties:"/>
+			</vboxscroll>
+		</tab>
+		<tab name="Tools">
+			<vboxscroll y="10">
+				<label text="Type of new Notes:"/>
+				<input id="noteTypeInput" infoText="The default note type that new notes will be assigned when created. This is also used when replacing all notes of one type with another note type, and when changing the note type of all selected notes."/>
+				<dropdown id="noteTypeDropdown" blank="Default" allowSearch="true" infoText="Select a note type from this list to automatically put it in the above box."/>
+				<label text="Note Type to alter:"/>
+				<dropdown id="replaceTypeDropdown" blank="Default" allowSearch="true" infoText="The note type to be affected by the two operations below."/>
+				<textbutton id="selectTypeButton" text="Select" image="LONG" infoText="Select every note of the type specified above."/>
+				<hbox>
+					<textbutton id="removeTypeButton" text="Remove" infoText="Delete every note of the type specified above."/>
+					<textbutton id="replaceTypeButton" text="Replace" infoText='Replace every note of the type specified above with the specified "Type of new Notes".'/>
+				</hbox>
+				<textbutton id="autoSectionNotetypes" text="Assign Section NTs" image="LONG" infoText="Change every section so that if every note on a certain side of the section is the same type, that type becomes the default note type for that side of the section."/>
+				<textbutton id="clearSectionNotetypes" text="Unassign Section NTs" image="LONG" infoText="Change the notes of every section affected by the section's default note type to have that note type, and get rid of all default note types for every section."/>
+				<stepper id="beatStepper" text="Beats:" default="0" step="0.25" min="0" decimals="3"/>
+				<hbox>
+					<textbutton id="insertBeatsButton" text="Insert" infoText="Move every note on and past the strumline's position later in the chart by the amount of beats specified above."/>
+					<textbutton id="removeBeatsButton" text="Remove" infoText="Move every note on and past the strumline's position earlier in the chart by the amount of beats specified above."/>
+				</hbox>
+				<textbutton id="optimizeSectionsButton" text="Optimize Sections" image="LONG" infoText="Glue together every adjacent section in the chart with the same camera character and default note types, decreasing the file size of the chart while effectively maintaining all the section properties."/>
+				<label text="All Section Cameras On:"/>
+				<hbox>
+					<stepper id="allCamsOnStepper" default="1" min="1" infoText="Change every section in the chart to point the camera at this character."/>
+					<textbutton id="allCamsOnButton" text="Apply" infoText="Change every section in the chart to point the camera at this character."/>
+				</hbox>
+				<textbutton id="copyCamsFromFileButton" text="Sections from File" image="LONG" infoText="Copy the section lengths and camera characters from another chart file."/>
+			</vboxscroll>
+		</tab>
+	</tabmenu>
+</root>

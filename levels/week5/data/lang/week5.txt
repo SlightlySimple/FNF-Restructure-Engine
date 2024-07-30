@@ -1,0 +1,55 @@
+// Week name
+"level.week5"				"RED SNOW"
+
+// Song names
+"song.week5.cocoa"				"Cocoa"
+"song.week5.eggnog"				"Eggnog"
+"song.week5.winter-horrorland"	"Winter Horrorland"
+
+// Character names
+"character.bf-christmas"		"Boyfriend (Christmas)"
+"character.gf-christmas"		"Girlfriend (Christmas)"
+"character.monster-christmas"	"Monster (Christmas)"
+"character.parents-christmas"	"Mommy and Daddy (Festive)"
+
+// Stage names
+"stage.mall"			"Christmas Mall (Nice)"
+"stage.mallEvil"		"Christmas Mall (Naughty)"
+
+// Subtitles
+"subtitles.eggnog.erect.cutscene.1"		"...Wow..."
+"subtitles.eggnog.erect.cutscene.2"		"Uh... Not even gonna lie to you guys..."
+"subtitles.eggnog.erect.cutscene.3"		"That's the most beautiful thing I..."
+"subtitles.eggnog.erect.cutscene.4"		"...ever heard in my whole life."
+"subtitles.eggnog.erect.cutscene.5"		"*ow*"
+
+"subtitles.winter-horrorland.1"		"Your skin is freezing,"
+"subtitles.winter-horrorland.2"		"Here let me help you take it off."
+"subtitles.winter-horrorland.3"		"Feasting with your friends,"
+"subtitles.winter-horrorland.4"		"What a perfect way to end,"
+"subtitles.winter-horrorland.5"		"All these lonely holidays."
+"subtitles.winter-horrorland.6"		"(la la la la)"
+"subtitles.winter-horrorland.7"		"Gonna take a piece of your rabies,"
+"subtitles.winter-horrorland.8"		"And vivisect your mind."
+"subtitles.winter-horrorland.9"		"Snowman smiling with your teeth,"
+"subtitles.winter-horrorland.10"	"Fallen angels created with your meat."
+"subtitles.winter-horrorland.11"	"(That pearly smile.)"
+"subtitles.winter-horrorland.12"	"Cut, in a thousand slices."
+"subtitles.winter-horrorland.13"	"Bake you 'til, golden brown."
+"subtitles.winter-horrorland.14"	"Stuff you with spices."
+"subtitles.winter-horrorland.15"	"Serve to friends around."
+"subtitles.winter-horrorland.16"	"Separate, you from your eyes."
+"subtitles.winter-horrorland.17"	"Turn your girlfriend inside out,"
+"subtitles.winter-horrorland.18"	"And burn her fingernails."
+"subtitles.winter-horrorland.19"	"Soak your hands in freezing water."
+"subtitles.winter-horrorland.20"	"Watching as the skin gets softer."
+"subtitles.winter-horrorland.21"	"See your bones appear in"
+"subtitles.winter-horrorland.22"	"Dark red snow."
+"subtitles.winter-horrorland.23"	"Drop further below."
+"subtitles.winter-horrorland.24"	"Gonna take a peek inside your head,"
+"subtitles.winter-horrorland.25"	"And find the worm inside."
+"subtitles.winter-horrorland.26"	"Fill you with spices."
+"subtitles.winter-horrorland.27"	"Turn the heat on high and"
+"subtitles.winter-horrorland.28"	"We'll reduce your blood,"
+"subtitles.winter-horrorland.29"	"Boil 'lil boyfriend,"
+"subtitles.winter-horrorland.30"	"With brandy and plums."

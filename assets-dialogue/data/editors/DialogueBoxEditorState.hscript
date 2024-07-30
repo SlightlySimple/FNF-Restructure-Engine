@@ -1,0 +1,897 @@
+import menus.EditorMenuState;
+import helpers.DeepEquals;
+import helpers.Cloner;
+import newui.UIControl;
+import newui.TopMenu;
+import newui.ObjectMenu;
+import newui.Notify;
+import newui.ColorPicker;
+import FileBrowser;
+import openfl.ui.Mouse;
+
+movingCharacter = false;
+movingAnimOffset = false;
+curAnim = -1;
+
+function create()
+{
+	state = FlxG.state;
+	state.filenameNew = "New Dialogue Box";
+	mousePos = FlxPoint.get();
+
+	var bg = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
+	add(bg);
+
+	if (state.isNew)
+		data = {asset: "dialogue/boxes/speech_bubble_talking", position: [0, 0], scale: [1, 1], antialias: true, flip: false, canFlip: true, steps: 0, skipPosition: [0, 0], text: {position: [0, 0], width: 1045, font: "", size: 60, color: [0, 0, 0], border: {style: "outline", color: [0, 0, 0], size: 0}}, textSound: "dialogue/dialogueTick", clickSound: "ui/cancelMenu", animations: [], moods: []};
+	else
+		data = Paths.json(state.id);
+	if (data.animations.length > 0)
+		curAnim = 0;
+
+	if (data.antialias == null)
+		data.antialias = true;
+
+	boxGroup = new FlxSpriteGroup();
+	add(boxGroup);
+
+	box = new AnimatedSprite();
+	boxGroup.add(box);
+
+	textAlpha = new Alphabet(0, 0, "Sample Text", "default", data.text.width, true, 0.8);
+	boxGroup.add(textAlpha);
+
+	textDef = new FlxText(0, 0, data.text.width, "Sample Text", data.text.size);
+	boxGroup.add(textDef);
+
+	skip = new FlxText(0, 0, 0, "Press BACKSPACE to skip", data.text.size / 2);
+	boxGroup.add(skip);
+
+	refresh();
+
+
+
+	charAnims = new ObjectMenu(990, 250, "animationBox");
+	charAnims.selected = curAnim;
+	charAnims.onClicked = function(index) {
+		curAnim = index;
+		box.playAnim(data.animations[curAnim].name);
+		refreshMenus();
+		refreshCharAnims();
+	}
+	charAnims.cameras = [state.camHUD];
+	add(charAnims);
+	refreshCharAnims();
+
+
+
+	state.createUI("DialogueBoxEditor");
+	tabMenu = state.tabMenu;
+	infoBox = state.infoBox;
+
+	var characterAsset = state.element("characterAsset");
+	characterAsset.text = data.asset;
+	characterAsset.condition = function() { return data.asset; }
+	characterAsset.focusLost = function() {
+		if (!changeAsset(characterAsset.text))
+			characterAsset.text = data.asset;
+	}
+
+	var loadAssetButton = state.element("loadAssetButton");
+	loadAssetButton.onClicked = loadAsset;
+
+	var charX = state.element("charX");
+	charX.value = data.position[0];
+	charX.condition = function() { return data.position[0]; }
+	charX.onChanged = function() { data.position[0] = charX.value; boxGroup.x = data.position[0]; }
+
+	var charY = state.element("charY");
+	charY.value = data.position[1];
+	charY.condition = function() { return data.position[1]; }
+	charY.onChanged = function() { data.position[1] = charY.value; boxGroup.y = data.position[1]; }
+
+	scaleStepperX = state.element("scaleStepperX");
+	scaleStepperX.value = data.scale[0];
+	scaleStepperX.condition = function() { data.scale[0]; }
+	scaleStepperX.onChanged = function() { data.scale[0] = scaleStepperX.value; box.scale.x = data.scale[0]; refreshScale(); }
+
+	var scaleStepperY = state.element("scaleStepperY");
+	scaleStepperY.value = data.scale[1];
+	scaleStepperY.condition = function() { data.scale[1]; }
+	scaleStepperY.onChanged = function() { data.scale[1] = scaleStepperY.value; box.scale.y = data.scale[1]; refreshScale(); }
+
+	var antialiasCheckbox = state.element("antialiasCheckbox");
+	antialiasCheckbox.checked = data.antialias;
+	antialiasCheckbox.condition = function() { return data.antialias; }
+	antialiasCheckbox.onClicked = function() { data.antialias = antialiasCheckbox.checked; box.antialiasing = data.antialias; }
+
+	var flipCheckbox = state.element("flipCheckbox");
+	flipCheckbox.checked = data.flip;
+	flipCheckbox.condition = function() { return data.flip; }
+	flipCheckbox.onClicked = function() { data.flip = flipCheckbox.checked; box.flipX = data.flip; }
+
+	var canFlipCheckbox = state.element("canFlipCheckbox");
+	canFlipCheckbox.checked = data.canFlip;
+	canFlipCheckbox.condition = function() { return data.canFlip; }
+	canFlipCheckbox.onClicked = function() { data.canFlip = canFlipCheckbox.checked; }
+
+	var transitionSteps = state.element("transitionSteps");
+	transitionSteps.value = data.steps;
+	transitionSteps.condition = function() { return data.steps; }
+	transitionSteps.onChanged = function() { data.steps = transitionSteps.value; }
+
+	var skipX = state.element("skipX");
+	skipX.value = data.skipPosition[0];
+	skipX.condition = function() { return data.skipPosition[0]; }
+	skipX.onChanged = function() { data.skipPosition[0] = skipX.value; skip.x = boxGroup.x + data.skipPosition[0]; }
+
+	var skipY = state.element("skipY");
+	skipY.value = data.skipPosition[1];
+	skipY.condition = function() { return data.skipPosition[1]; }
+	skipY.onChanged = function() { data.skipPosition[1] = skipY.value; skip.y = boxGroup.y + data.skipPosition[1]; }
+
+	var soundList = Paths.listFilesSub("sounds/", ".ogg");
+	var textSound = state.element("textSound");
+	textSound.valueList = soundList;
+	textSound.condition = function() { return data.textSound; }
+	textSound.onChanged = function() { data.textSound = textSound.value; }
+
+	var clickSound = state.element("clickSound");
+	clickSound.valueList = soundList;
+	clickSound.condition = function() { return data.clickSound; }
+	clickSound.onChanged = function() { data.clickSound = clickSound.value; }
+
+
+
+	var sampleText = state.element("sampleText");
+	sampleText.text = "Sample Text";
+	sampleText.callback = function(text) { textAlpha.text = text; textDef.text = text; }
+
+	var textX = state.element("textX");
+	textX.value = data.text.position[0];
+	textX.condition = function() { return data.text.position[0]; }
+	textX.onChanged = function() { data.text.position[0] = textX.value; textAlpha.x = boxGroup.x + data.text.position[0]; textDef.x = boxGroup.x + data.text.position[0]; }
+
+	var textY = state.element("textY");
+	textY.value = data.text.position[1];
+	textY.condition = function() { return data.text.position[1]; }
+	textY.onChanged = function() { data.text.position[1] = textY.value; textAlpha.y = boxGroup.y + data.text.position[1]; textDef.y = boxGroup.y + data.text.position[1]; }
+
+	var textWidth = state.element("textWidth");
+	textWidth.value = data.text.width;
+	textWidth.condition = function() { return data.text.width; }
+	textWidth.onChanged = function() { data.text.width = textWidth.value; textAlpha.maxWidth = data.text.width; textAlpha.rebuildText(); textDef.fieldWidth = data.text.width; }
+
+	var fontList = Paths.listFilesExtSub("fonts/", [".ttf", ".otf"]);
+	fontList.unshift("");
+	var textFont = state.element("textFont");
+	textFont.valueList = fontList;
+	textFont.condition = function() { return data.text.font; }
+	textFont.onChanged = function() {
+		data.text.font = textFont.value;
+		if (data.text.font == "")
+		{
+			textAlpha.visible = true;
+			textDef.visible = false;
+			skip.font = "FNF Dialogue";
+		}
+		else
+		{
+			textAlpha.visible = false;
+			textDef.visible = true;
+			textDef.font = Paths.font(data.text.font);
+			skip.font = Paths.font(data.text.font);
+		}
+	}
+
+	var textSize = state.element("textSize");
+	textSize.value = data.text.size;
+	textSize.condition = function() { return data.text.size; }
+	textSize.onChanged = function() {
+		data.text.size = textSize.value;
+		textAlpha.textScale = data.text.size / 75;
+		textAlpha.rebuildText();
+		textDef.size = data.text.size;
+		skip.size = data.text.size / 2;
+	}
+
+	var textColor = state.element("textColor");
+	textColor.onClicked = function() {
+		new ColorPicker(FlxColor.fromRGB(data.text.color[0], data.text.color[1], data.text.color[2]), function(clr) {
+			data.text.color = [(clr >> 16) & 0xff, (clr >> 8) & 0xff, clr & 0xff];
+			textDef.color = clr;
+			skip.color = clr;
+		});
+	}
+
+	var textBorderStyleOutline = state.element("textBorderStyleOutline");
+	textBorderStyleOutline.condition = function() { return data.text.border.style == "outline"; }
+	textBorderStyleOutline.onClicked = function() { data.text.border.style = "outline"; textDef.borderStyle = OUTLINE; skip.borderStyle = OUTLINE; }
+
+	var textBorderStyleShadow = state.element("textBorderStyleShadow");
+	textBorderStyleShadow.condition = function() { return data.text.border.style == "shadow"; }
+	textBorderStyleShadow.onClicked = function() { data.text.border.style = "shadow"; textDef.borderStyle = SHADOW; skip.borderStyle = SHADOW; }
+
+	var textBorderSize = state.element("textBorderSize");
+	textBorderSize.value = data.text.border.size;
+	textBorderSize.condition = function() { return data.text.border.size; }
+	textBorderSize.onChanged = function() { data.text.border.size = textBorderSize.value; textDef.borderSize = data.text.border.size; skip.borderSize = data.text.border.size / 2; }
+
+	var textBorderColor = state.element("textBorderColor");
+	textBorderColor.onClicked = function() {
+		new ColorPicker(FlxColor.fromRGB(data.text.border.color[0], data.text.border.color[1], data.text.border.color[2]), function(clr) {
+			data.text.border.color = [(clr >> 16) & 0xff, (clr >> 8) & 0xff, clr & 0xff];
+			textDef.borderColor = clr;
+			skip.borderColor = clr;
+		});
+	}
+
+
+
+	expressionDropdown = state.element("expressionDropdown");
+	expressionDropdown.onChanged = function() {
+		var curExpression = null;
+		for (e in data.moods)
+		{
+			if (e.name == expressionDropdown.value)
+				curExpression = e;
+		}
+		if (curExpression != null)
+		{
+			expressionName.text = curExpression.name;
+			if (curExpression.open == null)
+				expressionOpenAnim.value = "";
+			else
+				expressionOpenAnim.value = curExpression.open;
+			if (curExpression.enter == null)
+				expressionEnterAnim.value = "";
+			else
+				expressionEnterAnim.value = curExpression.enter;
+			if (curExpression.talkingIdle == null)
+				expressionIdleTalkingAnim.value = "";
+			else
+				expressionIdleTalkingAnim.value = curExpression.talkingIdle;
+			if (curExpression.idleToTalking == null)
+				expressionIdleToTalkingAnim.value = "";
+			else
+				expressionIdleToTalkingAnim.value = curExpression.idleToTalking;
+			if (curExpression.talkingToIdle == null)
+				expressionTalkingToIdleAnim.value = "";
+			else
+				expressionTalkingToIdleAnim.value = curExpression.talkingToIdle;
+			expressionIdleAnim.value = curExpression.idle;
+		}
+	}
+
+	expressionName = state.element("expressionName");
+	expressionOpenAnim = state.element("expressionOpenAnim");
+	expressionEnterAnim = state.element("expressionEnterAnim");
+	expressionIdleAnim = state.element("expressionIdleAnim");
+	expressionIdleTalkingAnim = state.element("expressionIdleTalkingAnim");
+	expressionIdleToTalkingAnim = state.element("expressionIdleToTalkingAnim");
+	expressionTalkingToIdleAnim = state.element("expressionTalkingToIdleAnim");
+
+	var addExpressionButton = state.element("addExpressionButton");
+	addExpressionButton.onClicked = function() {
+		if (expressionName.text != "")
+		{
+			var newExpression = { name: expressionName.text, idle: expressionIdleAnim.value };
+			if (expressionIdleTalkingAnim.value != "")
+				newExpression.talkingIdle = expressionIdleTalkingAnim.value;
+			if (expressionEnterAnim.value != "")
+				newExpression.enter = expressionEnterAnim.value;
+			if (expressionOpenAnim.value != "")
+				newExpression.open = expressionOpenAnim.value;
+			if (expressionIdleToTalkingAnim.value != "")
+				newExpression.idleToTalking = expressionIdleToTalkingAnim.value;
+			if (expressionTalkingToIdleAnim.value != "")
+				newExpression.talkingToIdle = expressionTalkingToIdleAnim.value;
+
+			var match = -1;
+			for (i in 0...data.moods.length)
+			{
+				if (data.moods[i].name == newExpression.name)
+					match = i;
+			}
+
+			if (match > -1)
+				data.moods[match] = newExpression;
+			else
+				data.moods.push(newExpression);
+			refreshMenus();
+		}
+	}
+
+	var removeExpressionButton = state.element("removeExpressionButton");
+	removeExpressionButton.onClicked = function() {
+		if (expressionDropdown.value != "")
+		{
+			var match = -1;
+			for (i in 0...data.moods.length)
+			{
+				if (data.moods[i].name == expressionDropdown.value)
+					match = i;
+			}
+
+			if (match > -1)
+				data.moods.splice(match, 1);
+			refreshMenus();
+		}
+	}
+
+
+
+	animName = state.element("animName");
+
+	idlePrefix = state.element("idlePrefix");
+	idlePrefix.valueList = prefixArray;
+	idlePrefix.value = prefixArray[0];
+
+	animIndices = state.element("animIndices");
+
+	var allIndices = state.element("allIndices");
+	allIndices.onClicked = function()
+	{
+		if (idlePrefix.value != "" && allAnimData.indexOf(idlePrefix.value) != -1)
+		{
+			var len:Int = allAnimData.split(idlePrefix.value).length - 1;
+			animIndices.text = "";
+			for (i in 0...len)
+			{
+				animIndices.text += Std.string(i);
+				if (i < len - 1)
+					animIndices.text += ",";
+			}
+		}
+	}
+
+	idleOffsetX = state.element("idleOffsetX");
+	idleOffsetX.condition = function() {
+		if (data.animations.length > 0)
+			return data.animations[curAnim].offsets[0];
+		return idleOffsetX.value;
+	}
+	idleOffsetX.onChanged = function() {
+		if (data.animations.length > 0)
+		{
+			data.animations[curAnim].offsets[0] = idleOffsetX.value;
+			refreshCharAnims();
+			box.addOffsets(data.animations[curAnim].name, [data.animations[curAnim].offsets[0], data.animations[curAnim].offsets[1]]);
+			box.updateOffsets();
+		}
+	}
+
+	idleOffsetY = state.element("idleOffsetY");
+	idleOffsetY.condition = function() {
+		if (data.animations.length > 0)
+			return data.animations[curAnim].offsets[1];
+		return idleOffsetY.value;
+	}
+	idleOffsetY.onChanged = function() {
+		if (data.animations.length > 0)
+		{
+			data.animations[curAnim].offsets[1] = idleOffsetY.value;
+			refreshCharAnims();
+			box.addOffsets(data.animations[curAnim].name, [data.animations[curAnim].offsets[0], data.animations[curAnim].offsets[1]]);
+			box.updateOffsets();
+		}
+	}
+
+	idleLoop = state.element("idleLoop");
+	idleLoop.checked = true;
+	idleLoop.condition = function() {
+		if (data.animations.length > 0)
+			return data.animations[curAnim].loop;
+		return idleLoop.checked;
+	}
+	idleLoop.onClicked = function() {
+		if (data.animations.length > 0)
+		{
+			data.animations[curAnim].loop = idleLoop.checked;
+			box.addAnim(data.animations[curAnim].name, data.animations[curAnim].prefix, data.animations[curAnim].fps, data.animations[curAnim].loop, data.animations[curAnim].indices);
+			if (box.animation.curAnim.name == data.animations[curAnim].name)
+				box.playAnim(box.animation.curAnim.name);
+		}
+	}
+
+	idleFPS = state.element("idleFPS");
+	idleFPS.condition = function() {
+		if (data.animations.length > 0)
+			return data.animations[curAnim].fps;
+		return idleFPS.value;
+	}
+	idleFPS.onChanged = function() {
+		if (data.animations.length > 0)
+		{
+			data.animations[curAnim].fps = idleFPS.value;
+			box.addAnim(data.animations[curAnim].name, data.animations[curAnim].prefix, data.animations[curAnim].fps, data.animations[curAnim].loop, data.animations[curAnim].indices);
+			if (box.animation.curAnim.name == data.animations[curAnim].name)
+				box.playAnim(box.animation.curAnim.name);
+		}
+	}
+
+	var addAnimButton = state.element("addAnimButton");
+	addAnimButton.onClicked = function() {
+		if (animName.text != "")
+		{
+			var newAnim = { name: animName.text, prefix: idlePrefix.value, fps: Std.int(idleFPS.value), loop: idleLoop.checked, offsets: [0, 0] };
+
+			if (animIndices.text != "")
+			{
+				newAnim.indices = [];
+				var indicesSplit = animIndices.text.split(",");
+				for (i in indicesSplit)
+					newAnim.indices.push(Std.parseInt(i));
+			}
+
+			var match = -1;
+			for (i in 0...data.animations.length)
+			{
+				if (data.animations[i].name == newAnim.name)
+					match = i;
+			}
+
+			if (match > -1)
+			{
+				data.animations[match] = newAnim;
+				curAnim = match;
+				charAnims.selected = curAnim;
+			}
+			else
+			{
+				data.animations.push(newAnim);
+				curAnim = data.animations.length - 1;
+				charAnims.selected = curAnim;
+			}
+
+			box.addAnim(newAnim.name, newAnim.prefix, newAnim.fps, newAnim.loop, newAnim.indices);
+			box.addOffsets(newAnim.name, [newAnim.offsets[0], newAnim.offsets[1]]);
+			box.playAnim(data.animations[curAnim].name);
+			refreshCharAnims();
+			refreshMenus();
+		}
+	}
+
+	var removeAnimButton = state.element("removeAnimButton");
+	removeAnimButton.onClicked = function() {
+		if (data.animations.length > 0)
+		{
+			data.animations.splice(curAnim, 1);
+			if (data.animations.length > 0)
+			{
+				if (curAnim >= data.animations.length)
+					curAnim--;
+
+				box.playAnim(data.animations[curAnim].name);
+			}
+			refreshCharAnims();
+			refreshMenus();
+		}
+	}
+
+	refreshMenus();
+
+
+
+	var help = "Left Click + Drag: Move Box\nShift-Left Click + Drag: Move Animation Offset\nClick on the animation names in the Animations panel to play the animation";
+
+	var topmenu;
+	topmenu = new TopMenu([
+		{
+			label: "File",
+			options: [
+				{
+					label: "New",
+					action: function() { state._confirm("make a new dialogue box", _new); },
+					shortcut: [FlxKey.CONTROL, FlxKey.N],
+					icon: "new"
+				},
+				{
+					label: "Open",
+					action: function() { state._confirm("load another dialogue box", _open); },
+					shortcut: [FlxKey.CONTROL, FlxKey.O],
+					icon: "open"
+				},
+				{
+					label: "Save",
+					action: function() { _save(false); },
+					shortcut: [FlxKey.CONTROL, FlxKey.S],
+					icon: "save"
+				},
+				{
+					label: "Save As...",
+					action: function() { _save(true); },
+					shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.S],
+					icon: "save"
+				},
+				null,
+				{
+					label: "Help",
+					action: function() { new Notify(help); },
+					shortcut: [FlxKey.F1]
+				},
+				{
+					label: "Exit",
+					action: function() { state._confirm("exit", function() { FlxG.switchState(new EditorMenuState()); }); },
+					shortcut: [FlxKey.ESCAPE]
+				}
+			]
+		},
+		{
+			label: "Edit",
+			options: [
+				{
+					label: "Undo",
+					action: undo,
+					shortcut: [FlxKey.CONTROL, FlxKey.Z],
+					icon: "undo"
+				},
+				{
+					label: "Redo",
+					action: redo,
+					shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.Z],
+					icon: "redo"
+				}
+			]
+		},
+		{
+			label: "View",
+			options: [
+				{
+					label: "Information Panel",
+					condition: function() { return state.members.contains(state.infoBox); },
+					action: function() {
+						if (state.members.contains(state.infoBox))
+							remove(state.infoBox, true);
+						else
+							insert(state.members.indexOf(topmenu), state.infoBox);
+					},
+					icon: "bullet"
+				},
+				{
+					label: "Animations Panel",
+					condition: function() { return state.members.contains(charAnims); },
+					action: function() {
+						if (state.members.contains(charAnims))
+							remove(charAnims, true);
+						else
+							insert(state.members.indexOf(topmenu), charAnims);
+					},
+					icon: "bullet"
+				}
+			]
+		}
+	]);
+	topmenu.cameras = [state.camHUD];
+	add(topmenu);
+
+	dataLog = [Cloner.clone(data)];
+}
+
+function update(elapsed)
+{
+	mousePos.x = FlxG.mouse.x;
+	mousePos.y = FlxG.mouse.y;
+
+	if (!state.pauseUndo && !DeepEquals.deepEquals(data, dataLog[state.undoPosition]))
+	{
+		if (state.undoPosition < dataLog.length - 1)
+			dataLog.resize(state.undoPosition + 1);
+		dataLog.push(Cloner.clone(data));
+		state.unsaved = true;
+		state.undoPosition = dataLog.length - 1;
+		state.refreshFilename();
+	}
+
+	if (FlxG.mouse.justMoved)
+	{
+		UIControl.cursor = MouseCursor.ARROW;
+		if (box.pixelsOverlapPoint(mousePos, 128, state.camGame))
+			UIControl.cursor = MouseCursor.HAND;
+	}
+
+	if (movingCharacter)
+	{
+		if (movingAnimOffset)
+		{
+			data.animations[curAnim].offsets[0] -= Std.int(FlxG.mouse.drag.x);
+			data.animations[curAnim].offsets[1] -= Std.int(FlxG.mouse.drag.y);
+			box.addOffsets(data.animations[curAnim].name, [data.animations[curAnim].offsets[0], data.animations[curAnim].offsets[1]]);
+			box.updateOffsets();
+		}
+		else
+		{
+			data.position[0] += FlxG.mouse.drag.x;
+			data.position[1] += FlxG.mouse.drag.y;
+			boxGroup.x = data.position[0];
+			boxGroup.y = data.position[1];
+		}
+
+		if (Options.mouseJustReleased())
+		{
+			state.pauseUndo = false;
+			movingCharacter = false;
+		}
+	}
+	else
+	{
+		if (Options.mouseJustPressed())
+		{
+			if (box.pixelsOverlapPoint(mousePos, 128, state.camGame) && !FlxG.mouse.overlaps(tabMenu) && (!state.members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox, state.camHUD)) && (!state.members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, state.camHUD)))
+			{
+				movingAnimOffset = FlxG.keys.pressed.SHIFT;
+				if (data.animations.length <= 0)
+					movingAnimOffset = false;
+
+				movingCharacter = true;
+				state.pauseUndo = true;
+			}
+		}
+	}
+}
+
+function refresh()
+{
+	box.frames = Paths.sparrow(data.asset);
+	prefixArray = Paths.sparrowAnimations(data.asset);
+	if (Paths.exists("images/" + data.asset + ".txt"))
+		allAnimData = Paths.raw("images/" + data.asset + ".txt");
+	else
+		allAnimData = Paths.raw("images/" + data.asset + ".xml");
+	boxGroup.x = data.position[0];
+	boxGroup.y = data.position[1];
+	box.antialiasing = data.antialias;
+	box.flipX = data.flip;
+	box.scale.x = data.scale[0];
+	box.scale.y = data.scale[1];
+	box.updateHitbox();
+	box.baseOffset.set(box.offset.x, box.offset.y);
+
+	textAlpha.x = boxGroup.x + data.text.position[0];
+	textAlpha.y = boxGroup.y + data.text.position[1];
+	textAlpha.maxWidth = data.text.width;
+	textAlpha.textScale = data.text.size / 75;
+	textAlpha.rebuildText();
+	textDef.x = boxGroup.x + data.text.position[0];
+	textDef.y = boxGroup.y + data.text.position[1];
+	textDef.fieldWidth = data.text.width;
+	textDef.size = data.text.size;
+	if (data.text.font == "")
+	{
+		textAlpha.visible = true;
+		textDef.visible = false;
+	}
+	else
+	{
+		textAlpha.visible = false;
+		textDef.visible = true;
+		textDef.font = Paths.font(data.text.font);
+	}
+	textDef.color = FlxColor.fromRGB(data.text.color[0], data.text.color[1], data.text.color[2]);
+	if (data.text.border.style == "shadow")
+		textDef.borderStyle = SHADOW;
+	else
+		textDef.borderStyle = OUTLINE;
+	textDef.borderSize = data.text.border.size;
+	textDef.borderColor = FlxColor.fromRGB(data.text.border.color[0], data.text.border.color[1], data.text.border.color[2]);
+
+	skip.x = boxGroup.x + data.skipPosition[0];
+	skip.y = boxGroup.y + data.skipPosition[1];
+	skip.size = data.text.size / 2;
+	if (data.text.font == "")
+		skip.font = "FNF Dialogue";
+	else
+		skip.font = Paths.font(data.text.font);
+	skip.color = FlxColor.fromRGB(data.text.color[0], data.text.color[1], data.text.color[2]);
+	if (data.text.border.style == "shadow")
+		skip.borderStyle = SHADOW;
+	else
+		skip.borderStyle = OUTLINE;
+	skip.borderSize = data.text.border.size / 2;
+	skip.borderColor = FlxColor.fromRGB(data.text.border.color[0], data.text.border.color[1], data.text.border.color[2]);
+
+	for (a in data.animations)
+	{
+		box.addAnim(a.name, a.prefix, a.fps, a.loop, a.indices);
+		box.addOffsets(a.name, [a.offsets[0], a.offsets[1]]);
+	}
+
+	if (curAnim >= 0 && data.animations.length > 0)
+		box.playAnim(data.animations[curAnim].name);
+}
+
+function refreshScale()
+{
+	box.frames = Paths.sparrow(data.asset);
+	box.scale.x = data.scale[0];
+	box.scale.y = data.scale[1];
+	box.updateHitbox();
+	box.baseOffset.set(box.offset.x, box.offset.y);
+
+	for (a in data.animations)
+	{
+		box.addAnim(a.name, a.prefix, a.fps, a.loop, a.indices);
+		box.addOffsets(a.name, [a.offsets[0], a.offsets[1]]);
+	}
+
+	if (curAnim >= 0 && data.animations.length > 0)
+		box.playAnim(data.animations[curAnim].name);
+}
+
+function refreshMenus()
+{
+	var animList = [];
+	var animList2 = [""];
+	var expressionList = [];
+
+	if (data.moods.length > 0)
+	{
+		for (e in data.moods)
+			expressionList.push(e.name);
+	}
+
+	if (data.animations.length > 0)
+	{
+		for (a in data.animations)
+		{
+			animList.push(a.name);
+			animList2.push(a.name);
+		}
+
+		animName.text = data.animations[curAnim].name;
+		idlePrefix.value = data.animations[curAnim].prefix;
+		if (data.animations[curAnim].indices != null)
+			animIndices.text = data.animations[curAnim].indices.join(",");
+		else
+			animIndices.text = "";
+	}
+
+	expressionDropdown.valueList = expressionList;
+	expressionOpenAnim.valueList = animList2;
+	expressionEnterAnim.valueList = animList2;
+	expressionIdleAnim.valueList = animList;
+	expressionIdleTalkingAnim.valueList = animList2;
+	expressionIdleToTalkingAnim.valueList = animList2;
+	expressionTalkingToIdleAnim.valueList = animList2;
+}
+
+function refreshCharAnimList()
+{
+	charAnimList = [];
+	for (i in 0...data.animations.length)
+		charAnimList.push(data.animations[i].name);
+}
+
+function refreshCharAnims()
+{
+	refreshCharAnimList();
+
+	charAnims.items = [];
+	for (anim in data.animations)
+		charAnims.items.push(anim.name + " (" + Std.string(anim.offsets[0]) + ", " + Std.string(anim.offsets[1]) + ")");
+
+	charAnims.refreshText();
+}
+
+
+
+function undo()
+{
+	if (state.undoPosition > 0)
+	{
+		state.undoPosition--;
+		if (!state.unsaved)
+		{
+			state.unsaved = true;
+			state.refreshFilename();
+		}
+		data = Cloner.clone(dataLog[state.undoPosition]);
+		postUndoRedo();
+	}
+}
+
+function redo()
+{
+	if (state.undoPosition < dataLog.length - 1)
+	{
+		state.undoPosition++;
+		if (!state.unsaved)
+		{
+			state.unsaved = true;
+			state.refreshFilename();
+		}
+		data = Cloner.clone(dataLog[state.undoPosition]);
+		postUndoRedo();
+	}
+}
+
+function postUndoRedo()
+{
+	if (curAnim > data.animations.length - 1)
+	{
+		curAnim = data.animations.length - 1;
+		charAnims.selected = curAnim;
+	}
+	refresh();
+	refreshMenus();
+	refreshCharAnims();
+}
+
+
+
+function _new()
+{
+	FlxG.switchState(new HscriptEditorState(true, "", ""));
+}
+
+function _save(browse)
+{
+	var saveData = Json.stringify(data, null, "\t");
+	if (Options.options.compactJsons)
+		saveData = Json.stringify(data);
+
+	if (saveData != null && saveData.length > 0)
+	{
+		if (browse || state.filename == "")
+		{
+			var file = new FileBrowser();
+			file.saveCallback = state.changeSaveName;
+			file.save(data.asset.toLowerCase() + ".json", StringTools.trim(saveData));
+		}
+		else
+		{
+			FileBrowser.saveAs(state.filename, StringTools.trim(saveData));
+			state.unsaved = false;
+			state.refreshFilename();
+		}
+	}
+}
+
+function _open()
+{
+	var file = new FileBrowser();
+	file.loadCallback = function(fullPath) {
+		var fileArray = StringTools.replace(fullPath,'\\','/').split('/');
+		while (fileArray[0] != "data")
+			fileArray.shift();
+		fileArray.shift();
+
+		FlxG.switchState(new HscriptEditorState(false, fileArray.join("/").split('.json')[0], fullPath));
+	}
+	file.load("json", "json");
+}
+
+function loadAsset()
+{
+	var file = new FileBrowser();
+	file.loadCallback = function(fullPath) {
+		var fileArray = StringTools.replace(fullPath,'\\','/').split('/');
+		if (fileArray.contains("images"))
+		{
+			while (fileArray[0] != "images")
+				fileArray.shift();
+			fileArray.shift();
+
+			var boxAsset = fileArray.join("/").split('.png')[0];
+			if (!changeAsset(boxAsset))
+				new Notify("The file you have selected can not be found. It is likely in the wrong location.");
+		}
+		else
+			new Notify("The file you have selected is not a dialogue box asset.");
+	}
+	file.load("png", "png");
+}
+
+function changeAsset(asset)
+{
+	if (Paths.sparrowExists(asset))
+	{
+		data.asset = asset;
+		refresh();
+		idlePrefix.valueList = prefixArray;
+		refreshMenus();
+		return true;
+	}
+
+	return false;
+}

@@ -4,9 +4,10 @@
 		{
 			"id": "skin",
 			"label": "New UI Skin",
+			"infoText": "The name of the new UI skin.",
 			"type": "dropdownSpecial",
 			"defaultValue": "",
-			"options": ["images", "ui/skins"]
+			"options": ["images/ui/skins", ".json"]
 		}
 	]
 }

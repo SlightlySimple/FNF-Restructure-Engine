@@ -27,28 +27,41 @@ class PauseSubState extends FlxSubState
 	public static var instance:PauseSubState;
 	public static var music:String = "breakfast";
 	public static var menuMusic:FlxSound = null;
+
+	var from:Int = 0;
+
 	var bg:FlxSprite;
-	var songStuff:FlxText;
-	var songDifficulty:FlxText;
-	var deathCounter:FlxText;
+	var songMetadata:FlxTypedSpriteGroup<FlxText>;
 	public static var deathCounterText:String = "";
-	var menuButtonText:Array<String> = ["#pResume", "#pRestart", "#pOptions", "#pExit"];
+
+	var menu:Array<Array<Dynamic>> = [];
 	var menuButtons:FlxTypedSpriteGroup<Alphabet>;
+	var menuButtonsXOffset:Float = 0;
 	public var menuButtonPosition:Void->Void;
 	var curOption:Int = 0;
+
+	var difficultyMenu:Array<Array<Dynamic>> = [];
+	var difficultyMenuButtons:FlxTypedSpriteGroup<Alphabet>;
+	var difficultyMenuButtonsXOffset:Float = FlxG.width;
+	public var difficultyMenuButtonPosition:Void->Void;
+	var curDifficulty:Int = 0;
+
 	var nav:UINumeralNavigation;
+	var nav2:UINumeralNavigation;
 
 	public static var pausedTweens:Array<FlxTween> = [];
 	public static var pausedTimers:Array<FlxTimer> = [];
 
-	override public function new(?option:Int = 0)
+	override public function new(?from:Int = 0)
 	{
 		super();
 
 		instance = this;
+		this.from = from;
 		menuButtonPosition = defaultMenuButtonPosition;
+		difficultyMenuButtonPosition = defaultDifficultyMenuButtonPosition;
 
-		if (option == 0)
+		if (from == 0)
 		{
 			pausedTweens = [];
 			FlxTween.globalManager.forEach(function(twn:FlxTween) { if (twn.active) pausedTweens.push(twn); });
@@ -77,7 +90,7 @@ class PauseSubState extends FlxSubState
 		}
 
 		bg = new FlxSprite().makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.BLACK);
-		if (option == 0)
+		if (from == 0)
 		{
 			bg.alpha = 0;
 			FlxTween.tween(bg, {alpha: 0.5}, 0.4);
@@ -89,21 +102,30 @@ class PauseSubState extends FlxSubState
 		menuButtons = new FlxTypedSpriteGroup<Alphabet>();
 		add(menuButtons);
 
-		songStuff = new FlxText(0, 15, FlxG.width - 20, PlayState.instance.songName, 32);
-		songStuff.font = "VCR OSD Mono";
-		songStuff.alignment = RIGHT;
-		songStuff.alpha = 0;
-		add(songStuff);
-		new FlxTimer().start(0.3, function(tmr) {FlxTween.tween(songStuff, {alpha: 1, y: songStuff.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
+		difficultyMenuButtons = new FlxTypedSpriteGroup<Alphabet>(difficultyMenuButtonsXOffset);
+		add(difficultyMenuButtons);
 
-		songDifficulty = new FlxText(0, 47, FlxG.width - 20, Lang.getNoHash(PlayState.difficulty).toUpperCase(), 32);
-		songDifficulty.font = "VCR OSD Mono";
-		songDifficulty.alignment = RIGHT;
-		songDifficulty.alpha = 0;
-		add(songDifficulty);
-		new FlxTimer().start(0.5, function(tmr) {FlxTween.tween(songDifficulty, {alpha: 1, y: songDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
 
-		var trueDeathCounterText:String = Lang.get("#pGameOver", [Std.string(PlayState.deaths)]);
+
+		songMetadata = new FlxTypedSpriteGroup<FlxText>();
+		add(songMetadata);
+		var songMetadataList:Array<String> = [];
+
+		songMetadataList.push(Lang.get("#pause.metadata.songName", [PlayState.instance.songName]));
+
+		if (PlayState.instance.songData.artist.trim() != "")
+			songMetadataList.push(Lang.get("#pause.metadata.songArtist", [PlayState.instance.songData.artist]));
+		else
+			songMetadataList.push(Lang.get("#pause.metadata.songArtist", [Lang.get("#pause.metadata.songArtist.default")]));
+
+		if (PlayState.instance.songData.charter.trim() != "")
+			songMetadataList.push(Lang.get("#pause.metadata.songCharter", [PlayState.instance.songData.charter]));
+		else
+			songMetadataList.push(Lang.get("#pause.metadata.songCharter", [Lang.get("#pause.metadata.songCharter.default")]));
+
+		songMetadataList.push(Lang.get("#pause.metadata.difficulty", [Lang.get("#difficulty." + PlayState.difficulty, PlayState.difficulty)]));
+
+		var trueDeathCounterText:String = Lang.get("#pause.gameOver.default", [Std.string(PlayState.deaths)]);
 		if (deathCounterText.trim() != "")
 		{
 			if (deathCounterText.trim().startsWith("#"))
@@ -111,67 +133,167 @@ class PauseSubState extends FlxSubState
 			else
 			{
 				trueDeathCounterText = deathCounterText.trim();
-				if (!trueDeathCounterText.endsWith(":"))
-					trueDeathCounterText += ":";
-				trueDeathCounterText += " " + Std.string(PlayState.deaths);
+				if (trueDeathCounterText.indexOf("%s1") > -1)
+					trueDeathCounterText = trueDeathCounterText.replace("%s1", Std.string(PlayState.deaths));
+				else
+				{
+					if (!trueDeathCounterText.endsWith(":"))
+						trueDeathCounterText += ":";
+					trueDeathCounterText += " " + Std.string(PlayState.deaths);
+				}
 			}
 		}
-		deathCounter = new FlxText(0, 79, FlxG.width - 20, trueDeathCounterText, 32);
-		deathCounter.font = "VCR OSD Mono";
-		deathCounter.alignment = RIGHT;
-		deathCounter.alpha = 0;
-		add(deathCounter);
-		new FlxTimer().start(0.7, function(tmr) {FlxTween.tween(deathCounter, {alpha: 1, y: deathCounter.y + 5}, 0.4, {ease: FlxEase.quartInOut});});
+		songMetadataList.push(trueDeathCounterText);
+
+		var yy:Float = 15;
+		var showDelay:Float = 0.1;
+		for (meta in songMetadataList)
+		{
+			var metaTxt:FlxText = new FlxText(0, yy, 0, meta).setFormat("VCR OSD Mono", 32, FlxColor.WHITE, LEFT);
+			metaTxt.x = FlxG.width - metaTxt.width - 20;
+			songMetadata.add(metaTxt);
+			if (from == 0)
+			{
+				metaTxt.alpha = 0;
+				FlxTween.tween(metaTxt, {alpha: 1, y: yy + 5}, 1.8, {ease: FlxEase.quartOut, startDelay: showDelay});
+			}
+			else
+				metaTxt.y += 5;
+			yy += 32;
+			showDelay += 0.1;
+		}
+		if (from == 1)
+		{
+			songMetadata.x = FlxG.width;
+			FlxTween.tween(songMetadata, {x: 0}, 0.2, {ease: FlxEase.expoOut});
+		}
+
+
+
+		menu.push(["#pause.menu.resume", function() {
+			nav.locked = true;
+			new FlxTimer().start(0.75, function(tmr:FlxTimer) {
+				PlayState.instance.hscriptExec("pauseResume", []);
+				stopMusic();
+				unpauseAll();
+				close();
+			});
+		}]);
+		menu.push(["#pause.menu.restart", function() {
+			stopMusic();
+			unpauseAll();
+			PlayState.instance.restartSong();
+		}]);
+
+		if ((!PlayState.inStoryMode || PlayState.storyProgress == 0) && !PlayState.testingChart && PlayState.difficultyList.length > 1)
+		{
+			menu.push(["#pause.menu.changeDifficulty", function() {
+				nav.locked = true;
+				FlxTween.color(menuButtons, 0.3, FlxColor.WHITE, FlxColor.GRAY, {ease: FlxEase.quadInOut, onComplete: function(twn:FlxTween) { nav2.locked = false; }});
+				FlxTween.tween(this, {menuButtonsXOffset: -450}, 0.3, {ease: FlxEase.quadInOut});
+				FlxTween.tween(this, {difficultyMenuButtonsXOffset: 300}, 0.3, {ease: FlxEase.quadInOut});
+
+				curDifficulty = PlayState.difficultyList.indexOf(PlayState.difficulty);
+				changeDifficulty();
+			}]);
+		}
 
 		if (PlayState.instance.isSM)
-			menuButtonText.insert(2, "#pSaveChart");
-		for (i in 0...menuButtonText.length)
+			menu.push(["#pause.menu.saveChart", saveChart]);
+
+		var optionsMenuPosition:Int = menu.length;
+		menu.push(["#pause.menu.options", function() {
+			nav.locked = true;
+			PlayState.optionsMenuStatus = 1;
+			FlxTween.tween(menuButtons, {x: menuButtons.x - FlxG.width}, 0.2, {ease: FlxEase.expoIn, onComplete: function(twn:FlxTween) { menuButtons.visible = false; }});
+			FlxTween.tween(songMetadata, {x: songMetadata.x + FlxG.width}, 0.2, {ease: FlxEase.expoIn});
+			new FlxTimer().start(0.25, function(tmr:FlxTimer) {
+				close();
+			});
+		}]);
+
+		if (PlayState.testingChart)
 		{
-			var textButton:Alphabet = new Alphabet(Std.int((i * 20) + 90), Std.int((i * 1.3 * 120) + (FlxG.height * 0.48)), Lang.get(menuButtonText[i]));
+			menu.push(["#pause.menu.exitToChartEditor", function() {
+				stopMusic();
+				unpauseAll();
+				PlayState.instance.exitToMenu(false);
+			}]);
+		}
+		else
+		{
+			menu.push(["#pause.menu.exitToMenu", function() {
+				stopMusic();
+				unpauseAll();
+				PlayState.instance.exitToMenu(true);
+			}]);
+		}
+
+		for (i in 0...menu.length)
+		{
+			var textButton:Alphabet = new Alphabet(Std.int((i * 20) + 90), Std.int((i * 1.3 * 120) + (FlxG.height * 0.48)), Lang.get(menu[i][0]));
 			menuButtons.add(textButton);
 		}
 
 		nav = new UINumeralNavigation(null, changeSelection, function() {
-			switch (menuButtonText[curOption])
-			{
-				case "#pResume":
-					nav.locked = true;
-					new FlxTimer().start(0.75, function(tmr:FlxTimer)
-					{
-						PlayState.instance.hscriptExec("pauseResume", []);
-						stopMusic();
-						unpauseAll();
-						close();
-					});
-
-				case "#pRestart":
-					stopMusic();
-					unpauseAll();
-					PlayState.instance.restartSong();
-
-				case "#pOptions":
-					PlayState.optionsMenuStatus = 1;
-					close();
-
-				case "#pExit":
-					stopMusic();
-					unpauseAll();
-					PlayState.instance.exitToMenu();
-
-				case "#pSaveChart": saveChart();
-			}
+			menu[curOption][1]();
 			PlayState.instance.hscriptExec("pauseAccept", []);
 		}, null, changeSelection);
 		nav.leftClick = nav.accept;
 		add(nav);
 
+
+
+		if (PlayState.difficultyList != null && PlayState.difficultyList.length > 0)
+		{
+			for (d in PlayState.difficultyList)
+			{
+				difficultyMenu.push([Lang.get("#difficulty." + d, d), function() {
+					stopMusic();
+					unpauseAll();
+					PlayState.difficulty = d;
+					PlayState.instance.restartSong();
+				}]);
+			}
+		}
+
+		difficultyMenu.push(["#pause.menu.changeDifficulty.back", function() {
+			nav2.locked = true;
+			FlxTween.color(menuButtons, 0.3, FlxColor.GRAY, FlxColor.WHITE, {ease: FlxEase.quadInOut, onComplete: function(twn:FlxTween) { nav.locked = false; }});
+			FlxTween.tween(this, {menuButtonsXOffset: 0}, 0.3, {ease: FlxEase.quadInOut});
+			FlxTween.tween(this, {difficultyMenuButtonsXOffset: FlxG.width}, 0.3, {ease: FlxEase.quadInOut});
+		}]);
+
+		for (i in 0...difficultyMenu.length)
+		{
+			var textButton:Alphabet = new Alphabet(Std.int((i * 20) + 90), Std.int((i * 1.3 * 120) + (FlxG.height * 0.48)), Lang.get(difficultyMenu[i][0]));
+			difficultyMenuButtons.add(textButton);
+		}
+
+		nav2 = new UINumeralNavigation(null, changeDifficulty, function() {
+			difficultyMenu[curDifficulty][1]();
+			PlayState.instance.hscriptExec("pauseAcceptDifficulty", []);
+		}, null, changeDifficulty);
+		nav2.leftClick = nav2.accept;
+		nav2.locked = true;
+		add(nav2);
+
+
+
 		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
 		PlayState.instance.hscriptExec("pauseCreate", []);
 
-		curOption = option;
+		if (from == 1)
+			curOption = optionsMenuPosition;
 		menuButtons.x = curOption * -20;
 		menuButtons.y = curOption * 1.3 * -120;
 		changeSelection();
+
+		if (from == 1)
+		{
+			menuButtons.x -= FlxG.width;
+			FlxTween.tween(menuButtons, {x: menuButtons.x + FlxG.width}, 0.2, {ease: FlxEase.expoOut});
+		}
 	}
 
 	override public function update(elapsed:Float)
@@ -180,18 +302,22 @@ class PauseSubState extends FlxSubState
 
 		PlayState.instance.hscriptExec("pauseUpdate", [elapsed]);
 
-		if (Options.keyJustPressed("fullscreen"))
-			FlxG.fullscreen = !FlxG.fullscreen;
-
 		menuButtonPosition();
+		difficultyMenuButtonPosition();
 
 		PlayState.instance.hscriptExec("pauseUpdatePost", [elapsed]);
 	}
 
 	function defaultMenuButtonPosition()
 	{
-		menuButtons.x = FlxMath.lerp(menuButtons.x, curOption * -20, 0.16 * FlxG.elapsed * 60);
+		menuButtons.x = FlxMath.lerp(menuButtons.x, (curOption * -20) + menuButtonsXOffset, 0.16 * FlxG.elapsed * 60);
 		menuButtons.y = FlxMath.lerp(menuButtons.y, curOption * 1.3 * -120, 0.16 * FlxG.elapsed * 60);
+	}
+
+	function defaultDifficultyMenuButtonPosition()
+	{
+		difficultyMenuButtons.x = FlxMath.lerp(difficultyMenuButtons.x, (curDifficulty * -20) + difficultyMenuButtonsXOffset, 0.16 * FlxG.elapsed * 60);
+		difficultyMenuButtons.y = FlxMath.lerp(difficultyMenuButtons.y, curDifficulty * 1.3 * -120, 0.16 * FlxG.elapsed * 60);
 	}
 
 	function stopMusic()
@@ -225,7 +351,7 @@ class PauseSubState extends FlxSubState
 
 	function changeSelection(change:Int = 0)
 	{
-		curOption = Util.loop(curOption + change, 0, menuButtons.members.length - 1);
+		curOption = Util.loop(curOption + change, 0, menu.length - 1);
 
 		var i:Int = 0;
 
@@ -239,6 +365,24 @@ class PauseSubState extends FlxSubState
 		});
 
 		PlayState.instance.hscriptExec("pauseChangeSelection", []);
+	}
+
+	function changeDifficulty(change:Int = 0)
+	{
+		curDifficulty = Util.loop(curDifficulty + change, 0, difficultyMenu.length - 1);
+
+		var i:Int = 0;
+
+		difficultyMenuButtons.forEachAlive(function(button:Alphabet)
+		{
+			if (i == curDifficulty)
+				button.alpha = 1;
+			else
+				button.alpha = 0.6;
+			i++;
+		});
+
+		PlayState.instance.hscriptExec("pauseChangeDifficultySelection", []);
 	}
 
 

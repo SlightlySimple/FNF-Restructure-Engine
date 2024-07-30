@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="resultsCategories.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="tally accuracy0000" x="0" y="0" width="353" height="35" frameX="0" frameY="-27" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0001" x="355" y="0" width="270" height="79" frameX="-136" frameY="0" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0002" x="627" y="0" width="270" height="79" frameX="-136" frameY="0" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0003" x="0" y="81" width="292" height="73" frameX="-110" frameY="-4" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0004" x="0" y="81" width="292" height="73" frameX="-110" frameY="-4" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0005" x="294" y="81" width="283" height="73" frameX="-119" frameY="-4" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally accuracy0006" x="294" y="81" width="283" height="73" frameX="-119" frameY="-4" frameWidth="406" frameHeight="79"/>
+	<SubTexture name="tally bad0000" x="579" y="81" width="137" height="31" frameX="0" frameY="-23" frameWidth="162" frameHeight="74"/>
+	<SubTexture name="tally bad0001" x="718" y="81" width="89" height="74" frameX="-73" frameY="0" frameWidth="162" frameHeight="74"/>
+	<SubTexture name="tally bad0002" x="809" y="81" width="89" height="74" frameX="-73" frameY="0" frameWidth="162" frameHeight="74"/>
+	<SubTexture name="tally bad0003" x="900" y="81" width="97" height="60" frameX="-62" frameY="-7" frameWidth="162" frameHeight="74"/>
+	<SubTexture name="tally bad0004" x="900" y="81" width="97" height="60" frameX="-62" frameY="-7" frameWidth="162" frameHeight="74"/>
+	<SubTexture name="tally good0000" x="0" y="157" width="180" height="29" frameX="0" frameY="-22" frameWidth="202" frameHeight="63"/>
+	<SubTexture name="tally good0001" x="182" y="157" width="122" height="63" frameX="-80" frameY="0" frameWidth="202" frameHeight="63"/>
+	<SubTexture name="tally good0002" x="306" y="157" width="122" height="63" frameX="-80" frameY="0" frameWidth="202" frameHeight="63"/>
+	<SubTexture name="tally good0003" x="430" y="157" width="132" height="55" frameX="-69" frameY="-4" frameWidth="202" frameHeight="63"/>
+	<SubTexture name="tally good0004" x="430" y="157" width="132" height="55" frameX="-69" frameY="-4" frameWidth="202" frameHeight="63"/>
+	<SubTexture name="tally held0000" x="564" y="157" width="137" height="24" frameX="0" frameY="-18" frameWidth="173" frameHeight="60"/>
+	<SubTexture name="tally held0001" x="703" y="157" width="98" height="60" frameX="-75" frameY="0" frameWidth="173" frameHeight="60"/>
+	<SubTexture name="tally held0002" x="803" y="157" width="98" height="60" frameX="-75" frameY="0" frameWidth="173" frameHeight="60"/>
+	<SubTexture name="tally held0003" x="903" y="157" width="99" height="47" frameX="-66" frameY="-6" frameWidth="173" frameHeight="60"/>
+	<SubTexture name="tally held0004" x="903" y="157" width="99" height="47" frameX="-66" frameY="-6" frameWidth="173" frameHeight="60"/>
+	<SubTexture name="tally marvelous0000" x="0" y="222" width="235" height="24" frameX="0" frameY="-20" frameWidth="247" frameHeight="61"/>
+	<SubTexture name="tally marvelous0001" x="237" y="222" width="182" height="61" frameX="-65" frameY="0" frameWidth="247" frameHeight="61"/>
+	<SubTexture name="tally marvelous0002" x="421" y="222" width="182" height="61" frameX="-65" frameY="0" frameWidth="247" frameHeight="61"/>
+	<SubTexture name="tally marvelous0003" x="605" y="222" width="197" height="49" frameX="-50" frameY="-6" frameWidth="247" frameHeight="61"/>
+	<SubTexture name="tally marvelous0004" x="605" y="222" width="197" height="49" frameX="-50" frameY="-6" frameWidth="247" frameHeight="61"/>
+	<SubTexture name="tally max combo0000" x="0" y="285" width="404" height="36" frameX="0" frameY="-23" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0001" x="406" y="285" width="310" height="71" frameX="-141" frameY="0" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0002" x="0" y="358" width="310" height="71" frameX="-141" frameY="0" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0003" x="312" y="358" width="333" height="67" frameX="-116" frameY="-3" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0004" x="312" y="358" width="333" height="67" frameX="-116" frameY="-3" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0005" x="647" y="358" width="324" height="67" frameX="-124" frameY="-3" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally max combo0006" x="647" y="358" width="324" height="67" frameX="-124" frameY="-3" frameWidth="451" frameHeight="71"/>
+	<SubTexture name="tally missed0000" x="0" y="431" width="232" height="27" frameX="0" frameY="-19" frameWidth="273" frameHeight="61"/>
+	<SubTexture name="tally missed0001" x="234" y="431" width="167" height="61" frameX="-106" frameY="0" frameWidth="273" frameHeight="61"/>
+	<SubTexture name="tally missed0002" x="403" y="431" width="167" height="61" frameX="-106" frameY="0" frameWidth="273" frameHeight="61"/>
+	<SubTexture name="tally missed0003" x="572" y="431" width="180" height="50" frameX="-90" frameY="-5" frameWidth="273" frameHeight="61"/>
+	<SubTexture name="tally missed0004" x="572" y="431" width="180" height="50" frameX="-90" frameY="-5" frameWidth="273" frameHeight="61"/>
+	<SubTexture name="tally shit0000" x="754" y="431" width="162" height="32" frameX="0" frameY="-23" frameWidth="193" frameHeight="80"/>
+	<SubTexture name="tally shit0001" x="0" y="494" width="114" height="80" frameX="-79" frameY="0" frameWidth="193" frameHeight="80"/>
+	<SubTexture name="tally shit0002" x="116" y="494" width="114" height="80" frameX="-79" frameY="0" frameWidth="193" frameHeight="80"/>
+	<SubTexture name="tally shit0003" x="232" y="494" width="115" height="62" frameX="-70" frameY="-9" frameWidth="193" frameHeight="80"/>
+	<SubTexture name="tally shit0004" x="232" y="494" width="115" height="62" frameX="-70" frameY="-9" frameWidth="193" frameHeight="80"/>
+	<SubTexture name="tally shit censor0000" x="349" y="494" width="161" height="32" frameX="0" frameY="-24" frameWidth="193" frameHeight="79"/>
+	<SubTexture name="tally shit censor0001" x="512" y="494" width="114" height="79" frameX="-79" frameY="0" frameWidth="193" frameHeight="79"/>
+	<SubTexture name="tally shit censor0002" x="628" y="494" width="114" height="79" frameX="-79" frameY="0" frameWidth="193" frameHeight="79"/>
+	<SubTexture name="tally shit censor0003" x="744" y="494" width="114" height="63" frameX="-70" frameY="-8" frameWidth="193" frameHeight="79"/>
+	<SubTexture name="tally shit censor0004" x="744" y="494" width="114" height="63" frameX="-70" frameY="-8" frameWidth="193" frameHeight="79"/>
+	<SubTexture name="tally sick0000" x="0" y="576" width="181" height="30" frameX="0" frameY="-23" frameWidth="199" frameHeight="70"/>
+	<SubTexture name="tally sick0001" x="183" y="576" width="142" height="70" frameX="-57" frameY="0" frameWidth="199" frameHeight="70"/>
+	<SubTexture name="tally sick0002" x="327" y="576" width="142" height="70" frameX="-57" frameY="0" frameWidth="199" frameHeight="70"/>
+	<SubTexture name="tally sick0003" x="471" y="576" width="152" height="59" frameX="-45" frameY="-6" frameWidth="199" frameHeight="70"/>
+	<SubTexture name="tally sick0004" x="471" y="576" width="152" height="59" frameX="-45" frameY="-6" frameWidth="199" frameHeight="70"/>
+	<SubTexture name="tally total notes0000" x="0" y="648" width="448" height="36" frameX="0" frameY="-32" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0001" x="450" y="648" width="304" height="83" frameX="-204" frameY="0" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0002" x="0" y="733" width="304" height="83" frameX="-204" frameY="0" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0003" x="306" y="733" width="331" height="68" frameX="-175" frameY="-7" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0004" x="306" y="733" width="331" height="68" frameX="-175" frameY="-7" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0005" x="639" y="733" width="326" height="68" frameX="-180" frameY="-7" frameWidth="508" frameHeight="83"/>
+	<SubTexture name="tally total notes0006" x="639" y="733" width="326" height="68" frameX="-180" frameY="-7" frameWidth="508" frameHeight="83"/>
+</TextureAtlas>

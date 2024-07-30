@@ -15,6 +15,7 @@ function onEvent(event)
 
 function eventGo(event)
 {
+	var val = analyzeValue(event.parameters.value);
 	if (event.parameters.variable.indexOf(".") > 0)
 	{
 		var varSplit = event.parameters.variable.split(".");
@@ -31,31 +32,15 @@ function eventGo(event)
 				affect = Reflect.getProperty(affect, varSplit[i]);
 		}
 
-		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
-		switch (event.parameters.operation)
-		{
-			case "add": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev + analyzeValue(event.parameters.value));
-			case "multiply": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev * analyzeValue(event.parameters.value));
-			case "divide": Reflect.setProperty(affect, varSplit[varSplit.length - 1], prev / analyzeValue(event.parameters.value));
-			default: Reflect.setProperty(affect, varSplit[varSplit.length - 1], analyzeValue(event.parameters.value));
-		}
+		applyProperty(affect, varSplit[varSplit.length - 1], val, event.parameters.operation);
 	}
 	else
-	{
-		var prev = Reflect.getProperty(game, event.parameters.variable);
-		switch (event.parameters.operation)
-		{
-			case "add": Reflect.setProperty(game, event.parameters.variable, prev + analyzeValue(event.parameters.value));
-			case "multiply": Reflect.setProperty(game, event.parameters.variable, prev * analyzeValue(event.parameters.value));
-			case "divide": Reflect.setProperty(game, event.parameters.variable, prev / analyzeValue(event.parameters.value));
-			default: Reflect.setProperty(game, event.parameters.variable, analyzeValue(event.parameters.value));
-		}
-	}
+		applyProperty(game, event.parameters.variable, val, event.parameters.operation);
 }
 
 function analyzeValue(val)
 {
-	if (Std.parseFloat(val) != null)
+	if (Std.parseFloat(val) != null && !Math.isNaN(Std.parseFloat(val)))
 		return Std.parseFloat(val);
 
 	if (val == "true")
@@ -69,11 +54,24 @@ function analyzeValue(val)
 
 function analyzeArrayValue(val)
 {
-	if (Std.parseInt(val) != null)
+	if (Std.parseInt(val) != null && !Math.isNaN(Std.parseInt(val)))
 		return Std.parseInt(val);
 
 	if (StringTools.startsWith(val, "\"") && StringTools.endsWith(val, "\""))
 		return val.substr(1, val.length - 2);
 
 	return val;
+}
+
+function applyProperty(base, property, value, operation)
+{
+	var prev = Reflect.getProperty(base, property);
+	var final = value;
+	switch (operation)
+	{
+		case "add": final = prev + value;
+		case "multiply": final = prev * value;
+		case "divide": final = prev / value;
+	}
+	Reflect.setProperty(base, property, final);
 }

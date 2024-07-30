@@ -1,15 +1,18 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "sequence",
-			"label": "Camera Bump Sequence",
+			"label": "Bump Sequence",
+			"infoText": "The sequence representing which beats or steps the camera should bump on. This should be a comma-separated list of ones and zeroes. A 1 means the camera will bump on that beat or step, and a 0 means it won't.",
 			"type": "string",
 			"defaultValue": "1,0,0,0"
 		},
 		{
 			"id": "steps",
-			"label": "Seq is in Steps",
+			"label": "Sequence is in Steps",
+			"infoText": "If this is checked, the ones and zeroes above represent steps in the song. Otherwise, they represent beats in the song.",
 			"type": "checkbox",
 			"defaultValue": false
 		}

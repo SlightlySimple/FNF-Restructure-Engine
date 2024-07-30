@@ -4,8 +4,21 @@
 		{
 			"id": "sound",
 			"label": "Sound",
-			"type": "string",
-			"defaultValue": ""
+			"infoText": "The file path of the sound to play.",
+			"type": "dropdownSpecial",
+			"defaultValue": "",
+			"options": ["sounds", ".ogg"]
+		},
+		{
+			"id": "volume",
+			"label": "Volume",
+			"infoText": "The volume of the sound.",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 1,
+			"increment": 0.05,
+			"decimals": 3
 		}
 	]
 }

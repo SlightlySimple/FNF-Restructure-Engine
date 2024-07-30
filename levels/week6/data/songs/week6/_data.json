@@ -1,0 +1,9 @@
+{
+	"noteType": ["pixel"],
+	"uiSkin": "pixel",
+	"music": {
+		"pause": "breakfast-pixel",
+		"gameOver": "gameOver-pixel",
+		"gameOverEnd": "gameOverEnd-pixel"
+	}
+}

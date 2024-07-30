@@ -12,14 +12,17 @@ function create()
 	if (static.credPage == null)
 		static.credPage = credPages[0];
 	credPage = credPages.indexOf(static.credPage);
-
-	var state = FlxG.state;
+	credItem = 0;
 
 	bg = new FlxSprite();
-	state.add(bg);
+	add(bg);
+
+	credSelection = new FlxSprite(70).makeGraphic(FlxG.width - 140, 1, FlxColor.BLACK);
+	credSelection.alpha = 0.4;
+	add(credSelection);
 
 	credText = new FlxSpriteGroup();
-	state.add(credText);
+	add(credText);
 	refreshCredText();
 
 	arrowLeft = new AnimatedSprite(0, 0, Paths.tiles("ui/arrow", 2, 1));
@@ -29,7 +32,7 @@ function create()
 	arrowLeft.setPosition(15, (FlxG.height - arrowLeft.height) / 2);
 	arrowLeft.flipX = true;
 	if (credPages.length > 1)
-		state.add(arrowLeft);
+		add(arrowLeft);
 
 	arrowRight = new AnimatedSprite(0, 0, arrowLeft.frames);
 	arrowRight.animation.add('idle', [0]);
@@ -37,25 +40,25 @@ function create()
 	arrowRight.playAnim('idle');
 	arrowRight.setPosition(FlxG.width - arrowRight.width - 15, (FlxG.height - arrowRight.height) / 2);
 	if (credPages.length > 1)
-		state.add(arrowRight);
+		add(arrowRight);
 
-	FlxG.mouse.visible = true;
-
-	nav = new UINumeralNavigation((credPages.length > 1 ? changePage : null), null, null, function() {
+	nav = new UINumeralNavigation((credPages.length > 1 ? changePage : null), changeSelection, function() {
+		if (credObjects[credItem].hyperlink != "")
+			FlxG.openURL(credObjects[credItem].hyperlink);
+	}, function() {
 		static.credPage = credPages[credPage];
-		FlxG.mouse.visible = false;
 		GotoMenu();
-	});
-	state.add(nav);
+	}, changeSelection);
+	nav.leftClick = nav.accept;
+	nav.rightClick = nav.back;
+	add(nav);
+
+	changeSelection(0);
 }
 
 function refreshCredText()
 {
-	credText.forEachAlive(function(t) {
-		t.kill();
-		t.destroy();
-	});
-	credText.clear();
+	credText.forEachAlive(function(t) { t.kill(); });
 
 	var textSplit = [];
 
@@ -82,34 +85,35 @@ function refreshCredText()
 
 	for (t in textSplit)
 	{
-		var newCredObject = {line: null, isHyperlink: false, hyperlink: ''};
-		var textLine1 = new FlxText(80, txtY, 0, t[0], 36);
-		textLine1.font = "VCR OSD Mono";
-		textLine1.borderColor = FlxColor.BLACK;
-		textLine1.borderStyle = FlxTextBorderStyle.OUTLINE;
+		var newCredObject = {line: null, lineRight: null, text: t, hyperlink: ""};
+		var textLine1 = credText.recycle(FlxText);
+		textLine1.setPosition(80, txtY);
+		textLine1.text = t[0];
+		textLine1.setFormat("FNF Dialogue", 36, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		textLine1.fieldWidth = 0;
+		textLine1.borderSize = 2;
 		if (t.length <= 1)
 		{
 			textLine1.size = 48;
 			textLine1.screenCenter(X);
+			textLine1.borderSize = 3;
 		}
 		newCredObject.line = textLine1;
 		credText.add(textLine1);
 
 		if (t.length > 2)
-		{
-			newCredObject.isHyperlink = true;
 			newCredObject.hyperlink = t[2];
-			textLine1.color = 0xFFC0FFFF;
-		}
 
 		if (t.length > 1)
 		{
-			var textLine2 = new FlxText(FlxG.width - 80, txtY, FlxG.width * 0.6, t[1], 36);
-			textLine2.font = "VCR OSD Mono";
-			textLine2.alignment = RIGHT;
+			var textLine2 = credText.recycle(FlxText);
+			textLine2.setPosition(FlxG.width - 80, txtY);
+			textLine2.text = t[1];
+			textLine2.setFormat("FNF Dialogue", 36, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			textLine2.fieldWidth = FlxG.width * 0.6;
 			textLine2.x -= textLine2.width;
-			textLine2.borderColor = FlxColor.BLACK;
-			textLine2.borderStyle = FlxTextBorderStyle.OUTLINE;
+			textLine2.borderSize = 2;
+			newCredObject.lineRight = textLine2;
 			credText.add(textLine2);
 			txtY += Std.int(Math.max(textLine1.height, textLine2.height) + 8);
 		}
@@ -132,21 +136,6 @@ function refreshCredText()
 
 function update(elapsed)
 {
-	for (cred in credObjects)
-	{
-		if (cred.isHyperlink)
-		{
-			if (FlxG.mouse.overlaps(cred.line))
-			{
-				cred.line.color = 0xFF00C0FF;
-				if (FlxG.mouse.justPressed)
-					FlxG.openURL(cred.hyperlink);
-			}
-			else
-				cred.line.color = 0xFFC0FFFF;
-		}
-	}
-
 	if (credPages.length > 1)
 	{
 		if (Options.keyJustPressed("ui_right"))
@@ -162,30 +151,50 @@ function update(elapsed)
 			arrowLeft.playAnim("idle");
 	}
 
-	var change = FlxG.mouse.wheel;
-	if (change == 0)
+	if (credObjects[credItem].line.y < FlxG.height / 3)
 	{
-		if (Options.keyJustPressed("ui_up"))
-			change = 1;
-
-		if (Options.keyJustPressed("ui_down"))
-			change = -1;
+		var credY = (FlxG.height / 3) - (credObjects[credItem].line.y - credText.y);
+		credY = Math.min(0, Math.max(-maxHeight, credY));
+		credText.y = FlxMath.lerp(credText.y, credY, elapsed * 5);
 	}
 
-	if (change != 0)
+	if (credObjects[credItem].line.y + credObjects[credItem].lineRight.height > FlxG.height * 2 / 3)
 	{
-		credText.y += change * 120;
-		credText.y = Math.min(0, Math.max(-maxHeight, credText.y));
+		var credY = (FlxG.height * 2 / 3) - credObjects[credItem].lineRight.height - (credObjects[credItem].line.y - credText.y);
+		credY = Math.min(0, Math.max(-maxHeight, credY));
+		credText.y = FlxMath.lerp(credText.y, credY, elapsed * 5);
 	}
+
+	credSelection.y = credObjects[credItem].line.y - 10;
 }
 
 function changePage(val)
 {
-	credPage += val;
-	if (credPage >= credPages.length)
-		credPage = 0;
-	if (credPage < 0)
-		credPage = credPages.length - 1;
+	credPage = Util.loop(credPage + val, 0, credPages.length - 1);
 
 	refreshCredText();
+	credItem = 0;
+	changeSelection(0);
+}
+
+function changeSelection(val)
+{
+	credItem = Util.loop(credItem + val, 0, credObjects.length - 1);
+	if (credObjects[credItem].text.length < 2)
+	{
+		if (val == 0)
+			changeSelection(1);
+		else
+			changeSelection(val);
+	}
+
+	for (i in 0...credObjects.length)
+	{
+		credObjects[i].line.text = credObjects[i].text[0];
+		if (i == credItem)
+			credObjects[i].line.text = "> " + credObjects[i].line.text;
+	}
+
+	credSelection.setGraphicSize(credSelection.width, Math.max(credObjects[credItem].line.height, credObjects[credItem].lineRight.height) + 20);
+	credSelection.updateHitbox();
 }

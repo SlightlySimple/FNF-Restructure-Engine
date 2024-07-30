@@ -1,1 +1,0 @@
-{"asset":"Tankman","position":[20,-80],"scale":[0.55,0.55],"danceSpeed":1,"firstAnimation":"idle","flip":true,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Tankman Dance","name":"idle"}]}

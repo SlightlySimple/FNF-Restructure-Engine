@@ -1,0 +1,433 @@
+{
+	"objects": [
+		{
+			"type": "atlas",
+			"asset": "week7/tankTalk",
+			"relativeTo": "player2",
+			"x": 420,
+			"y": 220,
+			"animations": [
+				{
+					"name": "p1",
+					"prefix": "TANK TALK 3 P1 UNCUT",
+					"fps": 24,
+					"offsets": [0, 0]
+				},
+				{
+					"name": "p2",
+					"prefix": "TANK TALK 3 P2 UNCUT",
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		},
+		{
+			"type": "sparrow",
+			"asset": "characters/gf/gfTankmen",
+			"relativeTo": "gf",
+			"x": -110,
+			"y": 135,
+			"animations": [
+				{
+					"name": "idle",
+					"prefix": "GF Dancing at Gunpoint",
+					"fps": 24,
+					"loop": true
+				}
+			]
+		},
+		{
+			"type": "sparrow",
+			"asset": "week7/gfDemon",
+			"relativeTo": "gf",
+			"x": -331,
+			"y": -320,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "",
+					"fps": 24,
+					"loop": false
+				}
+			]
+		},
+		{
+			"type": "atlas",
+			"asset": "week7/picoKill",
+			"relativeTo": "gf",
+			"x": 150,
+			"y": 450,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "Pico Saves them sequence",
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		},
+		{
+			"type": "sparrow",
+			"asset": "characters/bf/BOYFRIEND",
+			"relativeTo": "player1",
+			"x": 0,
+			"y": 20,
+			"animations": [
+				{
+					"name": "idle",
+					"prefix": "BF idle dance",
+					"fps": 24,
+					"loop": false
+				}
+			]
+		}
+	],
+	"events": [
+		{
+			"time": 4.6,
+			"type": "applyCensor",
+			"x": 150,
+			"y": 170,
+			"length": 0.2
+		},
+		{
+			"time": 25.1,
+			"type": "applyCensor",
+			"x": 120,
+			"y": 150,
+			"length": 0.9
+		},
+		{
+			"time": 30.7,
+			"type": "applyCensor",
+			"x": 210,
+			"y": 190,
+			"length": 0.4
+		},
+		{
+			"time": 33.8,
+			"type": "applyCensor",
+			"x": 150,
+			"y": 170,
+			"length": 0.6
+		},
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "player1"
+		},
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "player2"
+		},
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "gf"
+		},
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "week7/gfDemon"
+		},
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "week7/picoKill"
+		},
+		{
+			"time": 0,
+			"type": "playAnim",
+			"object": "characters/bf/BOYFRIEND",
+			"animation": "idle"
+		},
+		{
+			"time": 0,
+			"type": "playAnim",
+			"object": "characters/gf/gfTankmen",
+			"animation": "idle"
+		},
+		{
+			"time": 0,
+			"type": "cameraZoom",
+			"zoom": 1.15,
+			"relativeTo": "stage",
+			"tweenTime": 0
+		},
+		{
+			"time": 0,
+			"type": "cameraPosition",
+			"x": 435,
+			"y": -120,
+			"relativeTo": "player2",
+			"movementType": "instant"
+		},
+		{
+			"time": 0,
+			"type": "cameraPosition",
+			"x": 235,
+			"y": -120,
+			"relativeTo": "player2",
+			"movementType": "gradual"
+		},
+		{
+			"time": 0,
+			"type": "playAnim",
+			"object": "week7/tankTalk",
+			"animation": "p1"
+		},
+		{
+			"time": 0.01,
+			"type": "playSound",
+			"sound": "week7/stressCutscene",
+			"soundCensor": "week7/song3censor",
+			"volume": 1
+		},
+		{
+			"time": 15.1,
+			"type": "hide",
+			"object": "characters/gf/gfTankmen"
+		},
+		{
+			"time": 15.1,
+			"type": "show",
+			"object": "week7/gfDemon"
+		},
+		{
+			"time": 15.1,
+			"type": "playAnim",
+			"object": "week7/gfDemon",
+			"animation": "go"
+		},
+		{
+			"time": 15.1,
+			"type": "cameraPosition",
+			"x": -240,
+			"y": -5,
+			"relativeTo": "gf",
+			"movementType": "gradual"
+		},
+		{
+			"time": 15.1,
+			"type": "cameraZoom",
+			"zoom": 1.495,
+			"relativeTo": "stage",
+			"tweenTime": 2.1,
+			"ease": "quadInOut"
+		},
+		{
+			"time": 17.3,
+			"type": "hide",
+			"object": "characters/bf/BOYFRIEND"
+		},
+		{
+			"time": 17.3,
+			"type": "show",
+			"object": "player1"
+		},
+		{
+			"time": 17.3,
+			"type": "playAnim",
+			"object": "player1",
+			"animation": "bfCatch"
+		},
+		{
+			"time": 17.3,
+			"type": "hide",
+			"object": "week7/gfDemon"
+		},
+		{
+			"time": 17.3,
+			"type": "show",
+			"object": "week7/picoKill"
+		},
+		{
+			"time": 17.3,
+			"type": "playAnim",
+			"object": "week7/picoKill",
+			"animation": "go"
+		},
+		{
+			"time": 17.3,
+			"type": "cameraZoom",
+			"zoom": 0.8,
+			"relativeTo": "absolute",
+			"tweenTime": 0
+		},
+		{
+			"time": 18.5,
+			"type": "playAnim",
+			"object": "player1",
+			"animation": "idle"
+		},
+		{
+			"time": 19.6,
+			"type": "playAnim",
+			"object": "week7/tankTalk",
+			"animation": "p2"
+		},
+		{
+			"time": 20.3,
+			"type": "cameraPosition",
+			"x": 355,
+			"y": -110,
+			"relativeTo": "player2",
+			"movementType": "gradual"
+		},
+		{
+			"time": 20.71,
+			"type": "hide",
+			"object": "week7/picoKill"
+		},
+		{
+			"time": 20.71,
+			"type": "show",
+			"object": "gf"
+		},
+		{
+			"time": 31.5,
+			"type": "playAnim",
+			"object": "player1",
+			"animation": "singUPmiss"
+		},
+		{
+			"time": 31.5,
+			"type": "hide",
+			"object": "tank3"
+		},
+		{
+			"time": 31.5,
+			"type": "cameraPosition",
+			"x": -185,
+			"y": -20,
+			"relativeTo": "player1",
+			"movementType": "instant"
+		},
+		{
+			"time": 31.5,
+			"type": "cameraZoom",
+			"zoom": 1.4,
+			"relativeTo": "stage",
+			"tweenTime": 0
+		},
+		{
+			"time": 31.5,
+			"type": "cameraZoom",
+			"zoom": 1.5,
+			"relativeTo": "stage",
+			"tweenTime": 0.5,
+			"ease": "elasticOut"
+		},
+		{
+			"time": 32.5,
+			"type": "playAnim",
+			"object": "player1",
+			"animation": "idle"
+		},
+		{
+			"time": 32.5,
+			"type": "finishAnim",
+			"object": "player1"
+		},
+		{
+			"time": 32.5,
+			"type": "show",
+			"object": "tank3"
+		},
+		{
+			"time": 32.5,
+			"type": "cameraPosition",
+			"x": 355,
+			"y": -110,
+			"relativeTo": "player2",
+			"movementType": "instant"
+		},
+		{
+			"time": 32.5,
+			"type": "cameraZoom",
+			"zoom": 1.1,
+			"relativeTo": "stage",
+			"tweenTime": 0
+		},
+		{
+			"time": 35.1,
+			"type": "endCutscene"
+		},
+		{
+			"time": 0,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.1"
+		},
+		{
+			"time": 2.835,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.2"
+		},
+		{
+			"time": 3.2,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.3"
+		},
+		{
+			"time": 5.56,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.4"
+		},
+		{
+			"time": 9.67,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.5"
+		},
+		{
+			"time": 11.835,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.6"
+		},
+		{
+			"time": 15.68,
+			"type": "subtitle",
+			"text": ""
+		},
+		{
+			"time": 17.5,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.7"
+		},
+		{
+			"time": 18.55,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.8"
+		},
+		{
+			"time": 18.945,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.9"
+		},
+		{
+			"time": 20.055,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.10"
+		},
+		{
+			"time": 24.25,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.11"
+		},
+		{
+			"time": 26.98,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.12"
+		},
+		{
+			"time": 29,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.13"
+		},
+		{
+			"time": 31.4,
+			"type": "subtitle",
+			"text": "#subtitles.stress.cutscene.14"
+		}
+	]
+}

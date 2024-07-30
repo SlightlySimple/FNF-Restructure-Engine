@@ -1,29 +1,43 @@
 function new(char)
 {
-	data = Paths.json("portraits/" + char);
-	this.frames = Paths.sparrow("portraits/" + data.asset);
-	this.x = data.position[0];
-	this.y = data.position[1];
-	if (Reflect.hasField(data, "scale"))
+	data = Paths.json("dialogue/portraits/" + char);
+	this.frames = Paths.sparrow(data.asset);
+	this.setPosition(data.position[0], data.position[1]);
+	if (data.scale != null && data.scale.length > 1)
 	{
 		this.scale.x = data.scale[0];
 		this.scale.y = data.scale[1];
 	}
+	this.updateHitbox();
+	this.baseOffset.set(this.offset.x, this.offset.y);
+	if (data.antialias != null)
+		this.antialiasing = data.antialias;
 	this.flipX = data.flip;
 	this.alpha = 0;
 
+	sounds = [];
+	for (s in Paths.listFiles("sounds/dialogue/portraits/" + char, ".ogg"))
+		sounds.push(FlxG.sound.load(Paths.sound("dialogue/portraits/" + char + "/" + s), 0.6));
+
+	expressions = new StringMap();
+
+	for (e in data.expressions)
+		expressions[e.name] = e;
+
+	expression = data.expressions[0].name;
+
 	for (a in data.animations)
 	{
-		this.addAnim(a.name + "Idle", a.idle.prefix, a.idle.fps, a.idle.loop);
-		this.addOffsets(a.name + "Idle", a.idle.offsets);
-		if (Reflect.hasField(a, "talk"))
-		{
-			this.addAnim(a.name + "Talk", a.talk.prefix, a.talk.fps, a.talk.loop);
-			this.addOffsets(a.name + "Talk", a.talk.offsets);
-		}
+		this.addAnim(a.name, a.prefix, a.fps, a.loop, a.indices);
+		this.addOffsets(a.name, [a.offsets[0], a.offsets[1]]);
 	}
 
-	firstAnim = data.animations[0].name + "Idle";
+	this.animation.finishCallback = function(anim) {
+		if (expressions[expression].enter != null && anim == expressions[expression].enter)
+			playTalk();
+	}
+
+	firstAnim = data.animations[0].name;
 	this.playAnim(firstAnim);
 
 	right = false;
@@ -40,39 +54,64 @@ function enter(fromRight)
 
 	FlxTween.completeTweensOf(this);
 	if (right)
+		this.setPosition(FlxG.width - this.width - data.position[0], data.position[1]);
+	else
+		this.setPosition(data.position[0], data.position[1]);
+
+	if (data.transitions != null && data.transitions.enter.time > 0)
 	{
-		this.x = FlxG.width - this.width - data.position[0];
-		this.x += 400;
-		this.alpha = 0;
-		FlxTween.tween(this, {x: FlxG.width - this.width - data.position[0], alpha: 1}, 0.3, {ease: FlxEase.sineOut});
+		var xx = this.x;
+		var yy = this.y;
+
+		if (right)
+			this.x -= data.transitions.enter.x;
+		else
+			this.x += data.transitions.enter.x;
+		this.y += data.transitions.enter.y;
+		this.alpha = data.transitions.enter.alpha;
+		FlxTween.tween(this, {x: xx, y: yy, alpha: 1}, data.transitions.enter.time, {ease: Reflect.field(FlxEase, data.transitions.enter.ease)});
 	}
 	else
-	{
-		this.x = data.position[0];
-		this.x -= 400;
-		this.alpha = 0;
-		FlxTween.tween(this, {x: data.position[0], alpha: 1}, 0.3, {ease: FlxEase.sineOut});
-	}
+		this.alpha = 1;
+
+	if (expressions[expression].enter != null)
+		this.playAnim(expressions[expression].enter);
 }
 
 function exit()
 {
 	FlxTween.completeTweensOf(this);
-	if (right)
-		FlxTween.tween(this, {x: this.x + 400, alpha: 0}, 0.3, {ease: FlxEase.sineIn});
+
+	if (data.transitions != null && data.transitions.exit.time > 0)
+	{
+		var xx = this.x + data.transitions.exit.x;
+		var yy = this.y + data.transitions.exit.y;
+		if (right)
+			xx = this.x - data.transitions.exit.x;
+
+		FlxTween.tween(this, {x: xx, y: yy, alpha: data.transitions.exit.alpha}, data.transitions.exit.time, {ease: Reflect.field(FlxEase, data.transitions.exit.ease), onComplete: function(twn) { this.alpha = 0; }});
+	}
 	else
-		FlxTween.tween(this, {x: this.x - 400, alpha: 0}, 0.3, {ease: FlxEase.sineIn});
+		this.alpha = 0;
 }
 
-function playTalk(anim)
+function setExpression(anim)
 {
-	if (this.animOffsets.exists(anim + "Talk"))
-		this.playAnim(anim + "Talk");
-	else
-		this.playAnim(anim + "Idle");
+	expression = anim;
 }
 
-function playIdle(anim)
+function playTalk()
 {
-	this.playAnim(anim + "Idle");
+	if (expressions[expression].enter != null && this.animation.curAnim.name == expressions[expression].enter)
+		return;
+
+	if (expressions[expression].talk != null)
+		this.playAnim(expressions[expression].talk);
+	else
+		playIdle();
+}
+
+function playIdle()
+{
+	this.playAnim(expressions[expression].idle);
 }

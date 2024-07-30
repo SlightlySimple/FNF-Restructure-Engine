@@ -2,36 +2,89 @@ package;
 
 import flixel.FlxG;
 import flixel.system.ui.FlxSoundTray;
-import flash.text.TextField;
-import flash.text.TextFormat;
-import flash.text.TextFormatAlign;
+import flash.display.Bitmap;
+import flash.Lib;
 import openfl.utils.Assets;
+
+typedef SoundTrayData =
+{
+	var barsX:Int;
+	var barsY:Int;
+	var barsSpacing:Int;
+	var barsStack:Bool;
+	var bgAlpha:Float;
+}
 
 class FunkSoundTray extends FlxSoundTray
 {
+	var trackedVolume:Float = 1;
+	var data:SoundTrayData;
+
 	override public function new()
 	{
 		super();
+		trackedVolume = FlxG.sound.volume;
 
-		removeChildAt(1);
+		rebuildSoundTray();
+	}
 
-		var text:TextField = new TextField();
-		text.width = _width;
-		text.height = 30;
-		text.selectable = false;
+	public function rebuildSoundTray()
+	{
+		x = 0;
+		y = 0;
+		data = cast Paths.json("soundtray");
 
-		var dtf:TextFormat = new TextFormat(Assets.getFont("assets/fonts/vcr.ttf").fontName, 12, 0xffffff);
-		dtf.align = TextFormatAlign.CENTER;
-		text.defaultTextFormat = dtf;
-		addChild(text);
-		text.text = "VOLUME";
-		text.y = 14;
+		removeChildren();
+
+		var tmp:Bitmap = new Bitmap(Assets.getBitmapData(Paths.imagePath("ui/soundtray/volumebox")));
+		tmp.scaleX = 0.3;
+		tmp.scaleY = 0.3;
+		addChild(tmp);
+
+		var bx:Int = data.barsX;
+		var by:Int = data.barsY;
+		var bs:Int = data.barsSpacing;
+
+		if (data.bgAlpha > 0)
+		{
+			tmp = new Bitmap(Assets.getBitmapData(Paths.imagePath("ui/soundtray/bars_10")));
+			tmp.x = bx + (10 * bs);
+			tmp.y = by;
+			tmp.scaleX = 0.3;
+			tmp.scaleY = 0.3;
+			tmp.alpha = data.bgAlpha;
+			addChild(tmp);
+		}
+
+		_bars = [];
+		for (i in 0...10)
+		{
+			tmp = new Bitmap(Assets.getBitmapData(Paths.imagePath("ui/soundtray/bars_" + Std.string(i + 1))));
+			tmp.x = bx + (i * bs);
+			tmp.y = by;
+			tmp.scaleX = 0.3;
+			tmp.scaleY = 0.3;
+			addChild(tmp);
+			_bars.push(tmp);
+		}
+
+		screenCenter();
+		y = -height;
+		visible = false;
 	}
 
 	override public function show(Silent:Bool = false)
 	{
 		if (!Silent)
-			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
+		{
+			if (FlxG.sound.volume >= 0.98)
+				FlxG.sound.play(Paths.sound("soundtray/VolMAX"));
+			else if (FlxG.sound.volume < trackedVolume)
+				FlxG.sound.play(Paths.sound("soundtray/Voldown"));
+			else
+				FlxG.sound.play(Paths.sound("soundtray/Volup"));
+		}
+		trackedVolume = FlxG.sound.volume;
 
 		_timer = 1;
 		y = 0;
@@ -44,10 +97,28 @@ class FunkSoundTray extends FlxSoundTray
 
 		for (i in 0..._bars.length)
 		{
-			if (i < globalVolume)
-				_bars[i].alpha = 1;
+			if (data.barsStack)
+			{
+				if (i <= globalVolume - 1)
+					_bars[i].visible = true;
+				else
+					_bars[i].visible = false;
+			}
 			else
-				_bars[i].alpha = 0.5;
+			{
+				if (i == globalVolume - 1)
+					_bars[i].visible = true;
+				else
+					_bars[i].visible = false;
+			}
 		}
+	}
+
+	override public function screenCenter()
+	{
+		scaleX = _defaultScale;
+		scaleY = _defaultScale;
+
+		x = (0.5 * (Lib.current.stage.stageWidth - width) - FlxG.game.x);
 	}
 }

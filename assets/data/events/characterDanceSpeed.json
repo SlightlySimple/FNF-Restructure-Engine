@@ -1,19 +1,19 @@
 {
+	"icon": "eventIconCharacter",
 	"parameters":
 	[
 		{
 			"id": "id",
 			"label": "Character",
-			"type": "string",
-			"defaultValue": ""
-		},
-		{
-			"type": "label",
-			"label": "Character can be \"player1,\" \"player2,\" etc. for however many characters are in the chart, and can also be \"gf\""
+			"infoText": "Which character to affect.",
+			"type": "dropdown",
+			"defaultValue": "player1",
+			"options": ["!players"]
 		},
 		{
 			"id": "speed",
 			"label": "Speed",
+			"infoText": "How many beats there should be between each idle animation. For example, if set to 2, the character will only attempt to idle every other beat.",
 			"type": "stepper",
 			"defaultValue": 1,
 			"min": 0,
@@ -24,6 +24,7 @@
 		{
 			"id": "init",
 			"label": "Trigger at Start",
+			"infoText": "If checked, this event will trigger when the song first loads in instead of triggering where it's placed in the song.",
 			"type": "checkbox",
 			"defaultValue": false
 		}

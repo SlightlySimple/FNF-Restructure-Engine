@@ -2,75 +2,21 @@ package data;
 
 import data.ObjectData;
 import objects.Note;
+import helpers.Cloner;
 import haxe.ds.ArraySort;
 import flixel.util.FlxStringUtil;
 import lime.app.Application;
+import menus.FreeplayMenuSubState;
 
 using StringTools;
-
-typedef NoteData =
-{
-	var strumTime:Float;
-	var sustainLength:Float;
-	var column:Int;
-	var type:String;
-}
-
-typedef SectionData =
-{
-	var ?copyLast:Null<Bool>;
-	var sectionNotes:Array<Array<Dynamic>>;
-	var lengthInSteps:Null<Int>;
-	var ?firstStep:Null<Int>;
-	var ?lastStep:Null<Int>;
-	var ?mustHitSection:Null<Bool>;
-	var ?camOn:Null<Int>;
-	var ?scrollSpeeds:Array<Array<Float>>;
-
-	var ?defaultNoteP1:Dynamic;
-	var ?defaultNoteP2:Dynamic;
-
-	var ?bpm:Float;
-	var ?changeBPM:Bool;
-	var ?altAnim:Bool;
-}
-
-typedef EventData =
-{
-	var ?time:Null<Float>;
-	var ?beat:Null<Float>;
-	var ?type:String;
-	var ?typeShort:String;
-	var ?parameters:Dynamic;
-}
-
-typedef EventParams =
-{
-	var ?id:String;
-	var label:String;
-	var type:String;
-	var ?time:String;
-	var defaultValue:Dynamic;
-	var options:Array<String>;
-	var min:Float;
-	var max:Float;
-	var increment:Float;
-	var decimals:Int;
-}
-
-typedef SongMusicData =
-{
-	var pause:String;
-	var gameOver:String;
-	var gameOverEnd:String;
-	var results:String;
-	var resultsEnd:String;
-}
 
 typedef SongData =
 {
 	var song:String;
-	var ?artist:String;
+	var artist:String;
+	var charter:String;
+	var preview:Array<Float>;
+	var ratings:Array<Int>;
 	var ?useBeats:Bool;
 	var ?useMustHit:Null<Bool>;
 	var ?skipCountdown:Null<Bool>;
@@ -81,6 +27,7 @@ typedef SongData =
 	var ?scrollSpeeds:Array<Array<Float>>;
 	var ?altSpeedCalc:Null<Bool>;
 	var ?eventFile:String;
+	var ?columns:Array<SongColumnData>;
 	var ?columnDivisions:Array<Int>;
 	var ?columnDivisionNames:Array<String>;
 	var ?allNotetypes:Array<String>;
@@ -104,8 +51,91 @@ typedef SongData =
 	var ?music:SongMusicData;
 }
 
+typedef SongMusicData =
+{
+	var pause:String;
+	var gameOver:String;
+	var gameOverEnd:String;
+	var results:String;
+}
+
+typedef SongColumnData =
+{
+	var division:Int;
+	var ?singer:Int;
+	var ?anim:String;
+	var ?missAnim:String;
+}
+
+typedef SectionData =
+{
+	var ?copyLast:Null<Bool>;
+	var sectionNotes:Array<Array<Dynamic>>;
+	var lengthInSteps:Null<Int>;
+	var ?firstStep:Null<Int>;
+	var ?lastStep:Null<Int>;
+	var ?mustHitSection:Null<Bool>;
+	var ?camOn:Null<Int>;
+	var ?scrollSpeeds:Array<Array<Float>>;
+	var ?beatMultiplier:Null<Int>;
+
+	var ?defaultNotetypes:Array<Dynamic>;
+	var ?defaultNoteP1:Dynamic;
+	var ?defaultNoteP2:Dynamic;
+
+	var ?bpm:Float;
+	var ?changeBPM:Bool;
+	var ?altAnim:Bool;
+}
+
+typedef EventData =
+{
+	var ?time:Null<Float>;
+	var ?beat:Null<Float>;
+	var ?type:String;
+	var ?typeShort:String;
+	var ?parameters:Dynamic;
+}
+
+typedef NoteData =
+{
+	var strumTime:Float;
+	var sustainLength:Float;
+	var column:Int;
+	var type:String;
+}
+
+typedef EventTypeData =
+{
+	var icon:String;
+	var parameters:Array<EventParams>;
+}
+
+typedef EventParams =
+{
+	var ?id:String;
+	var label:String;
+	var infoText:String;
+	var type:String;
+	var ?time:String;
+	var defaultValue:Dynamic;
+	var options:Array<String>;
+	var min:Float;
+	var max:Float;
+	var increment:Float;
+	var decimals:Int;
+}
+
+typedef SongQuickInfo =
+{
+	var bpmRange:Array<Float>;
+	var ratings:Array<Int>;
+}
+
 class Song
 {
+	public static var defaultSingAnimations:Array<String> = ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
+
 	public static function sortEvents(a:EventData, b:EventData):Int
 	{
 		if (a.beat < b.beat)
@@ -182,8 +212,9 @@ class Song
 				return Lang.get(data.song);
 		}
 
-		if (Lang.getNoHash(id) != id)
-			return Lang.getNoHash(id);
+		var hash:String = "#song." + id.replace("/", ".");
+		if (Lang.get(hash) != hash)
+			return Lang.get(hash);
 
 		if (data != null)
 			return data.song;
@@ -196,8 +227,9 @@ class Song
 		if (data.song.startsWith("#"))
 			return Lang.get(data.song);
 
-		if (Lang.getNoHash(id) != id)
-			return Lang.getNoHash(id);
+		var hash:String = "#song." + id.replace("/", ".");
+		if (Lang.get(hash) != hash)
+			return Lang.get(hash);
 
 		return data.song;
 	}
@@ -251,6 +283,110 @@ class Song
 		return [];
 	}
 
+	public static function getSongQuickInfo(id:String, difficulty:String):SongQuickInfo
+	{
+		var filename:String = chartPath(id, difficulty);
+
+		var data:SongData = null;
+		if (Paths.jsonExists(filename))
+			data = cast Paths.json(filename).song;
+
+		if (data != null)
+		{
+			var quickInfo:SongQuickInfo = {bpmRange: [], ratings: [0, 0]};
+			if (data.ratings != null)
+				quickInfo.ratings = data.ratings;
+			if (data.bpmMap != null)
+			{
+				var bpmMin:Float = -1;
+				var bpmMax:Float = -1;
+				for (bpm in data.bpmMap)
+				{
+					if (bpmMin == -1 || bpm[1] < bpmMin)
+						bpmMin = bpm[1];
+					if (bpmMax == -1 || bpm[1] > bpmMax)
+						bpmMax = bpm[1];
+				}
+				quickInfo.bpmRange = [bpmMin, bpmMax];
+			}
+			else if (data.bpm != null)
+			{
+				var bpmMin:Float = data.bpm;
+				var bpmMax:Float = data.bpm;
+				for (section in data.notes)
+				{
+					if (section.bpm != null && section.changeBPM)
+					{
+						if (section.bpm < bpmMin)
+							bpmMin = section.bpm;
+						if (section.bpm > bpmMax)
+							bpmMax = section.bpm;
+					}
+				}
+				quickInfo.bpmRange = [bpmMin, bpmMax];
+			}
+
+			return quickInfo;
+		}
+
+		return null;
+	}
+
+	public static function getFreeplayTrackFromSong(id:String, ?difficulty:String = "normal"):FreeplayTrack
+	{
+		var ret:FreeplayTrack = {name: "Inst", timings: [], start: -1, end: -1};
+
+		var filename:String = chartPath(id, difficulty);
+
+		var data:SongData = null;
+		if (Paths.jsonExists(filename))
+			data = cast Paths.json(filename).song;
+
+		if (data != null)
+		{
+			if (data.tracks != null && data.tracks.length > 0)
+				ret.name = data.tracks[0][0];
+
+			if (data.bpmMap != null && data.bpmMap.length > 0)
+				ret.timings = data.bpmMap;
+			else if (data.bpm != null)
+				ret.timings = [[0, data.bpm]];
+
+			var songTimingStruct:TimingStruct = new TimingStruct();
+			songTimingStruct.recalculateTimings(ret.timings);
+
+			var preview:Array<Float> = [0, 32];
+			if (data.preview != null)
+				preview = data.preview;
+			else
+			{
+				var i:Int = 0;
+				var steps:Float = 0;
+				for (s in data.notes)
+				{
+					if (s.sectionNotes.length > 0)
+						break;
+					i++;
+					if (s.lengthInSteps != null)
+						steps += s.lengthInSteps;
+					else
+						steps += 16;
+				}
+
+				preview[0] += steps / 4;
+				preview[1] += steps / 4;
+			}
+
+			ret.start = songTimingStruct.timeFromBeat(Math.min(preview[0], preview[1]));
+			ret.end = songTimingStruct.timeFromBeat(Math.max(preview[0], preview[1]));
+		}
+
+		ret.name = Paths.song(id, ret.name);
+		return ret;
+	}
+
+
+
 	public static function loadSongDirect(filename:String, ?deleteOutsideNotes:Bool = true, ?shouldCorrectEvents:Bool = true, ?shouldParse:Bool = true):SongData
 	{
 		// Generate a base chart so the game doesn't just crash if it can't find the file
@@ -258,6 +394,9 @@ class Song
 		{
 			song: filename,
 			artist: "",
+			charter: "",
+			preview: [0, 32],
+			ratings: [0, 0],
 			eventFile: "_events",
 			bpmMap: [[0, 120]],
 			scrollSpeeds: [[0, 1]],
@@ -265,7 +404,7 @@ class Song
 			player2: TitleState.defaultVariables.player2,
 			player3: TitleState.defaultVariables.gf,
 			stage: TitleState.defaultVariables.stage,
-			tracks: [["Inst", 0], ["Voices", 1]],
+			tracks: [["Inst", 0, 0], ["Voices", 1, 0]],
 			notes: [{mustHitSection: false, lengthInSteps: 16, sectionNotes: []}]
 		}
 		if ( Paths.jsonExists(filename) )
@@ -331,6 +470,12 @@ class Song
 		if (retSong.artist == null || retSong.artist == "")
 			retSong.artist = baseData.artist;
 
+		if (retSong.charter == null || retSong.charter == "")
+			retSong.charter = baseData.charter;
+
+		if (retSong.preview == null || retSong.preview.length < 2)
+			retSong.preview = baseData.preview;
+
 		if (retSong.skipCountdown == null)
 			retSong.skipCountdown = baseData.skipCountdown;
 
@@ -372,14 +517,11 @@ class Song
 		if (retSong.noteType == null || retSong.noteType.length < 1)
 			retSong.noteType = baseData.noteType;
 
-		if (retSong.columnDivisions == null)
-			retSong.columnDivisions = baseData.columnDivisions;
+		if (retSong.columns == null)
+			retSong.columns = baseData.columns;
 
 		if (retSong.columnDivisionNames == null)
 			retSong.columnDivisionNames = baseData.columnDivisionNames;
-
-		if (retSong.singerColumns == null)
-			retSong.singerColumns = baseData.singerColumns;
 
 		if (retSong.bpmMap == null || retSong.bpmMap.length == 0)
 			retSong.bpmMap = baseData.bpmMap;
@@ -417,6 +559,15 @@ class Song
 
 		if (retSong.artist == null)
 			retSong.artist = "";
+
+		if (retSong.charter == null)
+			retSong.charter = "";
+
+		if (retSong.preview == null)
+			retSong.preview = [];
+
+		if (retSong.ratings == null)
+			retSong.ratings = [0, 0];
 
 		if (retSong.skipCountdown == null)
 			retSong.skipCountdown = false;
@@ -461,7 +612,7 @@ class Song
 			retSong.notetypeOverridesCam = true;
 
 		if (retSong.music == null)
-			retSong.music = { pause: "", gameOver: "", gameOverEnd: "", results: "", resultsEnd: "" };
+			retSong.music = { pause: "", gameOver: "", gameOverEnd: "", results: "" };
 
 		if (retSong.characterPrefix != "" || retSong.characterSuffix != "")
 		{
@@ -495,24 +646,35 @@ class Song
 
 		if (retSong.tracks == null)
 		{
-			retSong.tracks = [["Inst", 0]];
+			retSong.tracks = [["Inst", 0, 0]];
 			if (retSong.needsVoices)
-				retSong.tracks.push(["Voices", 1]);
+				retSong.tracks.push(["Voices", 1, 0]);
 		}
+
+		for (t in retSong.tracks)
+		{
+			if (t.length == 2)
+				t.push(0);
+		}
+
+		if (retSong.tracks[0][2] != 0)
+			retSong.tracks[0][2] = 0;
 
 		if (retSong.useMustHit == null)
 			retSong.useMustHit = true;
 
 		retSong = correctDivisions(retSong);
 
-		var columns:Int = retSong.columnDivisions.length;
-
-		if (retSong.singerColumns == null)
-			retSong.singerColumns = [];
-		while (retSong.singerColumns.length < columns)
-			retSong.singerColumns.push(retSong.columnDivisions[retSong.singerColumns.length]);
-		if (retSong.singerColumns.length > columns)
-			retSong.singerColumns.resize(columns);
+		var columns:Int = retSong.columns.length;
+		for (i in 0...retSong.columns.length)
+		{
+			if (retSong.columns[i].singer == null)
+				retSong.columns[i].singer = retSong.columns[i].division;
+			if (retSong.columns[i].anim == null)
+				retSong.columns[i].anim = defaultSingAnimations[i % defaultSingAnimations.length];
+			if (retSong.columns[i].missAnim == null)
+				retSong.columns[i].missAnim = retSong.columns[i].anim + "miss";
+		}
 
 		if (retSong.bpmMap == null || retSong.bpmMap.length == 0)
 		{
@@ -569,6 +731,8 @@ class Song
 							b.push(aa);
 						retSong.notes[i].sectionNotes.push(b);
 					}
+					if (retSong.notes[c].beatMultiplier != null)
+						retSong.notes[i].beatMultiplier = retSong.notes[c].beatMultiplier;
 					Reflect.deleteField(retSong.notes[i], "copyLast");
 				}
 			}
@@ -577,6 +741,25 @@ class Song
 		retSong = timeSections(retSong);
 		if (retSong.useBeats)
 			retSong = convertBeats(retSong, songTimingStruct);
+
+		if (retSong.preview.length < 2)
+		{
+			var i:Int = 0;
+			var steps:Float = 0;
+			for (s in retSong.notes)
+			{
+				if (s.sectionNotes.length > 0)
+					break;
+				i++;
+				if (s.lengthInSteps != null)
+					steps += s.lengthInSteps;
+				else
+					steps += 16;
+			}
+
+			retSong.preview[0] = steps / 4;
+			retSong.preview[1] = retSong.preview[0] + 32;
+		}
 
 		if (retSong.scrollSpeeds == null || retSong.scrollSpeeds.length == 0)
 		{
@@ -601,19 +784,40 @@ class Song
 		var quickNotes:Array<Array<Float>> = [];
 		for (s in retSong.notes)
 		{
+			if (s.defaultNotetypes == null)
+			{
+				s.defaultNotetypes = [];
+
+				var uniqueDivisions:Array<Int> = [];
+				for (i in retSong.columns)
+				{
+					if (!uniqueDivisions.contains(i.division))
+						uniqueDivisions.push(i.division);
+				}
+
+				for (i in 0...uniqueDivisions.length)
+					s.defaultNotetypes.push("");
+
+				if (s.defaultNoteP1 != null)
+					s.defaultNotetypes[0] = s.defaultNoteP1;
+
+				if (s.defaultNoteP2 != null && s.defaultNotetypes.length > 1)
+					s.defaultNotetypes[1] = s.defaultNoteP2;
+			}
+
 			if (s.altAnim)
 			{
-				if (s.defaultNoteP2 == null || s.defaultNoteP2 == "")
-					s.defaultNoteP2 = "altAnimation";
+				if (s.defaultNotetypes.length > 1 && s.defaultNotetypes[1] == "")
+					s.defaultNotetypes[1] = "altAnimation";
 			}
 
 			if (retSong.allNotetypes != null)
 			{
-				if (Std.isOfType(s.defaultNoteP1, Int))
-					s.defaultNoteP1 = retSong.allNotetypes[Std.int(s.defaultNoteP1-1)];
-
-				if (Std.isOfType(s.defaultNoteP2, Int))
-					s.defaultNoteP2 = retSong.allNotetypes[Std.int(s.defaultNoteP2-1)];
+				for (i in 0...s.defaultNotetypes.length)
+				{
+					if (Std.isOfType(s.defaultNotetypes[i], Int))
+						s.defaultNotetypes[i] = retSong.allNotetypes[Std.int(s.defaultNotetypes[i] - 1)];
+				}
 			}
 
 			var poppers:Array<Array<Dynamic>> = [];
@@ -646,7 +850,7 @@ class Song
 						n.pop();
 				}
 
-				if (n[1] < 0 || (n[1] >= retSong.columnDivisions.length && deleteOutsideNotes))
+				if (n[1] < 0 || (n[1] >= retSong.columns.length && deleteOutsideNotes))
 					poppers.push(n);
 
 				for (quickNote in quickNotes)
@@ -667,30 +871,40 @@ class Song
 
 	public static function correctDivisions(data:SongData):SongData
 	{
-		if (data.columnDivisions == null)
+		if (data.columns == null)
 		{
-			data.columnDivisions = [];
-			var columns:Int = 8;
-
-			while (data.columnDivisions.length < columns)
+			data.columns = [];
+			if (data.columnDivisions == null)
 			{
-				if (data.columnDivisions.length >= columns / 2)
-					data.columnDivisions.push(0);
-				else
-					data.columnDivisions.push(1);
+				var columns:Int = 8;
+				while (data.columns.length < columns)
+				{
+					if (data.columns.length >= columns / 2)
+						data.columns.push({division: 0, singer: 0});
+					else
+						data.columns.push({division: 1, singer: 1});
+				}
 			}
-			if (data.columnDivisions.length > columns)
-				data.columnDivisions.resize(columns);
+			else
+			{
+				for (i in 0...data.columnDivisions.length)
+				{
+					var c:SongColumnData = {division: data.columnDivisions[i]};
+					if (data.singerColumns != null && data.singerColumns.length > i)
+						c.singer = data.singerColumns[i];
+					data.columns.push(c);
+				}
+			}
 		}
 
 		if (data.columnDivisionNames == null)
-			data.columnDivisionNames = ["#fpSandboxSide0", "#fpSandboxSide1"];
+			data.columnDivisionNames = ["#freeplay.sandbox.side.0", "#freeplay.sandbox.side.1"];
 
 		var uniqueDivisions:Array<Int> = [];
-		for (i in data.columnDivisions)
+		for (i in data.columns)
 		{
-			if (!uniqueDivisions.contains(i))
-				uniqueDivisions.push(i);
+			if (!uniqueDivisions.contains(i.division))
+				uniqueDivisions.push(i.division);
 		}
 
 		if (data.columnDivisionNames.length < uniqueDivisions.length)
@@ -700,6 +914,14 @@ class Song
 		}
 		if (data.columnDivisionNames.length > uniqueDivisions.length)
 			data.columnDivisionNames.resize(uniqueDivisions.length);
+
+		if (data.ratings == null)
+			data.ratings = [];
+		if (data.ratings.length < uniqueDivisions.length)
+		{
+			while (data.ratings.length < uniqueDivisions.length)
+				data.ratings.push(0);
+		}
 
 		return data;
 	}
@@ -721,7 +943,7 @@ class Song
 			{
 				if (e[1] < eventData.length && eventData[Std.int(e[1])].type != null)
 				{
-					var newEvent:EventData = Reflect.copy(eventData[Std.int(e[1])]);
+					var newEvent:EventData = Cloner.clone(eventData[Std.int(e[1])]);
 					newEvent.beat = e[0];
 					eventList.push(newEvent);
 				}
@@ -819,12 +1041,15 @@ class Song
 	{
 		for (s in chart.notes)
 		{
+			var beatMultiplier:Int = 1;
+			if (s.beatMultiplier != null)
+				beatMultiplier = s.beatMultiplier;
 			for (n in s.sectionNotes)
 			{
 				if (n.length < 3)
 					n[2] = 0;
-				n[2] = timing.timeFromBeat((s.firstStep / 4.0) + n[0] + n[2]) - timing.timeFromBeat((s.firstStep / 4.0) + n[0]);
-				n[0] = timing.timeFromBeat((s.firstStep / 4.0) + n[0]);
+				n[2] = timing.timeFromBeat((s.firstStep / 4.0) + (n[0] / beatMultiplier) + (n[2] / beatMultiplier)) - timing.timeFromBeat((s.firstStep / 4.0) + (n[0] / beatMultiplier));
+				n[0] = timing.timeFromBeat((s.firstStep / 4.0) + (n[0]) / beatMultiplier);
 			}
 		}
 
@@ -844,10 +1069,10 @@ class Song
 				{
 					if (sec.mustHitSection)
 					{
-						if (note[1] % chart.columnDivisions.length >= chart.columnDivisions.length / 2)
-							note[1] -= chart.columnDivisions.length / 2;
+						if (note[1] % chart.columns.length >= chart.columns.length / 2)
+							note[1] -= chart.columns.length / 2;
 						else
-							note[1] += chart.columnDivisions.length / 2;
+							note[1] += chart.columns.length / 2;
 					}
 				}
 				allStarts.push([note[0], note[1]]);
@@ -904,6 +1129,8 @@ class Song
 		return chart;
 	}
 
+
+
 	public static function calcChartInfo(chart:SongData, ?chartSide:Int = 0):String
 	{
 		var allNotes:Array<Float> = [];
@@ -917,34 +1144,29 @@ class Song
 		var songLength:Float = 0;
 
 		var validColumns:Array<Int> = [];
-		for (i in 0...chart.columnDivisions.length)
+		for (i in 0...chart.columns.length)
 		{
-			if (chart.columnDivisions[i] == chartSide)
+			if (chart.columns[i].division == chartSide)
 				validColumns.push(i);
 		}
 		var numKeys:Int = validColumns.length;
 
 		for (s in chart.notes)
 		{
-			if (s.defaultNoteP1 != null && s.defaultNoteP1 != "" && !types.contains(s.defaultNoteP1))
+			if (s.defaultNotetypes != null)
 			{
-				types.push(s.defaultNoteP1);
-				if (Paths.jsonExists("notetypes/" + s.defaultNoteP1))
+				for (t in s.defaultNotetypes)
 				{
-					var typeData:NoteTypeData = cast Paths.json("notetypes/" + s.defaultNoteP1);
-					if (typeData.p1ShouldMiss)
-						mineTypes.push(s.defaultNoteP1);
-				}
-			}
-
-			if (s.defaultNoteP2 != null && s.defaultNoteP2 != "" && !types.contains(s.defaultNoteP2))
-			{
-				types.push(s.defaultNoteP2);
-				if (Paths.jsonExists("notetypes/" + s.defaultNoteP2))
-				{
-					var typeData:NoteTypeData = cast Paths.json("notetypes/" + s.defaultNoteP2);
-					if (typeData.p1ShouldMiss)
-						mineTypes.push(s.defaultNoteP2);
+					if (t != "" && !types.contains(t))
+					{
+						types.push(t);
+						if (Paths.jsonExists("notetypes/" + t))
+						{
+							var typeData:NoteTypeData = cast Paths.json("notetypes/" + t);
+							if (typeData.p1ShouldMiss)
+								mineTypes.push(t);
+						}
+					}
 				}
 			}
 
@@ -970,10 +1192,10 @@ class Song
 				var column:Int = n[1];
 				if (s.mustHitSection)
 				{
-					if (column >= Std.int(chart.columnDivisions.length / 2))
-						column -= Std.int(chart.columnDivisions.length / 2);
+					if (column >= Std.int(chart.columns.length / 2))
+						column -= Std.int(chart.columns.length / 2);
 					else
-						column += Std.int(chart.columnDivisions.length / 2);
+						column += Std.int(chart.columns.length / 2);
 				}
 
 				var type:String = "";
@@ -983,15 +1205,10 @@ class Song
 						type = n[3];
 					if (type == "")
 					{
-						if (column >= Std.int(chart.columnDivisions.length / 2))
+						if (s.defaultNotetypes != null)
 						{
-							if (s.defaultNoteP1 != null && s.defaultNoteP1 != "")
-								type = s.defaultNoteP1;
-						}
-						else
-						{
-							if (s.defaultNoteP2 != null && s.defaultNoteP2 != "")
-								type = s.defaultNoteP2;
+							if (s.defaultNotetypes[chart.columns[column].division] != "")
+								type = s.defaultNotetypes[chart.columns[column].division];
 						}
 					}
 				}
@@ -1035,14 +1252,124 @@ class Song
 			}
 		}
 
-		return (numKeys == 4 ? "" : Lang.get("#fpKeys", [Std.string(numKeys)]) + "\n")
-		+ Lang.get("#fpSongLength", [FlxStringUtil.formatTime((songLength - songStart) / 1000.0)]) + "\n"
-		+ Lang.get("#fpSongNotes", [Std.string(noteCombos[0])]) + "\n"
-		+ (noteCombos[1] > 0 ? Lang.get("#fpSongDoubles", [Std.string(noteCombos[1])]) + "\n" : "")
-		+ (noteCombos[2] > 0 ? Lang.get("#fpSongTriples", [Std.string(noteCombos[2])]) + "\n" : "")
-		+ (noteCombos[3] > 0 ? Lang.get("#fpSongQuads", [Std.string(noteCombos[3])]) + "\n" : "")
-		+ Lang.get("#fpSongSustains", [Std.string(holds)]) + "\n"
-		+ (rolls > 0 ? Lang.get("#fpSongRolls", [Std.string(rolls)]) + "\n" : "")
-		+ (mines > 0 ? Lang.get("#fpSongMines", [Std.string(mines)]) + "\n" : "");
+		return (numKeys == 4 ? "" : Lang.get("#freeplay.songInfo.numKeys", [Std.string(numKeys)]) + "\n")
+		+ Lang.get("#freeplay.songInfo.length", [FlxStringUtil.formatTime((songLength - songStart) / 1000.0)]) + "\n"
+		+ Lang.get("#freeplay.songInfo.notes", [Std.string(noteCombos[0])]) + "\n"
+		+ (noteCombos[1] > 0 ? Lang.get("#freeplay.songInfo.noteCombos.1", [Std.string(noteCombos[1])]) + "\n" : "")
+		+ (noteCombos[2] > 0 ? Lang.get("#freeplay.songInfo.noteCombos.2", [Std.string(noteCombos[2])]) + "\n" : "")
+		+ (noteCombos[3] > 0 ? Lang.get("#freeplay.songInfo.noteCombos.3", [Std.string(noteCombos[3])]) + "\n" : "")
+		+ Lang.get("#freeplay.songInfo.sustains", [Std.string(holds)]) + "\n"
+		+ (rolls > 0 ? Lang.get("#freeplay.songInfo.rolls", [Std.string(rolls)]) + "\n" : "")
+		+ (mines > 0 ? Lang.get("#freeplay.songInfo.mines", [Std.string(mines)]) + "\n" : "");
+	}
+
+	public static function calcChartRatings(song:SongData, notes:Array<Array<Dynamic>>):Array<Int>
+	{
+		var ret:Array<Int> = [];
+		var divisions:Array<Array<Int>> = [];
+
+		for (d in song.columns)
+		{
+			while (divisions.length <= d.division)
+				divisions.push([]);
+			divisions[d.division].push(song.columns.indexOf(d));
+		}
+
+		var i:Int = 0;
+		for (division in divisions)
+		{
+			var start:Float = -1;
+			var end:Float = -1;
+
+			for (n in notes)
+			{
+				if ((start == -1 || n[0] < start) && division.contains(n[1]))
+					start = n[0];
+
+				if ((end == -1 || n[0] > end) && division.contains(n[1]))
+					end = n[0];
+			}
+
+			if (start > -1 && end > -1)
+			{
+				var npsList:Array<Float> = [];
+				var ind:Float = start;
+				var sustain:Float = 1;
+				var lastVal:Float = 0;
+				while (ind < end)
+				{
+					var nList:Array<Int> = [];
+					var leftHand:Array<Int> = [];
+					var rightHand:Array<Int> = [];
+					for (n in notes)
+					{
+						if (n[0] >= ind && n[0] < ind + 1000 && division.contains(n[1]))
+						{
+							nList.push(1);
+							if (division.indexOf(n[1]) >= Math.floor(division.length / 2))
+								rightHand.push(1);
+							else
+								leftHand.push(1);
+						}
+					}
+					var handBias:Float = 0;
+					if (nList.length > 0)
+					{
+						var handMin:Float = Math.min(leftHand.length, rightHand.length);
+						var handMax:Float = Math.max(leftHand.length, rightHand.length);
+						handBias = handMin / handMax;
+						handBias = 1 - handBias;
+					}
+					if (lastVal > 0 && nList.length >= lastVal - 2)
+						sustain *= 1.025;
+					else
+						sustain = 1;
+					lastVal = nList.length;
+					npsList.push(nList.length * sustain * ((handBias / 2) + 1));
+					ind += 1000;
+				}
+
+				var npsMin:Float = -1;
+				var npsMax:Float = -1;
+				for (n in npsList)
+				{
+					if (n > 0)
+					{
+						if (npsMin == -1 || n < npsMin)
+							npsMin = n;
+						if (npsMax == -1 || n > npsMax)
+							npsMax = n;
+					}
+				}
+
+				var diff:Float = 0;
+				var div:Float = 0;
+				for (n in npsList)
+				{
+					if (n > 0)
+						div++;
+					diff += biasEquation(n, npsMin, npsMax);
+				}
+				if (div > 0)
+				{
+					diff /= div;
+					diff = Math.round(diff);
+				}
+
+				ret.push(Std.int(diff));
+			}
+			else
+				ret.push(0);
+			i++;
+		}
+
+		return ret;
+	}
+
+	static function biasEquation(val:Float, min:Float, max:Float):Float
+	{
+		var ret:Float = ((val - min) / (max - min));
+		ret = 1 - ((1 - ret) * (1 - ret));
+		return (ret * (max - min)) + min;
 	}
 }

@@ -2,10 +2,12 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.math.FlxMath;
+import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
@@ -13,8 +15,14 @@ import haxe.ds.ArraySort;
 import sys.FileSystem;
 import sys.io.File;
 
+import newui.UIControl;
+import newui.Button;
+import newui.ScrollBar;
+
 import lime.graphics.Image;
 import openfl.display.BitmapData;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 
 using StringTools;
 
@@ -51,7 +59,6 @@ class PackageBoxart extends FlxSprite
 		this.id = id;
 		this.packageId = packageId;
 		this._package = _package;
-		antialiasing = true;
 
 		if (packageId == "")
 			loadGraphic(Paths.image("package/boxart"));
@@ -62,7 +69,6 @@ class PackageBoxart extends FlxSprite
 			makeGraphic(160, 240, FlxColor.GRAY);
 			text = new FlxText(0, 0, 150, _package.name);
 			text.setFormat("VCR OSD Mono", 18, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-			text.antialiasing = true;
 		}
 
 		setGraphicSize(160, 240);
@@ -72,6 +78,8 @@ class PackageBoxart extends FlxSprite
 
 	override public function update(elapsed:Float)
 	{
+		if (cameras[0].alpha < 0.9) return;
+
 		super.update(elapsed);
 
 		if (FlxG.mouse.overlaps(this) && !hover)
@@ -88,8 +96,12 @@ class PackageBoxart extends FlxSprite
 			FlxTween.tween(offset, {y: yoffset}, 0.15, {ease: FlxEase.sineOut});
 		}
 
-		if (hover && FlxG.mouse.justPressed && PackagesState.instance != null)
-			PackagesState.instance.openPreview(packageId);
+		if (hover)
+		{
+			UIControl.cursor = MouseCursor.BUTTON;
+			if (FlxG.mouse.justPressed && PackagesState.instance != null)
+				PackagesState.instance.openPreview(packageId);
+		}
 	}
 
 	override public function draw()
@@ -99,42 +111,9 @@ class PackageBoxart extends FlxSprite
 		{
 			text.x = x + 5;
 			text.y = y + ((height-text.height)/2) - offset.y;
+			text.cameras = cameras;
 			text.draw();
 		}
-	}
-}
-
-class PackagesUIButton extends FlxSprite
-{
-	var text:FlxText;
-	var action:Void->Void;
-
-	public override function new(x:Float, y:Float, w:Int, h:Int, label:String, action:Void->Void)
-	{
-		super(x, y);
-		makeGraphic(w, h, FlxColor.LIME);
-		this.action = action;
-
-		text = new FlxText(x, y, w, label);
-		text.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-		text.antialiasing = true;
-	}
-
-	override public function update(elapsed:Float)
-	{
-		super.update(elapsed);
-
-		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(this))
-			action();
-	}
-
-	override public function draw()
-	{
-		super.draw();
-
-		text.x = x;
-		text.y = y + ((height-text.height)/2);
-		text.draw();
 	}
 }
 
@@ -190,24 +169,37 @@ class PackagesState extends MusicBeatState
 	var packageId:String;
 
 	var selectionGroup:FlxTypedSpriteGroup<PackageBoxart>;
-	var scrollBack:FlxSprite;
-	var scrollCursor:FlxSprite;
-	var scrolling:Bool = false;
+	var scrollBar:ScrollBar;
 	var maxY:Float = 0;
+
+	var cam1:FlxCamera;
+	var cam2:FlxCamera;
 
 	var previewGroup:FlxSpriteGroup;
 	var banner:FlxSprite;
 	var logo:FlxSprite;
 	var title:FlxText;
 	var desc:FlxText;
-	var playButton:PackagesUIButton;
-	var shortcutButton:PackagesUIButton;
-	var backButton:PackagesUIButton;
+	var descScrollBar:ScrollBar;
+	var descY:Float = 0;
+	var playButton:TextButton;
+	var shortcutButton:TextButton;
+	var backButton:TextButton;
 
 	override public function create()
 	{
 		super.create();
 		instance = this;
+
+		cam1 = new FlxCamera();
+		cam1.bgColor = FlxColor.TRANSPARENT;
+		cam1.zoom = 0.6;
+		cam1.alpha = 0;
+		FlxG.cameras.add(cam1, false);
+
+		cam2 = new FlxCamera();
+		cam2.bgColor = FlxColor.TRANSPARENT;
+		FlxG.cameras.add(cam2, false);
 
 		packages = getPackages();
 		packages.unshift("");
@@ -241,6 +233,7 @@ class PackagesState extends MusicBeatState
 		FlxG.mouse.visible = true;
 
 		selectionGroup = new FlxTypedSpriteGroup<PackageBoxart>();
+		selectionGroup.cameras = [cam2];
 		add(selectionGroup);
 
 		var i:Int = 0;
@@ -255,35 +248,34 @@ class PackagesState extends MusicBeatState
 
 		maxY -= FlxG.height;
 
-		scrollBack = new FlxSprite(FlxG.width - 40, 50).makeGraphic(20, FlxG.height - 100, FlxColor.GRAY);
+		scrollBar = new ScrollBar(FlxG.width - 40, 50, FlxG.height - 100);
+		scrollBar.onChanged = function() {
+			selectionGroup.y = scrollBar.scroll * -maxY;
+		}
+		scrollBar.cameras = [cam2];
 		if (maxY > 0)
-			add(scrollBack);
-
-		scrollCursor = new FlxSprite(FlxG.width - 40, 50).makeGraphic(20, 50, FlxColor.WHITE);
-		if (maxY > 0)
-			add(scrollCursor);
-
-		previewGroup = new FlxSpriteGroup();
+			add(scrollBar);
 
 		banner = new FlxSprite();
-		banner.antialiasing = true;
-		previewGroup.add(banner);
+		banner.cameras = [cam1];
+		add(banner);
 
 		logo = new FlxSprite();
-		logo.antialiasing = true;
-		previewGroup.add(logo);
+		logo.cameras = [cam1];
+		add(logo);
 
-		title = new FlxText();
-		title.setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-		title.antialiasing = true;
-		previewGroup.add(title);
+		title = new FlxText().setFormat("VCR OSD Mono", 64, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		title.cameras = [cam1];
+		add(title);
 
-		desc = new FlxText(20, 0, FlxG.width - 40, "");
-		desc.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
-		desc.antialiasing = true;
-		previewGroup.add(desc);
+		desc = new FlxText(50, 0, FlxG.width - 100, "").setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		desc.cameras = [cam1];
+		add(desc);
 
-		playButton = new PackagesUIButton(50, 0, 150, 30, "Play", function() {
+		previewGroup = new FlxSpriteGroup();
+		previewGroup.cameras = [cam1];
+
+		playButton = new TextButton(50, 0, "Play", function() {
 			FlxG.mouse.visible = false;
 			done = true;
 			if (this.packageId != "")
@@ -297,7 +289,7 @@ class PackagesState extends MusicBeatState
 		});
 		previewGroup.add(playButton);
 
-		shortcutButton = new PackagesUIButton((FlxG.width - 300) / 2, 0, 300, 30, "Make Desktop Shortcut", function() {
+		shortcutButton = new TextButton(0, 0, "Make Desktop Shortcut", Button.LONG, function() {
 			if (this.packageId != "")
 			{
 				if (FileSystem.exists("packages/" + packageId + "/icon.ico"))
@@ -306,36 +298,41 @@ class PackagesState extends MusicBeatState
 					Sys.command("powershell",["$s=(New-Object -COM WScript.Shell).CreateShortcut('"+Sys.getCwd()+"\\"+packageId+".lnk');$s.TargetPath='"+Sys.programPath()+"';$s.WorkingDirectory='"+Sys.getCwd()+"';$s.Arguments='-package "+packageId+"';$s.Save()"]);
 			}
 		});
+		shortcutButton.screenCenter(X);
 		previewGroup.add(shortcutButton);
 
-		backButton = new PackagesUIButton(FlxG.width - 200, 0, 150, 30, "Back", function() {
+		backButton = new TextButton(FlxG.width - 50, 0, "Back", function() {
 			remove(previewGroup, true);
-			add(selectionGroup);
-			scrollBack.visible = true;
-			scrollCursor.visible = true;
+			backButton.button.animation.play("idle");
+			backButton.hovered = false;
+			scrollBar.visible = true;
+
+			FlxTween.tween(cam1, {zoom: 0.6, alpha: 0}, 0.5, {ease: FlxEase.expoOut});
+			FlxTween.tween(cam2, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.expoOut});
+			FlxG.sound.play(Paths.sound("ui/editors/exitWindow"), 0.5);
 		});
+		backButton.x -= backButton.width;
 		previewGroup.add(backButton);
+
+		descScrollBar = new ScrollBar(FlxG.width - 40, playButton.height + 20, FlxG.height - 400);
+		descScrollBar.onChanged = function() {
+			if (descScrollBar.visible)
+			{
+				desc.y = descY - (descScrollBar.scroll * (desc.height - descScrollBar.height));
+				desc.clipRect = new FlxRect(0, descScrollBar.scroll * (desc.height - descScrollBar.height), desc.width, descScrollBar.height);
+			}
+		}
+		previewGroup.add(descScrollBar);
 	}
 
 	public override function update(elapsed:Float)
 	{
+		UIControl.cursor = MouseCursor.ARROW;
+
 		super.update(elapsed);
 
-		if (members.contains(selectionGroup) && maxY > 0)
-		{
-			if (scrolling)
-			{
-				scrollCursor.y = Math.max(scrollBack.y, Math.min(scrollBack.y + scrollBack.height - scrollCursor.height, FlxG.mouse.y - (scrollCursor.height / 2)));
-				selectionGroup.y = FlxMath.remapToRange(scrollCursor.y, scrollBack.y, scrollBack.y + scrollBack.height - scrollCursor.height, 0, -maxY);
-				if (FlxG.mouse.justReleased)
-					scrolling = false;
-			}
-			else
-			{
-				if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(scrollBack))
-					scrolling = true;
-			}
-		}
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
 	}
 
 	public function openPreview(packageId:String)
@@ -343,9 +340,7 @@ class PackagesState extends MusicBeatState
 		if (packageMap.exists(packageId))
 		{
 			this.packageId = packageId;
-			remove(selectionGroup, true);
-			scrollBack.visible = false;
-			scrollCursor.visible = false;
+			scrollBar.visible = false;
 			add(previewGroup);
 
 			var _package:ModPackage = packageMap[packageId];
@@ -380,12 +375,21 @@ class PackagesState extends MusicBeatState
 			logo.updateHitbox();
 			logo.screenCenter(X);
 
-			playButton.y = banner.height + 50;
-			shortcutButton.y = playButton.y;
-			backButton.y = playButton.y;
+			previewGroup.y = banner.height + 50;
 
 			desc.text = _package.description;
 			desc.y = playButton.y + playButton.height + 20;
+			descY = desc.y;
+			descScrollBar.visible = (desc.text.trim() != "" && desc.height > descScrollBar.height);
+			descScrollBar.scroll = 0;
+			if (descScrollBar.visible)
+				desc.clipRect = new FlxRect(0, descScrollBar.scroll * (desc.height - descScrollBar.height), desc.width, descScrollBar.height);
+			else
+				desc.clipRect = null;
+
+			FlxTween.tween(cam2, {zoom: 1.5, alpha: 0}, 0.5, {ease: FlxEase.expoOut});
+			FlxTween.tween(cam1, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.expoOut});
+			FlxG.sound.play(Paths.sound("ui/editors/openWindow"), 0.5);
 		}
 	}
 }

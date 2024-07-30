@@ -1,0 +1,67 @@
+function onEvent(event)
+{
+	var val = analyzeValue(event.parameters.value);
+	if (event.parameters.variable.indexOf(".") > 0)
+	{
+		var varSplit = event.parameters.variable.split(".");
+		var affect = game;
+
+		for (i in 0...varSplit.length - 1)
+		{
+			if (varSplit[i].indexOf("[") > -1)
+			{
+				affect = Reflect.getProperty(affect, varSplit[i].split("[")[0]);
+				affect = affect[analyzeArrayValue(varSplit[i].split("[")[1].split("]")[0])];
+			}
+			else
+				affect = Reflect.getProperty(affect, varSplit[i]);
+		}
+
+		applyProperty(affect, varSplit[varSplit.length - 1], val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+	}
+	else
+		applyProperty(game, event.parameters.variable, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+}
+
+function analyzeValue(val)
+{
+	if (Std.parseFloat(val) != null && !Math.isNaN(Std.parseFloat(val)))
+		return Std.parseFloat(val);
+
+	if (val == "true")
+		return true;
+
+	if (val == "false")
+		return false;
+
+	return val;
+}
+
+function analyzeArrayValue(val)
+{
+	if (Std.parseInt(val) != null && !Math.isNaN(Std.parseInt(val)))
+		return Std.parseInt(val);
+
+	if (StringTools.startsWith(val, "\"") && StringTools.endsWith(val, "\""))
+		return val.substr(1, val.length - 2);
+
+	return val;
+}
+
+function applyProperty(base, property, value, operation, time, ease)
+{
+	if (Reflect.getProperty(base, property) != null)
+	{
+		var prev = Reflect.getProperty(base, property);
+		var final = value;
+		switch (operation)
+		{
+			case "add": final = prev + value;
+			case "multiply": final = prev * value;
+			case "divide": final = prev / value;
+		}
+		var tweenStruct = {};
+		Reflect.setProperty(tweenStruct, property, final);
+		FlxTween.tween(base, tweenStruct, time, {ease: ease});
+	}
+}

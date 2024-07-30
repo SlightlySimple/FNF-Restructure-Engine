@@ -9,9 +9,13 @@ class SMFile
 	public var title:String;
 	public var artist:String;
 	public var ogg:String;
+	public var bpmMap:Array<Array<Float>>;
+	public var previewStart:Float;
+	public var previewLength:Float;
 
 	public var songData:Array<SongData> = [];
 	public var difficulties:Array<String> = [];
+	public var quickInfo:Map<String, SongQuickInfo> = new Map<String, SongQuickInfo>();
 
 	public function new()
 	{
@@ -25,16 +29,26 @@ class SMFile
 		newSM.title = fileData.split("#TITLE:")[1].split(";")[0];
 		newSM.artist = fileData.split("#ARTIST:")[1].split(";")[0];
 		newSM.ogg = fileData.split("#MUSIC:")[1].split(";")[0];
+		newSM.previewStart = Std.parseFloat(fileData.split("#SAMPLESTART:")[1].split(";")[0]);
+		newSM.previewLength = Std.parseFloat(fileData.split("#SAMPLELENGTH:")[1].split(";")[0]);
 
 		var bpmList:String = fileData.split("#BPMS:")[1].split(";")[0];
 		bpmList = bpmList.replace("\r","").replace("\n","").replace("\t","").replace(" ","");
 		var bpmArray:Array<String> = bpmList.split(",");
 		var bpmMap:Array<Array<Float>> = [];
+		var bpmMin:Float = -1;
+		var bpmMax:Float = -1;
 		for (bpm in bpmArray)
 		{
 			var bpmSplit:Array<String> = bpm.split("=");
 			bpmMap.push([Std.parseFloat(bpmSplit[0]), Std.parseFloat(bpmSplit[1])]);
+			if (bpmMin == -1 || Std.parseFloat(bpmSplit[1]) < bpmMin)
+				bpmMin = Std.parseFloat(bpmSplit[1]);
+			if (bpmMax == -1 || Std.parseFloat(bpmSplit[1]) > bpmMax)
+				bpmMax = Std.parseFloat(bpmSplit[1]);
 		}
+		bpmMin = Math.round(bpmMin * 1000) / 1000;
+		bpmMax = Math.round(bpmMax * 1000) / 1000;
 
 		var smTimingStruct:TimingStruct = new TimingStruct();
 		smTimingStruct.recalculateTimings(bpmMap);
@@ -65,6 +79,7 @@ class SMFile
 			}
 		}
 		smTimingStruct.recalculateTimings(bpmMap);
+		newSM.bpmMap = bpmMap;
 
 		var offset:Float = Std.parseFloat(fileData.split("#OFFSET:")[1].split(";")[0]) * 1000;
 
@@ -91,6 +106,9 @@ class SMFile
 			{
 				song: newSM.title,
 				artist: newSM.artist,
+				charter: "",
+				preview: [0, 32],
+				ratings: [0, 0],
 				bpm: bpmMap[0][1],
 				bpmMap: bpmMap,
 				speed: scrollSpeeds[0][1],
@@ -108,28 +126,32 @@ class SMFile
 			}
 
 			var notes:Array<String> = noteLists[_n].split(";")[0].replace("\r","").split("\n");
-			var chartType:Int = 0;
+			var chartType:String = "";
 			var diff:String = "";
 			var editDiff:String = "";
 			for (i in 0...5)
 			{
-				if (i == 2)
-					editDiff = notes[0].replace(" ","").replace("\t","").replace(":","").toLowerCase();
-				if (i == 3)
-					diff = notes[0].replace(" ","").replace("\t","").replace(":","").toLowerCase();
-				if (notes[0].indexOf("dance-double") > -1)
-					chartType = 1;
+				switch (i)
+				{
+					case 1: chartType = notes[0].replace(" ","").replace("\t","").replace(":","").toLowerCase();
+					case 2: editDiff = notes[0].replace(" ","").replace("\t","").replace(":","").toLowerCase();
+					case 3: diff = notes[0].replace(" ","").replace("\t","").replace(":","").toLowerCase();
+					case 4:
+						var songRating:Int = Std.parseInt(notes[0].replace(" ","").replace("\t","").replace(":",""));
+						if (!Math.isNaN(songRating))
+							thisSongData.ratings = [songRating, songRating];
+				}
 				notes.shift();
 			}
 			if (diff == "edit")
 				diff = editDiff;
-			if (chartType == 1)
+			if (chartType == "dance-double")
 			{
 				thisSongData.player2 = TitleState.defaultVariables.player2;
 				diff += "-double";
 			}
 			else
-				thisSongData.columnDivisions = [0,0,0,0];
+				thisSongData.columns = [{division: 0, singer: 0}, {division: 0, singer: 0}, {division: 0, singer: 0}, {division: 0, singer: 0}];
 			newSM.difficulties.push(diff);
 
 			if (!notes[0].startsWith("0") && !notes[0].startsWith("1") && !notes[0].startsWith("2") && !notes[0].startsWith("4") && !notes[0].startsWith("M"))
@@ -150,7 +172,7 @@ class SMFile
 						sections.push(newSection);
 						newSection = [];
 					}
-					else if (chartType == 1)
+					else if (chartType == "dance-double")
 						newSection.push(n.substr(0,8));
 					else
 						newSection.push(n.substr(0,4));
@@ -160,7 +182,7 @@ class SMFile
 
 			var holdStarts:Array<Array<Array<Dynamic>>> = [[],[],[],[]];
 			var holdEnds:Array<Array<Float>> = [[],[],[],[]];
-			if (chartType == 1)
+			if (chartType == "dance-double")
 			{
 				holdStarts = [[],[],[],[],[],[],[],[]];
 				holdEnds = [[],[],[],[],[],[],[],[]];
@@ -233,6 +255,15 @@ class SMFile
 			{
 				var baseData:SongData = cast Paths.jsonDirect("sm/" + pathArray.join("/") + "/_data");
 
+				if (baseData.speed != null)
+				{
+					for (s in thisSongData.scrollSpeeds)
+						s[1] *= baseData.speed;
+				}
+
+				if (baseData.scrollSpeeds != null)
+					thisSongData.scrollSpeeds = baseData.scrollSpeeds;
+
 				if (baseData.player1 != null)
 					thisSongData.player1 = baseData.player1;
 
@@ -258,6 +289,8 @@ class SMFile
 				thisSongData.events = Song.correctEvents(thisSongData.events, smTimingStruct);
 			}
 
+			newSM.quickInfo[diff] = {bpmRange: [bpmMin, bpmMax], ratings: thisSongData.ratings};
+
 			if (shouldParse)
 				newSM.songData.push(Song.parseSongData(thisSongData, true, true));
 			else
@@ -269,12 +302,17 @@ class SMFile
 
 	static public function save(data:SongData, notes:Array<Array<Dynamic>>):String
 	{
+		var smTimingStruct:TimingStruct = new TimingStruct();
+		smTimingStruct.recalculateTimings(data.bpmMap);
+		var previewStart:Float = smTimingStruct.timeFromBeat(data.preview[0]);
+		var previewLength:Float = smTimingStruct.timeFromBeat(data.preview[1]) - previewStart;
+
 		var fileData:String = "";
 		fileData += "#TITLE:" + data.song + ";\n";
 		fileData += "#SUBTITLE:;\n#ARTIST:" + (data.artist == null ? "" : data.artist) + ";\n#TITLETRANSLIT:;\n#SUBTITLETRANSLIT:;\n#ARTISTTRANSLIT:;\n#GENRE:;\n#CREDIT:;\n";
 		fileData += "#MUSIC:" + data.song.toLowerCase().replace(" ","-") + ".ogg;\n";
-		fileData += "#BANNER:;\n#BACKGROUND:;\n#CDTITLE:;\n#SAMPLESTART:0.000;\n#SAMPLELENGTH:0.000;\n#SELECTABLE:YES;\n";
-		fileData += "#OFFSET:" + Std.string( data.offset / 1000.0 ) + ";\n";
+		fileData += "#BANNER:;\n#BACKGROUND:;\n#CDTITLE:;\n#SAMPLESTART:" + Std.string(previewStart / 1000.0) + ";\n#SAMPLELENGTH:" + Std.string(previewLength / 1000.0) + ";\n#SELECTABLE:YES;\n";
+		fileData += "#OFFSET:" + Std.string(data.offset / 1000.0) + ";\n";
 		fileData += "#BPMS:";
 		for (i in 0...data.bpmMap.length)
 		{
@@ -285,8 +323,6 @@ class SMFile
 		fileData += ";\n";
 		fileData += "#STOPS:;\n#BGCHANGES:;\n#FGCHANGES:;\n";
 
-		var smTimingStruct:TimingStruct = new TimingStruct();
-		smTimingStruct.recalculateTimings(data.bpmMap);
 		var quickNotes:Array<Array<Dynamic>> = [];
 
 		var allStarts:Array<Array<Float>> = [];
@@ -354,10 +390,10 @@ class SMFile
 		var diffIndex:Int = diffs.length - 1;
 
 		var uniqueDivisions:Array<Int> = [];
-		for (i in data.columnDivisions)
+		for (i in data.columns)
 		{
-			if (!uniqueDivisions.contains(i))
-				uniqueDivisions.push(i);
+			if (!uniqueDivisions.contains(i.division))
+				uniqueDivisions.push(i.division);
 		}
 		uniqueDivisions.sort((a, b) -> a - b);
 
@@ -368,9 +404,9 @@ class SMFile
 				if (diffIndex >= 0)
 				{
 					var chartDiv:Array<Int> = [];
-					for (i in 0...data.columnDivisions.length)
+					for (i in 0...data.columns.length)
 					{
-						if (data.columnDivisions[i] == d)
+						if (data.columns[i].division == d)
 							chartDiv.push(i);
 					}
 
@@ -386,7 +422,7 @@ class SMFile
 		}
 
 		var chartDiv:Array<Int> = [];
-		for (i in 0...data.columnDivisions.length)
+		for (i in 0...data.columns.length)
 			chartDiv.push(i);
 
 		if (chartTypes.length >= chartDiv.length && chartTypes[chartDiv.length-1] != "")

@@ -68,6 +68,14 @@ class HealthIcon extends FlxSprite
 		}
 	}
 
+	public function clearStack()
+	{
+		for (s in stack)
+			s.sprite.destroy();
+
+		stack = [];
+	}
+
 	public function reloadIcon(char:String, ?isSwap:Bool = false)
 	{
 		if (isSwap)
@@ -75,6 +83,9 @@ class HealthIcon extends FlxSprite
 
 		if (char == id)
 			return;
+
+		if (stack.length > 0)
+			clearStack();
 
 		id = char;
 		var iconDir:String = "icons/" + char;

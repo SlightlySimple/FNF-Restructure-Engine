@@ -1,0 +1,9 @@
+!setting	fadeTimes	2	1
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	senpai
+!setting	flip
+senpai	normal	Ah, a new fair maiden has come in search of true love!
+senpai	normal	A serenade between gentlemen shall decide where her beautiful heart shall reside.
+!setting	flip
+bf-pixel	normal	Beep bo bop

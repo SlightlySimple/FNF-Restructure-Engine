@@ -1,0 +1,38 @@
+function create()
+{
+	abot = new Character(this.charX, this.charY, "abot");
+	abot.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abot);
+
+	game.hscriptAdd(scriptId + "-abot", "data/" + abot.characterData.script, false, abot);
+	game.hscriptIdExec(scriptId + "-abot", "create");
+}
+
+function update(elapsed)
+{
+	abot.visible = this.visible;
+	abot.repositionCharacter(this.charX, this.charY);
+	abot.color = this.color;
+
+	if (game.health > 25)
+	{
+		if (this.curAnimName == "raiseKnife" && this.curAnimFinished)
+		{
+			this.canDance = true;
+			this.playAnim("lowerKnife", true, true);
+			this.lastIdle = 0;
+		}
+	}
+}
+
+function beatHit()
+{
+	if (game.health <= 25)
+	{
+		if (StringTools.startsWith(this.curAnimName, "dance"))
+		{
+			this.canDance = false;
+			this.playAnim("raiseKnife");
+		}
+	}
+}

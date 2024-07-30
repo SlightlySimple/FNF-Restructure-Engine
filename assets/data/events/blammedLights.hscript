@@ -3,6 +3,7 @@ lightColor = "blue";
 allColors = ["blue", "green", "pink", "red", "orange"];
 allColorIndexes = [0xFF31A2FD, 0xFF31FD8C, 0xFFF794F7, 0xFFF96D63, 0xFFFBA633];
 allWindows = [];
+exceptions = [];
 
 function create()
 {
@@ -44,7 +45,7 @@ function onEvent(event)
 		else
 		{
 			game.forEachAlive(function(m) {
-				if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m))
+				if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m) && !exceptions.contains(m))
 					FlxTween.color(m, 1, FlxColor.WHITE, FlxColor.BLACK, { ease: FlxEase.quadInOut } );
 			});
 
@@ -58,12 +59,16 @@ function onEvent(event)
 			w.visible = false;
 
 		if (colorIndex < allWindows.length)
+		{
 			allWindows[colorIndex].visible = true;
+			FlxTween.cancelTweensOf(allWindows[colorIndex], ["alpha"]);
+			allWindows[colorIndex].alpha = 1;
+		}
 	}
 	else if (lightsOn)
 	{
 		game.forEachAlive(function(m) {
-			if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m))
+			if (m.cameras != null && m.cameras.contains(FlxG.camera) && !chars.contains(m) && !allWindows.contains(m) && !exceptions.contains(m))
 				FlxTween.color(m, 1, FlxColor.BLACK, FlxColor.WHITE, { ease: FlxEase.quadInOut } );
 		});
 
@@ -71,5 +76,9 @@ function onEvent(event)
 			FlxTween.color(c, 1, c.color, FlxColor.WHITE, { ease: FlxEase.quadInOut } );
 
 		lightsOn = false;
+
+		var colorIndex = allColors.indexOf(lightColor);
+		if (colorIndex < allWindows.length)
+			FlxTween.tween(allWindows[colorIndex], {alpha: 0}, Conductor.beatSeconds * 4);
 	}
 }

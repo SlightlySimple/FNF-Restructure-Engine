@@ -1,0 +1,1 @@
+{"asset":"ui/story/characters/Parents_Christmas","position":[-205,-195],"scale":[0.5,0.5],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Parents Christmas Dance","name":"idle"}]}

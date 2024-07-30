@@ -1,0 +1,39 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay)
+		game.canStartCountdown = false;
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		var blackScreen = new FlxSprite(-200, -200).makeGraphic(Std.int(FlxG.width * 2), Std.int(FlxG.height * 2), FlxColor.BLACK);
+		add(blackScreen);
+		blackScreen.scrollFactor.set();
+		game.camHUD.visible = false;
+
+		new FlxTimer().start(0.1, function(tmr)
+		{
+			remove(blackScreen);
+			PlaySound('week5/Lights_Turn_On');
+			game.camFollow.x = 540;
+			game.camFollow.y = -2050;
+			game.snapCamera();
+			FlxG.camera.zoom = 1.5;
+
+			new FlxTimer().start(0.8, function(tmr)
+			{
+				game.camHUD.visible = true;
+				FlxTween.tween(FlxG.camera, {zoom: game.camZoom}, 2.5, {
+					ease: FlxEase.quadInOut,
+					onComplete: function(twn:FlxTween)
+					{
+						game.canStartCountdown = true;
+						game.startCountdown();
+					}
+				});
+			});
+		});
+	}
+}

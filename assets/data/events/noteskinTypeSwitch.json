@@ -4,22 +4,20 @@
 		{
 			"id": "type",
 			"label": "New Noteskin Type",
+			"infoText": "The name of the new noteskin type.",
 			"type": "string",
 			"defaultValue": "default"
 		},
 		{
 			"id": "strumline",
 			"label": "Strumline",
+			"infoText": "Which strumline to apply the noteskin type to. Set to -1 to affect every strumline.",
 			"type": "stepper",
 			"defaultValue": -1,
 			"min": -1,
 			"max": 9999,
 			"increment": 1,
 			"decimals": 0
-		},
-		{
-			"type": "label",
-			"label": "Set strumline to -1 to affect every strumline"
 		}
 	]
 }

@@ -1,0 +1,23 @@
+function create()
+{
+	if (PlayState.difficulty != "erect" && PlayState.difficulty != "nightmare")
+	{
+		game.hscriptRemove(scriptId);
+		return;
+	}
+
+	if (PlayState.inStoryMode)
+		game.canEndSong = false;
+	game.hscriptAdd("cutscene");
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		game.hscriptIdExec("cutscene", "initCutscene", ["cutscene"]);
+		game.camHUD.alpha = 1;
+		FlxTween.tween(game.camHUD, {alpha: 0}, 1);
+		game.hscriptIdExec("cutscene", "startCutscene", []);
+	}
+}

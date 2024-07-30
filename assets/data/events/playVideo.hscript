@@ -1,10 +1,18 @@
 function create()
 {
 	video = new MP4Handler();
-	videoSprite = new FlxSprite().loadGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-	videoSprite.cameras = [game.camOther];
-	videoSprite.alpha = 0.001;
-	game.add(videoSprite);
+
+	vsHUD = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+	vsHUD.cameras = [game.camBehindHUD];
+	vsHUD.alpha = 0.001;
+	add(vsHUD);
+
+	vsOther = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+	vsOther.cameras = [game.camOther];
+	vsOther.alpha = 0.001;
+	insert(game.members.indexOf(game.subtitleGroup), vsOther);
+	videoSprite = vsOther;
+
 	videoStartTime = 0;
 
 	var vids = [];
@@ -29,8 +37,11 @@ function onEndVideo()
 
 function onEvent(event)
 {
+	videoSprite = (event.parameters.behindHUD ? vsHUD : vsOther);
+
 	videoSprite.alpha = 1;
 	videoStartTime = event.time;
+	video.volume = event.parameters.volume;
 	video.playMP4(Paths.video(event.parameters.video), onEndVideo, videoSprite);
 }
 

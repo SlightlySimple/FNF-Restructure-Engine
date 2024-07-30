@@ -4,6 +4,9 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
+import flixel.util.FlxColor;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 
 import sys.FileSystem;
 import sys.io.File;
@@ -11,21 +14,23 @@ import haxe.Json;
 
 import lime.app.Application;
 
-import funkui.TabMenu;
-import funkui.Checkbox;
-import funkui.DropdownMenu;
-import funkui.InputText;
-import funkui.Label;
-import funkui.TextButton;
-import funkui.Stepper;
 import data.Options;
 import editors.CharacterEditorState;
 import editors.ChartEditorState;
 import editors.StageEditorState;
 import editors.StoryCharacterEditorState;
 import editors.WeekEditorState;
+import menus.UINavigation;
 import game.PlayState;
 import scripting.HscriptState;
+
+import newui.UIControl;
+import newui.PopupWindow;
+import newui.Checkbox;
+import newui.DropdownMenu;
+import newui.InputText;
+import newui.Label;
+import newui.Button;
 
 using StringTools;
 
@@ -38,17 +43,19 @@ class EditorMenuState extends MusicBeatState
 	var menuButtonText:Array<String> = ["Restructure Engine Wiki", "Chart Editor", "Character Editor", "Stage Editor", "Week Editor", "Story Character Editor"];
 	#end
 	var customEditors:Array<String> = [];
-	var curButton:Int = -1;
+	var curButton(default, set):Int = 0;
 
-	var inMenu:Bool = false;
-	var tabMenu:IsolatedTabMenu;
+	var nav:UINumeralNavigation;
 
 	override public function create()
 	{
 		super.create();
 
-		if (FlxG.sound.music.playing)
-			FlxG.sound.music.stop();
+		Main.fpsOnRight = false;
+		Application.current.window.title = Main.windowTitle;
+
+		if (!FlxG.sound.music.playing)
+			FlxG.sound.playMusic(Paths.music("editors/" + Options.options.editorMusic), 0.4);
 
 		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[6]));
 		bg.color = MainMenuState.menuColors[6];
@@ -65,72 +72,93 @@ class EditorMenuState extends MusicBeatState
 		var yStart:Int = Std.int((FlxG.height - (menuButtonText.length * 40)) / 2);
 		for (i in 0...menuButtonText.length)
 		{
-			var textButton:FlxText = new FlxText(0, yStart + (i * 40), 0, Lang.get(menuButtonText[i]), 36);
-			textButton.font = "VCR OSD Mono";
-			textButton.alignment = CENTER;
+			var textButton:FlxText = new FlxText(0, yStart + (i * 40), 0, Lang.get(menuButtonText[i]));
+			textButton.setFormat("FNF Dialogue", 36, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+			textButton.borderSize = 2;
 			textButton.screenCenter(X);
 			add(textButton);
 			menuButtons.push(textButton);
 		}
+
+		nav = new UINumeralNavigation(null, scrollCurButton, function() {
+			switch (menuButtonText[curButton].toLowerCase())
+			{
+				case "create new mod": createNewMod();
+				case "create new package": createNewPackage();
+				case "restructure engine wiki": FlxG.openURL("https://github.com/SlightlySimple/FNF-Restructure-Engine/wiki");
+				case "chart editor": prepareChartEditor();
+				case "character editor": prepareCharacterEditor();
+				case "stage editor": prepareStageEditor();
+				case "week editor": prepareWeekEditor();
+				case "story character editor": prepareStoryCharacterEditor();
+				default:
+					for (e in customEditors)
+					{
+						if (e.split("|")[1].toLowerCase() == menuButtonText[curButton].toLowerCase())
+							FlxG.switchState(new HscriptEditorState(true, "", "", "data/editors/" + e.split("|")[0]));
+					}
+			}
+		}, function() {
+			FlxG.mouse.visible = false;
+			FlxG.sound.music.fadeOut(0.5, 0, function(twn) { FlxG.sound.music.stop(); });
+			FlxG.switchState(new MainMenuState());
+		}, scrollCurButton);
+		nav.leftClick = nav.accept;
+		nav.rightClick = nav.back;
+		nav.uiSounds = [false, false, false];
+		add(nav);
 
 		FlxG.mouse.visible = true;
 	}
 
 	override public function update(elapsed:Float)
 	{
-		if (!inMenu)
+		UIControl.cursor = MouseCursor.ARROW;
+		if (!nav.locked)
 		{
 			if (FlxG.mouse.justMoved)
 			{
-				curButton = -1;
 				for (i in 0...menuButtons.length)
 				{
 					if (FlxG.mouse.overlaps(menuButtons[i]))
 					{
-						if (menuButtons[i].text == menuButtonText[i])
-						{
-							menuButtons[i].text = "> " + Lang.get(menuButtonText[i]) + " <";
-							menuButtons[i].screenCenter(X);
-						}
 						curButton = i;
+						UIControl.cursor = MouseCursor.BUTTON;
 					}
-					else if (menuButtons[i].text != menuButtonText[i])
-					{
-						menuButtons[i].text = Lang.get(menuButtonText[i]);
-						menuButtons[i].screenCenter(X);
-					}
-				}
-			}
-
-			if (Options.mouseJustPressed() && menuButtonText[curButton].trim() != "")
-			{
-				switch (menuButtonText[curButton].toLowerCase())
-				{
-					case "create new mod": inMenu = true; createNewMod();
-					case "create new package": inMenu = true; createNewPackage();
-					case "restructure engine wiki": FlxG.openURL("https://github.com/SlightlySimple/FNF-Restructure-Engine/wiki");
-					case "chart editor": inMenu = true; prepareChartEditor();
-					case "character editor": inMenu = true; prepareCharacterEditor();
-					case "stage editor": inMenu = true; prepareStageEditor();
-					case "week editor": inMenu = true; prepareWeekEditor();
-					case "story character editor": inMenu = true; prepareStoryCharacterEditor();
-					default:
-						for (e in customEditors)
-						{
-							if (e.split("|")[1].toLowerCase() == menuButtonText[curButton].toLowerCase())
-								FlxG.switchState(new HscriptState("data/editors/" + e.split("|")[0]));
-						}
 				}
 			}
 		}
 
 		super.update(elapsed);
 
-		if (Options.keyJustPressed("ui_back"))
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
+	}
+
+	function set_curButton(val:Int):Int
+	{
+		for (i in 0...menuButtons.length)
 		{
-			FlxG.mouse.visible = false;
-			FlxG.switchState(new MainMenuState());
+			if (i == val)
+			{
+				if (menuButtons[i].text == menuButtonText[i])
+				{
+					menuButtons[i].text = "> " + Lang.get(menuButtonText[i]) + " <";
+					menuButtons[i].screenCenter(X);
+				}
+			}
+			else if (menuButtons[i].text != menuButtonText[i])
+			{
+				menuButtons[i].text = Lang.get(menuButtonText[i]);
+				menuButtons[i].screenCenter(X);
+			}
 		}
+		return curButton = val;
+	}
+
+	function scrollCurButton(?val:Int = 0)
+	{
+		curButton = Util.loop(curButton + val, 0, menuButtonText.length - 1);
 	}
 
 	function createNewMod()
@@ -148,33 +176,30 @@ class EditorMenuState extends MusicBeatState
 		validChars.push("-");
 		validChars.push("_");
 
-		tabMenu = new IsolatedTabMenu(0, 0, 400, 200);
-		tabMenu.screenCenter();
-		add(tabMenu);
 
-		var tabGroup:TabGroup = new TabGroup();
 
-		var modNameInput:InputText = new InputText(10, 20, 380);
-		tabGroup.add(modNameInput);
-		var modNameLabel:Label = new Label("Mod Name:", modNameInput);
-		tabGroup.add(modNameLabel);
+		var window:PopupWindow = null;
+		var vbox:VBox = new VBox(35, 35);
 
-		var modDescInput:InputText = new InputText(10, modNameInput.y + 40, 380);
-		tabGroup.add(modDescInput);
-		var modDescLabel:Label = new Label("Mod Description:", modDescInput);
-		tabGroup.add(modDescLabel);
+		var modNameInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Mod Name:"));
+		vbox.add(modNameInput);
 
-		var createDirs:DropdownMenu = new DropdownMenu(100, modDescInput.y + 40, 200, 20, "Simplified", ["None", "Simplified", "Extended"]);
-		tabGroup.add(createDirs);
-		var createDirsLabel:Label = new Label("Create Asset Folders", createDirs);
-		tabGroup.add(createDirsLabel);
+		var modDescInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Mod Description:"));
+		vbox.add(modDescInput);
 
-		var subDirInput:InputText = new InputText(10, createDirs.y + 40, 380);
-		tabGroup.add(subDirInput);
-		var subDirLabel:Label = new Label("Subfolder (Optional):", subDirInput);
-		tabGroup.add(subDirLabel);
+		var createDirs:DropdownMenu = new DropdownMenu(0, 0, "Simplified", ["None", "Simplified", "Extended"]);
+		vbox.add(new Label("Create Asset Folders:"));
+		vbox.add(createDirs);
 
-		var newModButton:TextButton = new TextButton(75, subDirInput.y + 30, 100, 20, "Create");
+		var subDirInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Asset Subfolder:"));
+		vbox.add(subDirInput);
+
+		var buttons:HBox = new HBox();
+
+		var newModButton:TextButton = new TextButton(0, 0, "Create");
 		newModButton.onClicked = function()
 		{
 			if (modNameInput.text.trim() != "")
@@ -197,7 +222,7 @@ class EditorMenuState extends MusicBeatState
 					{
 						var subdir:String = "";
 						if (subDirInput.text.trim() != "")
-							subdir = "/" + subDirInput.text.toLowerCase().replace(" ","-");
+							subdir = "/" + subDirInput.text.replace(" ","-");
 						dirs.push("/data");
 						dirs.push("/data/characters");
 						if (!dirs.contains("/data/characters"+subdir))
@@ -218,21 +243,28 @@ class EditorMenuState extends MusicBeatState
 						dirs.push("/images"+subdir+"/icons");
 						dirs.push("/images"+subdir+"/stages");
 						dirs.push("/images/ui");
-						dirs.push("/images/ui/weeks");
-						if (!dirs.contains("/images/ui/weeks"+subdir))
-							dirs.push("/images/ui/weeks"+subdir);
-						dirs.push("/songs");
-						if (!dirs.contains("/songs"+subdir))
-							dirs.push("/songs"+subdir);
+						dirs.push("/images/ui/story");
+						dirs.push("/images/ui/story/weeks");
+						if (!dirs.contains("/images/ui/story/weeks"+subdir))
+							dirs.push("/images/ui/story/weeks"+subdir);
+						dirs.push("/images/ui/freeplay");
+						dirs.push("/images/ui/freeplay/icons");
+						if (!dirs.contains("/images/ui/freeplay/icons"+subdir))
+							dirs.push("/images/ui/freeplay/icons"+subdir);
 						if (createDirs.valueInt == 2)
 						{
 							dirs.push("/data/autorun");
 							dirs.push("/data/events");
+							dirs.push("/data/lang");
 							dirs.push("/data/notetypes");
 							dirs.push("/data/scripts");
 							dirs.push("/data/story_characters");
-							dirs.push("/images/ui/difficulties");
-							dirs.push("/images/ui/story_characters");
+							dirs.push("/images/ui/story/difficulties");
+							dirs.push("/images/ui/story/characters");
+							dirs.push("/images/ui/freeplay/difficulties");
+							dirs.push("/songs");
+							if (!dirs.contains("/songs"+subdir))
+								dirs.push("/songs"+subdir);
 						}
 					}
 
@@ -249,22 +281,20 @@ class EditorMenuState extends MusicBeatState
 					var modMetaString:String = Json.stringify(modMeta, null, "\t");
 					File.saveContent("mods/" + modFolderName + "/_polymod_meta.json", modMetaString);
 
-					remove(tabMenu);
-					inMenu = false;
+					window.close();
 				}
 			}
-		};
-		tabGroup.add(newModButton);
+		}
+		buttons.add(newModButton);
 
-		var cancelButton:TextButton = new TextButton(newModButton.x + 150, newModButton.y, 100, 20, "Cancel");
-		cancelButton.onClicked = function()
-		{
-			remove(tabMenu);
-			inMenu = false;
-		};
-		tabGroup.add(cancelButton);
+		var cancelButton:TextButton = new TextButton(0, 0, "Cancel");
+		cancelButton.onClicked = function() { window.close(); }
+		buttons.add(cancelButton);
 
-		tabMenu.addGroup(tabGroup);
+		vbox.add(buttons);
+
+		window = new PopupWindow("popupBG", 30, Std.int(vbox.width + 70), Std.int(vbox.height + 70));
+		window.group.add(vbox);
 	}
 
 	function createNewPackage()
@@ -282,26 +312,26 @@ class EditorMenuState extends MusicBeatState
 		validChars.push("-");
 		validChars.push("_");
 
-		tabMenu = new IsolatedTabMenu(0, 0, 400, 300);
-		tabMenu.screenCenter();
-		add(tabMenu);
 
-		var tabGroup:TabGroup = new TabGroup();
 
-		var packageNameInput:InputText = new InputText(10, 20, 380);
-		tabGroup.add(packageNameInput);
-		tabGroup.add(new Label("Package Name:", packageNameInput));
+		var window:PopupWindow = null;
+		var vbox:VBox = new VBox(35, 35);
 
-		var packageDescInput:InputText = new InputText(10, packageNameInput.y + 40, 380);
-		tabGroup.add(packageDescInput);
-		tabGroup.add(new Label("Package Description:", packageDescInput));
+		var packageNameInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Package Name:"));
+		vbox.add(packageNameInput);
 
-		var packageWindowTitleInput:InputText = new InputText(10, packageDescInput.y + 40, 380);
-		tabGroup.add(packageWindowTitleInput);
-		tabGroup.add(new Label("Window Title (Optional):", packageWindowTitleInput));
+		var packageDescInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Package Description:"));
+		vbox.add(packageDescInput);
 
-		var packageModsInput:InputText = new InputText(10, packageWindowTitleInput.y + 40, 380);
-		tabGroup.add(packageModsInput);
+		var packageWindowTitleInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Window Title:"));
+		vbox.add(packageWindowTitleInput);
+
+		var packageModsInput:InputText = new InputText(0, 0);
+		vbox.add(new Label("Package Mods:"));
+		vbox.add(packageModsInput);
 
 		var modList:Array<String> = [];
 		for (file in FileSystem.readDirectory("mods"))
@@ -309,26 +339,27 @@ class EditorMenuState extends MusicBeatState
 			if (FileSystem.exists("mods/" + file + "/_polymod_meta.json"))
 				modList.push(file);
 		}
-		var packageModsDropdown:DropdownMenu = new DropdownMenu(100, packageModsInput.y + 30, 200, 20, modList[0], modList, true);
+		var packageModsDropdown:DropdownMenu = new DropdownMenu(0, 0, modList[0], modList, true);
 		packageModsDropdown.onChanged = function() {
 			if (packageModsInput.text.trim() == "")
 				packageModsInput.text = packageModsDropdown.value;
 			else
 				packageModsInput.text += "," + packageModsDropdown.value;
 		}
-		tabGroup.add(packageModsDropdown);
-		tabGroup.add(new Label("Package Mods:", packageModsInput));
+		vbox.add(packageModsDropdown);
 
-		var packageIncludeBase:Checkbox = new Checkbox(10, packageModsDropdown.y + 30, "Include Base", false);
-		tabGroup.add(packageIncludeBase);
+		var packageIncludeBase:Checkbox = new Checkbox(0, 0, "Include Base Game", false);
+		vbox.add(packageIncludeBase);
 
-		var packageAllowModTools:Checkbox = new Checkbox(packageIncludeBase.x + 190, packageIncludeBase.y, "Allow Mod Tools", false);
-		tabGroup.add(packageAllowModTools);
+		var packageAllowModTools:Checkbox = new Checkbox(0, 0, "Allow Access to Editors Menu", false);
+		vbox.add(packageAllowModTools);
 
-		var packageCreateMenuMod:Checkbox = new Checkbox(100, packageIncludeBase.y + 30, "Create Menu Mod", false);
-		tabGroup.add(packageCreateMenuMod);
+		var packageCreateMenuMod:Checkbox = new Checkbox(0, 0, "Create Menu Mod", false);
+		vbox.add(packageCreateMenuMod);
 
-		var newModButton:TextButton = new TextButton(75, packageCreateMenuMod.y + 30, 100, 20, "Create");
+		var buttons:HBox = new HBox();
+
+		var newModButton:TextButton = new TextButton(0, 0, "Create");
 		newModButton.onClicked = function()
 		{
 			if (packageNameInput.text.trim() != "")
@@ -388,336 +419,50 @@ class EditorMenuState extends MusicBeatState
 					var packageDataString:String = Json.stringify(packageData, null, "\t");
 					File.saveContent("packages/" + packageFolderName + "/data.json", packageDataString);
 
-					remove(tabMenu);
-					inMenu = false;
+					window.close();
 				}
 			}
-		};
-		tabGroup.add(newModButton);
+		}
+		buttons.add(newModButton);
 
-		var cancelButton:TextButton = new TextButton(newModButton.x + 150, newModButton.y, 100, 20, "Cancel");
-		cancelButton.onClicked = function()
-		{
-			remove(tabMenu);
-			inMenu = false;
-		};
-		tabGroup.add(cancelButton);
+		var cancelButton:TextButton = new TextButton(0, 0, "Cancel");
+		cancelButton.onClicked = function() { window.close(); }
+		buttons.add(cancelButton);
 
-		tabMenu.addGroup(tabGroup);
-	}
+		vbox.add(buttons);
 
-	function prepareEditorQuick(newClicked:Void->Void, loadClicked:Void->Void)
-	{
-		tabMenu = new IsolatedTabMenu(0, 0, 200, 100);
-		tabMenu.screenCenter();
-		add(tabMenu);
-
-		var tabGroup:TabGroup = new TabGroup();
-
-		var newButton:TextButton = new TextButton(10, 10, 180, 20, "New");
-		newButton.onClicked = newClicked;
-		tabGroup.add(newButton);
-
-		var loadButton:TextButton = new TextButton(10, newButton.y + 30, 180, 20, "Load");
-		loadButton.onClicked = loadClicked;
-		tabGroup.add(loadButton);
-
-		var cancelButton:TextButton = new TextButton(10, loadButton.y + 30, 180, 20, "Cancel");
-		cancelButton.onClicked = function()
-		{
-			remove(tabMenu);
-			inMenu = false;
-		};
-		tabGroup.add(cancelButton);
-
-		tabMenu.addGroup(tabGroup);
+		window = new PopupWindow("popupBG", 30, Std.int(vbox.width + 70), Std.int(vbox.height + 70));
+		window.group.add(vbox);
 	}
 
 	function prepareChartEditor()
 	{
-		var newClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.label = "Choose an audio track that you want to chart";
-			file.loadCallback = newChartCallback;
-			file.load("ogg");
-		};
-
-		var loadClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = loadChartCallback;
-			file.load("json;*.sm");
-		};
-
-		prepareEditorQuick(newClicked, loadClicked);
-	}
-
-	function newChartCallback(fullPath:String)
-	{
-		var songNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (songNameArray.indexOf("songs") == -1)
-			Application.current.window.alert("The file you have selected is not a song.", "Alert");
-		else
-		{
-			while (songNameArray[0] != "songs")
-				songNameArray.shift();
-			songNameArray.shift();
-			songNameArray.pop();
-
-			ChartEditorState.filename = "";
-			ChartEditorState.newChart = true;
-			ChartEditorState.songId = songNameArray.join("/");
-			FlxG.switchState(new ChartEditorState());
-		}
-	}
-
-	function loadChartCallback(fullPath:String)
-	{
-		var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (jsonNameArray.indexOf("songs") == -1 && jsonNameArray.indexOf("sm") == -1)
-			Application.current.window.alert("The file you have selected is not a chart.", "Alert");
-		else
-		{
-			if (jsonNameArray.indexOf("sm") != -1)
-			{
-				while (jsonNameArray[0] != "sm")
-					jsonNameArray.remove(jsonNameArray[0]);
-				jsonNameArray.remove(jsonNameArray[0]);
-
-				ChartEditorState.newChart = false;
-				ChartEditorState.songFile = jsonNameArray.join("/").split('.sm')[0];
-				ChartEditorState.songId = ChartEditorState.songFile;
-			}
-			else
-			{
-				while (jsonNameArray[0] != "songs")
-					jsonNameArray.remove(jsonNameArray[0]);
-				jsonNameArray.remove(jsonNameArray[0]);
-				var songIdArray:Array<String> = [];
-				for (j in 0...jsonNameArray.length-1)
-					songIdArray.push(jsonNameArray[j]);
-
-				ChartEditorState.newChart = false;
-				ChartEditorState.songId = songIdArray.join("/");
-				ChartEditorState.songFile = jsonNameArray.join("/").split('.json')[0];
-			}
-			ChartEditorState.filename = fullPath;
-			FlxG.switchState(new ChartEditorState());
-		}
+		ChartEditorState.isNew = true;
+		ChartEditorState.songId = "test";
+		FlxG.sound.music.fadeOut(0.5, 0, function(twn) { FlxG.sound.music.stop(); });
+		ChartEditorState.filename = "";
+		FlxG.switchState(new ChartEditorState());
 	}
 
 	function prepareCharacterEditor()
 	{
-		var newClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.label = "Choose a spritesheet or texture atlas for your character";
-			file.loadCallback = newCharacterCallback;
-			file.load("png");
-		};
-
-		var loadClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = loadCharacterCallback;
-			file.load();
-		};
-
-		prepareEditorQuick(newClicked, loadClicked);
-	}
-
-	function newCharacterCallback(fullPath:String)
-	{
-		var imageNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (imageNameArray.indexOf("images") == -1)
-			Application.current.window.alert("The file you have selected is not a valid asset.", "Alert");
-		else
-		{
-			while (imageNameArray[0] != "images")
-				imageNameArray.remove(imageNameArray[0]);
-			imageNameArray.remove(imageNameArray[0]);
-
-			var finalImageName = imageNameArray.join('/').split('.png')[0];
-
-			CharacterEditorState.newCharacter = true;
-			CharacterEditorState.newCharacterImage = finalImageName;
-			CharacterEditorState.curCharacter = "*";
-			FlxG.switchState(new CharacterEditorState());
-		}
-	}
-
-	public static function loadCharacterCallback(fullPath:String)
-	{
-		var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (jsonNameArray.indexOf("characters") == -1)
-			Application.current.window.alert("The file you have selected is not a character.", "Alert");
-		else
-		{
-			while (jsonNameArray[0] != "characters")
-				jsonNameArray.remove(jsonNameArray[0]);
-			jsonNameArray.remove(jsonNameArray[0]);
-
-			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
-
-			CharacterEditorState.newCharacter = false;
-			CharacterEditorState.curCharacter = finalJsonName;
-			FlxG.switchState(new CharacterEditorState());
-		}
+		CharacterEditorState.newCharacterImage = "characters/dad/daddyDearest";
+		FlxG.switchState(new CharacterEditorState(true, "", ""));
 	}
 
 	function prepareStageEditor()
 	{
-		var newClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.label = "Choose an image in the folder for your stage assets";
-			file.loadCallback = newStageCallback;
-			file.load("png");
-		};
-
-		var loadClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = loadStageCallback;
-			file.load();
-		};
-
-		prepareEditorQuick(newClicked, loadClicked);
-	}
-
-	function newStageCallback(fullPath:String)
-	{
-		var imageNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (imageNameArray.indexOf("stages") == -1)
-			Application.current.window.alert("The file you have selected is not a stage asset.", "Alert");
-		else
-		{
-			while (imageNameArray[0] != "images")
-				imageNameArray.remove(imageNameArray[0]);
-			imageNameArray.remove(imageNameArray[0]);
-			imageNameArray.remove("stages");
-			imageNameArray.pop();
-
-			StageEditorState.newStage = true;
-			StageEditorState.curStage = imageNameArray.join("/");
-			FlxG.switchState(new StageEditorState());
-		}
-	}
-
-	public static function loadStageCallback(fullPath:String)
-	{
-		var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (jsonNameArray.indexOf("stages") == -1)
-			Application.current.window.alert("The file you have selected is not a stage.", "Alert");
-		else
-		{
-			while (jsonNameArray[0] != "stages")
-				jsonNameArray.remove(jsonNameArray[0]);
-			jsonNameArray.remove(jsonNameArray[0]);
-
-			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
-
-			StageEditorState.newStage = false;
-			StageEditorState.curStage = finalJsonName;
-			FlxG.switchState(new StageEditorState());
-		}
+		FlxG.switchState(new StageEditorState(true, "", ""));
 	}
 
 	function prepareWeekEditor()
 	{
-		var newClicked = function()
-		{
-			WeekEditorState.newWeek = true;
-			WeekEditorState.curWeek = "*";
-			FlxG.switchState(new WeekEditorState());
-		};
-
-		var loadClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = loadWeekCallback;
-			file.load();
-		};
-
-		prepareEditorQuick(newClicked, loadClicked);
-	}
-
-	public static function loadWeekCallback(fullPath:String)
-	{
-		var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (jsonNameArray.indexOf("weeks") == -1)
-			Application.current.window.alert("The file you have selected is not a week.", "Alert");
-		else
-		{
-			while (jsonNameArray[0] != "weeks")
-				jsonNameArray.remove(jsonNameArray[0]);
-			jsonNameArray.remove(jsonNameArray[0]);
-
-			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
-
-			WeekEditorState.newWeek = false;
-			WeekEditorState.curWeek = finalJsonName;
-			FlxG.switchState(new WeekEditorState());
-		}
+		FlxG.switchState(new WeekEditorState(true, "", ""));
 	}
 
 	function prepareStoryCharacterEditor()
 	{
-		var newClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.label = "Choose a spritesheet for your character";
-			file.loadCallback = newStoryCharacterCallback;
-			file.load("png");
-		};
-
-		var loadClicked = function()
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.loadCallback = loadStoryCharacterCallback;
-			file.load();
-		};
-
-		prepareEditorQuick(newClicked, loadClicked);
-	}
-
-	function newStoryCharacterCallback(fullPath:String)
-	{
-		var imageNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (imageNameArray.indexOf("story_characters") == -1)
-			Application.current.window.alert("The file you have selected is not a character asset.", "Alert");
-		else
-		{
-			while (imageNameArray[0] != "story_characters")
-				imageNameArray.remove(imageNameArray[0]);
-			imageNameArray.remove(imageNameArray[0]);
-
-			var finalImageName = imageNameArray.join('/').split('.png')[0];
-
-			StoryCharacterEditorState.newCharacter = true;
-			StoryCharacterEditorState.newCharacterImage = finalImageName;
-			StoryCharacterEditorState.curCharacter = "*";
-			FlxG.switchState(new StoryCharacterEditorState());
-		}
-	}
-
-	public static function loadStoryCharacterCallback(fullPath:String)
-	{
-		var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
-		if (jsonNameArray.indexOf("story_characters") == -1)
-			Application.current.window.alert("The file you have selected is not a character.", "Alert");
-		else
-		{
-			while (jsonNameArray[0] != "story_characters")
-				jsonNameArray.remove(jsonNameArray[0]);
-			jsonNameArray.remove(jsonNameArray[0]);
-
-			var finalJsonName = jsonNameArray.join("/").split('.json')[0];
-
-			StoryCharacterEditorState.newCharacter = false;
-			StoryCharacterEditorState.curCharacter = finalJsonName;
-			FlxG.switchState(new StoryCharacterEditorState());
-		}
+		StoryCharacterEditorState.newCharacterImage = "ui/story/characters/Dad";
+		FlxG.switchState(new StoryCharacterEditorState(true, "", ""));
 	}
 }

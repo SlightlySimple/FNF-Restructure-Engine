@@ -16,6 +16,7 @@ class MP4Handler
 	public static var netStream:NetStream;
 	public static var finishCallback:Void->Void = null;
 	public var sprite:FlxSprite;
+	public var volume:Float = 1.0;
 	#if desktop
 	public static var vlcBitmap:VlcBitmap;
 	#end
@@ -142,7 +143,7 @@ class MP4Handler
 
 	function update(e:Event)
 	{
-		vlcBitmap.volume = ((FlxG.sound.volume <= 0.01 || FlxG.sound.muted) ? 0 : (FlxG.sound.volume * 0.5) + 0.5); // shitty volume fix
+		vlcBitmap.volume = volume * ((FlxG.sound.volume <= 0.01 || FlxG.sound.muted) ? 0 : (FlxG.sound.volume * 0.5) + 0.5); // shitty volume fix
 	}
 	#end
 

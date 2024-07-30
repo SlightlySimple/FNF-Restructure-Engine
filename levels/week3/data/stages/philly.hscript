@@ -1,0 +1,28 @@
+curLight = -1;
+
+function create()
+{
+	for (i in 0...5)
+		stage.pieces["win" + Std.string(i)].visible = false;
+	curLight = FlxG.random.int(0, 4);
+	showWindow();
+}
+
+function beatHit()
+{
+	if (game.curBeat % 4 == 0)
+	{
+		stage.pieces["win" + Std.string(curLight)].visible = false;
+		curLight = FlxG.random.int(0, 4, [curLight]);
+		showWindow();
+	}
+}
+
+function showWindow()
+{
+	var win = stage.pieces["win" + Std.string(curLight)];
+	win.visible = true;
+	FlxTween.cancelTweensOf(win, ["alpha"]);
+	win.alpha = 1;
+	FlxTween.tween(win, {alpha: 0}, Conductor.beatSeconds * 4);
+}

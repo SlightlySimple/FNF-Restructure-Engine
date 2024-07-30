@@ -1,0 +1,10 @@
+!setting	fadeTimes	2	1
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	senpai
+!setting	mood	angrySenpai
+!setting	flip
+senpai-angry	normal	Not bad for an ugly worm.
+senpai-angry	normal	But this time I'll rip your nuts off right after your girlfriend finishes gargling mine.
+!setting	flip
+bf-pixel	normal	Bop beep be be skdoo bep

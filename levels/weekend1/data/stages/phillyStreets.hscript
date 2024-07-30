@@ -1,0 +1,208 @@
+function create()
+{
+	resetCar(true, true);
+	resetStageValues();
+}
+
+function update(elapsed)
+{
+	stage.pieces['phillySkybox'].x -= FlxG.elapsed * 22;
+}
+
+function resetCar(left, right)
+{
+	if (left)
+	{
+		carWaiting = false;
+		carInterruptable = true;
+		var cars = stage.pieces['phillyCars'];
+		if (cars != null)
+		{
+			FlxTween.cancelTweensOf(cars);
+			cars.setPosition(1200, 818);
+			cars.angle = 0;
+		}
+	}
+
+	if (right)
+	{
+		car2Interruptable = true;
+		var cars2 = stage.pieces['phillyCars2'];
+		if (cars2 != null)
+		{
+			FlxTween.cancelTweensOf(cars2);
+			cars2.setPosition(1200, 818);
+			cars2.angle = 0;
+		}
+	}
+}
+
+function resetStageValues()
+{
+	lastChange = 0;
+	changeInterval = 8;
+	var traffic = stage.pieces['phillyTraffic'];
+	if (traffic != null)
+		traffic.animation.play('togreen');
+	lightsStop = false;
+}
+
+function beatHit()
+{
+	if (FlxG.random.bool(10) && game.curBeat != (lastChange + changeInterval) && carInterruptable == true)
+	{
+		if (lightsStop)
+			driveCarLights(stage.pieces['phillyCars']);
+		else
+			driveCar(stage.pieces['phillyCars']);
+	}
+
+	if (FlxG.random.bool(10) && game.curBeat != (lastChange + changeInterval) && car2Interruptable == true && lightsStop == false)
+		driveCarBack(stage.pieces['phillyCars2']);
+
+	if (game.curBeat == (lastChange + changeInterval))
+		changeLights(game.curBeat);
+}
+
+function driveCar(sprite)
+{
+	carInterruptable = false;
+	FlxTween.cancelTweensOf(sprite);
+	var variant = FlxG.random.int(1, 4);
+	sprite.animation.play('car' + variant);
+
+	var duration = 2;
+
+	switch (variant)
+	{
+		case 1: duration = FlxG.random.float(1, 1.7);
+		case 2: duration = FlxG.random.float(0.6, 1.2);
+		case 3: duration = FlxG.random.float(1.5, 2.5);
+		case 4: duration = FlxG.random.float(1.5, 2.5);
+	}
+
+	var offset = [306.6, 168.3];
+
+	var rotations = [-8, 18];
+	var path = [
+		FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 30),
+		FlxPoint.get(2400 - offset[0], 980 - offset[1] - 50),
+		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
+	];
+
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, null );
+	FlxTween.quadPath(sprite, path, duration, true, {
+		ease: null,
+		onComplete: function(_) { carInterruptable = true; }
+	});
+}
+
+function driveCarBack(sprite)
+{
+	car2Interruptable = false;
+	FlxTween.cancelTweensOf(sprite);
+	var variant = FlxG.random.int(1,4);
+	sprite.animation.play('car' + variant);
+
+	var duration = 2;
+
+	switch (variant)
+	{
+		case 1: duration = FlxG.random.float(1, 1.7);
+		case 2: duration = FlxG.random.float(0.6, 1.2);
+		case 3: duration = FlxG.random.float(1.5, 2.5);
+		case 4: duration = FlxG.random.float(1.5, 2.5);
+	}
+
+	var offset = [306.6, 168.3];
+
+	var rotations = [18, -8];
+
+	var path:Array<FlxPoint> = [
+		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 60),
+		FlxPoint.get(2400 - offset[0], 980 - offset[1] - 30),
+		FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 10)
+	];
+
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, null );
+	FlxTween.quadPath(sprite, path, duration, true, {
+		ease: null,
+		onComplete: function(_) { car2Interruptable = true; }
+	});
+}
+
+function driveCarLights(sprite)
+{
+	carInterruptable = false;
+	FlxTween.cancelTweensOf(sprite);
+	var variant = FlxG.random.int(1, 4);
+	sprite.animation.play('car' + variant);
+	var duration = 2;
+
+	switch (variant)
+	{
+		case 1: duration = FlxG.random.float(1, 1.7);
+		case 2: duration = FlxG.random.float(0.9, 1.5);
+		case 3: duration = FlxG.random.float(1.5, 2.5);
+		case 4: duration = FlxG.random.float(1.5, 2.5);
+	}
+	var rotations = [-7, -5];
+	var offset = [306.6, 168.3];
+
+	var path = [
+		FlxPoint.get(1500 - offset[0] - 20, 1049 - offset[1] - 20),
+		FlxPoint.get(1770 - offset[0] - 80, 994 - offset[1] + 10),
+		FlxPoint.get(1950 - offset[0] - 80, 980 - offset[1] + 15)
+	];
+
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.cubeOut} );
+	FlxTween.quadPath(sprite, path, duration, true, {
+		ease: FlxEase.cubeOut,
+		onComplete: function(_) {
+			carWaiting = true;
+			if (lightsStop == false) finishCarLights(stage.pieces['phillyCars']);
+		}
+	});
+}
+
+function changeLights(beat)
+{
+	lastChange = beat;
+	lightsStop = !lightsStop;
+
+	if (lightsStop)
+	{
+		stage.pieces['phillyTraffic'].animation.play('tored');
+		changeInterval = 20;
+	}
+	else
+	{
+		stage.pieces['phillyTraffic'].animation.play('togreen');
+		changeInterval = 30;
+
+		if (carWaiting == true)
+			finishCarLights(stage.pieces['phillyCars']);
+	}
+}
+
+function finishCarLights(sprite)
+{
+	carWaiting = false;
+	var duration = FlxG.random.float(1.8, 3);
+	var rotations = [-5, 18];
+	var offset = [306.6, 168.3];
+	var startdelay = FlxG.random.float(0.2, 1.2);
+
+	var path:Array<FlxPoint> = [
+		FlxPoint.get(1950 - offset[0] - 80, 980 - offset[1] + 15),
+		FlxPoint.get(2400 - offset[0], 980 - offset[1] - 50),
+		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
+	];
+
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.sineIn, startDelay: startdelay} );
+	FlxTween.quadPath(sprite, path, duration, true, {
+		ease: FlxEase.sineIn,
+		startDelay: startdelay,
+		onComplete: function(_) { carInterruptable = true; }
+	});
+}

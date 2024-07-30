@@ -1,22 +1,22 @@
 {
+	"icon": "eventIconCharacter",
 	"parameters":
 	[
 		{
 			"id": "id",
 			"label": "Character",
-			"type": "string",
-			"defaultValue": ""
-		},
-		{
-			"type": "label",
-			"label": "Character can be \"player1,\" \"player2,\" etc. for however many characters are in the chart, and can also be \"gf\""
+			"infoText": "Which character to affect.",
+			"type": "dropdown",
+			"defaultValue": "player1",
+			"options": ["!players"]
 		},
 		{
 			"id": "character",
 			"label": "New Character",
+			"infoText": "The character to switch to.",
 			"type": "dropdownSpecial",
-			"defaultValue": "",
-			"options": ["characters"]
+			"defaultValue": "bf",
+			"options": ["data/characters", ".json"]
 		}
 	]
 }

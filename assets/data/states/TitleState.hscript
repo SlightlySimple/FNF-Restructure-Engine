@@ -1,3 +1,7 @@
+cheatActive = false;
+curCheat = 0;
+cheatControls = ["left", "right", "left", "right", "up", "down", "up", "down"];
+
 function create()
 {
 	var state = FlxG.state;
@@ -8,9 +12,9 @@ function create()
 
 	colorswap = new ColorSwap();
 	if (logo != null)
-		logo.shader = colorswap.shader;
+		logo.shader = colorswap;
 	if (gf != null)
-		gf.shader = colorswap.shader;
+		gf.shader = colorswap;
 }
 
 function update(elapsed)
@@ -20,6 +24,22 @@ function update(elapsed)
 
 	if (Options.keyPressed("ui_right"))
 		colorswap.h += elapsed * 0.1;
+
+	if (FlxG.state.skippedIntro && !cheatActive && FlxG.keys.justPressed.ANY)
+	{
+		if (Options.keyJustPressed("note_" + cheatControls[curCheat]) || Options.keyJustPressed("ui_" + cheatControls[curCheat]))
+			curCheat++;
+		else
+			curCheat = 0;
+
+		if (curCheat == cheatControls.length)
+		{
+			cheatActive = true;
+			Conductor.playMusic("girlfriendsRingtone");
+			FlxG.camera.flash(FlxColor.WHITE, 1);
+			PlaySound("ui/confirmMenu");
+		}
+	}
 }
 
 function beatHit()
@@ -37,6 +57,9 @@ function beatHit()
 			FlxTween.tween(logo.scale, {x: 0.95, y: 0.95}, 0.15, {ease: FlxEase.quadOut});
 		});
 	}
+
+	if (cheatActive && FlxG.state.curBeat % 2 == 0)
+		colorswap.h += 0.125;
 }
 
 function onPressedEnter()
@@ -48,4 +71,7 @@ function onPressedEnter()
 		else
 			titleEnter.playAnim("pressNoFlash");
 	}
+
+	if (cheatActive)
+		FlxG.sound.music.fadeOut(1.5, 0, function(twn) { FlxG.sound.music.stop(); });
 }

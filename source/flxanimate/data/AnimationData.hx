@@ -242,6 +242,10 @@ abstract MetaData({}) from {}
 abstract Frame({}) from {}
 {
 	/**
+	 * The frame name (I think?)
+	 */
+	public var N(get, never):String;
+	/**
 	 * The frame index, aka the current number frame.
 	 */
 	public var I(get, never):Int;
@@ -254,6 +258,10 @@ abstract Frame({}) from {}
 	 */
 	public var E(get, never):Array<Element>;
 
+	inline function get_N():String
+	{
+		return AnimationData.setFieldBool(this, "N", "name");
+	}
 	inline function get_I():Int
 	{
 		return AnimationData.setFieldBool(this, "I", "index");

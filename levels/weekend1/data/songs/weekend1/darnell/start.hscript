@@ -1,0 +1,47 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay)
+		game.canStartCountdown = false;
+	game.hscriptAdd("video");
+	game.hscriptAdd("cutscene");
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+		game.hscriptIdExec("video", "playVideo", ["darnellCutscene", false]);
+}
+
+function onVideoFinished(video)
+{
+	if (video == "darnellCutscene")
+	{
+		game.hscriptIdExec("cutscene", "initCutscene", ["cutscene"]);
+
+		black = new FlxSprite().makeGraphic(2000, 2000, FlxColor.BLACK);
+		black.screenCenter();
+		black.scrollFactor.set();
+		add(black);
+		game.hscriptIdGet("cutscene", "cutsceneObjects")["black"] = black;
+
+		black2 = new FlxSprite().makeGraphic(2000, 2000, FlxColor.BLACK);
+		black2.screenCenter();
+		black2.scrollFactor.set();
+		black2.alpha = 0;
+		insert(game.members.indexOf(game.stage.pieces["phillyForeground"]) + 1, black2);
+		game.hscriptIdGet("cutscene", "cutsceneObjects")["black2"] = black2;
+
+		new FlxTimer().start(0.001, function(tmr) {
+			game.hscriptIdExec("cutscene", "startCutscene", []);
+		});
+	}
+}
+
+function cutsceneEvent(params)
+{
+	var object = (params.object == "black" ? black : black2);
+	if (params.tweenTime > 0)
+		FlxTween.tween(object, {alpha: params.alpha}, params.tweenTime);
+	else
+		object.alpha = params.alpha;
+}

@@ -1,1 +1,0 @@
-{"asset":"Mom","position":[65,-220],"scale":[0.45,0.45],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Mom Dance","name":"idle"}]}

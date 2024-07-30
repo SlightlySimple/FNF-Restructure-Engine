@@ -1,11 +1,14 @@
 package menus;
 
 import flixel.FlxG;
+import flixel.FlxSubState;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import data.Options;
 import menus.UINavigation;
 import scripting.HscriptHandler;
+import scripting.HscriptState;
+import transitions.StickerSubState;
 
 class MainMenuState extends MusicBeatState
 {
@@ -20,17 +23,20 @@ class MainMenuState extends MusicBeatState
 	var menuButtonText:Array<String> = ["story_mode", "freeplay", "options", "credits", "quit"];
 	#end
 	static var curOption:Int = 0;
+	public static var curSubstate:String = "";
 
 	public var nav:UINumeralNavigation;
 
 	override public function create()
 	{
 		super.create();
+
 		HscriptHandler.curMenu = "main";
 		if (ModLoader.modListFile != "modList" || ModLoader.packageData != null)
 			menuButtonText.remove("mods");
 
-		Util.menuMusic();
+		if (curSubstate == "")
+			Util.menuMusic();
 
 		if (Paths.hscriptExists('data/states/MainMenuState'))
 			myScript = new HscriptHandler('data/states/MainMenuState');
@@ -42,6 +48,30 @@ class MainMenuState extends MusicBeatState
 			myScript.execFunc("create", []);
 
 		changeSelection();
+
+		if (curSubstate == "freeplay")
+		{
+			nav.locked = true;
+			persistentUpdate = false;
+			openSubState(new FreeplayMenuSubState());
+		}
+		else if (curSubstate != "")
+		{
+			nav.locked = true;
+			persistentUpdate = false;
+			openSubState(new HscriptSubState(curSubstate));
+		}
+
+		if (StickerSubState.stickers.length > 0)
+		{
+			if (_requestedSubState != null)
+			{
+				_requestedSubState.persistentUpdate = true;
+				_requestedSubState.openSubState(new StickerSubState());
+			}
+			else
+				openSubState(new StickerSubState());
+		}
 	}
 
 	override public function update(elapsed:Float)
@@ -51,11 +81,11 @@ class MainMenuState extends MusicBeatState
 		if (myScript != null)
 			myScript.execFunc("update", [elapsed]);
 
-		if (Options.keyJustPressed("fullscreen"))
-			FlxG.fullscreen = !FlxG.fullscreen;
-
 		if (PackagesState.allowModTools && Options.keyJustPressed("editorMenu"))
+		{
+			FlxG.sound.music.fadeOut(0.5, 0, function(twn) { FlxG.sound.music.stop(); });
 			FlxG.switchState(new EditorMenuState());
+		}
 	}
 
 	function changeSelection(change:Int = 0)
@@ -107,5 +137,14 @@ class MainMenuState extends MusicBeatState
 
 		if (myScript != null)
 			myScript.execFunc("stepHit", []);
+	}
+
+	override public function closeSubState()
+	{
+		super.closeSubState();
+		curSubstate = "";
+
+		if (myScript != null)
+			myScript.execFunc("closeSubState", []);
 	}
 }

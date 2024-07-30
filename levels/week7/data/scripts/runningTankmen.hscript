@@ -1,0 +1,55 @@
+inactiveTankmen = [];
+
+function create()
+{
+	var chart = new BackgroundChart([game.gf], PlayState.songId, 'picospeaker');
+	for (note in chart.notes)
+	{
+		if (Options.options.distractions)
+			inactiveTankmen.push(note);
+
+		var shotDirection = 1;
+		if (note.column >= 2)
+			shotDirection = 3;
+		shotDirection += FlxG.random.int(0, 1);
+
+		note.anim = "shoot" + shotDirection;
+	}
+	add(chart);
+
+	tankmenGroup = game.stage.pieces["tankmenGroup"];
+
+	Paths.cacheGraphic("week7/tankmanKilled1");
+
+	var deadMan = new RunningTankman(20, 600);
+	if (Options.options.distractions)
+	{
+		deadMan.setVar("strumTime", 10);
+		deadMan.execFunc("reset", [20, 600, true]);
+		tankmenGroup.add(deadMan);
+	}
+}
+
+function update(elapsed)
+{
+	if (game.countdownStarted)
+	{
+		var poppers = [];
+		for (note in inactiveTankmen)
+		{
+			if (Conductor.songPosition >= note.strumTime - 1000)
+			{
+				if (FlxG.random.bool(16))
+				{
+					var deadMan = tankmenGroup.recycle(HscriptAnimatedSprite, function() { return Type.createInstance(HscriptAnimatedSprite, ["RunningTankman", [0, 0]]); });
+					deadMan.setVar("strumTime", note.strumTime);
+					deadMan.execFunc("reset", [500, 200 + FlxG.random.int(50, 100), (note.column < 2)]);
+					tankmenGroup.add(deadMan);
+				}
+				poppers.push(note);
+			}
+		}
+		for (p in poppers)
+			inactiveTankmen.remove(p);
+	}
+}

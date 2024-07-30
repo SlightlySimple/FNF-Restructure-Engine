@@ -1,0 +1,44 @@
+// Week name
+"level.week2"		"SPOOKY MONTH"
+
+// Song names
+"song.week2.spookeez"	"Spookeez"
+"song.week2.south"		"South"
+"song.week2.monster"	"Monster"
+
+// Character names
+"character.monster"		"Monster"
+"character.spooky"		"Spooky Kids"
+
+// Stage names
+"stage.spooky"			"Spooky Mansion"
+
+// Subtitles
+"subtitles.monster.1"		"Guess it's time,"
+"subtitles.monster.2"		"You better plug in all your nightlights."
+"subtitles.monster.3"		"What's out there, past your darkened door?"
+"subtitles.monster.4"		"Just the eyes floating up out of the shore."
+"subtitles.monster.5"		"Hey man, I'm gonna eat your girlfriend,"
+"subtitles.monster.6"		"Or maybe turn her into broth,"
+"subtitles.monster.7"		"la-la-la la la"
+"subtitles.monster.8"		"Kill a kid, cut em up."
+"subtitles.monster.9"		"Stuff em up inside of my,"
+"subtitles.monster.10"		"Secret meat box."
+"subtitles.monster.11"		"Find my,"
+"subtitles.monster.12"		"Hands across your body slowly"
+"subtitles.monster.13"		"Peel your skin off."
+"subtitles.monster.14"		"You'll meet your friends,"
+"subtitles.monster.15"		"Inside the ambulance."
+"subtitles.monster.16"		"Call into the night,"
+"subtitles.monster.17"		"To the werewolf."
+"subtitles.monster.18"		"Give all your blood to him,"
+"subtitles.monster.19"		"Stand under the warm street light."
+"subtitles.monster.20"		"Let yourself be hypnotized."
+"subtitles.monster.21"		"You're just a little snack,"
+"subtitles.monster.22"		"And so is your girlfriend."
+"subtitles.monster.23"		"Hey man, I'm gonna tear your eyes out,"
+"subtitles.monster.24"		"And then I'll boil your girlfriend,"
+"subtitles.monster.25"		"Stuff em up inside of my, burning dungeon."
+"subtitles.monster.26"		"I would"
+"subtitles.monster.27"		"Give you guys a little break but"
+"subtitles.monster.28"		"I'm not Satan."

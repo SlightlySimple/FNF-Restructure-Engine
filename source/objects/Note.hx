@@ -6,20 +6,31 @@ import flixel.graphics.frames.FlxFramesCollection;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxRect;
 import flixel.util.FlxColor;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import data.Noteskins;
 import data.ObjectData;
 import data.Options;
 import game.PlayState;
 import shaders.ColorSwap;
 
+typedef NoteHitData =
+{
+	var offset:Float;
+	var rating:Int;
+}
+
 class Note extends FlxSprite
 {
+	public var data:Map<String, Dynamic> = new Map<String, Dynamic>();
+
 	public var strumTime:Float;
 	public var beat:Float;
 	public var column:Int;
 	public var strumColumn:Int;
 	public var noteType:String = "default";
 	public var missed:Bool = false;
+	public var hitData:NoteHitData = null;
 	public var typeData:NoteTypeData = null;
 	public static var defaultTypeData:NoteTypeData = null;
 	public static var noteTypes:Map<String, NoteTypeData> = null;
@@ -67,11 +78,17 @@ class Note extends FlxSprite
 				if (typeData.noteskinOverrideSustain == null)
 					typeData.noteskinOverrideSustain = defaultTypeData.noteskinOverrideSustain;
 
+				if (typeData.noSustains == null)
+					typeData.noSustains = defaultTypeData.noSustains;
+
 				if (typeData.hitSound == null)
 					typeData.hitSound = defaultTypeData.hitSound;
 
 				if (typeData.hitSoundVolume == null)
 					typeData.hitSoundVolume = defaultTypeData.hitSoundVolume;
+
+				if (typeData.placeSound == null)
+					typeData.placeSound = defaultTypeData.placeSound;
 
 				if (typeData.animationSuffix == null)
 					typeData.animationSuffix = defaultTypeData.animationSuffix;
@@ -108,7 +125,7 @@ class Note extends FlxSprite
 			colswap.hAdd = colArray[1];
 			cs[col] = colswap;
 		}
-		return cs[col].shader;
+		return cs[col];
 	}
 
 	override public function new(strumTime:Float, column:Int, ?noteType:String = "", ?noteskinType:String = "default", ?strumColumn:Null<Int> = null)
@@ -145,6 +162,9 @@ class Note extends FlxSprite
 
 		if (noteskinData.scale < 0 && FlxG.state is PlayState && PlayState.instance.strumNotes.members.length > column)
 			noteskinData.scale *= -PlayState.instance.strumNotes.members[column].noteskinData.scale;
+		if (noteskinData.allowSplashes && noteskinData.splashes.scale < 0 && FlxG.state is PlayState && PlayState.instance.strumNotes.members.length > column)
+			noteskinData.splashes.scale *= -PlayState.instance.strumNotes.members[column].noteskinData.scale;
+
 		scale.set(noteskinData.scale * StrumNote.noteScale, noteskinData.scale * StrumNote.noteScale);
 		shader = getShader(noteColor);
 		animation.play("idle");
@@ -205,16 +225,37 @@ class Note extends FlxSprite
 			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
 		}
 
+		var snappedH:Float = h;
+		if (noteskinData.pixelPerfect)
+			snappedH = Math.round(h / scale.y) * scale.y;
 		if (calcX)
-			x = strum.x - (xoff * h);
+			x = strum.x - (xoff * snappedH);
 		if (calcY)
-			y = strum.y - (yoff * h);
+			y = strum.y - (yoff * snappedH);
+	}
+
+	public function restartAnim()
+	{
+		var xoff:Float = 0;
+		var yoff:Float = 0;
+		switch (noteAng)
+		{
+			case 0: xoff = 1; yoff = 0;
+			case 90: xoff = 0; yoff = 1;
+			case 180: xoff = -1; yoff = 0;
+			case 270: xoff = 0; yoff = -1;
+			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
+		}
+
+		FlxTween.tween(this, {x: this.x - (xoff * 1400), y: this.y - (yoff * 1400)}, 0.5, {ease: FlxEase.expoIn});
 	}
 }
 
 class SustainNote extends FlxSprite
 {
 	public static var noteGraphics:Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
+
+	public var data:Map<String, Dynamic> = new Map<String, Dynamic>();
 
 	public var strumTime:Float;
 	public var beat:Float;
@@ -225,6 +266,7 @@ class SustainNote extends FlxSprite
 	public var canBeHit:Bool = false;
 	public var missed:Bool = false;
 	public var isBeingHit:Bool = false;
+	public var lastHitTime:Float = 0;
 	public var hitTimer:Float = 0;
 	public var hitLimit:Float = 100;
 	public var passedHitLimit:Bool = false;
@@ -237,6 +279,7 @@ class SustainNote extends FlxSprite
 	public var noteShape:String = "";
 	public var parent:Note = null;
 	public var noteAng:Float = 0;
+	public var splash:FlxSprite = null;
 
 	public var alph:Float = 1;
 	public var gap:Int = 1;
@@ -261,6 +304,7 @@ class SustainNote extends FlxSprite
 		super();
 
 		this.strumTime = strumTime;
+		lastHitTime = strumTime;
 		beat = Conductor.beatFromTime(strumTime);
 		this.column = column;
 		this.strumColumn = strumColumn;
@@ -349,7 +393,12 @@ class SustainNote extends FlxSprite
 	{
 		noteskinType = newNoteType;
 
+		var oldScale:Float = 1;
+		if (noteskinData != null)
+			oldScale = noteskinData.scale;
 		noteskinData = Noteskins.getData(noteskinOverride, noteskinType);
+		if (!(FlxG.state is PlayState) && noteskinData.scale < 0)
+			noteskinData.scale *= -oldScale;
 		noteColor = Noteskins.getNoteColor(noteskinData, strumColumn, beat);
 		noteShape = Noteskins.getNoteShape(noteskinData, strumColumn);
 		alph = noteskinData.sustainOpacity;
@@ -398,37 +447,44 @@ class SustainNote extends FlxSprite
 			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
 		}
 
-		var cX:Float = (strum.x + strum.myW / 2) - (xoff * h);
-		var cY:Float = (strum.y + strum.myH / 2) - (yoff * h);
+		var w:Float = width / 2;
+		var snappedH:Float = h;
+		if (noteskinData.pixelPerfect)
+			snappedH = Math.round(h / scale.x) * scale.x;
+
+		var cX:Float = strum.x + (strum.myW / 2) - (xoff * snappedH);
+		var cY:Float = strum.y + (strum.myH / 2) - (yoff * snappedH);
 		if (parent != null && parent.alive)
 		{
 			cX = parent.getGraphicMidpoint().x - parent.offset.x;
 			cY = parent.getGraphicMidpoint().y - parent.offset.y;
 		}
 		if (calcX)
-			x = cX + (yoff * (width / 2));
+			x = cX + (yoff * w);
 		if (calcY)
-			y = cY - (xoff * (width / 2));
+			y = cY - (xoff * w);
+	}
+
+	public function restartAnim()
+	{
+		var xoff:Float = 0;
+		var yoff:Float = 0;
+		switch (noteAng)
+		{
+			case 0: xoff = 1; yoff = 0;
+			case 90: xoff = 0; yoff = 1;
+			case 180: xoff = -1; yoff = 0;
+			case 270: xoff = 0; yoff = -1;
+			default: xoff = Math.cos(noteAng * Math.PI / 180); yoff = Math.sin(noteAng * Math.PI / 180);
+		}
+		var w:Float = width / 2;
+
+		FlxTween.tween(this, {x: this.x - (xoff * 1400) - (yoff * w), y: this.y - (yoff * 1400) + (xoff * w)}, 0.5, {ease: FlxEase.expoIn});
 	}
 }
 
 class NoteSplash extends FlxSprite
 {
-	override public function new()
-	{
-		super();
-	}
-
-	public function refreshSplash(x:Float, y:Float, asset:String, ?grid:Array<Int> = null)
-	{
-		this.x = x;
-		this.y = y;
-		if (Paths.sparrowExists("ui/note_splashes/" + asset))
-			frames = Paths.sparrow("ui/note_splashes/" + asset);
-		else
-			frames = Paths.tiles("ui/note_splashes/" + asset, grid[0], grid[1]);
-	}
-
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);

@@ -4,6 +4,7 @@
 		{
 			"id": "text",
 			"label": "Subtitle Text",
+			"infoText": "What the subtitle should say. This can be plain text or a translatable string. Leave blank to clear the subtitle text.",
 			"type": "string",
 			"defaultValue": ""
 		}

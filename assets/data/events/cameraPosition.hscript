@@ -1,27 +1,55 @@
 function onEvent(event)
 {
+	FlxTween.cancelTweensOf(game.camFollow);
+	FlxTween.cancelTweensOf(game.camFollowPos);
+
 	if (event.parameters.allow)
 	{
 		game.overrideCamFocus = true;
-		switch (event.parameters.mode.toLowerCase())
+		var camX = event.parameters.x;
+		var camY = event.parameters.y;
+		if (event.parameters.mode.toLowerCase() != "absolute")
 		{
-			case "player1":
-				game.camFollow.x = game.player1.getMidpoint().x + event.parameters.x;
-				game.camFollow.y = game.player1.getMidpoint().y + event.parameters.y;
+			var slot = getSlot(event.parameters.mode.toLowerCase());
+			var char = game.allCharacters[slot];
+			if (event.parameters.cameraPos)
+			{
+				camX += char.cameraX;
+				camY += char.cameraY;
+			}
+			else
+			{
+				camX += char.getMidpoint().x;
+				camY += char.getMidpoint().y;
+			}
+		}
 
-			case "player2":
-				game.camFollow.x = game.player2.getMidpoint().x + event.parameters.x;
-				game.camFollow.y = game.player2.getMidpoint().y + event.parameters.y;
+		switch (event.parameters.movement.toLowerCase())
+		{
+			case "tween":
+				FlxTween.tween(game.camFollow, {x: camX, y: camY}, event.parameters.time, {ease: Reflect.field(FlxEase, event.parameters.ease)});
+				FlxTween.tween(game.camFollowPos, {x: camX, y: camY}, event.parameters.time, {ease: Reflect.field(FlxEase, event.parameters.ease)});
 
-			case "gf":
-				game.camFollow.x = game.gf.getMidpoint().x + event.parameters.x;
-				game.camFollow.y = game.gf.getMidpoint().y + event.parameters.y;
+			case "instant":
+				game.camFollow.x = camX;
+				game.camFollow.y = camY;
+				game.snapCamera();
 
 			default:
-				game.camFollow.x = event.parameters.x;
-				game.camFollow.y = event.parameters.y;
+				game.camFollow.x = camX;
+				game.camFollow.y = camY;
 		}
 	}
 	else
 		game.overrideCamFocus = false;
+}
+
+function getSlot(str)
+{
+	if (StringTools.startsWith(str, "player") && Std.parseInt(str.substr("player".length)) - 1 < game.allCharacters.length)
+		return Std.parseInt(str.substr("player".length)) - 1;
+	if (str == "gf")
+		return 2;
+
+	return 0;
 }

@@ -1,0 +1,16 @@
+// Week name
+"level.week3"		"PICO"
+
+// Song names
+"song.week3.pico"			"Pico"
+"song.week3.philly-nice"	"Philly Nice"
+"song.week3.blammed"		"Blammed"
+
+// Character names
+"character.pico"	"Pico"
+
+// Stage names
+"stage.philly"		"Philly (Train)"
+
+// Pause menu
+"pause.gameover.pico"	"%s1 Mangled Guts"

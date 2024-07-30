@@ -14,6 +14,7 @@ import flixel.system.FlxAssets.FlxSoundAsset;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxStringUtil;
 import openfl.Assets;
+import lime.media.openal.AL;
 #if flash11
 import flash.utils.ByteArray;
 #end
@@ -96,12 +97,10 @@ class FlxSound extends FlxBasic
 	 */
 	public var volume(get, set):Float;
 
-	#if (sys && openfl_legacy)
 	/**
 	 * Set pitch, which also alters the playback speed. Default is 1.
 	 */
 	public var pitch(get, set):Float;
-	#end
 
 	/**
 	 * The position in runtime of the music playback in milliseconds.
@@ -180,12 +179,10 @@ class FlxSound extends FlxBasic
 	 */
 	var _length:Float = 0;
 
-	#if (sys && openfl_legacy)
 	/**
 	 * Internal tracker for pitch.
 	 */
 	var _pitch:Float = 1.0;
-	#end
 
 	/**
 	 * Internal tracker for total volume adjustment.
@@ -614,9 +611,7 @@ class FlxSound extends FlxBasic
 		_channel = _sound.play(_time, 0, _transform);
 		if (_channel != null)
 		{
-			#if (sys && openfl_legacy)
 			pitch = _pitch;
-			#end
 			if (makeEvent)
 				_channel.addEventListener(Event.SOUND_COMPLETE, stopped);
 			active = true;
@@ -742,7 +737,6 @@ class FlxSound extends FlxBasic
 		return Volume;
 	}
 
-	#if (sys && openfl_legacy)
 	inline function get_pitch():Float
 	{
 		return _pitch;
@@ -750,11 +744,17 @@ class FlxSound extends FlxBasic
 
 	function set_pitch(v:Float):Float
 	{
-		if (_channel != null)
-			_channel.pitch = v;
-		return _pitch = v;
+		_pitch = v;
+		correctPitch();
+		return v;
 	}
-	#end
+
+	function correctPitch()
+	{
+		@:privateAccess
+		if (playing)
+			AL.sourcef(_channel.__audioSource.__backend.handle, AL.PITCH, _pitch);
+	}
 
 	inline function get_pan():Float
 	{

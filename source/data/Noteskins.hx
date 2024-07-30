@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import objects.Note;
+import objects.StrumNote;
 
 using StringTools;
 
@@ -16,6 +17,7 @@ typedef NoteskinAnimation =
 	var fps:Int;
 	var loop:Bool;
 	var ?indices:Array<Int>;
+	var ?offsets:Array<Int>;
 }
 
 typedef NoteskinSlot =
@@ -50,6 +52,8 @@ typedef NoteskinSplashColor =
 	var color:String;
 	var alpha:Float;
 	var anims:Array<String>;
+	var holdAnim:String;
+	var holdEndAnims:Array<String>;
 }
 
 typedef NoteskinTypedef =
@@ -60,8 +64,9 @@ typedef NoteskinTypedef =
 	var ?id:String;
 	var ?assets:Array<Array<Dynamic>>;
 	var antialias:Bool;
+	var pixelPerfect:Null<Bool>;
 	var scale:Float;
-	var noteSize:Int;
+	var noteSize:Null<Int>;
 	var ?colorStrums:Null<Bool>;
 	var sustainOpacity:Null<Float>;
 	var sustainGap:Null<Int>;
@@ -70,9 +75,17 @@ typedef NoteskinTypedef =
 	var colors:Array<NoteskinColor>;
 	var quantization:Array<NoteskinQuant>;
 	var allowSplashes:Bool;
-	var ?splashAsset:String;
-	var ?splashGridSize:Array<Int>;
-	var ?splashColors:Array<NoteskinSplashColor>;
+	var ?splashes:NoteskinSplashes;
+}
+
+typedef NoteskinSplashes =
+{
+	var ?assets:Array<Array<Dynamic>>;
+	var antialias:Null<Bool>;
+	var scale:Null<Float>;
+	var sustainScale:Null<Float>;
+	var animations:Array<NoteskinAnimation>;
+	var colors:Array<NoteskinSplashColor>;
 }
 
 typedef NoteskinData =
@@ -109,6 +122,9 @@ class Noteskins
 				typeDef.skinName = noteskinNames[i];
 				typeDef.id = type;
 
+				if (typeDef.pixelPerfect == null)
+					typeDef.pixelPerfect = false;
+
 				if (typeDef.colorStrums == null)
 					typeDef.colorStrums = true;
 
@@ -120,9 +136,6 @@ class Noteskins
 
 				if (typeDef.assets == null || typeDef.assets.length <= 0)
 					typeDef.assets = [[type]];
-
-				if (typeDef.splashGridSize == null)
-					typeDef.splashGridSize = [1, 1];
 
 				for (i in 0...typeDef.animations.length)
 				{
@@ -142,6 +155,28 @@ class Noteskins
 						typeDef.colors[i].shape = "";
 				}
 				newNoteskin.typeDefs.push(typeDef);
+
+				if (typeDef.splashes == null)
+					typeDef.allowSplashes = false;
+				else
+				{
+					typeDef.allowSplashes = true;
+
+					if (typeDef.splashes.antialias == null)
+						typeDef.splashes.antialias = typeDef.antialias;
+
+					if (typeDef.splashes.scale == null)
+						typeDef.splashes.scale = typeDef.scale;
+
+					if (typeDef.splashes.sustainScale == null)
+						typeDef.splashes.sustainScale = typeDef.splashes.scale;
+
+					for (i in 0...typeDef.splashes.animations.length)
+					{
+						if (typeDef.splashes.animations[i].asset == null)
+							typeDef.splashes.animations[i].asset = 0;
+					}
+				}
 			}
 			noteskinData.set(noteskinNames[i], newNoteskin);
 		}
@@ -315,32 +350,123 @@ class Noteskins
 		}
 	}
 
-	public static function doSplash(splash:NoteSplash, skindef:NoteskinTypedef, color:String)
+
+
+	public static function getSplashAsset(skindef:NoteskinTypedef, ?assetIndex:Int = 0):Array<Dynamic>
 	{
+		var assetArray:Array<Array<Dynamic>> = skindef.splashes.assets;
+		if (assetIndex < assetArray.length)
+			return assetArray[assetIndex];
+		return assetArray[0];
+	}
+
+	public static function getSplashFrames(skindef:NoteskinTypedef, ?assetIndex:Int = 0):FlxFramesCollection
+	{
+		var asset:Array<Dynamic> = getSplashAsset(skindef, assetIndex);
+		var path:String = "ui/note_splashes/" + asset[0];
+		if (!sparrows.exists(path))
+			sparrows[path] = Paths.sparrowExists(path);	// This check is somewhat resource intensive, so we store it's return value each time to ensure we only have to do it once per asset
+		if (sparrows[path])
+			return Paths.sparrow(path);
+		return Paths.tiles(path, asset[1], asset[2]);
+	}
+
+	public static function doSplash(splash:FlxSprite, skindef:NoteskinTypedef, color:String, ?isSustain:Bool = false):Bool
+	{
+		splash.antialiasing = skindef.splashes.antialias;
+
 		var colorAnim:Int = 0;
 
-		for (i in 0...skindef.splashColors.length)
+		for (i in 0...skindef.splashes.colors.length)
 		{
-			if (skindef.splashColors[i].color == color)
+			if (skindef.splashes.colors[i].color == color)
 				colorAnim = i;
 		}
 
-		splash.alpha = skindef.splashColors[colorAnim].alpha;
-		splash.scale.x = skindef.scale;
-		splash.scale.y = skindef.scale;
-		var whichAnim:String = FlxG.random.getObject(skindef.splashColors[colorAnim].anims);
-
-		var animData:NoteskinAnimation = null;
-		for (i in 0...skindef.animations.length)
+		splash.alpha = skindef.splashes.colors[colorAnim].alpha;
+		splash.scale.set(skindef.splashes.scale * StrumNote.noteScale, skindef.splashes.scale * StrumNote.noteScale);
+		var animArray:Array<String> = (isSustain ? skindef.splashes.colors[colorAnim].holdEndAnims : skindef.splashes.colors[colorAnim].anims);
+		if (animArray != null && animArray.length > 0)
 		{
-			if (whichAnim == skindef.animations[i].name)
-				animData = skindef.animations[i];
+			var whichAnim:String = FlxG.random.getObject(animArray);
+
+			var animData:NoteskinAnimation = null;
+			for (i in 0...skindef.splashes.animations.length)
+			{
+				if (whichAnim == skindef.splashes.animations[i].name)
+					animData = skindef.splashes.animations[i];
+			}
+
+			splash.frames = getSplashFrames(skindef, animData.asset);
+			if (animData.prefix != null && animData.prefix != "")
+				splash.animation.addByPrefix("idle", animData.prefix, animData.fps, false);
+			else
+				splash.animation.add("idle", animData.indices, animData.fps, false);
+			splash.animation.play("idle");
+			splash.animation.finishCallback = function(anim:String) { splash.kill(); }
+			splash.updateHitbox();
+
+			if (animData.offsets != null)
+			{
+				splash.offset.set(animData.offsets[0], animData.offsets[1]);
+				splash.origin.set(animData.offsets[0], animData.offsets[1]);
+			}
+			else
+			{
+				splash.x -= splash.width / 2;
+				splash.y -= splash.height / 2;
+			}
+
+			return true;
+		}
+		return false;
+	}
+
+	public static function doSustainSplash(splash:FlxSprite, skindef:NoteskinTypedef, color:String):Bool
+	{
+		splash.antialiasing = skindef.splashes.antialias;
+
+		var colorAnim:Int = 0;
+
+		for (i in 0...skindef.splashes.colors.length)
+		{
+			if (skindef.splashes.colors[i].color == color)
+				colorAnim = i;
 		}
 
-		if (animData.prefix != null && animData.prefix != "")
-			splash.animation.addByPrefix("idle", animData.prefix, animData.fps, false);
-		else
-			splash.animation.add("idle", animData.indices, animData.fps, false);
-		splash.animation.play("idle");
+		splash.scale.set(skindef.splashes.sustainScale * StrumNote.noteScale, skindef.splashes.scale * StrumNote.noteScale);
+		var whichAnim:String = skindef.splashes.colors[colorAnim].holdAnim;
+
+		if (whichAnim != null)
+		{
+			var animData:NoteskinAnimation = null;
+			for (i in 0...skindef.splashes.animations.length)
+			{
+				if (whichAnim == skindef.splashes.animations[i].name)
+					animData = skindef.splashes.animations[i];
+			}
+
+			splash.frames = getSplashFrames(skindef, animData.asset);
+			if (animData.prefix != null && animData.prefix != "")
+				splash.animation.addByPrefix("idle", animData.prefix, animData.fps, animData.loop);
+			else
+				splash.animation.add("idle", animData.indices, animData.fps, animData.loop);
+			splash.animation.play("idle");
+			splash.updateHitbox();
+
+			if (animData.offsets != null)
+			{
+				splash.offset.set(animData.offsets[0], animData.offsets[1]);
+				splash.origin.set(animData.offsets[0], animData.offsets[1]);
+			}
+			else
+			{
+				splash.x -= splash.width / 2;
+				splash.y -= splash.height / 2;
+			}
+
+			return true;
+		}
+		return false;
 	}
 }

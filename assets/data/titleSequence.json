@@ -1,23 +1,21 @@
 [
 	{ "action": "refreshSpecialText" },
 	[
-		{ "action": "addText", "text": "#titleSequence0" },
-		{ "action": "addText", "text": "#titleSequence1" },
-		{ "action": "addText", "text": "#titleSequence2" },
-		{ "action": "addText", "text": "#titleSequence3" }
+		{ "action": "addText", "text": "#title.sequence.credits.0" },
+		{ "action": "addText", "text": "#title.sequence.credits.1" }
 	],
 	{ "action": "none" },
-	{ "action": "addText", "text": "#titleSequence4" },
+	{ "action": "addText", "text": "#title.sequence.credits.2" },
 	{ "action": "wipeText" },
-	{ "action": "addText", "text": "#titleSequence5" },
+	{ "action": "addText", "text": "#title.sequence.engineCredits.0" },
 	{ "action": "none" },
-	{ "action": "addText", "text": "#titleSequence6" },
+	{ "action": "addText", "text": "#title.sequence.engineCredits.1" },
 	{ "action": "wipeText" },
 	{ "action": "addIntroText", "value": 0 },
 	{ "action": "none" },
 	{ "action": "addIntroText", "value": 1 },
 	{ "action": "wipeText" },
-	{ "action": "addText", "text": "#titleSequence7" },
-	{ "action": "addText", "text": "#titleSequence8" },
-	{ "action": "addText", "text": "#titleSequence9" }
+	{ "action": "addText", "text": "#title.sequence.name.0" },
+	{ "action": "addText", "text": "#title.sequence.name.1" },
+	{ "action": "addText", "text": "#title.sequence.name.2" }
 ]

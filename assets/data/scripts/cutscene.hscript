@@ -1,0 +1,344 @@
+import flixel.ui.FlxBar;
+
+inCutscene = false;
+cutsceneData = [];
+cutsceneObjects = new StringMap();
+cutsceneSounds = new StringMap();
+cutsceneSprites = [];
+cutsceneAtlases = [];
+cutsceneHiddenObjects = [];
+
+cutsceneProgress = 0;
+cutsceneSkipProgress = 0;
+cutsceneSkipProgressBar = null;
+
+syncedSprites = [];
+syncedAtlases = [];
+syncedSounds = [];
+
+
+
+function initCutscene(data)
+{
+	game.camHUD.alpha = 0;
+
+	if (cutsceneSkipProgressBar == null)
+	{
+		cutsceneSkipProgressBar = new FlxBar(200, FlxG.height - 50, 0, FlxG.width - 400, 25, null, null, 0, 1);
+		cutsceneSkipProgressBar.createFilledBar(FlxColor.BLACK, FlxColor.WHITE, true, FlxColor.BLACK);
+		cutsceneSkipProgressBar.alpha = 0;
+		add(cutsceneSkipProgressBar);
+		cutsceneSkipProgressBar.cameras = [game.camOther];
+	}
+
+	cutsceneData = Paths.json("songs/" + PlayState.songId + "/" + data);
+	for (object in cutsceneData.objects)
+	{
+		var obj = null;
+		var objId = object.asset;
+
+		switch (object.type)
+		{
+			case "sparrow":
+				obj = CreateSprite(object.asset, object.x, object.y);
+				for (anim in object.animations)
+					obj.addAnim(anim.name, anim.prefix, anim.fps, anim.loop);
+				cutsceneSprites.push(obj);
+
+			case "atlas":
+				obj = new FlxAnimate(object.x, object.y, Paths.atlas(object.asset));
+				for (anim in object.animations)
+				{
+					if (anim.frameName)
+						obj.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
+					else
+						obj.anim.addBySymbol(anim.name, anim.prefix, anim.offsets[0], anim.offsets[1], anim.fps);
+				}
+				cutsceneAtlases.push(obj);
+		}
+
+		var relative = getObject(object.relativeTo);
+		if (relative != null)
+		{
+			obj.x += relative.x;
+			obj.y += relative.y;
+			obj.scrollFactor.set(relative.scrollFactor.x, relative.scrollFactor.y);
+			insert(game.members.indexOf(relative), obj);
+		}
+
+		cutsceneObjects[objId] = obj;
+	}
+	for (event in cutsceneData.events)
+	{
+		if (event.type == "playSound" && !cutsceneSounds.exists(event.sound))
+		{
+			var snd = new FlxSound().loadEmbedded((Paths.musicExists(event.sound) ? Paths.music(event.sound) : Paths.sound(event.sound)));
+			if (!Options.options.naughtiness && event.soundCensor != null)
+				snd.loadEmbedded((Paths.musicExists(event.soundCensor) ? Paths.music(event.soundCensor) : Paths.sound(event.soundCensor)));
+			FlxG.sound.list.add(snd);
+			cutsceneSounds[event.sound] = snd;
+		}
+		else if (event.type == "playRandomSound")
+		{
+			for (s in event.sounds)
+				FlxG.sound.cache(Paths.sound(s));
+		}
+	}
+
+	censor = CreateSprite("week7/censor");
+	censor.addAnim("censor", "mouth censor", 24);
+	censor.playAnim("censor");
+	insert(game.members.indexOf(game.player1), censor);
+	censor.alpha = 0.001;
+}
+
+function startCutscene()
+{
+	cutsceneProgress = 0;
+	inCutscene = true;
+}
+
+function endCutscene()
+{
+	inCutscene = false;
+	game.subtitles = "";
+
+	if (game.endingSong)
+	{
+		game.canEndSong = true;
+		game.endSong();
+	}
+	else
+	{
+		for (obj in cutsceneHiddenObjects)
+			obj.alpha = 1;
+
+		for (k in cutsceneObjects.keys())
+		{
+			remove(cutsceneObjects[k], true);
+			cutsceneObjects[k].destroy();
+		}
+
+		FlxTween.tween(game.camHUD, {alpha: 1}, 0.5);
+		game.canStartCountdown = true;
+		game.startCountdown();
+
+		game.camZoom = FlxG.camera.zoom;
+		FlxTween.tween(game, {camZoom: game.stage.stageData.camZoom}, (Conductor.beatLength / 1000) * 1.25, { ease: FlxEase.quadInOut });
+	}
+}
+
+function playAnimSprite(spr, anim, time)
+{
+	spr.playAnim(anim, true);
+	if (!spr.animation.curAnim.looped)
+		syncedSprites.push([spr, time]);
+}
+
+function playAnimAtlas(spr, anim, time)
+{
+	spr.playAnim(anim, true);
+	syncedAtlases.push([spr, time]);
+}
+
+function update(elapsed)
+{
+	if (inCutscene)
+	{
+		if (Options.keyPressed("introSkip"))
+		{
+			if (cutsceneSkipProgress < 1)
+			{
+				cutsceneSkipProgress += elapsed;
+				cutsceneSkipProgressBar.value = cutsceneSkipProgress;
+				cutsceneSkipProgressBar.alpha = Math.min(1, cutsceneSkipProgress * 10);
+			}
+			else
+			{
+				cutsceneSkipProgressBar.value = 1;
+				FlxTween.tween(cutsceneSkipProgressBar, {alpha: 0}, 0.25);
+
+				for (k in cutsceneSounds.keys())
+				{
+					FlxTween.cancelTweensOf(cutsceneSounds[k]);
+					if (cutsceneSounds[k].playing)
+						cutsceneSounds[k].stop();
+				}
+
+				endCutscene();
+				return;
+			}
+		}
+		else
+		{
+			cutsceneSkipProgress = 0;
+			cutsceneSkipProgressBar.alpha = 0;
+		}
+
+		cutsceneProgress += elapsed;
+
+		var poppers = [];
+		for (e in cutsceneData.events)
+		{
+			if (cutsceneProgress >= e.time)
+			{
+				switch (e.type)
+				{
+					case "show":
+						var obj = getObject(e.object);
+						if (cutsceneHiddenObjects.contains(obj))
+						{
+							cutsceneHiddenObjects.remove(obj);
+							obj.alpha = 1;
+						}
+
+					case "hide":
+						var obj = getObject(e.object);
+						obj.alpha = 0.001;
+						if (!cutsceneHiddenObjects.contains(obj))
+							cutsceneHiddenObjects.push(obj);
+
+					case "playAnim":
+						var obj = getObject(e.object);
+						if (cutsceneSprites.contains(obj))
+							playAnimSprite(obj, e.animation, e.time);
+						else if (cutsceneAtlases.contains(obj))
+							playAnimAtlas(obj, e.animation, e.time);
+						else if (e.important)
+							obj.playAnim(e.animation, true, true);
+						else
+							obj.playAnim(e.animation, true);
+
+					case "finishAnim":
+						var obj = getObject(e.object);
+						obj.animation.finish();
+
+					case "playSound":
+						cutsceneSounds[e.sound].volume = e.volume;
+						cutsceneSounds[e.sound].play();
+						syncedSounds.push([cutsceneSounds[e.sound], e.time]);
+
+					case "playRandomSound": PlaySound(e.sounds[FlxG.random.int(0, e.sounds.length - 1)], e.volume);
+
+					case "fadeSound": FlxTween.tween(cutsceneSounds[e.sound], {volume: e.volume}, e.tweenTime);
+
+					case "subtitle": game.subtitles = Lang.get(e.text);
+
+					case "applyCensor":
+						if (!Options.options.naughtiness)
+						{
+							censor.alpha = 1;
+							censor.setPosition(game.player2.x + e.x, game.player2.y + e.y);
+							new FlxTimer().start(e.length, function(tmr) { censor.alpha = 0.001; });
+						}
+
+					case "cameraPosition":
+						var pos = [e.x, e.y];
+						var obj = getObject(e.relativeTo);
+						if (obj != null)
+						{
+							if (e.relativeToCamera)
+							{
+								pos[0] += obj.cameraX;
+								pos[1] += obj.cameraY;
+							}
+							else
+							{
+								pos[0] += obj.getGraphicMidpoint().x;
+								pos[1] += obj.getGraphicMidpoint().y;
+							}
+						}
+						FlxTween.cancelTweensOf(game.camFollow);
+						FlxTween.cancelTweensOf(game.camFollowPos);
+						switch (e.movementType)
+						{
+							case "tween": FlxTween.tween(game.camFollow, {x: pos[0], y: pos[1]}, e.tweenTime, {ease: Reflect.field(FlxEase, e.ease)}); FlxTween.tween(game.camFollowPos, {x: pos[0], y: pos[1]}, e.tweenTime, {ease: Reflect.field(FlxEase, e.ease)});
+							case "instant": game.camFollow.setPosition(pos[0], pos[1]); game.snapCamera();
+							default: game.camFollow.setPosition(pos[0], pos[1]);
+						}
+
+					case "cameraZoom":
+						var zoom = e.zoom;
+						switch (e.relativeTo)
+						{
+							case "stage": zoom *= game.camZoom;
+						}
+						FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
+						if (e.tweenTime > 0)
+							FlxTween.tween(FlxG.camera, {zoom: zoom}, e.tweenTime, {ease: Reflect.field(FlxEase, e.ease)});
+						else
+							FlxG.camera.zoom = zoom;
+
+					case "cameraShake": FlxG.camera.shake(e.intensity, e.length);
+
+					case "cameraFade": FlxG.camera.fade(FlxColor.fromString(e.color), e.length, e.fadeIn, null, true);
+
+					case "cutsceneEvent": game.hscriptExec("cutsceneEvent", [e.parameters]);
+
+					case "endCutscene": endCutscene();
+				}
+
+				poppers.push(e);
+			}
+		}
+		for (p in poppers)
+			cutsceneData.events.remove(p);
+
+		poppers = [];
+		for (s in syncedSprites)
+		{
+			if (s[0].animation.curAnim != null)
+			{
+				if (s[0].animation.curAnim.finished)
+					poppers.push(s);
+				else
+					s[0].animation.curAnim.curFrame = (cutsceneProgress - s[1]) * 24;
+			}
+		}
+		for (p in poppers)
+			syncedSprites.remove(p);
+
+		poppers = [];
+		for (s in syncedAtlases)
+		{
+			if ((cutsceneProgress - s[1]) * 24 < s[0].anim.frameLength)
+				s[0].anim.curFrame = (cutsceneProgress - s[1]) * 24;
+			else
+				poppers.push(s);
+		}
+		for (p in poppers)
+			syncedAtlases.remove(p);
+
+		poppers = [];
+		for (s in syncedSounds)
+		{
+			if (s[0].playing)
+			{
+				if (Math.abs(((cutsceneProgress - s[1]) * 1000) - s[0].time) > 100)
+					s[0].time = ((cutsceneProgress - s[1]) * 1000);
+			}
+			else
+				poppers.push(s);
+		}
+		for (p in poppers)
+			syncedSounds.remove(p);
+	}
+}
+
+function getObject(obj)
+{
+	switch (obj)
+	{
+		case "player1": return game.player1;
+		case "player2": return game.player2;
+		case "gf": return game.gf;
+	}
+
+	if (game.stage.pieces.exists(obj))
+		return game.stage.pieces[obj];
+
+	if (cutsceneObjects.exists(obj))
+		return cutsceneObjects[obj];
+
+	return null;
+}

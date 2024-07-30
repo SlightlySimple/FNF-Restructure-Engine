@@ -1,0 +1,10 @@
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		game.camFollow.setPosition(game.player2.cameraX, game.player2.cameraY);
+		PlaySound("week6/ANGRY_TEXT_BOX");
+		var dialogue = new Dialogue("dialogue");
+		new FlxTimer().start(2, function(tmr) { add(dialogue); });
+	}
+}

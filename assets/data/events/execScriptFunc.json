@@ -4,24 +4,23 @@
 		{
 			"id": "id",
 			"label": "Script ID",
+			"infoText": "The ID of the script to affect.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "func",
 			"label": "Function",
+			"infoText": "The name of the function to execute.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "params",
 			"label": "Parameters",
+			"infoText": "The parameters to execute the function with. Parameters should be a comma-separated list such as \"1,2,3\".",
 			"type": "string",
 			"defaultValue": ""
-		},
-		{
-			"type": "label",
-			"label": "Parameters should be a comma-separated list such as \"1,2,3\""
 		}
 	]
 }

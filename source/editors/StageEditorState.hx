@@ -7,139 +7,126 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.util.FlxTimer;
 import flixel.math.FlxPoint;
 import flixel.addons.display.FlxBackdrop;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
 import flixel.util.FlxAxes;
 import flixel.util.FlxColor;
+import flixel.input.keyboard.FlxKey;
+import helpers.DeepEquals;
+import helpers.Cloner;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 import data.ObjectData;
 import data.Options;
+import data.Song;
 import objects.AnimatedSprite;
 import objects.Character;
 import objects.Stage;
 import haxe.Json;
+import haxe.ds.ArraySort;
+import sys.io.File;
 import menus.EditorMenuState;
 import shaders.ColorFade;
 
 import lime.app.Application;
 
-import funkui.TabMenu;
-import funkui.Checkbox;
-import funkui.ColorSwatch;
-import funkui.DropdownMenu;
-import funkui.InputText;
-import funkui.Label;
-import funkui.ObjectMenu;
-import funkui.Stepper;
-import funkui.TextButton;
+import newui.UIControl;
+import newui.InfoBox;
+import newui.TopMenu;
+import newui.TabMenu;
+import newui.Button;
+import newui.Label;
+import newui.ColorPickSubstate;
+import newui.Draggable;
+import newui.InputText;
+import newui.Checkbox;
+import newui.Stepper;
+import newui.DropdownMenu;
+import newui.PopupWindow;
 
 using StringTools;
 
-class StageEditorState extends MusicBeatState
+class StageEditorState extends BaseEditorState
 {
-	public static var newStage:Bool = false;
-	public static var curStage:String = "";
-
 	var myStage:Array<FlxSprite> = [];
+	var allCharacters:Array<Character> = [];
 	var myStageGroup:FlxSpriteGroup;
-	public var stageData:StageData;
 	var hoveredObject:FlxSprite = null;
 	var hoverShader:ColorFade;
 	var selectionShader:ColorFade;
 
+	public var stageData:StageData;
+	var dataLog:Array<StageData> = [];
+
 	var camFollow:FlxObject;
-	public var camGame:FlxCamera;
-	var camHUD:FlxCamera;
-	var camPosText:FlxText;
 	var mousePos:FlxPoint;
 
 	var	movingCamera:Bool = false;
 	var	movingPiece:Bool = false;
-	var movingCharacter:Bool = false;
-	var dragStart:Array<Int> = [0, 0];
+	var dragStart:Array<Array<Int>> = [];
 	var dragOffset:Array<Float> = [0, 0];
+	var posLocked:Bool = false;
 
+	var stagePieceList:Array<Array<Dynamic>>;
+	var stagePieces:Draggable;
+	var stagePieceButtons:FlxSpriteGroup = null;
+	var stagePieceButtonBG:FlxSprite;
+	var stagePieceBar:FlxSprite;
+	var stagePieceText:FlxTypedSpriteGroup<FlxText> = null;
+	var hoveredStagePiece:Int = -1;
+	var hoveredStageButton:Int = -1;
+	var selectedStagePieces:Array<Int> = [];
 	var curStagePiece:Int = -1;
+	var curCharacter:Int = -1;
+	var listOffset:Int = -1;
 
-	var allCharacters:Array<Character> = [];
+	var cameraBox:Draggable;
+	var camPosText:FlxText;
 
-	var tabMenu:IsolatedTabMenu;
-	var tabButtons:TabButtons;
+	var piecePosBox:Draggable;
+	var piecePosText:FlxText;
 
-	var posLocked:Checkbox;
-	var gridSnapX:Stepper;
-	var gridSnapY:Stepper;
+	var gridSnapX:Int = 5;
+	var gridSnapY:Int = 5;
 
-	var characterCount:Stepper;
-	var characterId:Stepper;
-	var charIndex:DropdownMenu;
 	var charAnim:DropdownMenu;
-	var charX:Stepper;
-	var charY:Stepper;
-	var charFlip:Checkbox;
-	var charLayer:Stepper;
-	var charScaleX:Stepper;
-	var charScaleY:Stepper;
-	var charScrollX:Stepper;
-	var charScrollY:Stepper;
-	var charCamX:Stepper;
-	var charCamY:Stepper;
-	var charCamAbsolute:Checkbox;
 
-	var pieceList:ObjectMenu = null;
+	var pieceProperties:VBoxScrollable;
+	var piecePropertiesBlank:Label;
+	var piecePropertiesSlot:VBox;
+	var piecePropertiesGroup:VBox;
+	var piecePropertiesSubSlot:VBox;
+	var piecePropertiesSubGroup:VBox;
+	var piecePropertiesNonSolidSlot:VBox;
+	var piecePropertiesNonSolidGroup:VBox;
+	var piecePropertiesSolidSlot:VBox;
+	var piecePropertiesSolidGroup:VBox;
+	var piecePropertiesNonTiledSlot:VBox;
+	var piecePropertiesNonTiledGroup:VBox;
+	var piecePropertiesTiledSlot:VBox;
+	var piecePropertiesTiledGroup:VBox;
+	var piecePropertiesAnimatedTiledSlot:VBox;
+	var piecePropertiesAnimatedTiledGroup:VBox;
+	var piecePropertiesCharacterGroup:VBox;
+	var pieceParams:Array<FlxSprite> = [];
+
 	var pieceId:InputText;
 	var typesList:Array<Array<String>> = [[],[]];
 	var typeDropdown:DropdownMenu;
 	var imageDropdown:DropdownMenu;
 	var pieceX:Stepper;
 	var pieceY:Stepper;
-	var pieceScrollX:Stepper;
-	var pieceScrollY:Stepper;
-	var pieceFlipX:Checkbox;
-	var pieceFlipY:Checkbox;
-	var pieceVisible:Checkbox;
-	var pieceScaleX:Stepper;
-	var pieceScaleY:Stepper;
-	var pieceUpdateHitbox:Checkbox;
-	var pieceAlign:DropdownMenu;
-	var alignList:Array<String> = [
-		"topleft",
-		"topcenter",
-		"topright",
-		"middleleft",
-		"middlecenter",
-		"middleright",
-		"bottomleft",
-		"bottomcenter",
-		"bottomright"
-	];
-	var pieceLayer:Stepper;
-	var pieceAntialias:Checkbox;
-	var pieceTileX:Checkbox;
-	var pieceTileY:Checkbox;
-	var pieceTileCountX:Stepper;
-	var pieceTileCountY:Stepper;
-	var pieceAlpha:Stepper;
-	var pieceBlend:DropdownMenu;
-	var blendList:Array<String> = [
-		"normal",
-		"add",
-		"alpha",
-		"darken",
-		"difference",
-		"erase",
-		"hardlight",
-		"invert",
-		"layer",
-		"lighten",
-		"multiply",
-		"overlay",
-		"screen",
-		"shader",
-		"subtract"
-	];
+	var pieceParamNames:Map<String, String> = new Map<String, String>();
 
+	var pieceAnimations:VBoxScrollable;
+	var pieceAnimationsBlank:Label;
+	var pieceAnimationsSlot:VBox;
+	var pieceAnimationsGroup:VBox;
+
+	var allAnimData:String = "";
 	var animName:InputText;
 	var animPrefix:InputText;
 	var animPrefixes:DropdownMenu;
@@ -150,25 +137,21 @@ class StageEditorState extends MusicBeatState
 	var animOffsetY:Stepper;
 	var curAnimDropdown:DropdownMenu;
 	var firstAnimDropdown:DropdownMenu;
-	var beatAnimInput:InputText;
 	var beatAnimSpeed:Stepper;
+
+	var topmenu:TopMenu;
 
 	override public function create()
 	{
-		camGame = new FlxCamera();
-		FlxG.cameras.add(camGame);
+		mousePos = FlxPoint.get();
+
+		super.create();
+		filenameNew = "New Stage";
 
 		camFollow = new FlxObject();
 		camFollow.screenCenter();
 		camGame.follow(camFollow, LOCKON, 1);
 
-		camHUD = new FlxCamera();
-		camHUD.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camHUD, false);
-
-		mousePos = FlxPoint.get();
-
-		super.create();
 		hoverShader = new ColorFade();
 		hoverShader.color = FlxColor.LIME;
 		hoverShader.amount = 0.15;
@@ -176,28 +159,27 @@ class StageEditorState extends MusicBeatState
 		selectionShader.color = FlxColor.LIME;
 		selectionShader.amount = 0.25;
 
-		if (newStage)
+		if (isNew)
 		{
 			stageData =
 			{
-				searchDirs: ["stages/" + curStage + "/"],
-				characters: [{position: [500, 0], camPosition: [0, 0], flip: true, scale: [1, 1], scrollFactor: [1, 1], layer: 2},
-				{position: [0, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [1, 1], layer: 1},
-				{position: [250, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [0.95, 0.95], layer: 0}],
+				fixes: 1,
+				searchDirs: [],
+				characters: [
+					{position: [500, 0], camPosition: [0, 0], flip: true, scale: [1, 1], scrollFactor: [1, 1], layer: 2},
+					{position: [0, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [1, 1], layer: 1},
+					{position: [250, 0], camPosition: [0, 0], flip: false, scale: [1, 1], scrollFactor: [0.95, 0.95], layer: 0}
+				],
+				pieces: [],
 				camZoom: 1,
 				camFollow: [Std.int(FlxG.width / 2), Std.int(FlxG.height / 2)],
 				bgColor: [0, 0, 0],
-				pixelPerfect: false,
-				pieces: []
-			}
-			if (curStage.indexOf("/") > -1)
-			{
-				var dir:String = curStage.substr(0, curStage.lastIndexOf("/")+1);
-				stageData.searchDirs.unshift(dir + "stages/" + curStage.replace(dir, "") + "/");
+				script: "",
+				pixelPerfect: false
 			}
 		}
 		else
-			stageData = Stage.parseStage(curStage, Paths.json("stages/" + curStage));
+			stageData = Stage.parseStage(id, Paths.json("stages/" + id));
 
 		camFollow.x = stageData.camFollow[0];
 		camFollow.y = stageData.camFollow[1];
@@ -206,111 +188,215 @@ class StageEditorState extends MusicBeatState
 		myStageGroup = new FlxSpriteGroup();
 		add(myStageGroup);
 
-		for (i in 0...stageData.characters.length)
-			spawnCharacter();
-
 		myStage = [];
 		refreshStage();
 		refreshSelectionShader();
 
-		camPosText = new FlxText(10, 10, 0, "", 16);
-		camPosText.font = "VCR OSD Mono";
-		camPosText.borderColor = FlxColor.BLACK;
-		camPosText.borderStyle = OUTLINE;
-		camPosText.cameras = [camHUD];
-		add(camPosText);
+
+
+		stagePieces = new Draggable(990, 250, "pieceBox", 50);
+		stagePieces.cameras = [camHUD];
+		add(stagePieces);
+
+		stagePieceButtons = new FlxSpriteGroup();
+
+		var pieceMoveBottomGraphic:FlxSprite = new FlxSprite(Std.int(stagePieces.width / 2) - 60, Std.int(stagePieces.height - 50), Paths.image("ui/editors/pieceMoveBottom"));
+		pieceMoveBottomGraphic.color = FlxColor.BLACK;
+		stagePieceButtons.add(pieceMoveBottomGraphic);
+
+		var pieceMoveDownGraphic:FlxSprite = new FlxSprite(pieceMoveBottomGraphic.x + 30, pieceMoveBottomGraphic.y, Paths.image("ui/editors/pieceMoveDown"));
+		pieceMoveDownGraphic.color = FlxColor.BLACK;
+		stagePieceButtons.add(pieceMoveDownGraphic);
+
+		var pieceMoveUpGraphic:FlxSprite = new FlxSprite(pieceMoveDownGraphic.x + 30, pieceMoveDownGraphic.y, Paths.image("ui/editors/pieceMoveUp"));
+		pieceMoveUpGraphic.color = FlxColor.BLACK;
+		stagePieceButtons.add(pieceMoveUpGraphic);
+
+		var pieceMoveTopGraphic:FlxSprite = new FlxSprite(pieceMoveUpGraphic.x + 30, pieceMoveUpGraphic.y, Paths.image("ui/editors/pieceMoveTop"));
+		pieceMoveTopGraphic.color = FlxColor.BLACK;
+		stagePieceButtons.add(pieceMoveTopGraphic);
+
+		stagePieceButtonBG = new FlxSprite(0, pieceMoveBottomGraphic.y).makeGraphic(30, 30, 0xFF254949);
+		stagePieceButtonBG.visible = false;
+		stagePieces.add(stagePieceButtonBG);
+		stagePieces.add(stagePieceButtons);
+
+		stagePieceBar = new FlxSprite(20, 0).makeGraphic(240, 24, 0xFF254949);
+		stagePieceBar.visible = false;
+		stagePieces.add(stagePieceBar);
+
+		stagePieceText = new FlxTypedSpriteGroup<FlxText>();
+		stagePieces.add(stagePieceText);
+
+		for (i in 0...16)
+		{
+			var txt:FlxText = new FlxText(20, 50 + (i * 20), 240, "").setFormat("FNF Dialogue", 20, FlxColor.BLACK, CENTER);
+			txt.wordWrap = false;
+			stagePieceText.add(txt);
+		}
+		refreshStagePieces();
+		recalculateLayers();
 
 
 
-		tabMenu = new IsolatedTabMenu(50, 50, 250, 510);
-		tabMenu.cameras = [camHUD];
-		tabMenu.onTabChanged = refreshSelectionShader;
-		add(tabMenu);
+		cameraBox = new Draggable(310, 615, "cameraBox");
+		cameraBox.cameras = [camHUD];
+		add(cameraBox);
 
-		tabButtons = new TabButtons(0, 0, 550, ["Settings", "Characters", "Pieces", "Properties", "Animations", "Help"]);
-		tabButtons.cameras = [camHUD];
-		tabButtons.menu = tabMenu;
-		add(tabButtons);
+		var hbox:HBox = new HBox(5, 5);
+		hbox.spacing = 5;
+
+		var camButton:Button = new Button(0, 0, "buttonCamera", function() { stageData.camFollow = [snapToGrid(camFollow.x, X), snapToGrid(camFollow.y, Y)]; }, function() {
+			camFollow.x = stageData.camFollow[0];
+			camFollow.y = stageData.camFollow[1];
+		});
+		camButton.infoText = "Set the camera's starting position based on the camera's current location in the editor. Right click to teleport the camera to the starting position.";
+		hbox.add(camButton);
+
+		camPosText = new FlxText(0, 0, 0, "Camera X: 0\nCamera Y: 0\nCamera Z: 0");
+		camPosText.setFormat("FNF Dialogue", 20, FlxColor.WHITE, LEFT, OUTLINE, 0xFF254949);
+		camPosText.borderSize = 2;
+		hbox.add(camPosText);
+
+		cameraBox.add(hbox);
 
 
 
-		var tabGroupSettings = new TabGroup();
+		piecePosBox = new Draggable(760, 615, "cameraBox");
+		piecePosBox.cameras = [camHUD];
+		add(piecePosBox);
 
-		var loadButton:TextButton = new TextButton(10, 10, 115, 20, "Load");
-		loadButton.onClicked = loadStage;
-		tabGroupSettings.add(loadButton);
+		hbox = new HBox(5, 5);
 
-		var saveButton:TextButton = new TextButton(loadButton.x + 115, loadButton.y, 115, 20, "Save");
-		saveButton.onClicked = saveStage;
-		tabGroupSettings.add(saveButton);
+		piecePosText = new FlxText(0, 0, 0, "No Piece Selected");
+		piecePosText.setFormat("FNF Dialogue", 17, FlxColor.WHITE, LEFT, OUTLINE, 0xFF254949);
+		piecePosText.borderSize = 2;
+		hbox.add(piecePosText);
 
-		posLocked = new Checkbox(10, saveButton.y + 30, "Lock Positions", true);
-		tabGroupSettings.add(posLocked);
+		piecePosBox.add(hbox);
 
-		var camZoomStepper:Stepper = new Stepper(10, posLocked.y + 40, 230, 20, stageData.camZoom, 0.05, 0.001, 9999, 3);
+
+
+		createUI("StageEditor");
+
+
+
+		var camZoomStepper:Stepper = cast element("camZoomStepper");
+		camZoomStepper.value = stageData.camZoom;
+		camZoomStepper.condition = function() { return stageData.camZoom; }
 		camZoomStepper.onChanged = function()
 		{
 			stageData.camZoom = camZoomStepper.value;
 			camGame.zoom = stageData.camZoom;
 		}
-		tabGroupSettings.add(camZoomStepper);
-		tabGroupSettings.add(new Label("Camera Zoom:", camZoomStepper));
 		camGame.zoom = stageData.camZoom;
 
-		var camFollowXStepper:Stepper = new Stepper(10, camZoomStepper.y + 40, 115, 20, stageData.camFollow[0], 10);
+		var camFollowXStepper:Stepper = cast element("camFollowXStepper");
+		camFollowXStepper.value = stageData.camFollow[0];
+		camFollowXStepper.condition = function() { return stageData.camFollow[0]; }
 		camFollowXStepper.onChanged = function() { stageData.camFollow[0] = camFollowXStepper.valueInt; }
-		tabGroupSettings.add(camFollowXStepper);
-		var camFollowYStepper:Stepper = new Stepper(camFollowXStepper.x + 115, camFollowXStepper.y, 115, 20, stageData.camFollow[1], 10);
+
+		var camFollowYStepper:Stepper = cast element("camFollowYStepper");
+		camFollowYStepper.value = stageData.camFollow[1];
+		camFollowYStepper.condition = function() { return stageData.camFollow[1]; }
 		camFollowYStepper.onChanged = function() { stageData.camFollow[1] = camFollowYStepper.valueInt; }
-		tabGroupSettings.add(camFollowYStepper);
-		tabGroupSettings.add(new Label("Camera Starting Position:", camFollowXStepper));
 
-		var camTestButton:TextButton = new TextButton(10, camFollowYStepper.y + 30, 115, 20, "Test");
-		camTestButton.onClicked = function() {
-			camFollow.x = stageData.camFollow[0];
-			camFollow.y = stageData.camFollow[1];
-		};
-		tabGroupSettings.add(camTestButton);
+		var camCenterOnChars:Button = cast element("camCenterOnChars");
+		camCenterOnChars.onClicked = function() {
+			var coords:Array<Float> = [allCharacters[0].getGraphicMidpoint().x, allCharacters[0].getGraphicMidpoint().y, allCharacters[1].getGraphicMidpoint().x, allCharacters[1].getGraphicMidpoint().y];
+			var pos1:Array<Float> = [Math.min(coords[0], coords[2]), Math.min(coords[1], coords[3])];
+			var pos2:Array<Float> = [Math.max(coords[0], coords[2]), Math.max(coords[1], coords[3])];
+			stageData.camFollow[0] = Std.int(Math.round((pos1[0] + ((pos2[0] - pos1[0]) / 2)) / 5) * 5);
+			stageData.camFollow[1] = Std.int(Math.round((pos1[1] + ((pos2[1] - pos1[1]) / 2)) / 5) * 5);
+			if (allCharacters.length > 2)
+				stageData.camFollow[1] = Std.int(Math.round((allCharacters[2].getMidpoint().y + allCharacters[2].characterData.camPosition[1]) / 5) * 5);
+		}
 
-		var camSetButton:TextButton = new TextButton(camTestButton.x + 115, camTestButton.y, 115, 20, "Set");
-		camSetButton.onClicked = function() {
-			stageData.camFollow = [snapToGrid(camFollow.x, X), snapToGrid(camFollow.y, Y)];
-			camFollowXStepper.value = stageData.camFollow[0];
-			camFollowYStepper.value = stageData.camFollow[1];
-		};
-		tabGroupSettings.add(camSetButton);
+		var camCenterOnGF:Button = cast element("camCenterOnGF");
+		camCenterOnGF.onClicked = function() {
+			if (allCharacters.length > 2)
+			{
+				stageData.camFollow[0] = Std.int(Math.round((allCharacters[2].getMidpoint().x + (allCharacters[2].characterData.camPosition[0] * (stageData.characters[2].flip ? -1 : 1))) / 5) * 5);
+				stageData.camFollow[1] = Std.int(Math.round((allCharacters[2].getMidpoint().y + allCharacters[2].characterData.camPosition[1]) / 5) * 5);
+			}
+		}
 
-		var pixelPerfectCheckbox:Checkbox = new Checkbox(10, camSetButton.y + 30, "Pixel Perfect", stageData.pixelPerfect);
+		var pixelPerfectCheckbox:Checkbox = cast element("pixelPerfectCheckbox");
+		pixelPerfectCheckbox.checked = stageData.pixelPerfect;
+		pixelPerfectCheckbox.condition = function() { return stageData.pixelPerfect; }
 		pixelPerfectCheckbox.onClicked = function() {
 			stageData.pixelPerfect = pixelPerfectCheckbox.checked;
 			for (m in myStageGroup.members)
 				m.pixelPerfect = stageData.pixelPerfect;
 		}
-		tabGroupSettings.add(pixelPerfectCheckbox);
 
-		var searchDirsInput:InputText = new InputText(10, pixelPerfectCheckbox.y + 40, stageData.searchDirs.join(","));
-		searchDirsInput.focusGained = function() {
-			searchDirsInput.text = stageData.searchDirs.join(",");
-		}
-		searchDirsInput.focusLost = function() {
-			searchDirsInput.text = stageData.searchDirs.join(",");
-		}
-		searchDirsInput.callback = function(text:String, action:String) {
-			stageData.searchDirs = text.split(",");
+		var searchDirsButton:TextButton = cast element("searchDirsButton");
+		searchDirsButton.onClicked = function() {
+			var window:PopupWindow = null;
+			var vbox:VBox = new VBox(35, 35);
 
-			if (stageData.searchDirs.length == 1 && stageData.searchDirs[0].trim() == "")
-				stageData.searchDirs = [];
-			else
+			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+			var scroll:VBox = menu.vbox;
+
+			for (i in 0...stageData.searchDirs.length)
 			{
-				for (i in 0...stageData.searchDirs.length)
-				{
-					if (!stageData.searchDirs[i].endsWith("/"))
-						stageData.searchDirs[i] += "/";
+				var dirHbox:HBox = new HBox();
+				var dir:InputText = new InputText(0, 0, stageData.searchDirs[i]);
+				dir.focusLost = function() {
+					if (dir.text.trim() != "" && !dir.text.endsWith("/"))
+						dir.text += "/";
+					stageData.searchDirs[i] = dir.text;
 				}
+				dirHbox.add(dir);
+				var dirBrowse:Button = new Button(0, 0, "buttonLoad", function() {
+					var file:FileBrowser = new FileBrowser();
+					file.loadCallback = function(fullPath:String) {
+						var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
+						if (nameArray.indexOf("images") != -1)
+						{
+							while (nameArray[0] != "images")
+								nameArray.shift();
+							nameArray.shift();
+							nameArray.pop();
+
+							var finalName = nameArray.join("/") + "/";
+							dir.text = finalName;
+							dir.focusLost();
+						}
+					}
+					file.load("png");
+				});
+				dirHbox.add(dirBrowse);
+				var _remove:Button = new Button(0, 0, "buttonTrash");
+				_remove.onClicked = function() {
+					stageData.searchDirs.splice(i, 1);
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { searchDirsButton.onClicked(); });
+				}
+				dirHbox.add(_remove);
+				scroll.add(dirHbox);
 			}
+
+			if (stageData.searchDirs.length > 0)
+				vbox.add(menu);
+
+			var _add:TextButton = new TextButton(0, 0, "Add");
+			_add.onClicked = function() {
+				stageData.searchDirs.push("");
+				window.close();
+				new FlxTimer().start(0.01, function(tmr:FlxTimer) { searchDirsButton.onClicked(); });
+			}
+			vbox.add(_add);
+
+			var accept:TextButton = new TextButton(0, 0, "Accept");
+			accept.onClicked = function() {
+				searchDirsChanged();
+				window.close();
+			}
+			vbox.add(accept);
+
+			window = PopupWindow.CreateWithGroup(vbox);
 		}
-		tabGroupSettings.add(searchDirsInput);
-		tabGroupSettings.add(new Label("Asset Directories:", searchDirsInput));
 
 		var scriptList:Array<String> = [""];
 		for (s in Paths.listFilesSub("data/stages/", ".hscript"))
@@ -318,378 +404,665 @@ class StageEditorState extends MusicBeatState
 		for (s in Paths.listFilesSub("data/scripts/", ".hscript"))
 			scriptList.push("scripts/" + s);
 
-		if (stageData.script == "stages/" + curStage)
+		if (stageData.script == "stages/" + id)
 			stageData.script = "";
-		var scriptDropdown:DropdownMenu = new DropdownMenu(10, searchDirsInput.y + 40, 230, 20, stageData.script, scriptList, true);
+		var scriptDropdown:DropdownMenu = cast element("scriptDropdown");
+		scriptDropdown.valueList = scriptList;
+		scriptDropdown.value = stageData.script;
+		scriptDropdown.condition = function() { return stageData.script; }
 		scriptDropdown.onChanged = function() {
 			stageData.script = scriptDropdown.value;
-		};
-		tabGroupSettings.add(scriptDropdown);
-		tabGroupSettings.add(new Label("Script (Optional):", scriptDropdown));
+		}
 
-		var bgColor:TextButton = new TextButton(10, scriptDropdown.y + 30, 230, 20, "Background Color");
+		var bgColor:Button = cast element("bgColor");
 		bgColor.onClicked = function() {
+			new ColorPicker(FlxColor.fromRGB(stageData.bgColor[0], stageData.bgColor[1], stageData.bgColor[2]), function(clr:FlxColor) {
+				stageData.bgColor = [clr.red, clr.green, clr.blue];
+				camGame.bgColor = clr;
+			});
+		}
+
+		var bgColorPicker:Button = cast element("bgColorPicker");
+		bgColorPicker.onClicked = function() {
 			persistentUpdate = false;
-			openSubState(new StageColorSubState(this));
-		};
-		tabGroupSettings.add(bgColor);
-
-		gridSnapX = new Stepper(10, bgColor.y + 40, 115, 20, 10, 1, 1);
-		gridSnapX.onChanged = function() { pieceX.stepVal = gridSnapX.value; }
-		tabGroupSettings.add(gridSnapX);
-		gridSnapY = new Stepper(gridSnapX.x + 115, gridSnapX.y, 115, 20, 10, 1, 1);
-		gridSnapY.onChanged = function() { pieceY.stepVal = gridSnapY.value; }
-		tabGroupSettings.add(gridSnapY);
-		tabGroupSettings.add(new Label("Grid Snapping:", gridSnapX));
-
-		tabMenu.addGroup(tabGroupSettings);
+			openSubState(new ColorPickSubstate(function(px:FlxColor) {
+				stageData.bgColor = [px.red, px.green, px.blue];
+				camGame.bgColor = FlxColor.fromRGB(px.red, px.green, px.blue);		// For some reason if I set this directly it winds up being transparent?????????????????????
+			}));
+		}
 
 
-
-		var tabGroupCharacters = new TabGroup();
-
-		characterCount = new Stepper(10, 20, 230, 20, stageData.characters.length, 1, 2);
-		characterCount.onChanged = updateCharacterCount;
-		tabGroupCharacters.add(characterCount);
-		tabGroupCharacters.add(new Label("Character Slots:", characterCount));
-
-		characterId = new Stepper(10, characterCount.y + 40, 230, 20, 0, 1, 0, stageData.characters.length-1);
-		characterId.onChanged = function() {updateCharacterTab(); refreshSelectionShader();};
-		tabGroupCharacters.add(characterId);
-		tabGroupCharacters.add(new Label("Character ID:", characterId));
 
 		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
-		charIndex = new DropdownMenu(10, characterId.y + 40, 230, 20, allCharacters[0].curCharacter, characterList, true);
+		var charIndex:DropdownMenu = cast element("charIndex");
+		charIndex.valueText = Util.getCharacterNames(characterList);
+		charIndex.valueList = characterList;
+		charIndex.value = allCharacters[0].curCharacter;
+		charIndex.condition = function() {
+			if (curCharacter > -1)
+				return allCharacters[curCharacter].curCharacter;
+			return charIndex.value;
+		}
 		charIndex.onChanged = function() {
-			if (charIndex.value != allCharacters[characterId.valueInt].curCharacter)
+			if (charIndex.value != allCharacters[curCharacter].curCharacter)
 			{
-				allCharacters[characterId.valueInt].changeCharacter(charIndex.value);
-				allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+				allCharacters[curCharacter].changeCharacter(charIndex.value);
+				allCharacters[curCharacter].repositionCharacter(stageData.characters[curCharacter].position[0], stageData.characters[curCharacter].position[1]);
 
-				var animList:Array<String> = [];
-				for (a in allCharacters[characterId.valueInt].characterData.animations)
-					animList.push(a.name);
-				charAnim.valueList = animList;
-				charAnim.value = allCharacters[characterId.valueInt].curAnimName;
+				updateCharacterTab();
 			}
 		}
-		tabGroupCharacters.add(charIndex);
-		tabGroupCharacters.add(new Label("Preview Character:", charIndex));
 
-		charAnim = new DropdownMenu(10, charIndex.y + 40, 230, 20, "idle", [], true);
+		charAnim = cast element("charAnim");
+		charAnim.condition = function() {
+			if (curCharacter > -1)
+				return allCharacters[curCharacter].curAnimName;
+			return charAnim.value;
+		}
 		charAnim.onChanged = function() {
-			allCharacters[characterId.valueInt].playAnim(charAnim.value, true);
+			allCharacters[curCharacter].playAnim(charAnim.value, true);
 		}
-		tabGroupCharacters.add(charAnim);
-		tabGroupCharacters.add(new Label("Preview Animation:", charAnim));
 
-		charX = new Stepper(10, charAnim.y + 40, 115, 20, stageData.characters[0].position[0], 10);
+		var charX:Stepper = cast element("charX");
+		charX.value = stageData.characters[0].position[0];
+		charX.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].position[0];
+			return charX.value;
+		}
 		charX.onChanged = function() {
-			stageData.characters[characterId.valueInt].position[0] = charX.valueInt;
-			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+			stageData.characters[curCharacter].position[0] = charX.valueInt;
+			allCharacters[curCharacter].repositionCharacter(stageData.characters[curCharacter].position[0], stageData.characters[curCharacter].position[1]);
 		}
-		tabGroupCharacters.add(charX);
-		charY = new Stepper(charX.x + 115, charX.y, 115, 20, stageData.characters[0].position[1], 10);
+
+		var charY:Stepper = cast element("charY");
+		charY.value = stageData.characters[0].position[1];
+		charY.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].position[1];
+			return charY.value;
+		}
 		charY.onChanged = function() {
-			stageData.characters[characterId.valueInt].position[1] = charY.valueInt;
-			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
+			stageData.characters[curCharacter].position[1] = charY.valueInt;
+			allCharacters[curCharacter].repositionCharacter(stageData.characters[curCharacter].position[0], stageData.characters[curCharacter].position[1]);
 		}
-		tabGroupCharacters.add(charY);
-		tabGroupCharacters.add(new Label("Position:", charX));
 
-		charFlip = new Checkbox(10, charX.y + 40, "Left");
-		charFlip.checked = stageData.characters[0].flip;
-		charFlip.onClicked = function() {
-			stageData.characters[characterId.valueInt].flip = charFlip.checked;
-			if (allCharacters[characterId.valueInt].wasFlipped != charFlip.checked)
-				allCharacters[characterId.valueInt].flip();
+		var charFacingLeft:ToggleButton = cast element("charFacingLeft");
+		charFacingLeft.condition = function() { return stageData.characters[curCharacter].flip; }
+		charFacingLeft.onClicked = function() {
+			stageData.characters[curCharacter].flip = true;
+			if (!allCharacters[curCharacter].wasFlipped)
+				allCharacters[curCharacter].flip();
 		}
-		tabGroupCharacters.add(charFlip);
 
-		charLayer = new Stepper(charFlip.x + 115, charFlip.y, 115, 20, stageData.characters[0].layer, 1, 0, stageData.characters.length-1);
-		charLayer.onChanged = function() { stageData.characters[characterId.valueInt].layer = charLayer.valueInt; postSpawnCharacter(allCharacters[characterId.valueInt]); }
-		tabGroupCharacters.add(charLayer);
-		tabGroupCharacters.add(new Label("Layer:", charLayer));
+		var charFacingRight:ToggleButton = cast element("charFacingRight");
+		charFacingRight.condition = function() { return !stageData.characters[curCharacter].flip; }
+		charFacingRight.onClicked = function() {
+			stageData.characters[curCharacter].flip = false;
+			if (allCharacters[curCharacter].wasFlipped)
+				allCharacters[curCharacter].flip();
+		}
 
-		charScaleX = new Stepper(10, charLayer.y + 40, 115, 20, stageData.characters[0].scale[0], 0.05, 0, 9999, 3);
+		var charScaleX:Stepper = cast element("charScaleX");
+		charScaleX.value = stageData.characters[0].scale[0];
+		charScaleX.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].scale[0];
+			return charScaleX.value;
+		}
+
+		var charScaleY:Stepper = cast element("charScaleY");
+		charScaleY.value = stageData.characters[0].scale[1];
+		charScaleY.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].scale[1];
+			return charScaleY.value;
+		}
+
 		charScaleX.onChanged = function() {
-			stageData.characters[characterId.valueInt].scale[0] = charScaleX.value;
-			allCharacters[characterId.valueInt].scaleCharacter(charScaleX.value, charScaleY.value);
+			stageData.characters[curCharacter].scale[0] = charScaleX.value;
+			allCharacters[curCharacter].scaleCharacter(charScaleX.value, charScaleY.value);
 		}
-		tabGroupCharacters.add(charScaleX);
-		charScaleY = new Stepper(charScaleX.x + 115, charScaleX.y, 115, 20, stageData.characters[0].scale[1], 0.05, 0, 9999, 3);
 		charScaleY.onChanged = function() {
-			stageData.characters[characterId.valueInt].scale[1] = charScaleY.value;
-			allCharacters[characterId.valueInt].scaleCharacter(charScaleX.value, charScaleY.value);
+			stageData.characters[curCharacter].scale[1] = charScaleY.value;
+			allCharacters[curCharacter].scaleCharacter(charScaleX.value, charScaleY.value);
 		}
-		tabGroupCharacters.add(charScaleY);
-		tabGroupCharacters.add(new Label("Scale:", charScaleX));
 
-		charScrollX = new Stepper(10, charScaleX.y + 40, 115, 20, stageData.characters[0].scrollFactor[0], 0.05, 0, 9999, 3);
-		charScrollX.onChanged = function() { stageData.characters[characterId.valueInt].scrollFactor[0] = charScrollX.value; allCharacters[characterId.valueInt].scrollFactor.x = charScrollX.value; }
-		tabGroupCharacters.add(charScrollX);
-		charScrollY = new Stepper(charScrollX.x + 115, charScrollX.y, 115, 20, stageData.characters[0].scrollFactor[1], 0.05, 0, 9999, 3);
-		charScrollY.onChanged = function() { stageData.characters[characterId.valueInt].scrollFactor[1] = charScrollY.value; allCharacters[characterId.valueInt].scrollFactor.y = charScrollY.value; }
-		tabGroupCharacters.add(charScrollY);
-		tabGroupCharacters.add(new Label("Scroll Factor:", charScrollX));
+		var charScrollX:Stepper = cast element("charScrollX");
+		charScrollX.value = stageData.characters[0].scrollFactor[0];
+		charScrollX.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].scrollFactor[0];
+			return charScrollX.value;
+		}
+		charScrollX.onChanged = function() { stageData.characters[curCharacter].scrollFactor[0] = charScrollX.value; allCharacters[curCharacter].scrollFactor.x = charScrollX.value; }
 
-		charCamX = new Stepper(10, charScrollX.y + 40, 115, 20, stageData.characters[0].camPosition[0], 10);
-		charCamX.onChanged = function() { stageData.characters[characterId.valueInt].camPosition[0] = charCamX.valueInt; }
-		tabGroupCharacters.add(charCamX);
-		charCamY = new Stepper(charCamX.x + 115, charCamX.y, 115, 20, stageData.characters[0].camPosition[1], 10);
-		charCamY.onChanged = function() { stageData.characters[characterId.valueInt].camPosition[1] = charCamY.valueInt; }
-		tabGroupCharacters.add(charCamY);
-		tabGroupCharacters.add(new Label("Camera Offset:", charCamX));
+		var charScrollY:Stepper = cast element("charScrollY");
+		charScrollY.value = stageData.characters[0].scrollFactor[1];
+		charScrollY.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].scrollFactor[1];
+			return charScrollY.value;
+		}
+		charScrollY.onChanged = function() { stageData.characters[curCharacter].scrollFactor[1] = charScrollY.value; allCharacters[curCharacter].scrollFactor.y = charScrollY.value; }
 
-		charCamAbsolute = new Checkbox(10, charCamX.y + 30, "Absolute");
+		var charCamX:Stepper = cast element("charCamX");
+		charCamX.value = stageData.characters[0].camPosition[0];
+		charCamX.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].camPosition[0];
+			return charCamX.value;
+		}
+		charCamX.onChanged = function() { stageData.characters[curCharacter].camPosition[0] = charCamX.valueInt; }
+
+		var charCamY:Stepper = cast element("charCamY");
+		charCamY.value = stageData.characters[0].camPosition[1];
+		charCamY.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].camPosition[1];
+			return charCamY.value;
+		}
+		charCamY.onChanged = function() { stageData.characters[curCharacter].camPosition[1] = charCamY.valueInt; }
+
+		var charCamAbsolute:Checkbox = cast element("charCamAbsolute");
 		charCamAbsolute.checked = stageData.characters[0].camPosAbsolute;
-		charCamAbsolute.onClicked = function() { stageData.characters[characterId.valueInt].camPosAbsolute = charCamAbsolute.checked; }
-		tabGroupCharacters.add(charCamAbsolute);
+		charCamAbsolute.condition = function() {
+			if (curCharacter > -1)
+				return stageData.characters[curCharacter].camPosAbsolute;
+			return charCamAbsolute.checked;
+		}
+		charCamAbsolute.onClicked = function() { stageData.characters[curCharacter].camPosAbsolute = charCamAbsolute.checked; }
 
-		var camTestCharButton:TextButton = new TextButton(10, charCamAbsolute.y + 30, 115, 20, "Test");
+		var camTestCharButton:TextButton = cast element("camTestCharButton");
 		camTestCharButton.onClicked = function() {
-			if (stageData.characters[characterId.valueInt].camPosAbsolute)
+			if (stageData.characters[curCharacter].camPosAbsolute)
 			{
-				camFollow.x = stageData.characters[characterId.valueInt].camPosition[0];
-				camFollow.y = stageData.characters[characterId.valueInt].camPosition[1];
+				camFollow.x = stageData.characters[curCharacter].camPosition[0];
+				camFollow.y = stageData.characters[curCharacter].camPosition[1];
 			}
 			else
 			{
-				camFollow.x = allCharacters[characterId.valueInt].getMidpoint().x + (allCharacters[characterId.valueInt].characterData.camPosition[0] * (stageData.characters[characterId.valueInt].flip ? -1 : 1)) + stageData.characters[characterId.valueInt].camPosition[0];
-				camFollow.y = allCharacters[characterId.valueInt].getMidpoint().y + allCharacters[characterId.valueInt].characterData.camPosition[1] + stageData.characters[characterId.valueInt].camPosition[1];
+				camFollow.x = allCharacters[curCharacter].getMidpoint().x + (allCharacters[curCharacter].characterData.camPosition[0] * (stageData.characters[curCharacter].flip ? -1 : 1)) + stageData.characters[curCharacter].camPosition[0];
+				camFollow.y = allCharacters[curCharacter].getMidpoint().y + allCharacters[curCharacter].characterData.camPosition[1] + stageData.characters[curCharacter].camPosition[1];
 			}
 		};
-		tabGroupCharacters.add(camTestCharButton);
 
-		var camSetCharButton:TextButton = new TextButton(camTestCharButton.x + 115, camTestCharButton.y, 115, 20, "Set");
+		var camSetCharButton:TextButton = cast element("camSetCharButton");
 		camSetCharButton.onClicked = function() {
-			if (stageData.characters[characterId.valueInt].camPosAbsolute)
-				stageData.characters[characterId.valueInt].camPosition = [Std.int(camFollow.x), Std.int(camFollow.y)];
+			if (stageData.characters[curCharacter].camPosAbsolute)
+				stageData.characters[curCharacter].camPosition = [Std.int(camFollow.x), Std.int(camFollow.y)];
 			else
 			{
 				var followPos:Array<Int> = [Std.int(camFollow.x), Std.int(camFollow.y)];
-				followPos[0] -= Std.int(allCharacters[characterId.valueInt].characterData.camPosition[0] * (stageData.characters[characterId.valueInt].flip ? -1 : 1));
-				followPos[0] -= Std.int(allCharacters[characterId.valueInt].getMidpoint().x);
-				followPos[1] -= Std.int(allCharacters[characterId.valueInt].characterData.camPosition[1]);
-				followPos[1] -= Std.int(allCharacters[characterId.valueInt].getMidpoint().y);
-				stageData.characters[characterId.valueInt].camPosition = followPos;
+				followPos[0] -= Std.int(allCharacters[curCharacter].characterData.camPosition[0] * (stageData.characters[curCharacter].flip ? -1 : 1));
+				followPos[0] -= Std.int(allCharacters[curCharacter].getMidpoint().x);
+				followPos[1] -= Std.int(allCharacters[curCharacter].characterData.camPosition[1]);
+				followPos[1] -= Std.int(allCharacters[curCharacter].getMidpoint().y);
+				stageData.characters[curCharacter].camPosition = followPos;
 			}
 
-			charCamX.value = stageData.characters[characterId.valueInt].camPosition[0];
-			charCamY.value = stageData.characters[characterId.valueInt].camPosition[1];
+			stageData.characters[curCharacter].camPosition[0] = Math.round(stageData.characters[curCharacter].camPosition[0] / 5) * 5;
+			stageData.characters[curCharacter].camPosition[1] = Math.round(stageData.characters[curCharacter].camPosition[1] / 5) * 5;
 		};
-		tabGroupCharacters.add(camSetCharButton);
-
-		tabMenu.addGroup(tabGroupCharacters);
 
 
 
-		var tabGroupPieces = new TabGroup();
+		pieceProperties = cast element("pieceProperties");
+		piecePropertiesBlank = cast element("piecePropertiesBlank");
+		piecePropertiesSlot = cast element("piecePropertiesSlot");
+		piecePropertiesGroup = cast element("piecePropertiesGroup");
+		piecePropertiesSubSlot = cast element("piecePropertiesSubSlot");
+		piecePropertiesSubGroup = cast element("piecePropertiesSubGroup");
+		piecePropertiesNonSolidSlot = cast element("piecePropertiesNonSolidSlot");
+		piecePropertiesNonSolidGroup = cast element("piecePropertiesNonSolidGroup");
+		piecePropertiesSolidSlot = cast element("piecePropertiesSolidSlot");
+		piecePropertiesSolidGroup = cast element("piecePropertiesSolidGroup");
+		piecePropertiesNonTiledSlot = cast element("piecePropertiesNonTiledSlot");
+		piecePropertiesNonTiledGroup = cast element("piecePropertiesNonTiledGroup");
+		piecePropertiesTiledSlot = cast element("piecePropertiesTiledSlot");
+		piecePropertiesTiledGroup = cast element("piecePropertiesTiledGroup");
+		piecePropertiesAnimatedTiledSlot = cast element("piecePropertiesAnimatedTiledSlot");
+		piecePropertiesAnimatedTiledGroup = cast element("piecePropertiesAnimatedTiledGroup");
+		piecePropertiesCharacterGroup = cast element("piecePropertiesCharacterGroup");
 
-		pieceList = new ObjectMenu(10, 10, 230, 200, 0, []);
-		pieceList.onChanged = function() {
-			curStagePiece = pieceList.value - 1;
+		pieceId = cast element("pieceId");
 
-			updatePieceTabVisibility();
-			updatePieceTab();
-			updateAnimationTab();
-			refreshSelectionShader();
-		}
-		tabGroupPieces.add(pieceList);
-		refreshStagePieces();
-
-		var movePieceUpButton:TextButton = new TextButton(10, pieceList.y + 220, 115, 20, "Move Up");
-		movePieceUpButton.onClicked = function() {
-			if (curStagePiece > 0)
-				movePiece(-1);
-		};
-		tabGroupPieces.add(movePieceUpButton);
-
-		var movePieceDownButton:TextButton = new TextButton(movePieceUpButton.x + 115, movePieceUpButton.y, 115, 20, "Move Down");
-		movePieceDownButton.onClicked = function() {
-			if (curStagePiece > -1 && curStagePiece < stageData.pieces.length - 1)
-				movePiece(1);
-		};
-		tabGroupPieces.add(movePieceDownButton);
-		tabGroupPieces.add(new Label("Move Piece:", movePieceUpButton));
-
-		pieceId = new InputText(10, movePieceDownButton.y + 40);
-		tabGroupPieces.add(pieceId);
-		tabGroupPieces.add(new Label("ID (Optional):", pieceId));
-
-		typesList = [[],[]];
-		for (t in Paths.text("stagePieceTypes").replace("\r","").split("\n"))
+		typesList = [["static", "animated", "tiled", "solid", "character", "group"], ["basetype", "basetype", "basetype", "basetype", "basetype", "basetype"]];
+		for (f in Paths.listFilesSub("data/scripts/FlxSprite/", ".json"))
 		{
-			var type:Array<String> = t.split("|");
-			var pass:Bool = false;
-			switch (type[1])
+			if (Paths.hscriptExists("data/scripts/FlxSprite/" + f))
 			{
-				case "static": pass = Paths.hscriptExists("data/scripts/FlxSprite/" + type[0]);
-				case "animated": pass = Paths.hscriptExists("data/scripts/AnimatedSprite/" + type[0]);
-				case "group": pass = Paths.hscriptExists("data/scripts/FlxSpriteGroup/" + type[0]);
-				case "basetype": pass = true;
+				typesList[0].push(f);
+				typesList[1].push("static");
 			}
-			if (pass)
+		}
+		for (f in Paths.listFilesSub("data/scripts/AnimatedSprite/", ".json"))
+		{
+			if (Paths.hscriptExists("data/scripts/AnimatedSprite/" + f))
 			{
-				typesList[0].push(type[0]);
-				typesList[1].push(type[1]);
+				typesList[0].push(f);
+				typesList[1].push("animated");
 			}
 		}
 
-		typeDropdown = new DropdownMenu(10, pieceId.y + 40, 230, 20, typesList[0][0], typesList[0]);
-		tabGroupPieces.add(typeDropdown);
-		tabGroupPieces.add(new Label("Type:", typeDropdown));
+		typeDropdown = cast element("typeDropdown");
+		typeDropdown.valueList = typesList[0];
+		typeDropdown.value = typesList[0][0];
 
-		var imageList:Array<String> = [];
-		for (s in stageData.searchDirs)
-			imageList = imageList.concat(Paths.listFilesSub("images/" + s, ".png"));
-		imageDropdown = new DropdownMenu(10, typeDropdown.y + 40, 230, 20, imageList[0], imageList, true);
+		imageDropdown = cast element("imageDropdown");
+		searchDirsChanged();
+		if (imageDropdown.valueList.length > 0)
+			imageDropdown.value = imageDropdown.valueList[0];
 		imageDropdown.onChanged = function() {
 			if (sparrowExists(imageDropdown.value))
 				typeDropdown.value = "animated";
 			else
 				typeDropdown.value = "static";
 		}
-		tabGroupPieces.add(imageDropdown);
-		tabGroupPieces.add(new Label("Asset:", imageDropdown));
 
-		var addPieceButton:TextButton = new TextButton(10, imageDropdown.y + 30, 230, 20, "Add Piece");
-		addPieceButton.onClicked = function() { addPiece(false); };
-		tabGroupPieces.add(addPieceButton);
+		var addPieceButton:TextButton = cast element("addPieceButton");
+		addPieceButton.onClicked = function() { addPiece(); };
 
-		var insertPieceButton:TextButton = new TextButton(10, addPieceButton.y + 30, 230, 20, "Insert Piece");
+		var addPieceBehindCharacters:TextButton = cast element("addPieceBehindCharacters");
+		addPieceBehindCharacters.onClicked = function() { addPiece(false, true); };
+
+		var insertPieceButton:TextButton = cast element("insertPieceButton");
 		insertPieceButton.onClicked = function() { addPiece(true); };
-		tabGroupPieces.add(insertPieceButton);
 
-		var deletePieceButton:TextButton = new TextButton(10, insertPieceButton.y + 30, 230, 20, "Delete Piece");
+		var deletePieceButton:TextButton = cast element("deletePieceButton");
 		deletePieceButton.onClicked = function() { confirmDeletePiece(); };
-		tabGroupPieces.add(deletePieceButton);
-
-		tabMenu.addGroup(tabGroupPieces);
 
 
 
-		var tabGroupProperties = new TabGroup();
+		pieceX = cast element("pieceX");
+		pieceX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].position[0];
+			return pieceX.value;
+		}
+		pieceX.onChanged = function() {
+			stageData.pieces[curStagePiece].position[0] = pieceX.valueInt;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceX = new Stepper(10, 20, 115, 20, 0, 10);
-		pieceX.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceX);
-		pieceY = new Stepper(pieceX.x + 115, pieceX.y, 115, 20, 0, 10);
-		pieceY.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceY);
-		tabGroupProperties.add(new Label("Position:", pieceX));
+		pieceY = cast element("pieceY");
+		pieceY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].position[1];
+			return pieceY.value;
+		}
+		pieceY.onChanged = function() {
+			stageData.pieces[curStagePiece].position[1] = pieceY.valueInt;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceScrollX = new Stepper(10, pieceX.y + 40, 115, 20, 1, 0.05, 0, 9999, 3);
-		pieceScrollX.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceScrollX);
-		pieceScrollY = new Stepper(pieceScrollX.x + 115, pieceScrollX.y, 115, 20, 1, 0.05, 0, 9999, 3);
-		pieceScrollY.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceScrollY);
-		tabGroupProperties.add(new Label("Scroll Factor:", pieceScrollX));
+		var pieceScrollX:Stepper = cast element("pieceScrollX");
+		pieceScrollX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scrollFactor[0];
+			return pieceScrollX.value;
+		}
+		pieceScrollX.onChanged = function() {
+			stageData.pieces[curStagePiece].scrollFactor[0] = pieceScrollX.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceVisible = new Checkbox(10, pieceScrollX.y + 30, "Starts Visible", true);
-		pieceVisible.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceVisible);
+		var pieceScrollY:Stepper = cast element("pieceScrollY");
+		pieceScrollY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scrollFactor[1];
+			return pieceScrollY.value;
+		}
+		pieceScrollY.onChanged = function() {
+			stageData.pieces[curStagePiece].scrollFactor[1] = pieceScrollY.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceFlipX = new Checkbox(10, pieceVisible.y + 30, "Flip X", false);
-		pieceFlipX.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceFlipX);
+		var pieceVisible:Checkbox = cast element("pieceVisible");
+		pieceVisible.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].visible;
+			return pieceVisible.checked;
+		}
+		pieceVisible.onClicked = function() {
+			stageData.pieces[curStagePiece].visible = pieceVisible.checked;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceFlipY = new Checkbox(pieceFlipX.x + 115, pieceFlipX.y, "Flip Y", false);
-		pieceFlipY.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceFlipY);
+		var pieceFlipX:Checkbox = cast element("pieceFlipX");
+		pieceFlipX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].flip[0];
+			return pieceFlipX.checked;
+		}
+		pieceFlipX.onClicked = function() {
+			stageData.pieces[curStagePiece].flip[0] = pieceFlipX.checked;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceScaleX = new Stepper(10, pieceFlipX.y + 40, 115, 20, 1, 0.05, 0, 9999, 3);
-		pieceScaleX.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceScaleX);
-		pieceScaleY = new Stepper(pieceScaleX.x + 115, pieceScaleX.y, 115, 20, 1, 0.05, 0, 9999, 3);
-		pieceScaleY.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceScaleY);
-		tabGroupProperties.add(new Label("Scale:", pieceScaleX));
+		var pieceFlipY:Checkbox = cast element("pieceFlipY");
+		pieceFlipY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].flip[1];
+			return pieceFlipY.checked;
+		}
+		pieceFlipY.onClicked = function() {
+			stageData.pieces[curStagePiece].flip[1] = pieceFlipY.checked;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceUpdateHitbox = new Checkbox(10, pieceScaleX.y + 30, "Update Hitbox", true);
-		pieceUpdateHitbox.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceUpdateHitbox);
+		var pieceScaleX:Stepper = cast element("pieceScaleX");
+		pieceScaleX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scale[0];
+			return pieceScaleX.value;
+		}
+		pieceScaleX.onChanged = function() {
+			stageData.pieces[curStagePiece].scale[0] = pieceScaleX.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceAlign = new DropdownMenu(10, pieceUpdateHitbox.y + 40, 115, 20, alignList[0], alignList);
-		pieceAlign.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceAlign);
-		tabGroupProperties.add(new Label("Alignment:", pieceAlign));
+		var pieceScaleY:Stepper = cast element("pieceScaleY");
+		pieceScaleY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scale[1];
+			return pieceScaleY.value;
+		}
+		pieceScaleY.onChanged = function() {
+			stageData.pieces[curStagePiece].scale[1] = pieceScaleY.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceLayer = new Stepper(pieceAlign.x + 115, pieceAlign.y, 115, 20, 0, 1, 0, stageData.characters.length);
-		pieceLayer.onChanged = updateCurrentPiecePosition;
-		tabGroupProperties.add(pieceLayer);
-		tabGroupProperties.add(new Label("Layer:", pieceLayer));
+		var pieceSizeX:Stepper = cast element("pieceSizeX");
+		pieceSizeX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scale[0];
+			return pieceSizeX.value;
+		}
+		pieceSizeX.onChanged = function() {
+			stageData.pieces[curStagePiece].scale[0] = pieceSizeX.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceAntialias = new Checkbox(10, pieceAlign.y + 30, "Antialias", true);
-		pieceAntialias.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceAntialias);
+		var pieceSizeY:Stepper = cast element("pieceSizeY");
+		pieceSizeY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].scale[1];
+			return pieceSizeY.value;
+		}
+		pieceSizeY.onChanged = function() {
+			stageData.pieces[curStagePiece].scale[1] = pieceSizeY.value;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceTileX = new Checkbox(10, pieceAntialias.y + 30, "Tile X", true);
-		pieceTileX.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceTileX);
-		pieceTileY = new Checkbox(pieceTileX.x + 115, pieceTileX.y, "Tile Y", true);
-		pieceTileY.onClicked = updateCurrentPiece;
-		tabGroupProperties.add(pieceTileY);
+		var pieceUpdateHitbox:Checkbox = cast element("pieceUpdateHitbox");
+		pieceUpdateHitbox.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].updateHitbox;
+			return pieceUpdateHitbox.checked;
+		}
+		pieceUpdateHitbox.onClicked = function() {
+			stageData.pieces[curStagePiece].updateHitbox = pieceUpdateHitbox.checked;
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceTileCountX = new Stepper(10, pieceTileX.y + 40, 115, 20, 1, 1, 1);
-		pieceTileCountX.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceTileCountX);
-		pieceTileCountY = new Stepper(pieceTileCountX.x + 115, pieceTileCountX.y, 115, 20, 1, 1, 1);
-		pieceTileCountY.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceTileCountY);
-		tabGroupProperties.add(new Label("Tile Count:", pieceTileCountX));
+		var alignmentLeft:ToggleButton = cast element("alignmentLeft");
+		alignmentLeft.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.endsWith("left");
+			return false;
+		}
+		alignmentLeft.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "topleft";
+			else if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "bottomleft";
+			else
+				stageData.pieces[curStagePiece].align = "middleleft";
 
-		pieceAlpha = new Stepper(10, pieceTileCountX.y + 40, 115, 20, 1, 0.1, 0, 1, 3);
-		pieceAlpha.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceAlpha);
-		tabGroupProperties.add(new Label("Alpha:", pieceAlpha));
+			assignPieceParams(curStagePiece);
+		}
 
-		pieceBlend = new DropdownMenu(pieceAlpha.x + 115, pieceAlpha.y, 115, 20, blendList[0], blendList);
-		pieceBlend.onChanged = updateCurrentPiece;
-		tabGroupProperties.add(pieceBlend);
-		tabGroupProperties.add(new Label("Blend Mode:", pieceBlend));
+		var alignmentCenter:ToggleButton = cast element("alignmentCenter");
+		alignmentCenter.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.endsWith("center");
+			return false;
+		}
+		alignmentCenter.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "topcenter";
+			else if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "bottomcenter";
+			else
+				stageData.pieces[curStagePiece].align = "middlecenter";
 
-		tabMenu.addGroup(tabGroupProperties);
-		updatePieceTabVisibility();
+			assignPieceParams(curStagePiece);
+		}
+
+		var alignmentRight:ToggleButton = cast element("alignmentRight");
+		alignmentRight.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.endsWith("right");
+			return false;
+		}
+		alignmentRight.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "topright";
+			else if (stageData.pieces[curStagePiece].align.startsWith("top"))
+				stageData.pieces[curStagePiece].align = "bottomright";
+			else
+				stageData.pieces[curStagePiece].align = "middleright";
+
+			assignPieceParams(curStagePiece);
+		}
+
+		var alignmentTop:ToggleButton = cast element("alignmentTop");
+		alignmentTop.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.startsWith("top");
+			return false;
+		}
+		alignmentTop.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.endsWith("left"))
+				stageData.pieces[curStagePiece].align = "topleft";
+			else if (stageData.pieces[curStagePiece].align.endsWith("right"))
+				stageData.pieces[curStagePiece].align = "topright";
+			else
+				stageData.pieces[curStagePiece].align = "topcenter";
+
+			assignPieceParams(curStagePiece);
+		}
+
+		var alignmentMiddle:ToggleButton = cast element("alignmentMiddle");
+		alignmentMiddle.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.startsWith("middle");
+			return false;
+		}
+		alignmentMiddle.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.endsWith("left"))
+				stageData.pieces[curStagePiece].align = "middleleft";
+			else if (stageData.pieces[curStagePiece].align.endsWith("right"))
+				stageData.pieces[curStagePiece].align = "middleright";
+			else
+				stageData.pieces[curStagePiece].align = "middlecenter";
+
+			assignPieceParams(curStagePiece);
+		}
+
+		var alignmentBottom:ToggleButton = cast element("alignmentBottom");
+		alignmentBottom.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].align.startsWith("bottom");
+			return false;
+		}
+		alignmentBottom.onClicked = function() {
+			if (stageData.pieces[curStagePiece].align.endsWith("left"))
+				stageData.pieces[curStagePiece].align = "bottomleft";
+			else if (stageData.pieces[curStagePiece].align.endsWith("right"))
+				stageData.pieces[curStagePiece].align = "bottomright";
+			else
+				stageData.pieces[curStagePiece].align = "bottomcenter";
+
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceAntialias:Checkbox = cast element("pieceAntialias");
+		pieceAntialias.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].antialias;
+			return pieceAntialias.checked;
+		}
+		pieceAntialias.onClicked = function() {
+			stageData.pieces[curStagePiece].antialias = pieceAntialias.checked;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceTileX:Checkbox = cast element("pieceTileX");
+		pieceTileX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tile[0];
+			return pieceTileX.checked;
+		}
+		pieceTileX.onClicked = function() {
+			stageData.pieces[curStagePiece].tile[0] = pieceTileX.checked;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceTileY:Checkbox = cast element("pieceTileY");
+		pieceTileY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tile[1];
+			return pieceTileY.checked;
+		}
+		pieceTileY.onClicked = function() {
+			stageData.pieces[curStagePiece].tile[1] = pieceTileY.checked;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceTileCountX:Stepper = cast element("pieceTileCountX");
+		pieceTileCountX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tileCount[0];
+			return pieceTileCountX.value;
+		}
+		pieceTileCountX.onChanged = function() {
+			stageData.pieces[curStagePiece].tileCount[0] = pieceTileCountX.valueInt;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceTileCountY:Stepper = cast element("pieceTileCountY");
+		pieceTileCountY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tileCount[1];
+			return pieceTileCountY.value;
+		}
+		pieceTileCountY.onChanged = function() {
+			stageData.pieces[curStagePiece].tileCount[1] = pieceTileCountY.valueInt;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceColor:Button = cast element("pieceColor");
+		pieceColor.onClicked = function() {
+			new ColorPicker(FlxColor.fromRGB(stageData.pieces[curStagePiece].color[0], stageData.pieces[curStagePiece].color[1], stageData.pieces[curStagePiece].color[2]), function(clr:FlxColor) {
+				stageData.pieces[curStagePiece].color = [clr.red, clr.green, clr.blue];
+				assignPieceParams(curStagePiece);
+			});
+		}
+
+		var pieceColorPicker:Button = cast element("pieceColorPicker");
+		pieceColorPicker.onClicked = function() {
+			persistentUpdate = false;
+			openSubState(new ColorPickSubstate(function(px:FlxColor) {
+				stageData.pieces[curStagePiece].color = [px.red, px.green, px.blue];
+				assignPieceParams(curStagePiece);
+			}));
+		}
+
+		var pieceAlpha:Stepper = cast element("pieceAlpha");
+		pieceAlpha.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].alpha;
+			return pieceAlpha.value;
+		}
+		pieceAlpha.onChanged = function() {
+			stageData.pieces[curStagePiece].alpha = pieceAlpha.value;
+			assignPieceParams(curStagePiece);
+		}
+
+		var blendList:Array<String> = [
+			"normal",
+			"add",
+			"alpha",
+			"darken",
+			"difference",
+			"erase",
+			"hardlight",
+			"invert",
+			"layer",
+			"lighten",
+			"multiply",
+			"overlay",
+			"screen",
+			"shader",
+			"subtract"
+		];
+
+		var pieceBlend:DropdownMenu = cast element("pieceBlend");
+		pieceBlend.valueList = blendList;
+		pieceBlend.value = "normal";
+		pieceBlend.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].blend;
+			return pieceBlend.value;
+		}
+		pieceBlend.onChanged = function() {
+			stageData.pieces[curStagePiece].blend = pieceBlend.value;
+			assignPieceParams(curStagePiece);
+		}
 
 
 
-		var tabGroupAnims = new TabGroup();
+		pieceAnimations = cast element("pieceAnimations");
+		pieceAnimationsBlank = cast element("pieceAnimationsBlank");
+		pieceAnimationsSlot = cast element("pieceAnimationsSlot");
+		pieceAnimationsGroup = cast element("pieceAnimationsGroup");
 
-		animName = new InputText(10, 20);
-		tabGroupAnims.add(animName);
-		tabGroupAnims.add(new Label("Animation Name:", animName));
+		animName = cast element("animName");
 
-		animPrefix = new InputText(10, animName.y + 40);
-		tabGroupAnims.add(animPrefix);
-		tabGroupAnims.add(new Label("Prefix:", animPrefix));
+		animPrefix = cast element("animPrefix");
 
-		animPrefixes = new DropdownMenu(10, animPrefix.y + 30, 230, 20, "", [""], true);
+		animPrefixes = cast element("animPrefixes");
 		animPrefixes.onChanged = function() {
 			animPrefix.text = animPrefixes.value;
 		}
-		tabGroupAnims.add(animPrefixes);
 
-		animIndices = new InputText(10, animPrefixes.y + 40);
-		tabGroupAnims.add(animIndices);
-		tabGroupAnims.add(new Label("Indices (Optional):", animIndices));
+		animIndices = cast element("animIndices");
 
-		animLooped = new Checkbox(10, animIndices.y + 40, "Loop");
-		animLooped.checked = false;
-		tabGroupAnims.add(animLooped);
+		var allIndices:TextButton = cast element("allIndices");
+		allIndices.onClicked = function()
+		{
+			if (animPrefix.text != "" && allAnimData.indexOf(animPrefix.text) != -1)
+			{
+				var len:Int = allAnimData.split(animPrefix.text).length - 1;
+				animIndices.text = "";
+				for (i in 0...len)
+				{
+					animIndices.text += Std.string(i);
+					if (i < len - 1)
+						animIndices.text += ",";
+				}
+			}
+		};
 
-		animFPS = new Stepper(animLooped.x + 115, animLooped.y, 115, 20, 24, 1, 0, 9999);
-		tabGroupAnims.add(animFPS);
-		tabGroupAnims.add(new Label("FPS:", animFPS));
+		animLooped = cast element("animLooped");
+		animFPS = cast element("animFPS");
 
-		animOffsetX = new Stepper(10, animLooped.y + 40, 115, 20);
-		tabGroupAnims.add(animOffsetX);
-		animOffsetY = new Stepper(animOffsetX.x + 115, animOffsetX.y, 115, 20);
-		tabGroupAnims.add(animOffsetY);
-		tabGroupAnims.add(new Label("Offsets:", animOffsetX));
+		animOffsetX = cast element("animOffsetX");
+		animOffsetY = cast element("animOffsetY");
 
-		var addAnimButton:TextButton = new TextButton(10, animOffsetX.y + 30, 230, 20, "Add/Update Animation");
+		var addAnimButton:TextButton = cast element("addAnimButton");
 		addAnimButton.onClicked = function()
 		{
 			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
@@ -759,9 +1132,8 @@ class StageEditorState extends MusicBeatState
 				}
 			}
 		};
-		tabGroupAnims.add(addAnimButton);
 
-		curAnimDropdown = new DropdownMenu(10, addAnimButton.y + 40, 230, 20, "", [""], true);
+		curAnimDropdown = cast element("curAnimDropdown");
 		curAnimDropdown.onChanged = function() {
 			if (curStagePiece > -1 && curAnimDropdown.value != "")
 			{
@@ -794,60 +1166,95 @@ class StageEditorState extends MusicBeatState
 				}
 			}
 		}
-		tabGroupAnims.add(curAnimDropdown);
-		tabGroupAnims.add(new Label("Current Animation:", curAnimDropdown));
 
-		firstAnimDropdown = new DropdownMenu(10, curAnimDropdown.y + 40, 230, 20, "", [""], true);
+		var deleteAnimButton:TextButton = cast element("deleteAnimButton");
+		deleteAnimButton.onClicked = function()
+		{
+			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
+			{
+				if (stageData.pieces[curStagePiece].animations.length < 1)
+					return;
+
+				var animToReplace:Int = -1;
+				for (i in 0...stageData.pieces[curStagePiece].animations.length)
+				{
+					if (stageData.pieces[curStagePiece].animations[i].name == curAnimDropdown.value)
+						animToReplace = i;
+				}
+
+				if (animToReplace > -1)
+				{
+					stageData.pieces[curStagePiece].animations.splice(animToReplace, 1);
+					var pieceAnimList:Array<String> = [];
+					for (anim in stageData.pieces[curStagePiece].animations)
+						pieceAnimList.push(anim.name);
+					curAnimDropdown.valueList = pieceAnimList;
+					firstAnimDropdown.valueList = pieceAnimList;
+					if (pieceAnimList.length > 0 && !pieceAnimList.contains(firstAnimDropdown.value))
+					{
+						firstAnimDropdown.value = pieceAnimList[0];
+						firstAnimDropdown.onChanged();
+					}
+					if (pieceAnimList.length > 0 && !pieceAnimList.contains(curAnimDropdown.value))
+					{
+						curAnimDropdown.value = pieceAnimList[0];
+						curAnimDropdown.onChanged();
+					}
+				}
+			}
+		};
+
+		firstAnimDropdown = cast element("firstAnimDropdown");
 		firstAnimDropdown.onChanged = function() {
 			if (curStagePiece > -1 && firstAnimDropdown.value != "")
 				stageData.pieces[curStagePiece].firstAnimation = firstAnimDropdown.value;
 		}
-		tabGroupAnims.add(firstAnimDropdown);
-		tabGroupAnims.add(new Label("First Animation:", firstAnimDropdown));
 
-		beatAnimInput = new InputText(10, firstAnimDropdown.y + 40);
-		beatAnimInput.focusLost = function() {
-			if (curStagePiece > -1)
+		var beatAnimButton:TextButton = cast element("beatAnimButton");
+		beatAnimButton.onClicked = function() {
+			var window:PopupWindow = null;
+			var vbox:VBox = new VBox(35, 35);
+
+			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
+			var scroll:VBox = menu.vbox;
+
+			for (i in 0...stageData.pieces[curStagePiece].idles.length)
 			{
-				if (stageData.pieces[curStagePiece].idles == null)
-					beatAnimInput.text = "";
-				else
-					beatAnimInput.text = stageData.pieces[curStagePiece].idles.join(",");
-			}
-		}
-		beatAnimInput.callback = function(text:String, action:String) {
-			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
-			{
-				if (text.trim() == "")
-				{
-					if (Reflect.hasField(stageData.pieces[curStagePiece], "idles"))
-						Reflect.deleteField(stageData.pieces[curStagePiece], "idles");
+				var animHbox:HBox = new HBox();
+				var anim:DropdownMenu = new DropdownMenu(0, 0, stageData.pieces[curStagePiece].idles[i], firstAnimDropdown.valueList, true);
+				anim.onChanged = function() { stageData.pieces[curStagePiece].idles[i] = anim.value; }
+				animHbox.add(anim);
+				var _remove:Button = new Button(0, 0, "buttonTrash");
+				_remove.onClicked = function() {
+					stageData.pieces[curStagePiece].idles.splice(i, 1);
+					window.close();
+					new FlxTimer().start(0.01, function(tmr:FlxTimer) { beatAnimButton.onClicked(); });
 				}
-				else
-				{
-					stageData.pieces[curStagePiece].idles = text.split(",");
-					var poppers:Array<String> = [];
-					var pieceAnimLowerList:Array<String> = [];
-					for (a in firstAnimDropdown.valueList)
-						pieceAnimLowerList.push(a.toLowerCase());
-
-					for (i in 0...stageData.pieces[curStagePiece].idles.length)
-					{
-						if (!pieceAnimLowerList.contains(stageData.pieces[curStagePiece].idles[i].toLowerCase()))
-							poppers.push(stageData.pieces[curStagePiece].idles[i]);
-						else if (!firstAnimDropdown.valueList.contains(stageData.pieces[curStagePiece].idles[i]))
-							stageData.pieces[curStagePiece].idles[i] = firstAnimDropdown.valueList[pieceAnimLowerList.indexOf(stageData.pieces[curStagePiece].idles[i].toLowerCase())];
-					}
-
-					for (p in poppers)
-						stageData.pieces[curStagePiece].idles.remove(p);
-				}
+				animHbox.add(_remove);
+				scroll.add(animHbox);
 			}
-		}
-		tabGroupAnims.add(beatAnimInput);
-		tabGroupAnims.add(new Label("Beat Animations (Optional):", beatAnimInput));
 
-		beatAnimSpeed = new Stepper(10, beatAnimInput.y + 40, 230, 20, 1, 0.25, 0.25, 9999, 2);
+			if (stageData.pieces[curStagePiece].idles.length > 0)
+				vbox.add(menu);
+
+			var _add:TextButton = new TextButton(0, 0, "Add");
+			_add.onClicked = function() {
+				if (stageData.pieces[curStagePiece].idles.length > 0)
+					stageData.pieces[curStagePiece].idles.push(stageData.pieces[curStagePiece].idles[stageData.pieces[curStagePiece].idles.length - 1]);
+				else
+					stageData.pieces[curStagePiece].idles.push(firstAnimDropdown.valueList[0]);
+				window.close();
+				new FlxTimer().start(0.01, function(tmr:FlxTimer) { beatAnimButton.onClicked(); });
+			}
+			vbox.add(_add);
+
+			var accept:TextButton = new TextButton(0, 0, "Accept", function() { window.close(); });
+			vbox.add(accept);
+
+			window = PopupWindow.CreateWithGroup(vbox);
+		}
+
+		beatAnimSpeed = cast element("beatAnimSpeed");
 		beatAnimSpeed.onChanged = function() {
 			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
@@ -857,23 +1264,171 @@ class StageEditorState extends MusicBeatState
 					stageData.pieces[curStagePiece].beatAnimationSpeed = beatAnimSpeed.value;
 			}
 		}
-		tabGroupAnims.add(beatAnimSpeed);
-		tabGroupAnims.add(new Label("Beat Count:", beatAnimSpeed));
 
-		tabMenu.addGroup(tabGroupAnims);
+		updatePieceTabVisibility();
 		updateAnimationTab();
 
 
 
-		var tabGroupHelp = new TabGroup();
-
 		var help:String = Paths.text("helpText").replace("\r","").split("!StageEditor\n")[1].split("\n\n")[0];
-		var helpText:FlxText = new FlxText(10, 10, 230, help + "\n", 12);
-		helpText.color = FlxColor.BLACK;
-		helpText.font = "VCR OSD Mono";
-		tabGroupHelp.add(helpText);
 
-		tabMenu.addGroup(tabGroupHelp);
+		var tabOptions:Array<TopMenuOption> = [];
+		for (t in tabMenu.tabs)
+			tabOptions.push({label: t, action: function() { tabMenu.selectTabByName(t); }, condition: function() { return tabMenu.curTabName == t; }, icon: "bullet"});
+
+		topmenu = new TopMenu([
+			{
+				label: "File",
+				options: [
+					{
+						label: "New",
+						action: function() { _confirm("make a new stage", _new); },
+						shortcut: [FlxKey.CONTROL, FlxKey.N],
+						icon: "new"
+					},
+					{
+						label: "Open",
+						action: function() { _confirm("load another stage", _open); },
+						shortcut: [FlxKey.CONTROL, FlxKey.O],
+						icon: "open"
+					},
+					{
+						label: "Save",
+						action: function() { _save(false); },
+						shortcut: [FlxKey.CONTROL, FlxKey.S],
+						icon: "save"
+					},
+					{
+						label: "Save As...",
+						action: function() { _save(true); },
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.S],
+						icon: "save"
+					},
+					{
+						label: "Convert from Base Game",
+						action: convertFromBase
+					},
+					null,
+					{
+						label: "Help",
+						action: function() { new Notify(help); },
+						shortcut: [FlxKey.F1]
+					},
+					{
+						label: "Exit",
+						action: function() { _confirm("exit", function() { FlxG.switchState(new EditorMenuState()); }); },
+						shortcut: [FlxKey.ESCAPE]
+					}
+				]
+			},
+			{
+				label: "Edit",
+				options: [
+					{
+						label: "Undo",
+						action: undo,
+						shortcut: [FlxKey.CONTROL, FlxKey.Z],
+						icon: "undo"
+					},
+					{
+						label: "Redo",
+						action: redo,
+						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.Z],
+						icon: "redo"
+					},
+					null,
+					{
+						label: "Lock Click & Dragging",
+						condition: function() { return posLocked; },
+						action: function() { posLocked = !posLocked; },
+						shortcut: [FlxKey.CONTROL, FlxKey.L],
+						icon: "bullet"
+					},
+					{
+						label: "Grid Snapping...",
+						action: function() {
+							var window:PopupWindow = null;
+							var vbox:VBox = new VBox(35, 35);
+
+							var gridSnapXStepper:Stepper = new Stepper(0, 0, "X:", gridSnapX, 1, 1);
+							vbox.add(gridSnapXStepper);
+
+							var gridSnapYStepper:Stepper = new Stepper(0, 0, "Y:", gridSnapY, 1, 1);
+							vbox.add(gridSnapYStepper);
+
+							var accept:TextButton = new TextButton(0, 0, "Accept");
+							accept.onClicked = function() {
+								window.close();
+								gridSnapX = gridSnapXStepper.valueInt;
+								gridSnapY = gridSnapYStepper.valueInt;
+								pieceX.stepVal = gridSnapX;
+								pieceY.stepVal = gridSnapY;
+							}
+							vbox.add(accept);
+
+							window = PopupWindow.CreateWithGroup(vbox);
+						}
+					}
+				]
+			},
+			{
+				label: "View",
+				options: [
+					{
+						label: "Information Panel",
+						condition: function() { return members.contains(infoBox); },
+						action: function() {
+							if (members.contains(infoBox))
+								remove(infoBox, true);
+							else
+								insert(members.indexOf(topmenu), infoBox);
+						},
+						icon: "bullet"
+					},
+					{
+						label: "Stage Pieces Panel",
+						condition: function() { return members.contains(stagePieces); },
+						action: function() {
+							if (members.contains(stagePieces))
+								remove(stagePieces, true);
+							else
+								insert(members.indexOf(topmenu), stagePieces);
+						},
+						icon: "bullet"
+					},
+					{
+						label: "Camera Panel",
+						condition: function() { return members.contains(cameraBox); },
+						action: function() {
+							if (members.contains(cameraBox))
+								remove(cameraBox, true);
+							else
+								insert(members.indexOf(topmenu), cameraBox);
+						},
+						icon: "bullet"
+					},
+					{
+						label: "Piece Position Panel",
+						condition: function() { return members.contains(piecePosBox); },
+						action: function() {
+							if (members.contains(piecePosBox))
+								remove(piecePosBox, true);
+							else
+								insert(members.indexOf(topmenu), piecePosBox);
+						},
+						icon: "bullet"
+					}
+				]
+			},
+			{
+				label: "Tab",
+				options: tabOptions
+			}
+		]);
+		topmenu.cameras = [camHUD];
+		add(topmenu);
+
+		dataLog = [Cloner.clone(stageData)];
 	}
 
 	function addToStageGroup(pos:Int, spr:FlxSprite)
@@ -887,52 +1442,103 @@ class StageEditorState extends MusicBeatState
 	function snapToGrid(val:Float, axis:FlxAxes):Int
 	{
 		if (axis == Y)
-			return Std.int(Math.round(val / gridSnapY.value) * gridSnapY.value);
-		return Std.int(Math.round(val / gridSnapX.value) * gridSnapX.value);
+			return Std.int(Math.round(val / gridSnapY) * gridSnapY);
+		return Std.int(Math.round(val / gridSnapX) * gridSnapX);
 	}
 
 	override public function update(elapsed:Float)
 	{
-		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.S)
-			saveStage();
-
-		super.update(elapsed);
+		UIControl.cursor = MouseCursor.ARROW;
 
 		mousePos.x = (((FlxG.mouse.x - (FlxG.width / 2)) / camGame.zoom) + (FlxG.width / 2)) + camFollow.x - (FlxG.width / 2);
 		mousePos.y = (((FlxG.mouse.y - (FlxG.height / 2)) / camGame.zoom) + (FlxG.height / 2)) + camFollow.y - (FlxG.height / 2);
 
-		if (!movingPiece && !movingCharacter && FlxG.mouse.justMoved)
+		if (!pauseUndo && !DeepEquals.deepEquals(stageData, dataLog[undoPosition]))
 		{
+			if (undoPosition < dataLog.length - 1)
+				dataLog.resize(undoPosition + 1);
+			dataLog.push(Cloner.clone(stageData));
+			unsaved = true;
+			undoPosition = dataLog.length - 1;
+			refreshFilename();
+		}
+
+		if (!movingPiece && !TopMenu.busy && !DropdownMenu.isOneActive && FlxG.mouse.justMoved)
+		{
+			hoveredStagePiece = -1;
+			hoveredStageButton = -1;
+			if (members.contains(stagePieces))
+			{
+				stagePieceBar.visible = false;
+				var i:Int = 0;
+				stagePieceText.forEachAlive(function(anim:FlxText) {
+					if (anim.visible && FlxG.mouse.overlaps(anim, camHUD) && hoveredStagePiece == -1)
+					{
+						anim.color = FlxColor.WHITE;
+						hoveredStagePiece = i;
+						stagePieceBar.visible = true;
+						stagePieceBar.y = anim.y;
+					}
+					else
+						anim.color = FlxColor.BLACK;
+					i++;
+				});
+
+				if (hoveredStagePiece < 0)
+				{
+					stagePieceButtonBG.visible = false;
+					i = 0;
+					stagePieceButtons.forEachAlive(function(anim:FlxSprite) {
+						if (selectedStagePieces.length == 1)
+						{
+							if (FlxG.mouse.overlaps(anim, camHUD))
+							{
+								anim.color = FlxColor.WHITE;
+								hoveredStageButton = i;
+								stagePieceButtonBG.visible = true;
+								stagePieceButtonBG.x = anim.x;
+							}
+							else
+								anim.color = FlxColor.BLACK;
+						}
+						i++;
+					});
+				}
+			}
+
 			var prevHoveredObject:FlxSprite = hoveredObject;
 			hoveredObject = null;
-			if (!FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(tabButtons, camHUD))
+			if (!FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(topmenu, camHUD) && (!members.contains(stagePieces) || !FlxG.mouse.overlaps(stagePieces, camHUD)) && (!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(piecePosBox) || !FlxG.mouse.overlaps(piecePosBox, camHUD)))
 			{
 				var hoveredIndex:Int = -1;
-				if (tabMenu.curTab == 1)
+				for (s in myStage)
 				{
-					for (s in allCharacters)
+					if (!Std.isOfType(s, FlxSpriteGroup) && !Std.isOfType(s, FlxBackdrop) && myStageGroup.members.indexOf(s) > hoveredIndex)
 					{
-						if (myStageGroup.members.indexOf(s) > hoveredIndex)
+						if (s.pixelsOverlapPoint(mousePos, Std.int(64 * s.alpha), camGame))
 						{
-							if (s.pixelsOverlapPoint(mousePos, 128, camGame))
-							{
-								hoveredObject = s;
-								hoveredIndex = myStageGroup.members.indexOf(s);
-							}
+							hoveredObject = s;
+							hoveredIndex = myStageGroup.members.indexOf(s);
+							if (s.shader == selectionShader && !FlxG.keys.pressed.SHIFT)
+								UIControl.cursor = MouseCursor.HAND;
+							else
+								UIControl.cursor = MouseCursor.BUTTON;
 						}
 					}
 				}
-				else
+
+				for (s in allCharacters)
 				{
-					for (s in myStage)
+					if (myStageGroup.members.indexOf(s) > hoveredIndex)
 					{
-						if (!Std.isOfType(s, FlxSpriteGroup) && !Std.isOfType(s, FlxBackdrop) && myStageGroup.members.indexOf(s) > hoveredIndex)
+						if (s.pixelsOverlapPoint(mousePos, Std.int(64 * s.alpha), camGame))
 						{
-							if (s.pixelsOverlapPoint(mousePos, 128, camGame))
-							{
-								hoveredObject = s;
-								hoveredIndex = myStageGroup.members.indexOf(s);
-							}
+							hoveredObject = s;
+							hoveredIndex = myStageGroup.members.indexOf(s);
+							if (s.shader == selectionShader && !FlxG.keys.pressed.SHIFT)
+								UIControl.cursor = MouseCursor.HAND;
+							else
+								UIControl.cursor = MouseCursor.BUTTON;
 						}
 					}
 				}
@@ -940,434 +1546,778 @@ class StageEditorState extends MusicBeatState
 
 			if (hoveredObject != prevHoveredObject)
 			{
-				if (prevHoveredObject != null && prevHoveredObject.shader != selectionShader.shader)
+				if (prevHoveredObject != null && prevHoveredObject.shader != selectionShader)
 					prevHoveredObject.shader = null;
-				if (hoveredObject != null && hoveredObject.shader != selectionShader.shader)
-					hoveredObject.shader = hoverShader.shader;
+				if (hoveredObject != null && hoveredObject.shader != selectionShader)
+					hoveredObject.shader = hoverShader;
 			}
 		}
 
 		var camPosString:String = "Camera X: "+Std.string(Math.round(camFollow.x))+"\nCamera Y: "+Std.string(Math.round(camFollow.y))+"\nCamera Z: "+Std.string(camGame.zoom);
-		if (tabMenu.curTab == 1)
-			camPosString += "\nCharacter X: " + Std.string(allCharacters[characterId.valueInt].x) + "\nCharacter Y: " + Std.string(allCharacters[characterId.valueInt].y);
-		else if (curStagePiece > -1 && stageData.pieces.length > 0)
-			camPosString += "\nPiece X: " + Std.string(myStage[curStagePiece].x) + "\nPiece Y: " + Std.string(myStage[curStagePiece].y) + "\nPiece Width: " + Std.string(myStage[curStagePiece].width) + "\nPiece Height: " + Std.string(myStage[curStagePiece].height);
 		if (camPosText.text != camPosString)
-		{
 			camPosText.text = camPosString;
-			camPosText.y = FlxG.height - camPosText.height - 10;
+
+		var piecePosString:String = "No Piece Selected";
+		if (selectedStagePieces.length > 0)
+		{
+			var minX:Float = -1;
+			var minY:Float = -1;
+			var maxX:Float = -1;
+			var maxY:Float = -1;
+			for (s in selectedStagePieces)
+			{
+				var p:FlxSprite = (s >= 0 ? myStage[s] : allCharacters[-s - 1]);
+				if (minX == -1 || p.x < minX)
+					minX = p.x;
+				if (minY == -1 || p.y < minY)
+					minY = p.y;
+				if (maxX == -1 || p.x + p.width > maxX)
+					maxX = p.x + p.width;
+				if (maxY == -1 || p.y + p.height > maxY)
+					maxY = p.y + p.height;
+			}
+			piecePosString = "X: " + Std.string(minX) + "\nY: " + Std.string(minY) + "\nWidth: " + Std.string(maxX - minX) + "\nHeight: " + Std.string(maxY - minY);
 		}
+		if (piecePosText.text != piecePosString)
+			piecePosText.text = piecePosString;
 
 		if (movingCamera)
 		{
-			camFollow.x += FlxG.mouse.drag.x / camGame.zoom;
-			camFollow.y += FlxG.mouse.drag.y / camGame.zoom;
+			camFollow.x += FlxG.mouse.deltaX / camGame.zoom;
+			camFollow.y += FlxG.mouse.deltaY / camGame.zoom;
 
 			if (Options.mouseJustReleased(true))
 				movingCamera = false;
 		}
 		else
 		{
-			if (Options.mouseJustPressed(true))
+			if (Options.mouseJustPressed(true) && !FlxG.mouse.overlaps(tabMenu, camHUD))
 				movingCamera = true;
 		}
 
-		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive && !ObjectMenu.isOneActive)
+		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 		{
 			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
-			camGame.zoom = Math.round(camGame.zoom * 100) / 100;
+			camGame.zoom = Math.round(camGame.zoom * 1000) / 1000;
 		}
 
-		if (movingCharacter)
+		if (movingPiece)
 		{
+			UIControl.cursor = MouseCursor.HAND;
 			if (FlxG.mouse.justMoved)
 			{
-				dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
-				dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
-				stageData.characters[characterId.valueInt].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
-				allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
-				charX.value = stageData.characters[characterId.valueInt].position[0];
-				charY.value = stageData.characters[characterId.valueInt].position[1];
+				dragOffset[0] += FlxG.mouse.deltaX / camGame.zoom;
+				dragOffset[1] += FlxG.mouse.deltaY / camGame.zoom;
+				for (i in 0...selectedStagePieces.length)
+				{
+					var s:Int = selectedStagePieces[i];
+					if (s >= 0)
+					{
+						stageData.pieces[s].position = [dragStart[i][0] + snapToGrid(dragOffset[0], X), dragStart[i][1] + snapToGrid(dragOffset[1], Y)];
+						myStage[s].setPosition(stageData.pieces[s].position[0], stageData.pieces[s].position[1]);
+						alignPiece(s);
+					}
+					else
+					{
+						stageData.characters[-s - 1].position = [dragStart[i][0] + snapToGrid(dragOffset[0], X), dragStart[i][1] + snapToGrid(dragOffset[1], Y)];
+						allCharacters[-s - 1].repositionCharacter(stageData.characters[-s - 1].position[0], stageData.characters[-s - 1].position[1]);
+					}
+				}
 			}
 
 			if (Options.mouseJustReleased())
-				movingCharacter = false;
-		}
-		else if (movingPiece)
-		{
-			if (FlxG.mouse.justMoved)
 			{
-				dragOffset[0] += FlxG.mouse.drag.x / camGame.zoom;
-				dragOffset[1] += FlxG.mouse.drag.y / camGame.zoom;
-				stageData.pieces[curStagePiece].position = [snapToGrid(dragStart[0] + dragOffset[0], X), snapToGrid(dragStart[1] + dragOffset[1], Y)];
-				pieceX.value = stageData.pieces[curStagePiece].position[0];
-				pieceY.value = stageData.pieces[curStagePiece].position[1];
-				myStage[curStagePiece].setPosition(stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]);
-				alignPiece(curStagePiece);
-			}
-
-			if (Options.mouseJustReleased())
+				pauseUndo = false;
 				movingPiece = false;
+			}
 		}
-		else if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(tabButtons, camHUD))
+		else if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(topmenu, camHUD))
 		{
-			if (tabMenu.curTab == 1)
+			var selectedObjects:Array<FlxSprite> = [];
+			for (s in selectedStagePieces)
 			{
-				var hoveredCharacter:Character = cast hoveredObject;
-				if (allCharacters.contains(hoveredCharacter))
-				{
-					characterId.value = allCharacters.indexOf(hoveredCharacter);
-					characterId.onChanged();
-				}
+				if (s >= 0)
+					selectedObjects.push(myStage[s]);
+				else
+					selectedObjects.push(allCharacters[-s - 1]);
+			}
 
-				if (hoveredObject == allCharacters[characterId.valueInt] && !posLocked.checked)
+			if (hoveredStagePiece > -1)
+			{
+				if (hoveredStagePiece == 15)
 				{
-					dragStart = Reflect.copy(stageData.characters[characterId.valueInt].position);
-					dragOffset = [0, 0];
-					movingCharacter = true;
+					if (stagePieceList.length > 15 + listOffset)
+					{
+						listOffset++;
+						refreshStagePieces();
+					}
+				}
+				else if (hoveredStagePiece == 0)
+				{
+					if (listOffset >= 0)
+					{
+						listOffset--;
+						refreshStagePieces();
+					}
+				}
+				else
+				{
+					if (stagePieceText.members[hoveredStagePiece].ID >= 0)
+					{
+						curStagePiece = stagePieceText.members[hoveredStagePiece].ID;
+						curCharacter = -1;
+
+						if (!FlxG.keys.pressed.SHIFT)
+							selectedStagePieces = [];
+						if (!selectedStagePieces.contains(stagePieceText.members[hoveredStagePiece].ID))
+							selectedStagePieces.push(stagePieceText.members[hoveredStagePiece].ID);
+					}
+					else
+					{
+						curStagePiece = -1;
+						curCharacter = -stagePieceText.members[hoveredStagePiece].ID - 1;
+
+						if (!FlxG.keys.pressed.SHIFT)
+							selectedStagePieces = [];
+						if (!selectedStagePieces.contains(stagePieceText.members[hoveredStagePiece].ID))
+							selectedStagePieces.push(stagePieceText.members[hoveredStagePiece].ID);
+						updateCharacterTab();
+					}
+
+					refreshStagePieces();
+					updatePieceTabVisibility();
+					updatePieceTab();
+					updateAnimationTab();
+					refreshSelectionShader();
 				}
 			}
-			else
+			else if (hoveredStageButton > -1)
 			{
-				if (myStage.contains(hoveredObject))
-					pieceList.value = myStage.indexOf(hoveredObject) + 1;
-				else
-					pieceList.value = 0;
-				pieceList.onChanged();
-
-				if (curStagePiece > -1 && stageData.pieces.length > 0 && hoveredObject == myStage[curStagePiece] && !posLocked.checked)
+				switch (hoveredStageButton)
 				{
-					dragStart = Reflect.copy(stageData.pieces[curStagePiece].position);
+					case 0: movePieceFully(1);
+					case 1: movePiece(1);
+					case 2: movePiece(-1);
+					case 3: movePieceFully(-1);
+				}
+			}
+			else if (FlxG.keys.pressed.SHIFT && selectedObjects.contains(hoveredObject))
+			{
+				if (Std.isOfType(hoveredObject, Character))
+				{
+					var hoveredCharacter:Character = cast hoveredObject;
+					if (allCharacters.contains(hoveredCharacter))
+					{
+						if (curCharacter == allCharacters.indexOf(hoveredCharacter))
+							curCharacter = -1;
+
+						if (selectedStagePieces.contains(-allCharacters.indexOf(hoveredCharacter) - 1))
+							selectedStagePieces.remove(-allCharacters.indexOf(hoveredCharacter) - 1);
+					}
+				}
+				else
+				{
+					if (myStage.contains(hoveredObject))
+					{
+						if (curStagePiece == myStage.indexOf(hoveredObject))
+							curStagePiece = -1;
+
+						if (selectedStagePieces.contains(myStage.indexOf(hoveredObject)))
+							selectedStagePieces.remove(myStage.indexOf(hoveredObject));
+					}
+				}
+
+				refreshStagePieces();
+				updatePieceTabVisibility();
+				updatePieceTab();
+				updateCharacterTab();
+				updateAnimationTab();
+				refreshSelectionShader();
+			}
+			else if (!selectedObjects.contains(hoveredObject))
+			{
+				if (Std.isOfType(hoveredObject, Character))
+				{
+					var oldStagePiece:Int = curCharacter;
+
+					var hoveredCharacter:Character = cast hoveredObject;
+					if (allCharacters.contains(hoveredCharacter))
+						curCharacter = allCharacters.indexOf(hoveredCharacter);
+
+					if (!FlxG.keys.pressed.SHIFT)
+						selectedStagePieces = [];
+					if (allCharacters.contains(hoveredCharacter) && !selectedStagePieces.contains(-allCharacters.indexOf(hoveredCharacter) - 1))
+						selectedStagePieces.push(-allCharacters.indexOf(hoveredCharacter) - 1);
+
+					if (curCharacter != oldStagePiece)
+					{
+						curStagePiece = -1;
+						refreshStagePieces();
+						updatePieceTabVisibility();
+						updateCharacterTab();
+						updateAnimationTab();
+						refreshSelectionShader();
+					}
+				}
+				else
+				{
+					var oldStagePiece:Int = curStagePiece;
+
+					if (myStage.contains(hoveredObject))
+						curStagePiece = myStage.indexOf(hoveredObject);
+					else
+						curStagePiece = -1;
+
+					if (!FlxG.keys.pressed.SHIFT)
+						selectedStagePieces = [];
+					if (myStage.contains(hoveredObject) && !selectedStagePieces.contains(myStage.indexOf(hoveredObject)))
+						selectedStagePieces.push(myStage.indexOf(hoveredObject));
+
+					if (curStagePiece != oldStagePiece || curCharacter > -1)
+					{
+						curCharacter = -1;
+						refreshStagePieces();
+						updatePieceTabVisibility();
+						updatePieceTab();
+						updateAnimationTab();
+						refreshSelectionShader();
+					}
+				}
+			}
+
+			selectedObjects = [];
+			for (s in selectedStagePieces)
+			{
+				if (s >= 0)
+					selectedObjects.push(myStage[s]);
+				else
+					selectedObjects.push(allCharacters[-s - 1]);
+			}
+
+			if (selectedObjects.contains(hoveredObject) && !FlxG.keys.pressed.SHIFT)
+			{
+				if (!posLocked)
+				{
+					dragStart = [];
+					for (s in selectedStagePieces)
+					{
+						if (s >= 0)
+							dragStart.push(Reflect.copy(stageData.pieces[s].position));
+						else
+							dragStart.push(Reflect.copy(stageData.characters[-s - 1].position));
+					}
 					dragOffset = [0, 0];
 					movingPiece = true;
+					pauseUndo = true;
 				}
 			}
 		}
 
-		if ((stageData.pieces.length > 0 || tabMenu.curTab == 1) && !posLocked.checked)
-		{
-			if (FlxG.keys.justPressed.LEFT)
-				doMovement(-gridSnapX.valueInt, 0);
-
-			if (FlxG.keys.justPressed.RIGHT)
-				doMovement(gridSnapX.valueInt, 0);
-
-			if (FlxG.keys.justPressed.UP)
-				doMovement(0, -gridSnapY.valueInt);
-
-			if (FlxG.keys.justPressed.DOWN)
-				doMovement(0, gridSnapY.valueInt);
-		}
+		super.update(elapsed);
+		if (hoveredStagePiece > -1 || hoveredStageButton > -1)
+			UIControl.cursor = MouseCursor.BUTTON;
 
 		if (FlxG.keys.justPressed.DELETE)
 			confirmDeletePiece();
 
-		if (FlxG.keys.justPressed.ESCAPE)
-			FlxG.switchState(new EditorMenuState());
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
 	}
 
-	function addPiece(?insert:Bool = false)
+	function addPiece(?insert:Bool = false, ?behindCharacters:Bool = false)
 	{
-		var pieceToReplace:Int = -1;
-		var checkId = imageDropdown.value;
-		if (pieceId.text != null && pieceId.text != "")
-			checkId = pieceId.text;
-		for (i in 0...stageData.pieces.length)
+		if (typeDropdown.value == "character")
 		{
-			var matchId:String = stageData.pieces[i].asset;
-			if (stageData.pieces[i].id != null && stageData.pieces[i].id != "")
-				matchId = stageData.pieces[i].id;
-			if (checkId == matchId)
-				pieceToReplace = i;
-		}
-
-		if (pieceToReplace > -1)
-		{
-			var notify:Notify = new Notify(300, 100, "A piece with that " + (pieceId.text == "" ? "asset" : "id") + " already exists.", this);
-			notify.cameras = [camHUD];
-		}
-		else if ((typeDropdown.value == "group" || typesList[1][typeDropdown.valueInt] == "group") && pieceId.text == "")
-		{
-			var notify:Notify = new Notify(300, 100, "A piece of type 'group' must have an id.", this);
-			notify.cameras = [camHUD];
-		}
-		else
-		{
-			var newPiece:StagePiece =
+			var char:StageCharacter =
 			{
-				type: (typesList[1][typeDropdown.valueInt] == "basetype" ? typeDropdown.value : typesList[1][typeDropdown.valueInt]),
-				asset: imageDropdown.value,
 				position: [0, 0],
-				antialias: pieceAntialias.checked,
-				layer: pieceLayer.valueInt
-			};
-
-			if (pieceId.text != "")
-				newPiece.id = pieceId.text;
-
-			if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
-				newPiece.position = [stageData.pieces[curStagePiece].position[0], stageData.pieces[curStagePiece].position[1]];
-
-			if (typesList[1][typeDropdown.valueInt] != "basetype")
-				newPiece.scriptClass = typeDropdown.value;
-
-			if (newPiece.type == "animated")
-			{
-				newPiece.animations = [];
-				newPiece.firstAnimation = "";
-				if (!sparrowExists(newPiece.asset))
-					newPiece.tileCount = [1, 1];
+				layer: stageData.characters.length,
+				flip: false,
+				scale: [1, 1],
+				scrollFactor: [1, 1],
+				camPosition: [0, 0],
+				camPosAbsolute: false
 			}
 
-			if (curStagePiece > -1 && insert)
-				stageData.pieces.insert(curStagePiece, newPiece);
-			else
+			if (curCharacter > -1)
 			{
-				stageData.pieces.push(newPiece);
-				curStagePiece = stageData.pieces.length - 1;
-				pieceList.value = curStagePiece + 1;
+				char.position = stageData.characters[curCharacter].position.copy();
+				char.flip = stageData.characters[curCharacter].flip;
+				char.scale = stageData.characters[curCharacter].scale.copy();
+				char.scrollFactor = stageData.characters[curCharacter].scrollFactor.copy();
+				char.camPosition = stageData.characters[curCharacter].camPosition.copy();
+				char.camPosAbsolute = stageData.characters[curCharacter].camPosAbsolute;
 			}
 
-			addToStage(curStagePiece, false);
-			updateCurrentPiece();
+			if (insert && (curCharacter > -1 || curStagePiece > -1))
+			{
+				if (curCharacter > -1)
+					char.layer = stageData.characters[curCharacter].layer;
+				else if (curStagePiece > -1)
+					char.layer = stageData.pieces[curStagePiece].layer;
+
+				var index:Int = 0;
+				for (i in 0...stagePieceList.length)
+				{
+					if ((curStagePiece > -1 && stagePieceList[i][1] == curStagePiece) || (curCharacter > -1 && stagePieceList[i][1] == -curCharacter - 1))
+					{
+						index = i;
+						break;
+					}
+				}
+
+				for (i in index...stagePieceList.length)
+				{
+					if (stagePieceList[i][1] < 0)
+						stageData.characters[Std.int(-stagePieceList[i][1] - 1)].layer++;
+					else
+						stageData.pieces[stagePieceList[i][1]].layer++;
+				}
+			}
+
+			stageData.characters.push(char);
+			curCharacter = stageData.characters.length - 1;
+			curStagePiece = -1;
+			selectedStagePieces = [-curCharacter - 1];
+
+			spawnCharacter();
 			refreshStagePieces();
 			updatePieceTabVisibility();
 			updateAnimationTab();
 			refreshSelectionShader();
 		}
-	}
-
-	function updateCurrentPiece()
-	{
-		if (curStagePiece <= -1 || stageData.pieces.length <= 0) return;
-
-		var piece:StagePiece = stageData.pieces[curStagePiece];
-		piece.position = [pieceX.valueInt, pieceY.valueInt];
-
-		piece.antialias = pieceAntialias.checked;
-		piece.layer = pieceLayer.valueInt;
-
-		if (pieceVisible.checked)
-			Reflect.deleteField(piece, "visible");
-		else
-			piece.visible = false;
-
-		if (pieceScaleX.value != 1 || pieceScaleY.value != 1)
-		{
-			piece.scale = [pieceScaleX.value, pieceScaleY.value];
-			piece.updateHitbox = pieceUpdateHitbox.checked;
-		}
 		else
 		{
-			Reflect.deleteField(piece, "scale");
-			Reflect.deleteField(piece, "updateHitbox");
-		}
+			var pieceToReplace:Int = -1;
+			var checkId = imageDropdown.value;
+			if (pieceId.text != null && pieceId.text != "")
+				checkId = pieceId.text;
+			for (i in 0...stageData.pieces.length)
+			{
+				var matchId:String = stageData.pieces[i].asset;
+				if (stageData.pieces[i].id != null && stageData.pieces[i].id != "")
+					matchId = stageData.pieces[i].id;
+				if (checkId == matchId)
+					pieceToReplace = i;
+			}
 
-		if (pieceAlign.value != alignList[0])
-			piece.align = pieceAlign.value;
-		else
-			Reflect.deleteField(piece, "align");
+			if (pieceToReplace > -1)
+				new Notify("A piece with that " + (pieceId.text == "" ? "asset" : "id") + " already exists.");
+			else if ((typeDropdown.value != "solid" && typesList[1][typeDropdown.valueInt] != "solid") && (typeDropdown.value != "group" && typesList[1][typeDropdown.valueInt] != "group") && imageDropdown.value == "")
+				new Notify("A piece must have an asset.");
+			else if ((typeDropdown.value == "solid" || typesList[1][typeDropdown.valueInt] == "solid") && pieceId.text == "")
+				new Notify("A piece of type 'solid' must have an id.");
+			else if ((typeDropdown.value == "group" || typesList[1][typeDropdown.valueInt] == "group") && pieceId.text == "")
+				new Notify("A piece of type 'group' must have an id.");
+			else
+			{
+				var newPiece:StagePiece =
+				{
+					type: (typesList[1][typeDropdown.valueInt] == "basetype" ? typeDropdown.value : typesList[1][typeDropdown.valueInt]),
+					asset: imageDropdown.value,
+					position: [0, 0],
+					antialias: true,
+					layer: stageData.characters.length,
+					align: "topleft",
+					visible: true,
+					scale: [1, 1],
+					updateHitbox: true,
+					scrollFactor: [1, 1],
+					flip: [false, false],
+					color: [255, 255, 255],
+					alpha: 1,
+					blend: "normal",
+					tile: [true, true],
+					tileCount: [1, 1]
+				};
 
-		if (pieceScrollX.value != 1 || pieceScrollY.value != 1)
-			piece.scrollFactor = [pieceScrollX.value, pieceScrollY.value];
-		else
-			Reflect.deleteField(piece, "scrollFactor");
+				if (pieceId.text != "")
+					newPiece.id = pieceId.text;
 
-		if (pieceFlipX.checked || pieceFlipY.checked)
-			piece.flip = [pieceFlipX.checked, pieceFlipY.checked];
-		else
-			Reflect.deleteField(piece, "flip");
+				if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
+				{
+					newPiece.position = stageData.pieces[curStagePiece].position.copy();
+					newPiece.antialias = stageData.pieces[curStagePiece].antialias;
+					newPiece.visible = stageData.pieces[curStagePiece].visible;
+					newPiece.scale = stageData.pieces[curStagePiece].scale.copy();
+					newPiece.updateHitbox = stageData.pieces[curStagePiece].updateHitbox;
+					newPiece.scrollFactor = stageData.pieces[curStagePiece].scrollFactor.copy();
+					newPiece.flip = stageData.pieces[curStagePiece].flip.copy();
+					newPiece.align = stageData.pieces[curStagePiece].align;
+					newPiece.color = stageData.pieces[curStagePiece].color.copy();
+					newPiece.alpha = stageData.pieces[curStagePiece].alpha;
+					newPiece.blend = stageData.pieces[curStagePiece].blend;
+					newPiece.tile = stageData.pieces[curStagePiece].tile.copy();
+					newPiece.tileCount = stageData.pieces[curStagePiece].tileCount.copy();
+				}
 
-		if (pieceAlpha.value != 1)
-			piece.alpha = pieceAlpha.value;
-		else
-			Reflect.deleteField(piece, "alpha");
+				if (typesList[1][typeDropdown.valueInt] != "basetype")
+				{
+					newPiece.scriptClass = typeDropdown.value;
+					newPiece.scriptParameters = {};
 
-		if (pieceBlend.value != blendList[0])
-			piece.blend = pieceBlend.value;
-		else
-			Reflect.deleteField(piece, "blend");
+					var type:String = (newPiece.type == "animated" ? "AnimatedSprite" : "FlxSprite");
+					if (Paths.jsonExists("scripts/" + type + "/" + newPiece.scriptClass))
+					{
+						var pieceParams:Array<EventParams> = cast Paths.json("scripts/" + type + "/" + newPiece.scriptClass).parameters;
+						if (pieceParams != null && pieceParams.length > 0)
+						{
+							for (param in pieceParams)
+							{
+								if (param.type != "label")
+									Reflect.setField(newPiece.scriptParameters, param.id, param.defaultValue);
+							}
+						}
+					}
+				}
 
-		if (piece.type == "tiled")
-			piece.tile = [pieceTileX.checked, pieceTileY.checked];
-		else
-			Reflect.deleteField(piece, "tile");
+				if (newPiece.type == "animated")
+				{
+					newPiece.animations = [];
+					newPiece.idles = [];
+					newPiece.firstAnimation = "";
+				}
 
-		if (piece.type == "animated" && !sparrowExists(piece.asset))
-			piece.tileCount = [pieceTileCountX.valueInt, pieceTileCountY.valueInt];
-		else
-			Reflect.deleteField(piece, "tileCount");
+				var slot:Int = stageData.pieces.length;
 
-		assignPieceParams(curStagePiece);
-	}
+				if (behindCharacters)
+				{
+					newPiece.layer = 0;
+					for (i in 0...stageData.pieces.length)
+					{
+						if (stageData.pieces[i].layer > newPiece.layer)
+						{
+							slot = i;
+							break;
+						}
+					}
+				}
+				else if (curCharacter > -1 && insert)
+				{
+					newPiece.layer = stageData.characters[curCharacter].layer;
+					for (i in 0...stageData.pieces.length)
+					{
+						if (stageData.pieces[i].layer > newPiece.layer)
+						{
+							slot = i;
+							break;
+						}
+					}
+				}
+				else if (curStagePiece > -1 && insert)
+				{
+					slot = curStagePiece;
+					newPiece.layer = stageData.pieces[curStagePiece].layer;
+				}
 
-	function updateCurrentPiecePosition()
-	{
-		if (curStagePiece <= -1 || stageData.pieces.length <= 0) return;
+				stageData.pieces.insert(slot, newPiece);
+				curStagePiece = slot;
+				curCharacter = -1;
+				selectedStagePieces = [slot];
 
-		var piece:StagePiece = stageData.pieces[curStagePiece];
-		piece.layer = pieceLayer.valueInt;
-
-		updatePiece(curStagePiece);
-	}
-
-	function doMovement(xDir:Int, yDir:Int)
-	{
-		if (tabMenu.curTab == 1)
-		{
-			stageData.characters[characterId.valueInt].position[0] += xDir;
-			stageData.characters[characterId.valueInt].position[1] += yDir;
-			allCharacters[characterId.valueInt].repositionCharacter(stageData.characters[characterId.valueInt].position[0], stageData.characters[characterId.valueInt].position[1]);
-			charX.value = stageData.characters[characterId.valueInt].position[0];
-			charY.value = stageData.characters[characterId.valueInt].position[1];
-		}
-		else if (curStagePiece > -1)
-		{
-			stageData.pieces[curStagePiece].position[0] += xDir;
-			stageData.pieces[curStagePiece].position[1] += yDir;
-			myStage[curStagePiece].x = stageData.pieces[curStagePiece].position[0];
-			myStage[curStagePiece].y = stageData.pieces[curStagePiece].position[1];
-			alignPiece(curStagePiece);
+				addToStage(curStagePiece, false);
+				assignPieceParams(curStagePiece);
+				refreshStagePieces();
+				updatePieceTabVisibility();
+				updateAnimationTab();
+				refreshSelectionShader();
+			}
 		}
 	}
 
 	function confirmDeletePiece()
 	{
-		if (stageData.pieces.length > 0)
-		{
-			var confirm:Confirm = new Confirm(300, 100, "Are you sure you want to delete the current piece?", this);
-			confirm.yesFunc = function() {
-				deletePiece();
-			}
-			confirm.cameras = [camHUD];
-		}
+		if (selectedStagePieces.length > 0)
+			new Confirm("Are you sure you want to delete the selected piece" + (selectedStagePieces.length > 1 ? "s" : "") + "?", deletePiece);
 	}
 
 	function deletePiece()
 	{
-		if (curStagePiece <= -1)
-			return;
+		selectedStagePieces.sort(function(a:Int, b:Int) { return b - a; });
+		for (s in selectedStagePieces)
+		{
+			if (s < 0 && stageData.characters.length > 2)
+			{
+				var layer:Int = stageData.characters[-s - 1].layer;
 
-		var toRemove:FlxSprite = myStage.splice(curStagePiece, 1)[0];
-		remove(toRemove, true);
-		toRemove.kill();
-		toRemove.destroy();
+				for (c in stageData.characters)
+				{
+					if (c.layer > layer)
+						c.layer--;
+				}
 
-		stageData.pieces.remove(stageData.pieces[curStagePiece]);
-		if (curStagePiece > 0 && stageData.pieces.length >= curStagePiece)
-			curStagePiece--;
+				for (p in stageData.pieces)
+				{
+					if (p.layer > layer)
+						p.layer--;
+				}
 
-		refreshStage();
+				var toRemove:Character = allCharacters.splice(-s - 1, 1)[0];
+				myStageGroup.remove(toRemove, true);
+				toRemove.kill();
+				toRemove.destroy();
+
+				stageData.characters.splice(-s - 1, 1);
+
+			}
+			else if (s >= 0)
+			{
+				var toRemove:FlxSprite = myStage.splice(s, 1)[0];
+				myStageGroup.remove(toRemove, true);
+				toRemove.kill();
+				toRemove.destroy();
+
+				stageData.pieces.splice(s, 1);
+			}
+		}
+		selectedStagePieces = [];
+
 		refreshStagePieces();
 		updatePieceTabVisibility();
 		refreshSelectionShader();
 	}
 
-	function updateCharacterCount()
+	var dropdownSpecial:Map<String, Array<String>> = new Map<String, Array<String>>();
+
+	function updatePieceTabVisibility()
 	{
-		if (characterCount.valueInt < stageData.characters.length)
+		if (selectedStagePieces.length == 1)
 		{
-			stageData.characters.resize(characterCount.valueInt);
-			while (allCharacters.length > stageData.characters.length)
+			if (curCharacter > -1 && stageData.characters.length > 0 && curCharacter < stageData.characters.length)
 			{
-				remove(allCharacters[allCharacters.length-1], true);
-				allCharacters[allCharacters.length-1].kill();
-				allCharacters[allCharacters.length-1].destroy();
-				allCharacters.pop();
+				for (e in pieceParams)
+				{
+					pieceProperties.vbox.remove(e, true);
+					e.kill();
+					e.destroy();
+				}
+				pieceParams = [];
+
+				if (piecePropertiesSlot.members.contains(piecePropertiesBlank))
+					piecePropertiesSlot.remove(piecePropertiesBlank, true);
+				if (piecePropertiesSlot.members.contains(piecePropertiesGroup))
+					piecePropertiesSlot.remove(piecePropertiesGroup, true);
+				if (!piecePropertiesSlot.members.contains(piecePropertiesCharacterGroup))
+					piecePropertiesSlot.add(piecePropertiesCharacterGroup);
+
+				piecePropertiesCharacterGroup.repositionAll();
+				piecePropertiesSlot.repositionAll();
 			}
-			for (i in 0...stageData.characters.length)
+			else if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
 			{
-				if (stageData.characters[i].layer > characterCount.valueInt-1)
-					stageData.characters[i].layer = characterCount.valueInt-1;
-			}
-			if (characterCount.valueInt-1 < characterId.valueInt)
-			{
-				characterId.value = characterCount.value-1;
-				characterId.onChanged();
+				if (piecePropertiesSlot.members.contains(piecePropertiesBlank))
+					piecePropertiesSlot.remove(piecePropertiesBlank, true);
+				if (piecePropertiesSlot.members.contains(piecePropertiesCharacterGroup))
+					piecePropertiesSlot.remove(piecePropertiesCharacterGroup, true);
+				if (!piecePropertiesSlot.members.contains(piecePropertiesGroup))
+					piecePropertiesSlot.add(piecePropertiesGroup);
+
+				if (stageData.pieces[curStagePiece].type == "group")
+				{
+					if (piecePropertiesSubSlot.members.contains(piecePropertiesSubGroup))
+						piecePropertiesSubSlot.remove(piecePropertiesSubGroup, true);
+				}
+				else
+				{
+					if (!piecePropertiesSubSlot.members.contains(piecePropertiesSubGroup))
+						piecePropertiesSubSlot.add(piecePropertiesSubGroup);
+				}
+
+				if (stageData.pieces[curStagePiece].type == "solid")
+				{
+					if (piecePropertiesNonSolidSlot.members.contains(piecePropertiesNonSolidGroup))
+						piecePropertiesNonSolidSlot.remove(piecePropertiesNonSolidGroup, true);
+					if (!piecePropertiesSolidSlot.members.contains(piecePropertiesSolidGroup))
+						piecePropertiesSolidSlot.add(piecePropertiesSolidGroup);
+				}
+				else
+				{
+					if (piecePropertiesSolidSlot.members.contains(piecePropertiesSolidGroup))
+						piecePropertiesSolidSlot.remove(piecePropertiesSolidGroup, true);
+					if (!piecePropertiesNonSolidSlot.members.contains(piecePropertiesNonSolidGroup))
+						piecePropertiesNonSolidSlot.add(piecePropertiesNonSolidGroup);
+				}
+
+				if (stageData.pieces[curStagePiece].type == "tiled")
+				{
+					if (piecePropertiesNonTiledSlot.members.contains(piecePropertiesNonTiledGroup))
+						piecePropertiesNonTiledSlot.remove(piecePropertiesNonTiledGroup, true);
+					if (!piecePropertiesTiledSlot.members.contains(piecePropertiesTiledGroup))
+						piecePropertiesTiledSlot.add(piecePropertiesTiledGroup);
+				}
+				else
+				{
+					if (piecePropertiesTiledSlot.members.contains(piecePropertiesTiledGroup))
+						piecePropertiesTiledSlot.remove(piecePropertiesTiledGroup, true);
+					if (!piecePropertiesNonTiledSlot.members.contains(piecePropertiesNonTiledGroup))
+						piecePropertiesNonTiledSlot.add(piecePropertiesNonTiledGroup);
+				}
+
+				if (stageData.pieces[curStagePiece].type == "animated" && !sparrowExists(stageData.pieces[curStagePiece].asset))
+				{
+					if (!piecePropertiesAnimatedTiledSlot.members.contains(piecePropertiesAnimatedTiledGroup))
+						piecePropertiesAnimatedTiledSlot.add(piecePropertiesAnimatedTiledGroup);
+				}
+				else
+				{
+					if (piecePropertiesAnimatedTiledSlot.members.contains(piecePropertiesAnimatedTiledGroup))
+						piecePropertiesAnimatedTiledSlot.remove(piecePropertiesAnimatedTiledGroup, true);
+				}
+
+				for (e in pieceParams)
+				{
+					pieceProperties.vbox.remove(e, true);
+					e.kill();
+					e.destroy();
+				}
+				pieceParams = [];
+
+				if (stageData.pieces[curStagePiece].scriptClass != null && Paths.jsonExists("scripts/" + (stageData.pieces[curStagePiece].type == "animated" ? "AnimatedSprite" : "FlxSprite") + "/" + stageData.pieces[curStagePiece].scriptClass))
+				{
+					var thisPieceParams:Array<EventParams> = cast Paths.json("scripts/" + (stageData.pieces[curStagePiece].type == "animated" ? "AnimatedSprite" : "FlxSprite") + "/" + stageData.pieces[curStagePiece].scriptClass).parameters;
+					var ii:Int = 0;
+					for (i in 0...thisPieceParams.length)
+					{
+						var p:EventParams = thisPieceParams[i];
+						var pValue:Dynamic = p.defaultValue;
+						if (p.type != "label" && Reflect.hasField(stageData.pieces[curStagePiece].scriptParameters, p.id))
+							pValue = Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id);
+
+						switch (p.type)
+						{
+							case "label":
+								var newThing:FlxText = new FlxText(0, 0, 230, p.label);
+								newThing.setFormat("FNF Dialogue", 18, FlxColor.WHITE, CENTER, OUTLINE, 0xFF254949);
+								pieceParams.push(newThing);
+								ii--;
+
+							case "checkbox":
+								var newThing:Checkbox = new Checkbox(0, 0, p.label);
+								newThing.checked = pValue;
+								newThing.condition = function() { return Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id); }
+								newThing.onClicked = function() { Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, newThing.checked); }
+
+								pieceParams.push(newThing);
+
+							case "dropdown":
+								var str:String = pValue;
+								var options:Array<String> = p.options.copy();
+								for (o in options)
+								{
+									if (!pieceParamNames.exists(o))
+										pieceParamNames[o] = Util.properCaseString(o);
+								}
+								var newThing:DropdownMenu = new DropdownMenu(0, 0, "", [""], true);
+								newThing.valueText = pieceParamNames;
+								newThing.valueList = options;
+								newThing.value = str;
+								newThing.condition = function() { return Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id); }
+								newThing.onChanged = function() { Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, newThing.value); }
+
+								pieceParams.push(new Label(p.label));
+								pieceParams.push(newThing);
+
+							case "dropdownSpecial":
+								if (!dropdownSpecial.exists(p.options[0] + "-" + p.options[1]))
+									dropdownSpecial[p.options[0] + "-" + p.options[1]] = Paths.listFilesSub(p.options[0] + "/", p.options[1]);
+								var str:String = pValue;
+								var newThing:DropdownMenu = new DropdownMenu(0, 0, str, dropdownSpecial[p.options[0] + "-" + p.options[1]], true);
+								newThing.condition = function() { return Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id); }
+								newThing.onChanged = function() { Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, newThing.value); }
+
+								pieceParams.push(new Label(p.label));
+								pieceParams.push(newThing);
+
+							case "stepper":
+								var label:String = p.label;
+								if (!label.endsWith(":"))
+									label += ":";
+								var newThing:Stepper = new Stepper(0, 0, label, pValue, p.increment, p.min, p.max, p.decimals);
+								newThing.condition = function() { return Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id); }
+								newThing.onChanged = function() { Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, newThing.value); }
+								pieceParams.push(newThing);
+
+							case "string":
+								var str:String = pValue;
+								var newThing:InputText = new InputText(0, 0, str);
+								newThing.condition = function() { return Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id); }
+								newThing.focusLost = function() { Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, newThing.text); }
+
+								pieceParams.push(new Label(p.label));
+								pieceParams.push(newThing);
+
+							case "color":
+								var newThing:TextButton = new TextButton(0, 0, p.label, Button.LONG);
+
+								newThing.onClicked = function() {
+									new ColorPicker(FlxColor.fromRGB(Std.int(Reflect.field(stageData.pieces[curStagePiece].scriptParameters, p.id)), Std.int(Reflect.field(stageData.pieces[curStagePiece].scriptParameters, thisPieceParams[i+1].id)),Std.int(Reflect.field(stageData.pieces[curStagePiece].scriptParameters, thisPieceParams[i+2].id))), function(clr:FlxColor) {
+										Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, p.id, clr.red);
+										Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, thisPieceParams[i+1].id, clr.green);
+										Reflect.setField(stageData.pieces[curStagePiece].scriptParameters, thisPieceParams[i+2].id, clr.blue);
+									});
+								}
+
+								pieceParams.push(newThing);
+						}
+						ii++;
+					}
+
+					for (e in pieceParams)
+						pieceProperties.vbox.add(e);
+				}
+
+				piecePropertiesSubGroup.repositionAll();
+				piecePropertiesSubSlot.repositionAll();
+				piecePropertiesGroup.repositionAll();
 			}
 		}
 		else
 		{
-			while (characterCount.valueInt > stageData.characters.length)
+			for (e in pieceParams)
 			{
-				var oldChar:StageCharacter = stageData.characters[stageData.characters.length-1];
-				var char:StageCharacter = Reflect.copy(oldChar);
-				char.position = oldChar.position.copy();
-				char.camPosition = oldChar.camPosition.copy();
-				char.scale = oldChar.scale.copy();
-				char.scrollFactor = oldChar.scrollFactor.copy();
-
-				stageData.characters.push(char);
+				pieceProperties.vbox.remove(e, true);
+				e.kill();
+				e.destroy();
 			}
+			pieceParams = [];
 
-			while (allCharacters.length < stageData.characters.length)
-				spawnCharacter();
+			if (piecePropertiesSlot.members.contains(piecePropertiesGroup))
+				piecePropertiesSlot.remove(piecePropertiesGroup, true);
+			if (piecePropertiesSlot.members.contains(piecePropertiesCharacterGroup))
+				piecePropertiesSlot.remove(piecePropertiesCharacterGroup, true);
+			if (!piecePropertiesSlot.members.contains(piecePropertiesBlank))
+				piecePropertiesSlot.add(piecePropertiesBlank);
 		}
-		characterId.maxVal = characterCount.value-1;
-		charLayer.maxVal = characterCount.value-1;
-		pieceLayer.maxVal = characterCount.value;
+		piecePropertiesSlot.repositionAll();
+		pieceProperties.repositionAll();
+
+		if (selectedStagePieces.length == 1 && curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length && stageData.pieces[curStagePiece].type == "animated")
+		{
+			if (pieceAnimationsSlot.members.contains(pieceAnimationsBlank))
+				pieceAnimationsSlot.remove(pieceAnimationsBlank, true);
+			if (!pieceAnimationsSlot.members.contains(pieceAnimationsGroup))
+				pieceAnimationsSlot.add(pieceAnimationsGroup);
+		}
+		else
+		{
+			if (pieceAnimationsSlot.members.contains(pieceAnimationsGroup))
+				pieceAnimationsSlot.remove(pieceAnimationsGroup, true);
+			if (!pieceAnimationsSlot.members.contains(pieceAnimationsBlank))
+				pieceAnimationsSlot.add(pieceAnimationsBlank);
+		}
+		pieceAnimationsSlot.repositionAll();
+		pieceAnimations.repositionAll();
 	}
 
 	function updateCharacterTab()
 	{
-		charIndex.value = allCharacters[characterId.valueInt].curCharacter;
-
 		var animList:Array<String> = [];
-		for (a in allCharacters[characterId.valueInt].characterData.animations)
-			animList.push(a.name);
+		if (curCharacter > -1)
+		{
+			for (a in allCharacters[curCharacter].characterData.animations)
+				animList.push(a.name);
+		}
 		charAnim.valueList = animList;
-		charAnim.value = allCharacters[characterId.valueInt].curAnimName;
-
-		var c:StageCharacter = stageData.characters[characterId.valueInt];
-		charX.value = c.position[0];
-		charY.value = c.position[1];
-		charFlip.checked = c.flip;
-		charLayer.value = c.layer;
-		charScaleX.value = c.scale[0];
-		charScaleY.value = c.scale[1];
-		charScrollX.value = c.scrollFactor[0];
-		charScrollY.value = c.scrollFactor[1];
-		charCamX.value = c.camPosition[0];
-		charCamY.value = c.camPosition[1];
-		charCamAbsolute.checked = c.camPosAbsolute;
-	}
-
-	function updatePieceTabVisibility()
-	{
-		if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
-		{
-			pieceVisible.visible = (stageData.pieces[curStagePiece].type != "group");
-			pieceFlipX.visible = pieceVisible.visible;
-			pieceFlipY.visible = pieceVisible.visible;
-			pieceScaleX.visible = pieceVisible.visible;
-			pieceScaleY.visible = pieceVisible.visible;
-			pieceUpdateHitbox.visible = pieceVisible.visible;
-			pieceAlign.visible = (stageData.pieces[curStagePiece].type != "group" && stageData.pieces[curStagePiece].type != "tiled");
-			pieceAntialias.visible = pieceVisible.visible;
-			pieceTileX.visible = (stageData.pieces[curStagePiece].type == "tiled");
-			pieceTileY.visible = pieceTileX.visible;
-			pieceTileCountX.visible = (stageData.pieces[curStagePiece].type == "animated" && !sparrowExists(stageData.pieces[curStagePiece].asset));
-			pieceTileCountY.visible = pieceTileCountX.visible;
-			pieceAlpha.visible = pieceVisible.visible;
-			pieceBlend.visible = pieceVisible.visible;
-		}
-		else
-		{
-			pieceVisible.visible = false;
-			pieceFlipX.visible = false;
-			pieceFlipY.visible = false;
-			pieceScaleX.visible = false;
-			pieceScaleY.visible = false;
-			pieceUpdateHitbox.visible = false;
-			pieceAlign.visible = false;
-			pieceAntialias.visible = false;
-			pieceTileX.visible = false;
-			pieceTileY.visible = false;
-			pieceTileCountX.visible = false;
-			pieceTileCountY.visible = false;
-			pieceAlpha.visible = false;
-			pieceBlend.visible = false;
-		}
 	}
 
 	function updatePieceTab()
@@ -1380,87 +2330,12 @@ class StageEditorState extends MusicBeatState
 		else
 			pieceId.text = stageData.pieces[curStagePiece].id;
 
-		if (stageData.pieces[curStagePiece].scriptClass != null && typeDropdown.valueList.contains(stageData.pieces[curStagePiece].scriptClass))
+		if (stageData.pieces[curStagePiece].scriptClass != null && typesList[0].contains(stageData.pieces[curStagePiece].scriptClass))
 			typeDropdown.value = stageData.pieces[curStagePiece].scriptClass;
 		else
 			typeDropdown.value = stageData.pieces[curStagePiece].type;
 
 		imageDropdown.value = stageData.pieces[curStagePiece].asset;
-
-		pieceX.value = stageData.pieces[curStagePiece].position[0];
-		pieceY.value = stageData.pieces[curStagePiece].position[1];
-
-		if (stageData.pieces[curStagePiece].scale != null && stageData.pieces[curStagePiece].scale.length == 2)
-		{
-			pieceScaleX.value = stageData.pieces[curStagePiece].scale[0];
-			pieceScaleY.value = stageData.pieces[curStagePiece].scale[1];
-		}
-		else
-		{
-			pieceScaleX.value = 1;
-			pieceScaleY.value = 1;
-		}
-
-		if (stageData.pieces[curStagePiece].scrollFactor != null && stageData.pieces[curStagePiece].scrollFactor.length == 2)
-		{
-			pieceScrollX.value = stageData.pieces[curStagePiece].scrollFactor[0];
-			pieceScrollY.value = stageData.pieces[curStagePiece].scrollFactor[1];
-		}
-		else
-		{
-			pieceScrollX.value = 1;
-			pieceScrollY.value = 1;
-		}
-
-		if (stageData.pieces[curStagePiece].flip != null && stageData.pieces[curStagePiece].flip.length == 2)
-		{
-			pieceFlipX.checked = stageData.pieces[curStagePiece].flip[0];
-			pieceFlipY.checked = stageData.pieces[curStagePiece].flip[1];
-		}
-		else
-		{
-			pieceFlipX.checked = false;
-			pieceFlipY.checked = false;
-		}
-
-		pieceLayer.value = stageData.pieces[curStagePiece].layer;
-
-		if (stageData.pieces[curStagePiece].visible == null)
-			pieceVisible.checked = true;
-		else
-			pieceVisible.checked = stageData.pieces[curStagePiece].visible;
-
-		if (stageData.pieces[curStagePiece].updateHitbox != null)
-			pieceUpdateHitbox.checked = stageData.pieces[curStagePiece].updateHitbox;
-
-		if (stageData.pieces[curStagePiece].align == null || stageData.pieces[curStagePiece].align == "")
-			pieceAlign.value = alignList[0];
-		else
-			pieceAlign.value = stageData.pieces[curStagePiece].align;
-
-		pieceAntialias.checked = stageData.pieces[curStagePiece].antialias;
-
-		if (stageData.pieces[curStagePiece].tile != null && stageData.pieces[curStagePiece].tile.length == 2)
-		{
-			pieceTileX.checked = stageData.pieces[curStagePiece].tile[0];
-			pieceTileY.checked = stageData.pieces[curStagePiece].tile[1];
-		}
-
-		if (stageData.pieces[curStagePiece].tileCount != null && stageData.pieces[curStagePiece].tileCount.length == 2)
-		{
-			pieceTileCountX.value = stageData.pieces[curStagePiece].tileCount[0];
-			pieceTileCountY.value = stageData.pieces[curStagePiece].tileCount[1];
-		}
-
-		if (stageData.pieces[curStagePiece].alpha == null)
-			pieceAlpha.value = 1;
-		else
-			pieceAlpha.value = stageData.pieces[curStagePiece].alpha;
-
-		if (stageData.pieces[curStagePiece].blend == null || stageData.pieces[curStagePiece].blend == "")
-			pieceBlend.value = blendList[0];
-		else
-			pieceBlend.value = stageData.pieces[curStagePiece].blend;
 	}
 
 	function updateAnimationTab()
@@ -1468,9 +2343,18 @@ class StageEditorState extends MusicBeatState
 		if (curStagePiece > -1 && stageData.pieces.length > 0 && stageData.pieces[curStagePiece].type == "animated")
 		{
 			if (sparrowExists(stageData.pieces[curStagePiece].asset))
+			{
 				animPrefixes.valueList = sparrowAnimations(stageData.pieces[curStagePiece].asset);
+				if (assetExists(stageData.pieces[curStagePiece].asset + ".txt"))
+					allAnimData = raw(stageData.pieces[curStagePiece].asset + ".txt");
+				else
+					allAnimData = raw(stageData.pieces[curStagePiece].asset + ".xml");
+			}
 			else
+			{
 				animPrefixes.valueList = [""];
+				allAnimData = "";
+			}
 			if (stageData.pieces[curStagePiece].animations.length > 0)
 			{
 				var pieceAnimList:Array<String> = [];
@@ -1498,10 +2382,7 @@ class StageEditorState extends MusicBeatState
 				curAnimDropdown.value = animData.name;
 				firstAnimDropdown.valueList = pieceAnimList;
 				firstAnimDropdown.value = stageData.pieces[curStagePiece].firstAnimation;
-				if (stageData.pieces[curStagePiece].idles == null)
-					beatAnimInput.text = "";
-				else
-					beatAnimInput.text = stageData.pieces[curStagePiece].idles.join(",");
+
 				if (stageData.pieces[curStagePiece].beatAnimationSpeed == null)
 					beatAnimSpeed.value = 1;
 				else
@@ -1535,7 +2416,6 @@ class StageEditorState extends MusicBeatState
 				curAnimDropdown.value = "";
 				firstAnimDropdown.valueList = [""];
 				firstAnimDropdown.value = "";
-				beatAnimInput.text = "";
 			}
 		}
 		else
@@ -1544,43 +2424,42 @@ class StageEditorState extends MusicBeatState
 			curAnimDropdown.value = "";
 			firstAnimDropdown.valueList = [""];
 			firstAnimDropdown.value = "";
-			beatAnimInput.text = "";
 		}
+	}
+
+	function searchDirsChanged()
+	{
+		var imageList:Array<String> = [];
+		for (s in stageData.searchDirs)
+			imageList = imageList.concat(Paths.listFilesSub("images/" + s, ".png"));
+
+		if (imageList.length > 0)
+			imageDropdown.valueList = imageList;
+		else
+			imageDropdown.valueList = [""];
 	}
 
 	function refreshSelectionShader()
 	{
-		if (tabMenu != null && tabMenu.curTab == 1)
+		if (allCharacters.length > 0)
 		{
 			for (i in 0...allCharacters.length)
 			{
-				if (i == characterId.valueInt)
-					allCharacters[i].shader = selectionShader.shader;
+				if (selectedStagePieces.contains(-i - 1))
+					allCharacters[i].shader = selectionShader;
 				else
 					allCharacters[i].shader = null;
 			}
-			if (myStage.length > 0)
-			{
-				for (p in myStage)
-					p.shader = null;
-			}
 		}
-		else
+
+		if (myStage.length > 0)
 		{
-			if (myStage.length > 0)
+			for (i in 0...myStage.length)
 			{
-				for (i in 0...myStage.length)
-				{
-					if (i == curStagePiece)
-						myStage[i].shader = selectionShader.shader;
-					else
-						myStage[i].shader = null;
-				}
-			}
-			if (allCharacters.length > 0)
-			{
-				for (p in allCharacters)
-					p.shader = null;
+				if (selectedStagePieces.contains(i))
+					myStage[i].shader = selectionShader;
+				else
+					myStage[i].shader = null;
 			}
 		}
 	}
@@ -1589,19 +2468,30 @@ class StageEditorState extends MusicBeatState
 	{
 		for (piece in myStage)
 		{
-			remove(piece, true);
+			myStageGroup.remove(piece, true);
 			piece.kill();
 			piece.destroy();
 		}
 		myStage = [];
 
-		for (c in allCharacters)
-			postSpawnCharacter(c);
+		while (allCharacters.length > stageData.characters.length)
+		{
+			var c:Character = allCharacters.pop();
+			myStageGroup.remove(c, true);
+			c.kill();
+			c.destroy();
+		}
+
+		if (allCharacters.length < stageData.characters.length)
+		{
+			for (i in allCharacters.length...stageData.characters.length)
+				spawnCharacter();
+		}
 
 		var poppers:Array<StagePiece> = [];
 		for (i in 0...stageData.pieces.length)
 		{
-			if (stageData.pieces[i].type == "group" || imageExists(stageData.pieces[i].asset))
+			if (stageData.pieces[i].type == "solid" || stageData.pieces[i].type == "group" || imageExists(stageData.pieces[i].asset))
 				addToStage(i);
 			else
 				poppers.push(stageData.pieces[i]);
@@ -1624,6 +2514,16 @@ class StageEditorState extends MusicBeatState
 		newC.scrollFactor.set(c.scrollFactor[0], c.scrollFactor[1]);
 		allCharacters.push(newC);
 		postSpawnCharacter(newC);
+	}
+
+	function applyCharacterValues(char:Character)
+	{
+		var c:StageCharacter = stageData.characters[allCharacters.indexOf(char)];
+		char.repositionCharacter(c.position[0], c.position[1]);
+		if (char.wasFlipped != c.flip)
+			char.flip();
+		char.scaleCharacter(c.scale[0], c.scale[1]);
+		char.scrollFactor.set(c.scrollFactor[0], c.scrollFactor[1]);
 	}
 
 	function postSpawnCharacter(char:Character)
@@ -1707,6 +2607,11 @@ class StageEditorState extends MusicBeatState
 					stagePiece.tile = [true, true];
 				piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1]);
 
+			case "solid":
+				piece = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
+				piece.active = false;
+				piece.antialiasing = false;
+
 			case "group":
 				piece = new FlxSpriteGroup();
 		}
@@ -1733,7 +2638,7 @@ class StageEditorState extends MusicBeatState
 		else
 			piece.scale.set(1, 1);
 
-		if (stagePiece.updateHitbox)
+		if (stagePiece.updateHitbox || stagePiece.type == "solid")
 			piece.updateHitbox();
 
 		if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
@@ -1754,7 +2659,11 @@ class StageEditorState extends MusicBeatState
 		else
 			piece.alpha = 0.3;
 
-		piece.antialiasing = stagePiece.antialias;
+		if (stagePiece.type != "solid")
+			piece.antialiasing = stagePiece.antialias;
+
+		if (stagePiece.color != null && stagePiece.color.length > 2)
+			piece.color = FlxColor.fromRGB(stagePiece.color[0], stagePiece.color[1], stagePiece.color[2]);
 
 		if (stagePiece.alpha != null && stagePiece.alpha != 1)
 			piece.alpha *= stagePiece.alpha;
@@ -1776,11 +2685,38 @@ class StageEditorState extends MusicBeatState
 		{
 			if (i < myStage.length)
 			{
-				var stagePiece:StagePiece = stageData.pieces[i];
 				var piece:FlxSprite = myStage[i];
 
 				if (myStageGroup.members.contains(piece))
 					myStageGroup.remove(piece, true);
+			}
+		}
+
+		for (i in 0...stageData.characters.length)
+		{
+			if (i < allCharacters.length)
+			{
+				var piece:Character = allCharacters[i];
+
+				if (myStageGroup.members.contains(piece))
+					myStageGroup.remove(piece, true);
+			}
+		}
+
+		for (i in 0...stageData.characters.length)
+		{
+			if (i < allCharacters.length)
+			{
+				var stagePiece:StageCharacter = stageData.characters[i];
+				var piece:Character = allCharacters[i];
+
+				var ind:Int = myStageGroup.members.length;
+				for (j in 0...allCharacters.length)
+				{
+					if (stagePiece.layer < stageData.characters[j].layer && myStageGroup.members.contains(allCharacters[j]) && ind > myStageGroup.members.indexOf(allCharacters[j]))
+						ind = myStageGroup.members.indexOf(allCharacters[j]);
+				}
+				addToStageGroup(ind, piece);
 			}
 		}
 
@@ -1792,10 +2728,10 @@ class StageEditorState extends MusicBeatState
 				var piece:FlxSprite = myStage[i];
 
 				var ind:Int = myStageGroup.members.length;
-				for (i in 0...allCharacters.length)
+				for (j in 0...allCharacters.length)
 				{
-					if (stagePiece.layer <= stageData.characters[i].layer && myStageGroup.members.contains(allCharacters[i]) && ind > myStageGroup.members.indexOf(allCharacters[i]))
-						ind = myStageGroup.members.indexOf(allCharacters[i]);
+					if (stagePiece.layer <= stageData.characters[j].layer && myStageGroup.members.contains(allCharacters[j]) && ind > myStageGroup.members.indexOf(allCharacters[j]))
+						ind = myStageGroup.members.indexOf(allCharacters[j]);
 				}
 				addToStageGroup(ind, piece);
 			}
@@ -1834,19 +2770,152 @@ class StageEditorState extends MusicBeatState
 
 	function movePiece(dir:Int)
 	{
-		if (curStagePiece <= -1) return;
-		if (dir > 0 && stageData.pieces[curStagePiece+dir].layer > stageData.pieces[curStagePiece].layer) return;
-		if (dir < 0 && stageData.pieces[curStagePiece+dir].layer < stageData.pieces[curStagePiece].layer) return;
+		if (curCharacter > -1)
+		{
+			var index:Int = 0;
+			for (i in 0...stagePieceList.length)
+			{
+				if (stagePieceList[i][1] == -curCharacter - 1)
+					index = i;
+			}
 
-		var movePiece:StagePiece = stageData.pieces.splice(curStagePiece, 1)[0];
-		var movePieceSprite:FlxSprite = myStage.splice(curStagePiece, 1)[0];
-		curStagePiece += dir;
-		stageData.pieces.insert(curStagePiece, movePiece);
-		myStage.insert(curStagePiece, movePieceSprite);
-		pieceList.value = curStagePiece + 1;
-		updateAllPieces();
-		refreshStagePieces();
-		refreshSelectionShader();
+			if (index + dir < 0 || index + dir >= stagePieceList.length) return;
+
+			var next:Int = stagePieceList[index + dir][1];
+			if (next >= 0)
+			{
+				var c:StageCharacter = stageData.characters[curCharacter];
+				if (dir > 0)
+					stageData.pieces[next].layer = c.layer;
+				else
+					stageData.pieces[next].layer = c.layer + 1;
+			}
+			else
+			{
+				var c:StageCharacter = stageData.characters[-next - 1];
+				var oldLayer:Int = stageData.characters[curCharacter].layer;
+				stageData.characters[curCharacter].layer = c.layer;
+				c.layer = oldLayer;
+			}
+
+			updateAllPieces();
+			refreshStagePieces();
+			refreshSelectionShader();
+		}
+		else if (curStagePiece > -1)
+		{
+			var index:Int = 0;
+			for (i in 0...stagePieceList.length)
+			{
+				if (stagePieceList[i][1] == curStagePiece)
+					index = i;
+			}
+
+			if (index + dir < 0 || index + dir >= stagePieceList.length) return;
+
+			var next:Int = stagePieceList[index + dir][1];
+			if (next >= 0)
+			{
+				var movePiece:StagePiece = stageData.pieces.splice(curStagePiece, 1)[0];
+				var movePieceSprite:FlxSprite = myStage.splice(curStagePiece, 1)[0];
+
+				if (curStagePiece + dir >= 0 && curStagePiece + dir <= stageData.pieces.length)
+					curStagePiece += dir;
+
+				stageData.pieces.insert(curStagePiece, movePiece);
+				myStage.insert(curStagePiece, movePieceSprite);
+			}
+			else
+			{
+				var c:StageCharacter = stageData.characters[-next - 1];
+				if (dir > 0)
+					stageData.pieces[curStagePiece].layer = c.layer + 1;
+				else
+					stageData.pieces[curStagePiece].layer = c.layer;
+			}
+
+			selectedStagePieces = [curStagePiece];
+			updateAllPieces();
+			refreshStagePieces();
+			refreshSelectionShader();
+		}
+	}
+
+	function movePieceFully(dir:Int)
+	{
+		if (curCharacter > -1)
+		{
+			var index:Int = 0;
+			for (i in 0...stagePieceList.length)
+			{
+				if (stagePieceList[i][1] == -curCharacter - 1)
+					index = i;
+			}
+
+			while (index + dir >= 0 && index + dir < stagePieceList.length)
+			{
+				var next:Int = stagePieceList[index + dir][1];
+				if (next >= 0)
+				{
+					var c:StageCharacter = stageData.characters[curCharacter];
+					if (dir > 0)
+						stageData.pieces[next].layer = c.layer;
+					else
+						stageData.pieces[next].layer = c.layer + 1;
+				}
+				else
+				{
+					var c:StageCharacter = stageData.characters[-next - 1];
+					var oldLayer:Int = stageData.characters[curCharacter].layer;
+					stageData.characters[curCharacter].layer = c.layer;
+					c.layer = oldLayer;
+				}
+				index += dir;
+			}
+
+			updateAllPieces();
+			refreshStagePieces();
+			refreshSelectionShader();
+		}
+		else if (curStagePiece > -1)
+		{
+			var index:Int = 0;
+			for (i in 0...stagePieceList.length)
+			{
+				if (stagePieceList[i][1] == curStagePiece)
+					index = i;
+			}
+
+			while (index + dir >= 0 && index + dir < stagePieceList.length)
+			{
+				var next:Int = stagePieceList[index + dir][1];
+				if (next >= 0)
+				{
+					var movePiece:StagePiece = stageData.pieces.splice(curStagePiece, 1)[0];
+					var movePieceSprite:FlxSprite = myStage.splice(curStagePiece, 1)[0];
+
+					if (curStagePiece + dir >= 0 && curStagePiece + dir <= stageData.pieces.length)
+						curStagePiece += dir;
+
+					stageData.pieces.insert(curStagePiece, movePiece);
+					myStage.insert(curStagePiece, movePieceSprite);
+				}
+				else
+				{
+					var c:StageCharacter = stageData.characters[-next - 1];
+					if (dir > 0)
+						stageData.pieces[curStagePiece].layer = c.layer + 1;
+					else
+						stageData.pieces[curStagePiece].layer = c.layer;
+				}
+				index += dir;
+			}
+
+			selectedStagePieces = [curStagePiece];
+			updateAllPieces();
+			refreshStagePieces();
+			refreshSelectionShader();
+		}
 	}
 
 	function alignPiece(pieceId:Int)
@@ -1867,18 +2936,164 @@ class StageEditorState extends MusicBeatState
 		}
 	}
 
+	function refreshStagePieceList()
+	{
+		stagePieceList = [];
+		for (i in 0...stageData.characters.length + 1)
+		{
+			for (p in stageData.pieces)
+			{
+				if (p.layer == i)
+				{
+					var checkId = p.asset;
+					if (p.id != null && p.id.trim() != "")
+						checkId = p.id;
+					stagePieceList.push([checkId, stageData.pieces.indexOf(p)]);
+				}
+			}
+
+			for (p in stageData.characters)
+			{
+				if (p.layer == i)
+					stagePieceList.push(["Character " + Std.string(stageData.characters.indexOf(p) + 1), -stageData.characters.indexOf(p) - 1]);
+			}
+		}
+	}
+
+	function recalculateLayers()
+	{
+		var layer:Int = 0;
+		for (p in stagePieceList)
+		{
+			if (p[1] < 0)
+			{
+				stageData.characters[Std.int(-p[1] - 1)].layer = layer;
+				layer++;
+			}
+			else
+				stageData.pieces[p[1]].layer = layer;
+		}
+	}
+
 	function refreshStagePieces()
 	{
-		var pieceValueList:Array<String> = [""];
-		for (p in stageData.pieces)
+		refreshStagePieceList();
+
+		if (selectedStagePieces.length == 1)
+			stagePieceButtons.visible = true;
+		else
+			stagePieceButtons.visible = false;
+
+		for (i in 0...stagePieceText.members.length)
+			updateStagePiece(i);
+	}
+
+	function updateStagePiece(anim:Int)
+	{
+		if (stagePieceText != null && anim >= 0 && anim < stagePieceText.members.length)
 		{
-			var checkId = p.asset;
-			if (p.id != null && p.id != "")
-				checkId = p.id;
-			pieceValueList.push(checkId);
+			var txt:FlxText = stagePieceText.members[anim];
+			switch (anim)
+			{
+				case 0:
+					if (listOffset >= 0)
+					{
+						txt.visible = true;
+						txt.flipY = true;
+						txt.text = "V";
+					}
+					else
+						txt.visible = false;
+
+				case 15:
+					if (stagePieceList.length > anim + listOffset)
+					{
+						txt.visible = true;
+						txt.text = "V";
+					}
+					else
+						txt.visible = false;
+
+				default:
+					if (stagePieceList.length > anim + listOffset)
+					{
+						txt.visible = true;
+						txt.text = stagePieceList[anim + listOffset][0];
+						txt.ID = stagePieceList[anim + listOffset][1];
+						if (selectedStagePieces.contains(txt.ID))
+							txt.text = "> " + txt.text;
+					}
+					else
+						txt.visible = false;
+			}
 		}
-		if (pieceList != null)
-			pieceList.valueList = pieceValueList;
+	}
+
+	function undo()
+	{
+		if (undoPosition > 0)
+		{
+			undoPosition--;
+			if (!unsaved)
+			{
+				unsaved = true;
+				refreshFilename();
+			}
+			stageData = Cloner.clone(dataLog[undoPosition]);
+			postUndoRedo();
+		}
+	}
+
+	function redo()
+	{
+		if (undoPosition < dataLog.length - 1)
+		{
+			undoPosition++;
+			if (!unsaved)
+			{
+				unsaved = true;
+				refreshFilename();
+			}
+			stageData = Cloner.clone(dataLog[undoPosition]);
+			postUndoRedo();
+		}
+	}
+
+	function postUndoRedo()
+	{
+		pauseUndo = true;
+
+		camGame.bgColor = FlxColor.fromRGB(stageData.bgColor[0], stageData.bgColor[1], stageData.bgColor[2]);
+		refreshStage();
+		for (c in allCharacters)
+		{
+			applyCharacterValues(c);
+			postSpawnCharacter(c);
+		}
+		refreshStagePieces();
+		refreshSelectionShader();
+
+		pauseUndo = false;
+	}
+
+	function assetExists(asset:String):Bool
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.exists("images/" + s + asset))
+				return true;
+		}
+		return false;
+	}
+
+	function raw(asset:String):String
+	{
+		for (s in stageData.searchDirs)
+		{
+			if (Paths.exists("images/" + s + asset))
+				return Paths.raw("images/" + s + asset);
+		}
+		return "";
 	}
 
 	function image(asset:String):FlxGraphic
@@ -1943,14 +3158,38 @@ class StageEditorState extends MusicBeatState
 
 
 
-	function saveStage()
+	function _new()
 	{
-		var saveData:StageData = Reflect.copy(stageData);
-		saveData.characters = [];
-		for (c in stageData.characters)
-			saveData.characters.push(Reflect.copy(c));
+		FlxG.switchState(new StageEditorState(true, "", ""));
+	}
 
-		if (saveData.script == "" || saveData.script == "stages/" + curStage)
+	function _open()
+	{
+		var file:FileBrowser = new FileBrowser();
+		file.loadCallback = function(fullPath:String)
+		{
+			var jsonNameArray:Array<String> = fullPath.replace('\\','/').split('/');
+			if (jsonNameArray.indexOf("stages") == -1)
+				Application.current.window.alert("The file you have selected is not a stage.", "Alert");
+			else
+			{
+				while (jsonNameArray[0] != "stages")
+					jsonNameArray.remove(jsonNameArray[0]);
+				jsonNameArray.remove(jsonNameArray[0]);
+
+				var finalJsonName = jsonNameArray.join("/").split('.json')[0];
+
+				FlxG.switchState(new StageEditorState(false, finalJsonName, fullPath));
+			}
+		}
+		file.load();
+	}
+
+	function _save(?browse:Bool = true)
+	{
+		var saveData:StageData = Cloner.clone(stageData);
+
+		if (saveData.script == "" || saveData.script == "stages/" + id)
 			Reflect.deleteField(saveData, "script");
 
 		if (!saveData.pixelPerfect)
@@ -1959,21 +3198,8 @@ class StageEditorState extends MusicBeatState
 		if (saveData.bgColor[0] == 0 && saveData.bgColor[1] == 0 && saveData.bgColor[2] == 0)
 			Reflect.deleteField(saveData, "bgColor");
 
-		var searchDirs:Array<String> = saveData.searchDirs.copy();
-		searchDirs.remove("stages/" + curStage + "/");
-		if (curStage.indexOf("/") > -1)
-		{
-			var dir:String = curStage.substr(0, curStage.lastIndexOf("/")+1);
-			searchDirs.remove(dir + "stages/" + curStage.replace(dir, "") + "/");
-		}
-		if (searchDirs.length <= 0)
-			Reflect.deleteField(saveData, "searchDirs");
-
 		for (c in saveData.characters)
 		{
-			if (c.layer == saveData.characters.length - saveData.characters.indexOf(c) - 1)
-				Reflect.deleteField(c, "layer");
-
 			if (c.camPosition[0] == 0 && c.camPosition[1] == 0)
 				Reflect.deleteField(c, "camPosition");
 
@@ -1987,79 +3213,227 @@ class StageEditorState extends MusicBeatState
 				Reflect.deleteField(c, "scrollFactor");
 		}
 
+		for (p in saveData.pieces)
+		{
+			if (p.visible)
+				Reflect.deleteField(p, "visible");
+
+			if (p.scale[0] == 1 && p.scale[1] == 1)
+			{
+				Reflect.deleteField(p, "scale");
+				Reflect.deleteField(p, "updateHitbox");
+			}
+
+			if (p.align == "topleft")
+				Reflect.deleteField(p, "align");
+
+			if (p.scrollFactor[0] == 1 && p.scrollFactor[1] == 1)
+				Reflect.deleteField(p, "scrollFactor");
+
+			if (p.flip[0] == false && p.flip[1] == false)
+				Reflect.deleteField(p, "flip");
+
+			if (DeepEquals.deepEquals(p.color, [255, 255, 255]))
+				Reflect.deleteField(p, "color");
+
+			if (p.alpha == 1)
+				Reflect.deleteField(p, "alpha");
+
+			if (p.blend == "normal")
+				Reflect.deleteField(p, "blend");
+
+			if (p.type != "tiled")
+				Reflect.deleteField(p, "tile");
+
+			if (p.type != "animated" || sparrowExists(p.asset))
+				Reflect.deleteField(p, "tileCount");
+		}
+
 		var data:String = Json.stringify(saveData, null, "\t");
 		if (Options.options.compactJsons)
 			data = Json.stringify(saveData);
 
-		if ((data != null) && (data.length > 0))
+		if (data != null && data.length > 0)
 		{
-			var file:FileBrowser = new FileBrowser();
-			file.save(curStage + ".json", data.trim());
+			if (browse || filename == "")
+			{
+				var file:FileBrowser = new FileBrowser();
+				file.saveCallback = changeSaveName;
+				file.save(id + ".json", data.trim());
+			}
+			else
+			{
+				FileBrowser.saveAs(filename, data.trim());
+				unsaved = false;
+				refreshFilename();
+			}
 		}
 	}
 
-	function loadStage()
+
+
+	function convertFromBase()
 	{
 		var file:FileBrowser = new FileBrowser();
-		file.loadCallback = EditorMenuState.loadStageCallback;
-		file.load();
-	}
-}
-
-class StageColorSubState extends FlxSubState
-{
-	override public function new(state:StageEditorState)
-	{
-		super();
-
-		var tabMenu:IsolatedTabMenu = new IsolatedTabMenu(0, 0, 300, 260);
-		tabMenu.screenCenter();
-		add(tabMenu);
-
-		var tabGroupColor = new TabGroup();
-
-		var ol1:FlxSprite = new FlxSprite(48, 8).makeGraphic(204, 34, FlxColor.BLACK);
-		tabGroupColor.add(ol1);
-
-		var ol2:FlxSprite = new FlxSprite(48, 48).makeGraphic(144, 144, FlxColor.BLACK);
-		tabGroupColor.add(ol2);
-
-		var ol3:FlxSprite = new FlxSprite(218, 48).makeGraphic(34, 144, FlxColor.BLACK);
-		tabGroupColor.add(ol3);
-
-		var colorThing:FlxSprite = new FlxSprite(50, 10).makeGraphic(200, 30, FlxColor.WHITE);
-		colorThing.color = FlxColor.fromRGB(state.stageData.bgColor[0], state.stageData.bgColor[1], state.stageData.bgColor[2]);
-		tabGroupColor.add(colorThing);
-
-		var colorSwatch:ColorSwatch = new ColorSwatch(50, 50, 140, 140, 30, colorThing.color);
-		tabGroupColor.add(colorSwatch);
-
-		var stepperR:Stepper = new Stepper(20, 200, 80, 20, colorThing.color.red, 5, 0, 255);
-		var stepperG:Stepper = new Stepper(110, 200, 80, 20, colorThing.color.green, 5, 0, 255);
-		var stepperB:Stepper = new Stepper(200, 200, 80, 20, colorThing.color.blue, 5, 0, 255);
-
-		stepperR.onChanged = function() { colorSwatch.r = stepperR.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperR);
-
-		stepperG.onChanged = function() { colorSwatch.g = stepperG.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperG);
-
-		stepperB.onChanged = function() { colorSwatch.b = stepperB.valueInt; colorThing.color = colorSwatch.swatchColor; }
-		tabGroupColor.add(stepperB);
-
-		colorSwatch.onChanged = function() { colorThing.color = colorSwatch.swatchColor; stepperR.value = colorSwatch.r; stepperG.value = colorSwatch.g; stepperB.value = colorSwatch.b; }
-
-		var acceptButton:TextButton = new TextButton(20, 230, 260, 20, "#accept");
-		acceptButton.onClicked = function()
+		file.label = "Choose a stage json file that you want to convert";
+		file.loadCallback = function(fullPath:String)
 		{
-			state.stageData.bgColor = [colorThing.color.red, colorThing.color.green, colorThing.color.blue];
-			state.camGame.bgColor = colorThing.color;
-			close();
-		};
-		tabGroupColor.add(acceptButton);
+			if (fullPath.indexOf("stages") > -1)
+			{
+				var pathArray:Array<String> = fullPath.replace('\\','/').split('/');
+				var convertedStageId:String = pathArray[pathArray.length - 1];
 
-		tabMenu.addGroup(tabGroupColor);
+				var stage:Dynamic = Json.parse(File.getContent(fullPath));
 
-		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+				var file2:FileBrowser = new FileBrowser();
+				file2.saveCallback = function(savePath:String)
+				{
+					var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
+					savePathArray.pop();
+					var trueSavePath:String = savePathArray.join("/") + "/";
+
+					var finalStage:StageData = {
+						searchDirs: ["stages/" + convertedStageId.split(".json")[0] + "/"],
+						fixes: 1,
+						characters: [],
+						camZoom: stage.cameraZoom,
+						camFollow: [640, 360],
+						bgColor: [0, 0, 0],
+						pixelPerfect: false,
+						pieces: []
+					};
+
+					var charZ:Map<String, Float> = new Map<String, Float>();
+					var charList:Array<String> = ["bf", "gf", "dad"];
+					charZ["bf"] = stage.characters.bf.zIndex;
+					charZ["gf"] = stage.characters.gf.zIndex;
+					charZ["dad"] = stage.characters.dad.zIndex;
+					ArraySort.sort(charList, function(a:String, b:String) {
+						if (charZ[a] < charZ[b])
+							return -1;
+						if (charZ[a] > charZ[b])
+							return 1;
+						return 0;
+					});
+
+					for (c in ["bf", "dad", "gf"])
+					{
+						var oldChar = Reflect.field(stage.characters, c);
+						var oldPos:Array<Float> = cast oldChar.position;
+
+						var stageChar:StageCharacter = {
+							layer: charList.indexOf(c),
+							position: [Std.int(Math.round((oldPos[0] - 210) / 5) * 5), Std.int(Math.round((oldPos[1] - 765) / 5) * 5)],
+							flip: (c == "bf")
+						};
+
+						if (oldChar.cameraOffsets != null)
+						{
+							var oldCamPos:Array<Float> = cast oldChar.cameraOffsets;
+							stageChar.camPosition = [Std.int(oldCamPos[0]), Std.int(oldCamPos[1])];
+							if (c == "bf")
+							{
+								stageChar.camPosition[0] += 150;
+								stageChar.camPosition[1] += 100;
+							}
+							else if (c == "dad")
+							{
+								stageChar.camPosition[0] -= 150;
+								stageChar.camPosition[1] += 100;
+							}
+						}
+
+						finalStage.characters.push(stageChar);
+					}
+
+					var oldPieces:Array<Dynamic> = cast stage.props;
+					ArraySort.sort(oldPieces, function(a:Dynamic, b:Dynamic) {
+						if (a.zIndex < b.zIndex)
+							return -1;
+						if (a.zIndex > b.zIndex)
+							return 1;
+						return 0;
+					});
+
+					for (p in oldPieces)
+					{
+						var stagePiece:StagePiece = {
+							id: p.name,
+							type: "static",
+							asset: p.assetPath,
+							position: p.position,
+							layer: 0,
+							antialias: !p.isPixel
+						};
+
+						for (c in charList)
+						{
+							if (p.zIndex > charZ[c])
+								stagePiece.layer++;
+						}
+
+						if (p.scale != null)
+						{
+							stagePiece.scale = p.scale;
+							stagePiece.updateHitbox = true;
+						}
+
+						if (p.scroll != null)
+							stagePiece.scrollFactor = p.scroll;
+
+						if (stagePiece.asset.charAt(0) == "#")
+						{
+							var pieceColor:FlxColor = FlxColor.fromString(stagePiece.asset);
+							stagePiece.type = "solid";
+							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
+						}
+						else if (p.animations != null)
+						{
+							var pAnims:Array<Dynamic> = cast p.animations;
+							if (pAnims.length > 0)
+							{
+								stagePiece.type = "animated";
+								stagePiece.animations = [];
+								var animNames:Array<String> = [];
+								for (a in pAnims)
+								{
+									var stagePieceAnim:StageAnimation = {
+										name: a.name,
+										prefix: a.prefix,
+										fps: a.frameRate,
+										loop: a.looped
+									};
+									if (a.frameRate == null)
+										stagePieceAnim.fps = 24;
+									if (a.looped == null)
+										stagePieceAnim.loop = false;
+									if (a.frameIndices != null)
+										stagePieceAnim.indices = a.frameIndices;
+
+									stagePiece.animations.push(stagePieceAnim);
+									animNames.push(stagePieceAnim.name);
+								}
+								if (p.startingAnimation != null)
+									stagePiece.firstAnimation = p.startingAnimation;
+								if (p.danceEvery != null && p.danceEvery > 0)
+								{
+									if (animNames.contains("idle"))
+										stagePiece.idles = ["idle"];
+									else if (animNames.contains("danceLeft") && animNames.contains("danceRight"))
+										stagePiece.idles = ["danceLeft", "danceRight"];
+									stagePiece.beatAnimationSpeed = p.danceEvery;
+								}
+							}
+						}
+
+						finalStage.pieces.push(stagePiece);
+					}
+
+					File.saveContent(trueSavePath + convertedStageId, Json.stringify(finalStage));
+				}
+				file2.savePath("*.*");
+			}
+		}
+		file.load("json");
 	}
 }

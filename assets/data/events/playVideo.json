@@ -4,8 +4,28 @@
 		{
 			"id": "video",
 			"label": "Video",
-			"type": "string",
-			"defaultValue": ""
+			"infoText": "The file path of the video to play.",
+			"type": "dropdownSpecial",
+			"defaultValue": "",
+			"options": ["videos", ".mp4"]
+		},
+		{
+			"id": "volume",
+			"label": "Volume",
+			"infoText": "The volume of the video.",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 1,
+			"increment": 0.05,
+			"decimals": 3
+		},
+		{
+			"id": "behindHUD",
+			"label": "Behind HUD",
+			"infoText": "Whether the video should be played over the game's HUD, ot behind it.",
+			"type": "checkbox",
+			"defaultValue": false
 		}
 	]
 }

@@ -4,24 +4,28 @@
 		{
 			"id": "type",
 			"label": "Event Name",
+			"infoText": "The name to refer to this event by in scripts.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "param1",
 			"label": "Parameter 1",
+			"infoText": "The first parameter of this event.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "param2",
 			"label": "Parameter 2",
+			"infoText": "The second parameter of this event.",
 			"type": "string",
 			"defaultValue": ""
 		},
 		{
 			"id": "param3",
 			"label": "Parameter 3",
+			"infoText": "The third parameter of this event.",
 			"type": "string",
 			"defaultValue": ""
 		}

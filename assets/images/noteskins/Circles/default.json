@@ -30,15 +30,7 @@
 		{"name": "holdEndPURPLE", "asset": 3, "indices": [0], "fps": 24, "loop": false},
 		{"name": "holdEndBLUE", "asset": 3, "indices": [1], "fps": 24, "loop": false},
 		{"name": "holdEndGREEN", "asset": 3, "indices": [2], "fps": 24, "loop": false},
-		{"name": "holdEndRED", "asset": 3, "indices": [3], "fps": 24, "loop": false},
-		{"name": "splashPURPLE1", "prefix": "note impact 1 purple", "fps": 24, "loop": false},
-		{"name": "splashPURPLE2", "prefix": "note impact 2 purple", "fps": 24, "loop": false},
-		{"name": "splashBLUE1", "prefix": "note impact 1  blue", "fps": 24, "loop": false},
-		{"name": "splashBLUE2", "prefix": "note impact 2 blue", "fps": 24, "loop": false},
-		{"name": "splashGREEN1", "prefix": "note impact 1 green", "fps": 24, "loop": false},
-		{"name": "splashGREEN2", "prefix": "note impact 2 green", "fps": 24, "loop": false},
-		{"name": "splashRED1", "prefix": "note impact 1 red", "fps": 24, "loop": false},
-		{"name": "splashRED2", "prefix": "note impact 2 red", "fps": 24, "loop": false}
+		{"name": "holdEndRED", "asset": 3, "indices": [3], "fps": 24, "loop": false}
 	],
 	"slots": [
 		{"color": "purple", "staticAnim": "static", "pressAnim": "pressPURPLE", "angle": 0},
@@ -60,12 +52,39 @@
 		{"beat": 24, "color": "purple"},
 		{"beat": 32, "color": "purple"}
 	],
-	"allowSplashes": true,
-	"splashAsset": "noteSplashes",
-	"splashColors": [
-		{"color": "purple", "alpha": 0.6, "anims": ["splashPURPLE1", "splashPURPLE2"]},
-		{"color": "blue", "alpha": 0.6, "anims": ["splashBLUE1", "splashBLUE2"]},
-		{"color": "green", "alpha": 0.6, "anims": ["splashGREEN1", "splashGREEN2"]},
-		{"color": "red", "alpha": 0.6, "anims": ["splashRED1", "splashRED2"]}
-	]
+	"splashes": {
+		"assets": [
+			["noteSplashes"],
+			["holdCoverPurple"],
+			["holdCoverBlue"],
+			["holdCoverGreen"],
+			["holdCoverRed"]
+		],
+		"scale": 1,
+		"sustainScale": 1.6,
+		"animations": [
+			{"name": "splashPURPLE1", "prefix": "note impact 1 purple", "fps": 24, "loop": false},
+			{"name": "splashPURPLE2", "prefix": "note impact 2 purple", "fps": 24, "loop": false},
+			{"name": "splashBLUE1", "prefix": "note impact 1  blue", "fps": 24, "loop": false},
+			{"name": "splashBLUE2", "prefix": "note impact 2 blue", "fps": 24, "loop": false},
+			{"name": "splashGREEN1", "prefix": "note impact 1 green", "fps": 24, "loop": false},
+			{"name": "splashGREEN2", "prefix": "note impact 2 green", "fps": 24, "loop": false},
+			{"name": "splashRED1", "prefix": "note impact 1 red", "fps": 24, "loop": false},
+			{"name": "splashRED2", "prefix": "note impact 2 red", "fps": 24, "loop": false},
+			{"name": "holdPURPLE", "asset": 1, "prefix": "holdCoverPurple", "fps": 24, "loop": true, "offsets": [160, 150]},
+			{"name": "holdBLUE", "asset": 2, "prefix": "holdCoverBlue", "fps": 24, "loop": true, "offsets": [160, 150]},
+			{"name": "holdGREEN", "asset": 3, "prefix": "holdCoverGreen", "fps": 24, "loop": true, "offsets": [160, 150]},
+			{"name": "holdRED", "asset": 4, "prefix": "holdCoverRed", "fps": 24, "loop": true, "offsets": [160, 150]},
+			{"name": "holdEndPURPLE", "asset": 1, "prefix": "holdCoverEndPurple", "fps": 24, "loop": false, "offsets": [160, 150]},
+			{"name": "holdEndBLUE", "asset": 2, "prefix": "holdCoverEndBlue", "fps": 24, "loop": false, "offsets": [160, 150]},
+			{"name": "holdEndGREEN", "asset": 3, "prefix": "holdCoverEndGreen", "fps": 24, "loop": false, "offsets": [160, 150]},
+			{"name": "holdEndRED", "asset": 4, "prefix": "holdCoverEndRed", "fps": 24, "loop": false, "offsets": [160, 150]}
+		],
+		"colors": [
+			{"color": "purple", "alpha": 0.6, "anims": ["splashPURPLE1", "splashPURPLE2"], "holdAnim": "holdPURPLE", "holdEndAnims": ["holdEndPURPLE"]},
+			{"color": "blue", "alpha": 0.6, "anims": ["splashBLUE1", "splashBLUE2"], "holdAnim": "holdBLUE", "holdEndAnims": ["holdEndBLUE"]},
+			{"color": "green", "alpha": 0.6, "anims": ["splashGREEN1", "splashGREEN2"], "holdAnim": "holdGREEN", "holdEndAnims": ["holdEndGREEN"]},
+			{"color": "red", "alpha": 0.6, "anims": ["splashRED1", "splashRED2"], "holdAnim": "holdRED", "holdEndAnims": ["holdEndRED"]}
+		]
+	}
 }

@@ -1,167 +1,174 @@
 {
-	"label": "#optionsCatVisuals",
+	"label": "#options.category.visuals",
 	"contents": [
 		{
 			"type": "label",
-			"label": "#optionsSubcatGraphics"
+			"label": "#options.visuals.subCategory.graphics"
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameAntialias",
-			"description": "#optionsDescAntialias",
+			"label": "#options.visuals.antialias.name",
+			"description": "#options.visuals.antialias.desc",
 			"variable": "antialias",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameFlashing",
-			"description": "#optionsDescFlashing",
+			"label": "#options.visuals.flashingLights.name",
+			"description": "#options.visuals.flashingLights.desc",
 			"variable": "flashingLights",
 			"defValue": true
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatUI"
+			"label": "#options.visuals.subCategory.ui"
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameFPSCounter",
-			"description": "#optionsDescFPSCounter",
+			"label": "#options.visuals.fps.name",
+			"description": "#options.visuals.fps.desc",
 			"variable": "fps",
 			"defValue": true
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameCombo",
-			"description": "#optionsDescCombo",
+			"label": "#options.visuals.comboType.name",
+			"description": "#options.visuals.comboType.desc",
 			"variable": "comboType",
-			"options": ["#optionsChoiceCombo1", "#optionsChoiceCombo2", "#optionsChoiceCombo3"],
+			"options": ["#options.visuals.comboType.choice.0", "#options.visuals.comboType.choice.1", "#options.visuals.comboType.choice.2"],
 			"defValue": 2
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameComboPopup",
-			"description": "#optionsDescComboPopup",
+			"label": "#options.visuals.comboPopup.name",
+			"description": "#options.visuals.comboPopup.desc",
 			"variable": "comboPopup",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameComboAccumulate",
-			"description": "#optionsDescComboAccumulate",
+			"label": "#options.visuals.comboAccumulate.name",
+			"description": "#options.visuals.comboAccumulate.desc",
 			"variable": "comboAccumulate",
 			"defValue": true
 		},
 		{
 			"type": "function",
-			"label": "#optionsNameComboPosition",
-			"description": "#optionsDescComboPosition",
+			"label": "#options.visuals.adjustComboPosition.name",
+			"description": "#options.visuals.adjustComboPosition.desc",
 			"variable": "adjustComboPosition"
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameStrumline",
-			"description": "#optionsDescStrumline",
+			"label": "#options.visuals.strumAnims.name",
+			"description": "#options.visuals.strumAnims.desc",
 			"variable": "strumAnims",
-			"options": ["#optionsChoiceStrumline1", "#optionsChoiceStrumline2", "#optionsChoiceStrumline3"],
+			"options": ["#options.visuals.strumAnims.choice.0", "#options.visuals.strumAnims.choice.1", "#options.visuals.strumAnims.choice.2"],
 			"defValue": 2
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameSplashes",
-			"description": "#optionsDescSplashes",
+			"label": "#options.visuals.splashes.name",
+			"description": "#options.visuals.splashes.desc",
 			"variable": "splashes",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameHealthBar",
-			"description": "#optionsDescHealthBar",
+			"label": "#options.visuals.healthBar.name",
+			"description": "#options.visuals.healthBar.desc",
 			"variable": "healthBar",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameHealthIcons",
-			"description": "#optionsDescHealthIcons",
+			"label": "#options.visuals.healthLerp.name",
+			"description": "#options.visuals.healthLerp.desc",
+			"variable": "healthLerp",
+			"options": ["#options.visuals.healthLerp.choice.0", "#options.visuals.healthLerp.choice.1"],
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#options.visuals.healthIcons.name",
+			"description": "#options.visuals.healthIcons.desc",
 			"variable": "healthIcons",
 			"defValue": true
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameProgressBar",
-			"description": "#optionsDescProgressBar",
+			"label": "#options.visuals.progressBar.name",
+			"description": "#options.visuals.progressBar.desc",
 			"variable": "progressBar",
-			"options": ["#optionsChoiceProgressBar1", "#optionsChoiceProgressBar2", "#optionsChoiceProgressBar3"],
+			"options": ["#options.visuals.progressBar.choice.0", "#options.visuals.progressBar.choice.1", "#options.visuals.progressBar.choice.2"],
 			"defValue": 1
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameBPM",
-			"description": "#optionsDescBPM",
+			"label": "#options.visuals.bpmDisplay.name",
+			"description": "#options.visuals.bpmDisplay.desc",
 			"variable": "bpmDisplay",
 			"defValue": true
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameScorePosition",
-			"description": "#optionsDescScorePosition",
+			"label": "#options.visuals.scorePos.name",
+			"description": "#options.visuals.scorePos.desc",
 			"variable": "scorePos",
-			"options": ["#optionsChoiceScorePosition1", "#optionsChoiceScorePosition2", "#optionsChoiceScorePosition3"],
+			"options": ["#options.visuals.scorePos.choice.0", "#options.visuals.scorePos.choice.1", "#options.visuals.scorePos.choice.2"],
 			"defValue": 0
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameAccuracy",
-			"description": "#optionsDescAccuracy",
+			"label": "#options.visuals.comboBreaks.name",
+			"description": "#options.visuals.comboBreaks.desc",
+			"variable": "comboBreaks",
+			"defValue": true
+		},
+		{
+			"type": "bool",
+			"label": "#options.visuals.accuracy.name",
+			"description": "#options.visuals.accuracy.desc",
 			"variable": "accuracy",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameNPS",
-			"description": "#optionsDescNPS",
+			"label": "#options.visuals.nps.name",
+			"description": "#options.visuals.nps.desc",
 			"variable": "nps",
 			"defValue": true
 		},
 		{
 			"type": "choices",
-			"label": "#optionsNameJudgements",
-			"description": "#optionsDescJudgements",
+			"label": "#options.visuals.judgementCounter.name",
+			"description": "#options.visuals.judgementCounter.desc",
 			"variable": "judgementCounter",
-			"options": ["#optionsChoiceJudgements1", "#optionsChoiceJudgements2", "#optionsChoiceJudgements3"],
+			"options": ["#options.visuals.judgementCounter.choice.0", "#options.visuals.judgementCounter.choice.1", "#options.visuals.judgementCounter.choice.2"],
 			"defValue": 0
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameMS",
-			"description": "#optionsDescMS",
+			"label": "#options.visuals.msText.name",
+			"description": "#options.visuals.msText.desc",
 			"variable": "msText",
 			"defValue": true
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameSubtitles",
-			"description": "#optionsDescSubtitles",
+			"label": "#options.visuals.subtitles.name",
+			"description": "#options.visuals.subtitles.desc",
 			"variable": "subtitles",
 			"defValue": true
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatOther"
+			"label": "#options.visuals.subCategory.other"
 		},
 		{
 			"type": "bool",
-			"label": "#optionsNameCameraBump",
-			"description": "#optionsDescCameraBump",
+			"label": "#options.visuals.cameraBump.name",
+			"description": "#options.visuals.cameraBump.desc",
 			"variable": "cameraBump",
 			"defValue": true
 		}

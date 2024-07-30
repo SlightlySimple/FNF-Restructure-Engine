@@ -4,19 +4,27 @@ package menus;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
+import flixel.FlxCamera;
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import openfl.ui.Mouse;
+import openfl.ui.MouseCursor;
 import polymod.Polymod;
 import data.Options;
 
+import lime.system.System;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
 
-import funkui.Checkbox;
-import funkui.TextButton;
+import newui.UIControl;
+import newui.Checkbox;
+import newui.Button;
+import newui.ScrollBar;
+
+using StringTools;
 
 class ModObject extends FlxSpriteGroup
 {
@@ -31,7 +39,7 @@ class ModObject extends FlxSpriteGroup
 		this.modId = modId;
 		mod = ModLoader.getModMetaData(this.modId);
 
-		bg = new FlxSprite().makeGraphic(Std.int(FlxG.width - 60), 110, FlxColor.BLACK);
+		bg = new FlxSprite().makeGraphic(Std.int(FlxG.width - 60), 180, FlxColor.BLACK);
 		updateBG();
 		add(bg);
 
@@ -42,19 +50,19 @@ class ModObject extends FlxSpriteGroup
 		else
 		{
 			modIcon.pixels = BitmapData.fromImage( Image.fromBytes(mod.icon) );
-			modIcon.setGraphicSize(80);
+			modIcon.setGraphicSize(150);
 			modIcon.updateHitbox();
-			xx += 95;
+			xx += 165;
 		}
 		add(modIcon);
 
-		var modName:FlxText = new FlxText(xx, 15, Std.int(bg.width - xx - 15), mod.title, 24);
-		modName.font = "VCR OSD Mono";
+		var modName:FlxText = new FlxText(xx, 15, Std.int(bg.width - xx - 15), mod.title, 30);
+		modName.font = "FNF Dialogue";
 		add(modName);
 
 		var desc:String = mod.description;
-		var modDesc:FlxText = new FlxText(xx, 45, Std.int(bg.width - xx - 200), desc, 16);
-		modDesc.font = "VCR OSD Mono";
+		var modDesc:FlxText = new FlxText(xx, 50, Std.int(bg.width - xx - 200), desc, 20);
+		modDesc.font = "FNF Dialogue";
 		add(modDesc);
 
 		correctHeight(true);
@@ -85,13 +93,13 @@ class ModObject extends FlxSpriteGroup
 
 	public function correctHeight(?instant:Bool = false)
 	{
-		var yy:Float = 30;
+		var yy:Float = 60;
 		for (i in 0...ModLoader.modList.length)
 		{
 			if (ModLoader.modList[i][0] == modId)
 				break;
 			if (!ModLoader.hiddenMods.contains(ModLoader.modList[i][0]))
-				yy += 120;
+				yy += 200;
 		}
 
 		if (instant)
@@ -109,22 +117,36 @@ class ModMenuState extends MusicBeatState
 	var modObjects:FlxTypedSpriteGroup<ModObject>;
 	var modObjectUI:FlxSpriteGroup;
 	var modCheckbox:Checkbox;
+	var scrollbar:ScrollBar;
 	var curMod:String = "";
+	var hovered:ModObject = null;
 	var grabbed:Bool = false;
 	var grabIndex:Int = 0;
 	var grabOffset:Float = 0;
 
-	public var camFollow:FlxObject;
+	var camFollow:FlxObject;
+	var camGame:FlxCamera;
+	var camHUD:FlxCamera;
+	var mousePos:FlxObject;
 
 	override public function create()
 	{
-		super.create();
-
-		Util.menuMusic();
+		camGame = new FlxCamera();
+		FlxG.cameras.add(camGame);
 
 		camFollow = new FlxObject();
 		camFollow.screenCenter();
-		FlxG.camera.follow(camFollow, LOCKON, 1);
+		camGame.follow(camFollow, LOCKON, 1);
+
+		camHUD = new FlxCamera();
+		camHUD.bgColor = FlxColor.TRANSPARENT;
+		FlxG.cameras.add(camHUD, false);
+
+		mousePos = new FlxObject();
+
+		super.create();
+
+		Util.menuMusic();
 
 		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[5]));
 		bg.color = MainMenuState.menuColors[5];
@@ -136,7 +158,7 @@ class ModMenuState extends MusicBeatState
 
 		if (ModLoader.modList.length <= 0)
 		{
-			var noMods:FlxText = new FlxText(0, 0, FlxG.width - 300, Lang.get("#noMods", [Options.keyString("ui_back")]), 32);
+			var noMods:FlxText = new FlxText(0, 0, FlxG.width - 300, Lang.get("#mods.noMods", [Options.keyString("ui_back")]), 32);
 			noMods.font = "VCR OSD Mono";
 			noMods.alignment = CENTER;
 			noMods.borderStyle = OUTLINE;
@@ -159,50 +181,72 @@ class ModMenuState extends MusicBeatState
 		curMod = ModLoader.modList[0][0];
 
 		modObjectUI = new FlxSpriteGroup(0, 30);
+		modObjectUI.cameras = [camHUD];
 		add(modObjectUI);
 
-		modCheckbox = new Checkbox(FlxG.width - 75, 45);
+		var vbox:VBox = new VBox(FlxG.width - 150, 15);
+
+		modCheckbox = new Checkbox(0, 0, "Enabled");
 		modCheckbox.checked = ModLoader.modList[0][1];
 		modCheckbox.onClicked = function() { setModEnabled(curMod, modCheckbox.checked); };
-		modObjectUI.add(modCheckbox);
 
-		var moveToTopButton:TextButton = new TextButton( FlxG.width - 210, 15, 80, 20, "Top" );
+		var moveToTopButton:TextButton = new TextButton(0, 0, "Top");
 		moveToTopButton.onClicked = function() { shiftModFully(curMod, -1); };
-		modObjectUI.add(moveToTopButton);
 
-		var moveToBottomButton:TextButton = new TextButton( FlxG.width - 210, 75, 80, 20, "Bottom" );
+		var moveToBottomButton:TextButton = new TextButton(0, 0, "Bottom");
 		moveToBottomButton.onClicked = function() { shiftModFully(curMod, 1); };
-		modObjectUI.add(moveToBottomButton);
+
+		vbox.add(moveToTopButton);
+		vbox.add(modCheckbox);
+		vbox.add(moveToBottomButton);
+		modObjectUI.add(vbox);
+
+		scrollbar = new ScrollBar(FlxG.width - 25, 60, FlxG.height - 120);
+		scrollbar.onChanged = function() {
+			var minY:Float = FlxG.height / 2;
+			var maxY:Float = ((ModLoader.modList.length - ModLoader.hiddenMods.length - 3) * 200) + (FlxG.height / 2);
+			camFollow.y = minY + ((maxY - minY) * scrollbar.scroll);
+		}
+		scrollbar.cameras = [camHUD];
+		add(scrollbar);
 
 		var disclaimerBG:FlxSprite = new FlxSprite(0, FlxG.height - 30).makeGraphic(820, 30, FlxColor.BLACK);
 		disclaimerBG.screenCenter(X);
 		disclaimerBG.alpha = 0.6;
-		disclaimerBG.scrollFactor.set();
+		disclaimerBG.cameras = [camHUD];
 		add(disclaimerBG);
 
-		var disclaimer:FlxText = new FlxText(disclaimerBG.x, disclaimerBG.y, Std.int(disclaimerBG.width), Lang.get("#modsDisclaimer"), 24);
+		var disclaimer:FlxText = new FlxText(disclaimerBG.x, disclaimerBG.y, Std.int(disclaimerBG.width), Lang.get("#mods.disclaimer"), 24);
 		disclaimer.font = "VCR OSD Mono";
 		disclaimer.alignment = CENTER;
-		disclaimer.scrollFactor.set();
+		disclaimer.cameras = [camHUD];
 		add(disclaimer);
 
-		var enableAll:TextButton = new TextButton( 0, 0, 200, 20, "Enable All" );
+		var hbox:HBox = new HBox(0, 10);
+		hbox.cameras = [camHUD];
+
+		var enableAll:TextButton = new TextButton(0, 0, "Enable All");
 		enableAll.onClicked = function() {
 			for (m in ModLoader.modList)
 				setModEnabled(m[0], true);
 		};
-		enableAll.screenCenter(X);
-		enableAll.x -= (enableAll.width + 30) / 2;
-		add(enableAll);
+		hbox.add(enableAll);
 
-		var disableAll:TextButton = new TextButton( 0, 0, 200, 20, "Disable All" );
+		var disableAll:TextButton = new TextButton(0, 0, "Disable All");
 		disableAll.onClicked = function() {
 			for (m in ModLoader.modList)
 				setModEnabled(m[0], false);
 		};
-		disableAll.screenCenter(X);
-		disableAll.x += (enableAll.width + 30) / 2;
-		add(disableAll);
+		hbox.add(disableAll);
+
+		var openFolder:TextButton = new TextButton(0, 0, "Open Mods Folder", Button.LONG);
+		openFolder.onClicked = function() {
+			System.openFile("mods");
+		};
+		hbox.add(openFolder);
+
+		add(hbox);
+		hbox.screenCenter(X);
 
 		FlxG.mouse.visible = true;
 	}
@@ -228,6 +272,10 @@ class ModMenuState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		UIControl.cursor = MouseCursor.ARROW;
+		mousePos.x = FlxG.mouse.x;
+		mousePos.y = FlxG.mouse.y + camFollow.y - (FlxG.height / 2);
+
 		super.update(elapsed);
 
 		if (ModLoader.modList.length <= 0)
@@ -244,7 +292,8 @@ class ModMenuState extends MusicBeatState
 
 		if (grabbed)
 		{
-			var grabShift:Int = Std.int((FlxG.mouse.y - grabOffset) / 120);
+			UIControl.cursor = MouseCursor.HAND;
+			var grabShift:Int = Std.int((mousePos.y - grabOffset) / 200);
 
 			if (grabIndex < grabShift)
 			{
@@ -263,42 +312,43 @@ class ModMenuState extends MusicBeatState
 				}
 			}
 
-			modObjects.forEachAlive(function(obj:ModObject) {
-				if (curMod == obj.modId)
-					modObjectUI.y = obj.y;
-			});
-
 			if (Options.mouseJustReleased())
 			{
 				grabbed = false;
-				modObjects.forEachAlive(function(obj:ModObject) {
-					obj.grabbed = false;
-				});
+				hovered.grabbed = false;
 			}
 		}
 		else
 		{
-			modObjects.forEachAlive(function(obj:ModObject) {
-				if (FlxG.mouse.overlaps(obj))
-				{
-					curMod = obj.modId;
-					modObjectUI.y = obj.y;
-					for (m in ModLoader.modList)
+			if (FlxG.mouse.justMoved)
+			{
+				modObjects.forEachAlive(function(obj:ModObject) {
+					if (obj.overlaps(mousePos))
 					{
-						if (m[0] == curMod)
-							modCheckbox.checked = m[1];
+						if (UIControl.cursor == MouseCursor.ARROW)
+							UIControl.cursor = MouseCursor.HAND;
+						curMod = obj.modId;
+						hovered = obj;
+						for (m in ModLoader.modList)
+						{
+							if (m[0] == curMod)
+								modCheckbox.checked = m[1];
+						}
 					}
+				});
+			}
 
-					if (Options.mouseJustPressed() && !FlxG.mouse.overlaps(modObjectUI))
-					{
-						grabOffset = FlxG.mouse.y;
-						grabIndex = 0;
-						grabbed = true;
-						obj.grabbed = true;
-					}
-				}
-			});
+			if (Options.mouseJustPressed() && hovered.overlaps(mousePos) && !FlxG.mouse.overlaps(modObjectUI))
+			{
+				grabOffset = mousePos.y;
+				grabIndex = 0;
+				grabbed = true;
+				hovered.grabbed = true;
+			}
 		}
+
+		if (hovered != null)
+			modObjectUI.y = hovered.y - camFollow.y + (FlxG.height / 2);
 
 		var change:Float = FlxG.mouse.wheel;
 		if (change == 0)
@@ -312,8 +362,12 @@ class ModMenuState extends MusicBeatState
 
 		if (change != 0)
 		{
-			camFollow.y -= change * 120;
-			camFollow.y = Math.max(FlxG.height / 2, Math.min(((ModLoader.modList.length - ModLoader.hiddenMods.length - 5) * 120) + (FlxG.height / 2), camFollow.y));
+			camFollow.y -= change * 200;
+			camFollow.y = Math.max(FlxG.height / 2, Math.min(((ModLoader.modList.length - ModLoader.hiddenMods.length - 3) * 200) + (FlxG.height / 2), camFollow.y));
+
+			var minY:Float = FlxG.height / 2;
+			var maxY:Float = ((ModLoader.modList.length - ModLoader.hiddenMods.length - 3) * 200) + (FlxG.height / 2);
+			scrollbar.scroll = (camFollow.y - minY) / (maxY - minY);
 		}
 
 		if (Options.keyJustPressed("ui_back"))
@@ -323,6 +377,9 @@ class ModMenuState extends MusicBeatState
 			FlxG.sound.play(Paths.sound("ui/cancelMenu"));
 			FlxG.switchState(new MainMenuState());
 		}
+
+		if (FlxG.mouse.justMoved)
+			Mouse.cursor = UIControl.cursor;
 	}
 
 	function setModEnabled(mod:String, enabled:Bool)

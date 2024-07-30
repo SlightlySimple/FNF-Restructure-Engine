@@ -1,0 +1,53 @@
+{
+	"parameters":
+	[
+		{
+			"id": "id",
+			"label": "Script ID",
+			"infoText": "The ID of the script to affect.",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "variable",
+			"label": "Variable",
+			"infoText": "The name of the variable to change.",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "value",
+			"label": "Value",
+			"infoText": "The value to change the variable to.",
+			"type": "string",
+			"defaultValue": ""
+		},
+		{
+			"id": "operation",
+			"label": "Operation",
+			"infoText": "How the variable should be affected by the value.",
+			"type": "dropdown",
+			"defaultValue": "set",
+			"options": ["set", "add", "multiply", "divide"]
+		},
+		{
+			"id": "time",
+			"label": "Time (Seconds)",
+			"infoText": "How long the tween will take.",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0.01,
+			"max": 9999,
+			"increment": 0.05,
+			"decimals": 3
+		},
+		{
+			"id": "ease",
+			"label": "Ease",
+			"infoText": "The type of transition to use for the tween.",
+			"type": "ease",
+			"defaultValue": "linear"
+		}
+	]
+}

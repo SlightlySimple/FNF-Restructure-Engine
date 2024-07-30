@@ -18,15 +18,15 @@ function onEvent(event)
 		if (side >= 0)
 		{
 			var div = game.uniqueDivisions[side];
-			for (i in 0...game.songData.columnDivisions.length)
+			for (i in 0...game.songData.columns.length)
 			{
-				if (game.songData.columnDivisions[i] == div)
+				if (game.songData.columns[i].division == div)
 					validColumns.push(i);
 			}
 		}
 		else
 		{
-			for (i in 0...game.songData.columnDivisions.length)
+			for (i in 0...game.songData.columns.length)
 				validColumns.push(i);
 		}
 

@@ -5,9 +5,9 @@ package shaders;
 import flixel.system.FlxAssets.FlxShader;
 import flixel.util.FlxColor;
 
-class ColorSwap
+class ColorSwap extends FlxShader
 {
-	public var shader(default, null):ColorSwapShader;
+	public var shader:ColorSwap;
 
 	public var h(default, set):Float = 0;
 	public var s(default, set):Float = 0;
@@ -19,20 +19,6 @@ class ColorSwap
 	public var hueLimitA(default, set):Float = 0;
 	public var hueLimitB(default, set):Float = 0;
 
-	public function new()
-	{
-		shader = new ColorSwapShader();
-		shader.h.value = [h];
-		shader.s.value = [s];
-		shader.v.value = [v];
-		shader.hAdd.value = [hAdd];
-		shader.sAdd.value = [sAdd];
-		shader.vAdd.value = [vAdd];
-		shader.useHueLimit.value = [useHueLimit];
-		shader.hueLimitA.value = [hueLimitA];
-		shader.hueLimitB.value = [hueLimitB];
-	}
-
 	public function setHSV(vals:Array<Float>)
 	{
 		h = vals[0];
@@ -43,69 +29,66 @@ class ColorSwap
 	function set_h(val:Float):Float
 	{
 		h = val;
-		shader.h.value[0] = val;
+		_h.value[0] = val;
 		return val;
 	}
 
 	function set_s(val:Float):Float
 	{
 		s = val;
-		shader.s.value[0] = val;
+		_s.value[0] = val;
 		return val;
 	}
 
 	function set_v(val:Float):Float
 	{
 		v = val;
-		shader.v.value[0] = val;
+		_v.value[0] = val;
 		return val;
 	}
 
 	function set_hAdd(val:Bool):Bool
 	{
 		hAdd = val;
-		shader.hAdd.value = [val];
+		_hAdd.value = [val];
 		return val;
 	}
 
 	function set_sAdd(val:Bool):Bool
 	{
 		sAdd = val;
-		shader.sAdd.value = [val];
+		_sAdd.value = [val];
 		return val;
 	}
 
 	function set_vAdd(val:Bool):Bool
 	{
 		vAdd = val;
-		shader.vAdd.value = [val];
+		_vAdd.value = [val];
 		return val;
 	}
 
 	function set_useHueLimit(val:Bool):Bool
 	{
 		useHueLimit = val;
-		shader.useHueLimit.value = [val];
+		_useHueLimit.value = [val];
 		return val;
 	}
 
 	function set_hueLimitA(val:Float):Float
 	{
 		hueLimitA = val;
-		shader.hueLimitA.value[0] = val;
+		_hueLimitA.value[0] = val;
 		return val;
 	}
 
 	function set_hueLimitB(val:Float):Float
 	{
 		hueLimitB = val;
-		shader.hueLimitB.value[0] = val;
+		_hueLimitB.value[0] = val;
 		return val;
 	}
-}
 
-class ColorSwapShader extends FlxShader
-{
 	@:glFragmentSource('
 		varying float openfl_Alphav;
 		varying vec4 openfl_ColorMultiplierv;
@@ -156,15 +139,15 @@ class ColorSwapShader extends FlxShader
 			return vec4(0.0, 0.0, 0.0, 0.0);
 		}
 
-        uniform float h;
-        uniform float s;
-        uniform float v;
-        uniform bool hAdd;
-        uniform bool sAdd;
-        uniform bool vAdd;
-        uniform bool useHueLimit;
-        uniform float hueLimitA;
-        uniform float hueLimitB;
+        uniform float _h;
+        uniform float _s;
+        uniform float _v;
+        uniform bool _hAdd;
+        uniform bool _sAdd;
+        uniform bool _vAdd;
+        uniform bool _useHueLimit;
+        uniform float _hueLimitA;
+        uniform float _hueLimitB;
 
         vec3 rgb2hsv(vec3 c)
         {
@@ -186,33 +169,33 @@ class ColorSwapShader extends FlxShader
 
         void main()
         {
-			if (h != 0.0 || hAdd == false || s != 0.0 || v != 0.0)
+			if (_h != 0.0 || _hAdd == false || _s != 0.0 || _v != 0.0)
 			{
 				vec4 color = flixel_texture2D(bitmap, openfl_TextureCoordv);
 
 				vec4 swagColor = vec4(rgb2hsv(vec3(color[0], color[1], color[2])), color[3]);
 				float oldH = swagColor[0];
 
-				if (hAdd)
-					swagColor[0] += h;
+				if (_hAdd)
+					swagColor[0] += _h;
 				else
-					swagColor[0] = h;
+					swagColor[0] = _h;
 
-				if (sAdd || swagColor[1] <= 0.0)
-					swagColor[1] += s;
+				if (_sAdd || swagColor[1] <= 0.0)
+					swagColor[1] += _s;
 				else
-					swagColor[1] *= s + 1.0;
+					swagColor[1] *= _s + 1.0;
 
-				if (vAdd)
-					swagColor[2] += v * color[3];
-				else if (v > 0.0)
-					swagColor[2] += v * (1.0 - swagColor[2]) * color[3];
+				if (_vAdd)
+					swagColor[2] += _v * color[3];
+				else if (_v > 0.0)
+					swagColor[2] += _v * (1.0 - swagColor[2]) * color[3];
 				else
-					swagColor[2] += v * swagColor[2];
+					swagColor[2] += _v * swagColor[2];
 
 				color = vec4(hsv2rgb(vec3(swagColor[0], swagColor[1], swagColor[2])), swagColor[3]);
 
-				if (useHueLimit && (oldH < hueLimitA || oldH > hueLimitB))
+				if (_useHueLimit && (oldH < _hueLimitA || oldH > _hueLimitB))
 					gl_FragColor = flixel_texture2D(bitmap, openfl_TextureCoordv);
 				else
 					gl_FragColor = color;
@@ -269,5 +252,16 @@ class ColorSwapShader extends FlxShader
 	public function new()
 	{
 		super();
+
+		shader = this;
+		_h.value = [h];
+		_s.value = [s];
+		_v.value = [v];
+		_hAdd.value = [hAdd];
+		_sAdd.value = [sAdd];
+		_vAdd.value = [vAdd];
+		_useHueLimit.value = [useHueLimit];
+		_hueLimitA.value = [hueLimitA];
+		_hueLimitB.value = [hueLimitB];
 	}
 }

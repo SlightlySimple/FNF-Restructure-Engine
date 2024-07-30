@@ -1,6 +1,7 @@
 package objects;
 
 import flixel.FlxSprite;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.util.FlxColor;
 import flxanimate.FlxAnimate;
 import data.ObjectData;
@@ -15,18 +16,25 @@ class Character extends FlxSprite
 	public var characterData:CharacterData = null;
 	public var curCharacter:String = TitleState.defaultVariables.player1;
 	public var camPosition:CharacterCamPosition = {x: 0, y: 0, abs: false};
+	var assets:Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
+	var currentAsset:String = "";
 	var animChain:Map<String, String>;
 	var animData:Map<String, CharacterAnimation>;
 	public var icon:HealthIcon = null;
 
 	var myCharType:String = "sparrow";
 	var atlas:FlxAnimate = null;
+	public var baseOffsets:Array<Float> = [0, 0];
 	public var curAnim:CharacterAnimation;
 	public var curAnimName:String = "";
 	public var curAnimFrame:Int = 0;
 	public var curAnimFinished:Bool = false;
 	public var sad:String = "sad";
 
+	public var charX(get, set):Float;
+	public var charY(get, set):Float;
+	public var cameraX(get, null):Float;
+	public var cameraY(get, null):Float;
 	public var lastIdle:Int = 0;
 	public var canDance:Bool = true;
 	public var inLoop:Bool = false;
@@ -38,6 +46,7 @@ class Character extends FlxSprite
 	public var wasFlipped:Bool = false;
 	public var flipOffsets:Bool = false;
 	public var baseFrameWidth:Int = 0;
+	public var baseFrameHeight:Int = 0;
 
 	public static function compactIndices(ind:Array<Int>):Array<Int>
 	{
@@ -71,11 +80,14 @@ class Character extends FlxSprite
 	public static var parsedCharacterTypes:Map<String, String> = new Map<String, String>();
 	public static function parseCharacter(id:String):CharacterData
 	{
+		var tryPsychFix:Bool = false;
+
 		var data:Dynamic = Paths.json("characters/" + id);
 		var cData:CharacterData = cast data;
 		if (data.image != null)			// This is a Psych Engine character and must be converted to the Restructure Engine format
 		{
 			cData = {
+				fixes: 0,
 				asset: data.image,
 				position: data.position,
 				camPosition: [Std.int(data.camera_position[0] + 150), Std.int(data.camera_position[1] - 100)],
@@ -88,7 +100,8 @@ class Character extends FlxSprite
 				danceSpeed: 2,
 				flip: data.flip_x,
 				facing: "right",
-				icon: data.healthicon
+				icon: data.healthicon,
+				healthbarColor: data.healthbar_colors
 			}
 			if (cData.icon == id)
 				cData.icon = "";
@@ -114,7 +127,12 @@ class Character extends FlxSprite
 				}
 				else if (cAnim.name == "idle")
 					cData.firstAnimation = "idle";
+
+				if (cAnim.name == "firstDeath")
+					cData.gameOverCharacter = "_self";
 			}
+
+			tryPsychFix = true;
 		}
 		else if (cData.parent != null)
 		{
@@ -144,8 +162,14 @@ class Character extends FlxSprite
 				if (oldCharData.deathCounterText != null && oldCharData.deathCounterText != "")
 					cData.deathCounterText = oldCharData.deathCounterText;
 
+				if (oldCharData.offsetAlign != null && oldCharData.offsetAlign.length >= 2)
+					cData.offsetAlign = oldCharData.offsetAlign;
+
 				if (oldCharData.icon != null && oldCharData.icon != "")
 					cData.icon = oldCharData.icon;
+
+				if (oldCharData.healthbarColor != null && oldCharData.healthbarColor.length >= 3)
+					cData.healthbarColor = oldCharData.healthbarColor;
 			}
 			else
 				cData = cast Paths.json("characters/" + TitleState.defaultVariables.player1);
@@ -157,6 +181,9 @@ class Character extends FlxSprite
 		if (cData.scale == null || cData.scale.length < 2)
 			cData.scale = [1, 1];
 
+		if (cData.fixes == null)
+			cData.fixes = 0;
+
 		if (cData.camPositionGameOver == null || cData.camPositionGameOver.length < 2)
 			cData.camPositionGameOver = [cData.camPosition[0], cData.camPosition[1]];
 
@@ -166,11 +193,17 @@ class Character extends FlxSprite
 		if (cData.gameOverSFX == null)
 			cData.gameOverSFX = "";
 
+		if (cData.offsetAlign == null)
+			cData.offsetAlign = ["top", "left"];
+
 		if (cData.deathCounterText == null)
 			cData.deathCounterText = "";
 
 		if (cData.icon == null)
 			cData.icon = "";
+
+		if (cData.healthbarColor == null)
+			cData.healthbarColor = [255, 255, 255];
 
 		if (id.indexOf("/") > -1)
 		{
@@ -207,6 +240,9 @@ class Character extends FlxSprite
 		for (a in cData.animations)
 		{
 			allAnims.push(a.name);
+
+			if (a.asset == null)
+				a.asset = "";
 
 			if (a.loop == null)
 				a.loop = false;
@@ -260,6 +296,37 @@ class Character extends FlxSprite
 
 		if (cData.facing == null || cData.facing == "")
 			cData.facing = "right";
+
+		if (tryPsychFix)
+		{
+			if (Paths.sparrowExists(cData.asset))
+			{
+				var dat = Paths.sparrow(cData.asset);
+				var firstFrame = dat.frames[0];
+				var firstAnimFrame = null;
+				var firstAnimFrameName = cData.animations[allAnims.indexOf(cData.firstAnimation)].prefix;
+				for (f in dat.frames)
+				{
+					if (f.name != null && f.name.startsWith(firstAnimFrameName))
+					{
+						firstAnimFrame = f;
+						break;
+					}
+				}
+				if (firstFrame != firstAnimFrame)
+				{
+					cData.camPosition[0] += Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * cData.scale[0] * 0.5);
+					cData.camPosition[1] += Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * cData.scale[1] * 0.5);
+					if (cData.scale[0] != 1)
+					{
+						cData.position[0] += Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * (1 - cData.scale[0]) * 0.5);
+						cData.position[1] += Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * (1 - cData.scale[1]) * 0.5);
+						cData.camPosition[0] -= Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * (1 - cData.scale[0]) * 0.5);
+						cData.camPosition[1] -= Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * (1 - cData.scale[1]) * 0.5);
+					}
+				}
+			}
+		}
 
 		return cData;
 	}
@@ -340,6 +407,7 @@ class Character extends FlxSprite
 
 	public function changeCharacter(char:String)
 	{
+		var scaleMult:Array<Float> = [1, 1];
 		if (characterData != null)
 		{
 			x -= characterData.position[0];
@@ -347,8 +415,12 @@ class Character extends FlxSprite
 
 			scale.x /= characterData.scale[0];
 			scale.y /= characterData.scale[1];
+			scaleMult = [scale.x, scale.y];
 
-			danceSpeed /= characterData.danceSpeed;
+			if (danceSpeed > 0)
+				danceSpeed /= characterData.danceSpeed;
+			else
+				danceSpeed = 1;
 
 			if (atlas != null)
 			{
@@ -359,9 +431,13 @@ class Character extends FlxSprite
 
 		animChain = new Map<String, String>();
 		animData = new Map<String, CharacterAnimation>();
+		assets.clear();
 
 		if (parsedCharacters.exists(char) || Paths.jsonExists("characters/" + char))
 			curCharacter = char;
+		else
+			Application.current.window.alert("MISSING CHARACTER \"" + char + "\"", "Alert");
+
 		if (!parsedCharacters.exists(curCharacter))
 			parsedCharacters[curCharacter] = parseCharacter(curCharacter);
 		characterData = parsedCharacters[curCharacter];
@@ -392,8 +468,8 @@ class Character extends FlxSprite
 		x += characterData.position[0];
 		y += characterData.position[1];
 
-		scale.x *= characterData.scale[0];
-		scale.y *= characterData.scale[1];
+		scale.x = characterData.scale[0];
+		scale.y = characterData.scale[1];
 
 		switch (characterData.facing)
 		{
@@ -413,25 +489,41 @@ class Character extends FlxSprite
 		if (parsedCharacterTypes.exists(char))
 			myCharType = parsedCharacterTypes[char];
 
-		if (characterData.asset == "")
+		if (asset != "" && myCharType == "sparrow")
+		{
+			var assetList:Array<String> = [];
+			for (a in characterData.animations)
+			{
+				if (a.asset.trim() != "" && !assetList.contains(a.asset))
+					assetList.push(a.asset);
+			}
+
+			if (assetList.length > 0)
+			{
+				for (a in assetList)
+					assets[a] = Paths.sparrow(a);
+			}
+		}
+
+		if (asset == "")
 			makeGraphic(1, 1, FlxColor.TRANSPARENT);
 		else if (myCharType == "atlas")
 		{
 			makeGraphic(1, 1, FlxColor.TRANSPARENT);
 
-			var assetArray = characterData.asset.replace("\\","/").split("/");
+			var assetArray:Array<String> = asset.replace("\\","/").split("/");
 			assetArray.pop();
 			atlas = new FlxAnimate(x, y, Paths.atlas(assetArray.join("/")));
 			for (i in 0...characterData.animations.length)
 			{
 				var anim = characterData.animations[i];
 				if (anim.indices != null && anim.indices.length > 0)
-				{
 					atlas.anim.addByAnimIndices(anim.name, anim.indices, anim.fps);
-					if (anim.next != null && anim.next != "")
-						animChain.set(anim.name, anim.next);
-					animData.set(anim.name, anim);
-				}
+				else
+					atlas.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
+				if (anim.next != null && anim.next != "")
+					animChain.set(anim.name, anim.next);
+				animData.set(anim.name, anim);
 			}
 
 			atlas.flipX = flipX;
@@ -442,6 +534,7 @@ class Character extends FlxSprite
 			else if (characterData.animations.length > 0)
 				playAnim(characterData.animations[0].name, true);
 			baseFrameWidth = 1;
+			baseFrameHeight = 1;
 			atlas.antialiasing = antialiasing;
 		}
 		else if (myCharType == "sparrow")
@@ -459,13 +552,18 @@ class Character extends FlxSprite
 				animData.set(anim.name, anim);
 			}
 
+			if (animation.getAnimationList().length <= 0)
+				Application.current.window.alert("Character \"" + char + "\" has no animations", "Alert");
+
 			if (animData.exists(characterData.firstAnimation))
 				playAnim(characterData.firstAnimation);
 			else if (characterData.animations.length > 0)
 				playAnim(characterData.animations[0].name);
 			baseFrameWidth = frameWidth;
+			baseFrameHeight = frameHeight;
 
 			updateHitbox();
+			baseOffsets = [offset.x, offset.y];
 			updateOffsets();
 		}
 		else if (myCharType == "tiles")
@@ -488,14 +586,62 @@ class Character extends FlxSprite
 			else if (characterData.animations.length > 0)
 				playAnim(characterData.animations[0].name);
 			baseFrameWidth = frameWidth;
+			baseFrameHeight = frameHeight;
 
 			updateHitbox();
+			baseOffsets = [offset.x, offset.y];
 			updateOffsets();
 		}
 		else
 		{
 			Application.current.window.alert("Missing character asset: " + Paths.imagePath(asset), "Alert");
 			characterData.asset = "";
+		}
+		assets[""] = frames;
+
+		for (k in assets.keys())
+			assets[k].parent.destroyOnNoUse = false;
+
+		scale.x *= scaleMult[0];
+		scale.y *= scaleMult[1];
+		if (characterData.fixes == null || characterData.fixes < 1)
+		{
+			characterData.position[0] += Std.int(baseOffsets[0]);
+			characterData.position[1] += Std.int(baseOffsets[1]);
+			x += baseOffsets[0];
+			y += baseOffsets[1];
+			if (characterData.facing == "left")
+				characterData.camPosition[0] += Std.int(baseOffsets[0]);
+			else
+				characterData.camPosition[0] -= Std.int(baseOffsets[0]);
+			characterData.camPosition[1] -= Std.int(baseOffsets[1]);
+			characterData.fixes = 1;
+		}
+	}
+
+	function refreshAnimations()
+	{
+		for (anim in characterData.animations)
+		{
+			if (myCharType == "atlas")
+			{
+				if (anim.indices != null && anim.indices.length > 0)
+					atlas.anim.addByAnimIndices(anim.name, anim.indices, anim.fps);
+				else
+					atlas.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
+			}
+			else if (myCharType == "sparrow")
+			{
+				if (anim.indices != null && anim.indices.length > 0)
+					animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+				else
+					animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+			}
+			else if (myCharType == "tiles")
+			{
+				if (anim.indices != null && anim.indices.length > 0)
+					animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+			}
 		}
 	}
 
@@ -534,10 +680,32 @@ class Character extends FlxSprite
 			super.draw();
 	}
 
+	public function set_charX(val:Float):Float
+	{
+		x = val + characterData.position[0];
+		return val;
+	}
+
+	public function set_charY(val:Float):Float
+	{
+		y = val + characterData.position[1];
+		return val;
+	}
+
+	public function get_charX():Float
+	{
+		return x - characterData.position[0];
+	}
+
+	public function get_charY():Float
+	{
+		return y - characterData.position[1];
+	}
+
 	public function repositionCharacter(x:Int, y:Int)
 	{
-		this.x = x + characterData.position[0];
-		this.y = y + characterData.position[1];
+		charX = x;
+		charY = y;
 	}
 
 	public function scaleCharacter(x:Float, y:Float)
@@ -545,6 +713,20 @@ class Character extends FlxSprite
 		scale.x = x * characterData.scale[0];
 		scale.y = y * characterData.scale[1];
 		updateOffsets();
+	}
+
+	public function get_cameraX():Float
+	{
+		if (camPosition.abs)
+			return camPosition.x;
+		return getMidpoint().x + (characterData.camPosition[0] * ((wasFlipped && characterData.facing != "center") ? -1 : 1)) + camPosition.x;
+	}
+
+	public function get_cameraY():Float
+	{
+		if (camPosition.abs)
+			return camPosition.y;
+		return getMidpoint().y + characterData.camPosition[1] + camPosition.y;
 	}
 
 	public function hasAnim(anim:String, canSwitchLeftRight:Bool = true):Bool
@@ -594,6 +776,17 @@ class Character extends FlxSprite
 			}
 			else if (characterData.asset != "")
 			{
+				if (currentAsset != curAnim.asset && assets.exists(curAnim.asset))
+				{
+					currentAsset = curAnim.asset;
+					var oldWidth:Float = width;
+					var oldHeight:Float = height;
+					frames = assets[curAnim.asset];
+					width = oldWidth;
+					height = oldHeight;
+					refreshAnimations();
+				}
+
 				animation.play(trueAnim, (forced || inLoop));
 				curAnimName = animation.curAnim.name;
 			}
@@ -611,24 +804,47 @@ class Character extends FlxSprite
 		offset.x = curAnim.offsets[0];
 		offset.y = curAnim.offsets[1];
 
-		if (myCharType == "atlas")
-		{
-			if (flipOffsets)
-				offset.x = -offset.x;
-		}
-		else
-		{
-			if (flipOffsets && baseFrameWidth > 0)
-			{
-				offset.x = -offset.x;
-				offset.x -= (baseFrameWidth - frameWidth) * scale.x;
-			}
-		}
+		if (flipOffsets)
+			offset.x = -offset.x;
 
 		if (scale.x != characterData.scale[0])
 			offset.x *= scale.x / characterData.scale[0];
 		if (scale.y != characterData.scale[1])
 			offset.y *= scale.y / characterData.scale[1];
+
+		if (myCharType != "atlas")
+		{
+			if (baseFrameHeight > 0)
+			{
+				switch (characterData.offsetAlign[0])
+				{
+					case "bottom":
+						offset.y -= (baseFrameHeight - frameHeight) * scale.y;
+
+					case "middle":
+						offset.y -= Math.round(((baseFrameHeight - frameHeight) * scale.y) / 2);
+				}
+			}
+			if (baseFrameWidth > 0)
+			{
+				switch (characterData.offsetAlign[1])
+				{
+					case "left":
+						if (flipOffsets)
+							offset.x -= (baseFrameWidth - frameWidth) * scale.x;
+
+					case "right":
+						if (!flipOffsets)
+							offset.x -= (baseFrameWidth - frameWidth) * scale.x;
+
+					case "center":
+						offset.x -= Math.round(((baseFrameWidth - frameWidth) * scale.x) / 2);
+				}
+			}
+		}
+
+		offset.x += baseOffsets[0];
+		offset.y += baseOffsets[1];
 	}
 
 	public function sustainEnd()

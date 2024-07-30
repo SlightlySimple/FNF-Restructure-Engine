@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Nene.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Nene Dance0000" x="0" y="0" width="811" height="661" frameX="-3" frameY="-8" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0001" x="813" y="0" width="815" height="662" frameX="0" frameY="-8" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0002" x="1630" y="0" width="815" height="663" frameX="0" frameY="-7" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0003" x="2447" y="0" width="811" height="662" frameX="-3" frameY="-7" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0004" x="3260" y="0" width="811" height="664" frameX="-3" frameY="-5" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0005" x="0" y="666" width="811" height="664" frameX="-3" frameY="-5" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0006" x="813" y="666" width="811" height="666" frameX="-3" frameY="-3" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0007" x="1626" y="666" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0008" x="2439" y="666" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0009" x="3252" y="666" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0010" x="0" y="1336" width="811" height="669" frameX="-3" frameY="0" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0011" x="813" y="1336" width="811" height="669" frameX="-3" frameY="0" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0012" x="1626" y="1336" width="811" height="669" frameX="-3" frameY="0" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0013" x="2439" y="1336" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0014" x="3252" y="1336" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0015" x="0" y="2007" width="811" height="651" frameX="-3" frameY="-18" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0016" x="813" y="2007" width="811" height="651" frameX="-3" frameY="-18" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0017" x="1626" y="2007" width="815" height="651" frameX="0" frameY="-19" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0018" x="2443" y="2007" width="815" height="651" frameX="0" frameY="-19" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0019" x="3260" y="2007" width="811" height="652" frameX="-3" frameY="-17" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0020" x="0" y="2661" width="811" height="652" frameX="-3" frameY="-17" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0021" x="813" y="2661" width="811" height="654" frameX="-3" frameY="-15" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0022" x="1626" y="2661" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0023" x="2439" y="2661" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0024" x="3252" y="2661" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0025" x="0" y="3331" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0026" x="813" y="3331" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0027" x="1626" y="3331" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0028" x="2439" y="3331" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+	<SubTexture name="Nene Dance0029" x="3252" y="3331" width="811" height="668" frameX="-3" frameY="-1" frameWidth="815" frameHeight="670"/>
+</TextureAtlas>

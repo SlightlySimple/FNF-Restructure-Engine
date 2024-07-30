@@ -1,0 +1,123 @@
+{
+	"objects": [
+		{
+			"type": "atlas",
+			"asset": "week7/tankTalk",
+			"relativeTo": "player2",
+			"x": 420,
+			"y": 220,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "TANK TALK 2",
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		}
+	],
+	"events": [
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "player2"
+		},
+		{
+			"time": 0,
+			"type": "cameraZoom",
+			"zoom": 1.3,
+			"relativeTo": "stage",
+			"tweenTime": 4,
+			"ease": "quadInOut"
+		},
+		{
+			"time": 0,
+			"type": "cameraPosition",
+			"x": 80,
+			"y": -240,
+			"relativeTo": "player2",
+			"movementType": "instant"
+		},
+		{
+			"time": 0,
+			"type": "cameraPosition",
+			"x": 80,
+			"y": -140,
+			"relativeTo": "player2",
+			"movementType": "gradual"
+		},
+		{
+			"time": 0,
+			"type": "playSound",
+			"sound": "week7/DISTORTO",
+			"volume": 0
+		},
+		{
+			"time": 0,
+			"type": "fadeSound",
+			"sound": "week7/DISTORTO",
+			"volume": 0.5,
+			"tweenTime": 5
+		},
+		{
+			"time": 0,
+			"type": "playAnim",
+			"object": "week7/tankTalk",
+			"animation": "go"
+		},
+		{
+			"time": 0.01,
+			"type": "playSound",
+			"sound": "week7/tankSong2",
+			"volume": 1
+		},
+		{
+			"time": 4.1,
+			"type": "playAnim",
+			"object": "gf",
+			"animation": "sad"
+		},
+		{
+			"time": 4.1,
+			"type": "cameraZoom",
+			"zoom": 1.4,
+			"relativeTo": "stage",
+			"tweenTime": 0.4,
+			"ease": "quadOut"
+		},
+		{
+			"time": 4.55,
+			"type": "cameraZoom",
+			"zoom": 1.3,
+			"relativeTo": "stage",
+			"tweenTime": 0.7,
+			"ease": "quadInOut"
+		},
+		{
+			"time": 11,
+			"type": "fadeSound",
+			"sound": "week7/DISTORTO",
+			"volume": 0,
+			"tweenTime": 2
+		},
+		{
+			"time": 11,
+			"type": "endCutscene"
+		},
+		{
+			"time": 0,
+			"type": "subtitle",
+			"text": "#subtitles.guns.cutscene.1"
+		},
+		{
+			"time": 4.1,
+			"type": "subtitle",
+			"text": "#subtitles.guns.cutscene.2"
+		},
+		{
+			"time": 9.2,
+			"type": "subtitle",
+			"text": "#subtitles.guns.cutscene.3"
+		}
+	]
+}

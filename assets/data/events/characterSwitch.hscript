@@ -90,4 +90,13 @@ function doSwitch(character, newChar)
 				character.animation.curAnim.curFrame = prevFrame;
 		}
 	}
+
+	if (Options.options.healthBarCharacterColor && game.iconCharacters.contains(character))
+	{
+		if (game.iconCharacters[0] == character)
+			game.healthBar.emptyColor = Util.colorFromArray(game.iconCharacters[0].characterData.healthbarColor);
+		else if (game.iconCharacters[1] == character)
+			game.healthBar.fillColor = Util.colorFromArray(game.iconCharacters[1].characterData.healthbarColor);
+		game.healthBar.recreateFilledBar();
+	}
 }

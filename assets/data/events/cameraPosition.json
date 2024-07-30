@@ -1,38 +1,72 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "allow",
 			"label": "Allow Position",
+			"infoText": "Whether to allow the camera's position to be manually controlled at all.",
 			"type": "checkbox",
 			"defaultValue": true
 		},
 		{
 			"id": "x",
 			"label": "X",
+			"infoText": "The horizontal position the camera's center should be in.",
 			"type": "stepper",
 			"defaultValue": 0,
-			"min": -99999,
-			"max": 99999,
 			"increment": 1,
 			"decimals": 0
 		},
 		{
 			"id": "y",
 			"label": "Y",
+			"infoText": "The vertical position the camera's center should be in.",
 			"type": "stepper",
 			"defaultValue": 0,
-			"min": -99999,
-			"max": 99999,
 			"increment": 1,
 			"decimals": 0
 		},
 		{
 			"id": "mode",
 			"label": "Relative To",
+			"infoText": "What the camera should be positioned relative to, if anything.",
 			"type": "dropdown",
 			"defaultValue": "absolute",
-			"options": ["absolute", "player1", "player2", "gf"]
+			"options": ["absolute", "!players"]
+		},
+		{
+			"id": "cameraPos",
+			"label": "Character's Camera",
+			"infoText": "If checked, the camera will be positioned relative to the character's camera position. Otherwise, the camera will be positioned relative to the character's center.",
+			"type": "checkbox",
+			"defaultValue": false
+		},
+		{
+			"id": "movement",
+			"label": "Movement Type",
+			"infoText": "What type of movement should be used to get the camera into position.",
+			"type": "dropdown",
+			"defaultValue": "gradual",
+			"options": ["gradual", "instant", "tween"]
+		},
+		{
+			"id": "time",
+			"label": "Time (Seconds)",
+			"infoText": "If the movement type is \"Tween\", how long the tween will take.",
+			"type": "stepper",
+			"time": "seconds",
+			"defaultValue": 1,
+			"min": 0,
+			"increment": 0.05,
+			"decimals": 3
+		},
+		{
+			"id": "ease",
+			"label": "Ease",
+			"infoText": "The type of transition to use for the tween.",
+			"type": "ease",
+			"defaultValue": "linear"
 		}
 	]
 }

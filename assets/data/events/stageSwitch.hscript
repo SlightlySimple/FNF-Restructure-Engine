@@ -37,8 +37,7 @@ function onEvent(event)
 	}
 	else
 	{
-		game.camZoom = game.stage.stageData.camZoom;
-		FlxTween.cancelTweensOf(FlxG.camera, ["zoom"]);
-		FlxTween.tween(FlxG.camera, {zoom: game.camZoom}, Conductor.beatLength / 1000, { ease: FlxEase.quadOut });
+		FlxTween.cancelTweensOf(game, ["camZoom"]);
+		FlxTween.tween(game, {camZoom: game.stage.stageData.camZoom}, Conductor.beatLength / 1000, { ease: FlxEase.quadOut });
 	}
 }

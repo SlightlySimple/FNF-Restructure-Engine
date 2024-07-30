@@ -1,0 +1,85 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vbox y="10">
+				<vbox spacing="0">
+					<label text="Image File:"/>
+					<hbox>
+						<input id="characterAsset" width="200" infoText="The file path of the character's sprite sheet."/>
+						<button id="loadAssetButton" image="buttonLoad" infoText="Browse for a sprite sheet."/>
+					</hbox>
+				</vbox>
+				<label text="Position:"/>
+				<hbox>
+					<stepper id="charX" text="X:" step="5" infoText="The horizonal position of the character."/>
+					<stepper id="charY" text="Y:" step="5" infoText="The vertical position of the character."/>
+				</hbox>
+				<label text="Scale:"/>
+				<hbox>
+					<stepper id="charScaleX" text="X:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched horizontally."/>
+					<stepper id="charScaleY" text="Y:" step="0.05" min="0" decimals="3" infoText="How much the character is stretched vertically."/>
+				</hbox>
+				<checkbox id="matchColorCheckbox" text="Match Color" infoText="Whether the character's color should be changed to match that of the background. Generally, this should only be checked if the character's sprite sheet is mostly white."/>
+			</vbox>
+		</tab>
+		<tab name="Guides">
+			<vbox y="10">
+				<checkbox id="showAnimGhost" text="Character Ghost" infoText="Shows a transparent version of the character for the purpose of aligning animation offsets."/>
+				<label text="Preview Position:"/>
+				<hbox>
+					<togglebutton id="charPosLeft" text="Left" image="buttonPurple" textBorder="#521086" infoText="Shows how the character will look on the left side of the banner."/>
+					<togglebutton id="charPosCenter" text="Center" image="buttonBlue" textBorder="#01538C" infoText="Shows how the character will look in the center of the banner."/>
+					<togglebutton id="charPosRight" text="Right" image="buttonRed" textBorder="#440006" infoText="Shows how the character will look on the right side of the banner."/>
+				</hbox>
+			</vbox>
+		</tab>
+		<tab name="Attributes">
+			<vbox y="10">
+				<hbox>
+					<checkbox id="charAntialias" text="Antialiasing" infoText="Whether the character is smoothed out. Disable this for pixel characters."/>
+					<checkbox id="charFlip" text="Flip X" infoText="Whether the character is flipped horizontally. Does not affect offsets."/>
+				</hbox>
+				<textbutton id="idles" text="Idle Animations" image="buttonPopupMenu" infoText="An animation that will play on every beat of the music. This can also be a list of multiple animations that will be played one after the other."/>
+				<label text="Initial Animation:"/>
+				<dropdown id="firstAnimDropdown" infoText="The animation the character plays when they're initially loaded."/>
+				<textbutton id="autoAnimButton" text="Auto-Assign Animations" image="LONG" infoText="Automatically fills in the Idle Animations and Initial Animation based on the animations present in the animation list."/>
+				<stepper id="charDanceSpeed" text="Dance Speed:" step="0.25" min="0" decimals="2" infoText="How often the character's idle animations are played. (1 means every beat, 2 means every other beat, etc.)"/>
+			</vbox>
+		</tab>
+		<tab name="Animations">
+			<vbox y="10">
+				<label text="Animation Name:"/>
+				<input id="animName" infoText="The name of the animation as the game understands it."/>
+				<label text="Prefix:"/>
+				<input id="animPrefix" infoText="The name of the animation as it appears in the sprite sheet."/>
+				<dropdown id="animPrefixDropdown" allowSearch="true" infoText="A list of all prefixes detected in the sprite sheet."/>
+				<label text="Indices:"/>
+				<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the prefix to use."/>
+				<textbutton id="allIndices" text="All Indices" image="LONG" infoText="Automatically fill in the above field with all indices in the current prefix."/>
+				<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the character, or replace an animation with the sane name."/>
+				<textbutton id="removeAnimButton" text="Remove Animation" image="LONG" infoText="Remove the currently selected animation from the character."/>
+			</vbox>
+		</tab>
+		<tab name="Anim. Properties">
+			<vbox y="10">
+				<label text="Offsets:"/>
+				<hbox>
+					<stepper id="animOffsetX" text="X:" infoText="The horizontal position of this animation."/>
+					<stepper id="animOffsetY" text="Y:" infoText="The vertical position of this animation."/>
+				</hbox>
+				<checkbox id="animLooped" text="Loop" infoText="Whether the animation should repeat itself forever."/>
+				<stepper id="animFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+			</vbox>
+		</tab>
+		<tab name="Anim. Preview">
+			<vbox y="10">
+				<label id="curFrameText" text="Frame: 0"/>
+				<textbutton id="toggleAnimButton" text="Toggle"/>
+				<hbox>
+					<textbutton id="prevFrame" text="Prev"/>
+					<textbutton id="nextFrame" text="Next"/>
+				</hbox>
+			</vbox>
+		</tab>
+	</tabmenu>
+</root>

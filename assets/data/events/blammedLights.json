@@ -4,12 +4,14 @@
 		{
 			"id": "enabled",
 			"label": "Enabled",
+			"infoText": "Whether or not to enable the Blammed Lights effect.",
 			"type": "checkbox",
 			"defaultValue": true
 		},
 		{
 			"id": "color",
 			"label": "Color",
+			"infoText": "What color the light should be.",
 			"type": "dropdown",
 			"defaultValue": "random",
 			"options": ["blue", "green", "pink", "red", "orange", "random"]

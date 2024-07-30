@@ -1,8 +1,0 @@
-function gameOver(char)
-{
-	if (thisChar == char)
-	{
-		GameOverSubState.gameOverMusic = "gameOver-pixel";
-		GameOverSubState.gameOverMusicEnd = "gameOverEnd-pixel";
-	}
-}

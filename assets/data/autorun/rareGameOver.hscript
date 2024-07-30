@@ -1,0 +1,39 @@
+doingFakeoutDeath = false;
+
+function gameOver(char)
+{
+	if (FlxG.random.bool((1 / 4096) * 100) && char.characterData.gameOverCharacter == "bf-dead")
+	{
+		GameOverSubState.sfx = "";
+		doingFakeoutDeath = true;
+	}
+}
+
+function gameOverCreate()
+{
+	if (doingFakeoutDeath)
+		doFakeoutDeath();
+}
+
+function doFakeoutDeath()
+{
+	GameOverSubState.instance.deadCharacter.animation.paused = true;
+	GameOverSubState.instance.deadCharacter.alpha = 0.001;
+	GameOverSubState.instance.transitioning = true;
+
+	PlaySound("fakeout_death");
+
+	var bfFakeout = new FlxAnimate(GameOverSubState.instance.deadCharacter.x - 440, GameOverSubState.instance.deadCharacter.y - 240, Paths.atlas("characters/bf/bfFakeOut"));
+	bfFakeout.anim.addBySymbol("go", "fake out death BF", 0, 0, 24);
+	bfFakeout.x += 895;
+	bfFakeout.y += 540;
+	GameOverSubState.instance.add(bfFakeout);
+	bfFakeout.playAnim("go");
+	bfFakeout.onComplete = function() {
+		GameOverSubState.instance.remove(bfFakeout, true);
+		GameOverSubState.instance.deadCharacter.alpha = 1;
+		GameOverSubState.instance.transitioning = false;
+		GameOverSubState.instance.deadCharacter.animation.paused = false;
+		PlaySound("fnf_loss_sfx");
+	}
+}

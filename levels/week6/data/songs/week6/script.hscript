@@ -1,0 +1,15 @@
+function create()
+{
+	if (PlayState.inStoryMode && PlayState.firstPlay)
+	{
+		game.canStartCountdown = false;
+		game.camHUD.visible = false;
+	}
+}
+
+function onDialogueFinished()
+{
+	game.canStartCountdown = true;
+	game.startCountdown();
+	game.camHUD.visible = true;
+}

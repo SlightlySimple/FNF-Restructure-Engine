@@ -1,2 +1,3 @@
 DialogueEditorState|Dialogue Editor
+DialogueBoxEditorState|Dialogue Box Editor
 DialoguePortraitEditorState|Dialogue Portrait Editor

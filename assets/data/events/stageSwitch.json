@@ -1,12 +1,14 @@
 {
+	"icon": "eventIconStage",
 	"parameters":
 	[
 		{
 			"id": "stage",
 			"label": "New Stage",
+			"infoText": "The stage to switch to.",
 			"type": "dropdownSpecial",
-			"defaultValue": "",
-			"options": ["stages"]
+			"defaultValue": "stage",
+			"options": ["data/stages", ".json"]
 		}
 	]
 }

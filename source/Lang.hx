@@ -6,16 +6,16 @@ using StringTools;
 
 class Lang
 {
-	static var lang:Map<String, String>;
+	static var lang:Map<String, String> = new Map<String, String>();
 
 	public static function init()
 	{
-		lang = new Map<String, String>();
+		lang.clear();
 
 		var langFile:Array<String> = [];
 		for (f in Paths.listFiles("data/lang/", ".txt"))
 		{
-			for (l in Paths.raw("data/lang/" + f + ".txt").replace("\r","").split("\n"))			// Don't try to load a "censored" lang file, as we use a replacement system instead
+			for (l in Paths.raw(Paths.file("data/lang/" + f, ".txt", false), false).replace("\r","").split("\n"))			// Don't try to load a "censored" lang file, as we use a replacement system instead
 				langFile.push(l);
 		}
 
@@ -54,14 +54,14 @@ class Lang
 		}
 	}
 
-	public static function get(k:String, rep:Array<String> = null)
+	public static function get(k:String, rep:Array<String> = null, ?def:String = null)
 	{
 		if (!k.startsWith("#"))
 			return k;
 
 		var trueK:String = k.substr(1);
-		if (!Options.options.naughtiness && lang.exists(trueK + "Censor"))
-			trueK += "Censor";
+		if (!Options.options.naughtiness && lang.exists(trueK + ".censor"))
+			trueK += ".censor";
 
 		if (lang.exists(trueK))
 		{
@@ -74,14 +74,16 @@ class Lang
 			return v;
 		}
 
+		if (def != null)
+			return def;
 		return k;
 	}
 
 	public static function getNoHash(k:String, rep:Array<String> = null)
 	{
 		var trueK:String = k.toLowerCase();
-		if (!Options.options.naughtiness && lang.exists(trueK + "Censor"))
-			trueK += "Censor";
+		if (!Options.options.naughtiness && lang.exists(trueK + ".censor"))
+			trueK += ".censor";
 
 		if (lang.exists(trueK))
 		{

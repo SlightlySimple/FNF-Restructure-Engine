@@ -1,21 +1,32 @@
 {
+	"icon": "eventIconCharacter",
 	"parameters":
 	[
 		{
 			"id": "id",
 			"label": "Character",
-			"type": "string",
-			"defaultValue": ""
-		},
-		{
-			"type": "label",
-			"label": "Character can be \"player1,\" \"player2,\" etc. for however many characters are in the chart, and can also be \"gf\""
+			"infoText": "Which character to affect.",
+			"type": "dropdown",
+			"defaultValue": "player1",
+			"options": ["!players"]
 		},
 		{
 			"id": "anim",
 			"label": "Animation",
+			"infoText": "The animation to play.",
 			"type": "string",
 			"defaultValue": ""
+		},
+		{
+			"id": "rate",
+			"label": "Playback Speed",
+			"infoText": "How fast the animation should play. A higher number means the animation will play faster.",
+			"type": "stepper",
+			"defaultValue": 1,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.05,
+			"decimals": 2
 		}
 	]
 }

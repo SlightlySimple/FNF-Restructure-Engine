@@ -1,0 +1,1 @@
+{"asset":"ui/story/characters/Dad","position":[50,-185],"scale":[0.5,0.5],"danceSpeed":1,"firstAnimation":"idle","flip":false,"antialias":true,"matchColor":true,"idles":["idle"],"animations":[{"offsets":[0,0],"prefix":"Dad Dance","name":"idle"}]}

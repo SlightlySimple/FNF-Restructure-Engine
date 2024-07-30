@@ -9,6 +9,9 @@ import flixel.util.FlxGradient;
 import flixel.tweens.FlxTween;
 import flixel.FlxCamera;
 import data.Options;
+import menus.MainMenuState;
+import transitions.StickerSubState;
+import scripting.HscriptHandler;
 
 class MusicBeatState extends FlxState
 {
@@ -22,9 +25,22 @@ class MusicBeatState extends FlxState
 		FlxG.camera.bgColor = FlxColor.BLACK;
 
 		if (doTransIn)
-			add(new FunkinTransition(this, false));
+		{
+			if (Paths.hscriptExists("data/scripts/" + customTransition))
+			{
+				var transitionScript:HscriptHandler = new HscriptHandler("data/scripts/" + customTransition);
+				transitionScript.execFunc("transitionIn", []);
+			}
+			else
+				add(new FunkinTransition(this, false));
+		}
 		else
 			doTransIn = true;
+
+		customTransition = "";
+
+		if (!Std.isOfType(FlxG.state, MainMenuState) && StickerSubState.stickers.length > 0)
+			openSubState(new StickerSubState());
 	}
 
 	override public function update(elapsed:Float)
@@ -70,6 +86,7 @@ class MusicBeatState extends FlxState
 	public static var doTransOut:Bool = true;
 	var transStarted:Bool = false;
 	public var transComplete:Bool = false;
+	public static var customTransition:String = "";
 
 	override public function switchTo(nextState:FlxState):Bool
 	{
@@ -88,17 +105,63 @@ class MusicBeatState extends FlxState
 	function startTransOut(nextState:FlxState)
 	{
 		transStarted = true;
-		add(new FunkinTransition(this, true, nextState));
+		if (Paths.hscriptExists("data/scripts/" + customTransition))
+		{
+			var transitionScript:HscriptHandler = new HscriptHandler("data/scripts/" + customTransition);
+			transitionScript.variables.set("finishTransition", function() {
+				transComplete = true;
+				Paths.clearCache();
+				FlxG.switchState(nextState);
+			});
+			transitionScript.execFunc("transitionOut", []);
+		}
+		else
+			add(new FunkinTransition(this, true, nextState));
 	}
+}
+
+class MusicBeatSubState extends FlxSubState
+{
+	public var curStep:Int = 0;
+	public var curBeat:Int = 0;
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		Conductor.update(elapsed);
+
+		if (Std.int(Math.floor(Conductor.stepFromTime(Conductor.songPosition))) != curStep)
+		{
+			curStep = Std.int(Math.floor(Conductor.stepFromTime(Conductor.songPosition)));
+			stepHit();
+		}
+
+		if (Std.int(Math.floor(Conductor.beatFromTime(Conductor.songPosition))) != curBeat)
+		{
+			curBeat = Std.int(Math.floor(Conductor.beatFromTime(Conductor.songPosition)));
+			beatHit();
+		}
+	}
+
+	public function beatHit() {}
+
+	public function stepHit() {}
 }
 
 class FunkinTransition extends FlxSprite
 {
 	var camTrans:FlxCamera;
+	var loading:FlxSprite;
 
 	override public function new(parent:MusicBeatState, out:Bool, ?nextState:FlxState = null)
 	{
 		super();
+
+		loading = new FlxSprite(0, 0, Paths.image("ui/loading"));
+		loading.setGraphicSize(Std.int(FlxG.width), Std.int(FlxG.height));
+		loading.updateHitbox();
+		loading.visible = false;
 
 		if (out)
 			pixels = FlxGradient.createGradientBitmapData(Std.int(FlxG.width), Std.int(FlxG.height * 2), [FlxColor.BLACK, FlxColor.BLACK, FlxColor.TRANSPARENT]);
@@ -114,6 +177,7 @@ class FunkinTransition extends FlxSprite
 		{
 			FlxTween.tween(this, {y: 0}, 0.7, {onComplete: function(twn:FlxTween)
 			{
+				loading.visible = true;
 				parent.transComplete = true;
 				Paths.clearCache();
 				FlxG.switchState(nextState);
@@ -132,5 +196,13 @@ class FunkinTransition extends FlxSprite
 		FlxG.cameras.add(camTrans, false);
 
 		camera = camTrans;
+	}
+
+	override public function draw()
+	{
+		super.draw();
+		loading.cameras = cameras;
+		if (loading.visible)
+			loading.draw();
 	}
 }

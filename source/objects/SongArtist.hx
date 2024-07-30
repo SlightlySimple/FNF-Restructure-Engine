@@ -16,7 +16,7 @@ class SongArtist extends FlxSpriteGroup
 	{
 		super(0, 150);
 
-		var text:FlxText = new FlxText(10, 10, 0, Lang.get("#artist", [song, artist]));
+		var text:FlxText = new FlxText(10, 10, 0, Lang.get("#game.artist", [song, artist]));
 		text.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(Std.int(text.width + 20), Std.int(text.height + 20), FlxColor.WHITE);

@@ -1,0 +1,1 @@
+{"asset":"ui/story/characters/Nene","position":[-195,-135],"scale":[0.5,0.5],"danceSpeed":1,"firstAnimation":"danceLeft","flip":false,"antialias":true,"matchColor":true,"idles":["danceLeft","danceRight"],"animations":[{"offsets":[0,0],"prefix":"Nene Dance","indices":[-1,0,14],"name":"danceLeft"},{"offsets":[0,0],"prefix":"Nene Dance","indices":[-1,15,29],"name":"danceRight"}]}

@@ -19,20 +19,12 @@ import haxe.io.Bytes;
 import lime.graphics.Image;
 import openfl.display.BitmapData;
 
-import funkui.TabMenu;
-import funkui.TextButton;
-import funkui.DropdownMenu;
-import funkui.Checkbox;
-import funkui.Label;
-import funkui.Stepper;
-
 import data.ObjectData;
 import data.Options;
 import data.ScoreSystems;
 import data.SMFile;
 import data.Song;
 import game.PlayState;
-import game.ResultsSubState;
 import menus.UINavigation;
 import objects.Alphabet;
 import objects.HealthIcon;
@@ -47,12 +39,15 @@ class FreeplaySandbox extends FlxSpriteGroup
 	public static var stage:String = "";
 	public static var chartSide:Int = 0;
 	public static var playbackRate:Float = 1;
+	public static var missLimit:Int = -1;
 
 	public static var characterCount:Int = 3;
-	public static var characterLabels:Array<String> = ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"];
+	public static var characterLabels:Array<String> = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 	public static var characterList:Array<String> = [];
+	public static var characterNames:Map<String, String>;
 	public static var stageList:Array<String> = [];
-	public static var sideList:Array<String> = ["#fpSandboxSide0", "#fpSandboxSide1"];
+	public static var stageNames:Map<String, String>;
+	public static var sideList:Array<String> = ["#freeplay.sandbox.side.0", "#freeplay.sandbox.side.1"];
 
 	public static function character(slot:Int, ?def:String = "")
 	{
@@ -113,12 +108,14 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 		characterList.unshift("");
 		stageList.unshift("");
+		characterNames = Util.getCharacterNames(characterList);
+		stageNames = Util.getStageNames(stageList);
 	}
 
 	public static function resetCharacterCount()
 	{
 		characterCount = 3;
-		characterLabels = ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"];
+		characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 	}
 
 	public static function setCharacterCount(?c:Int = null, ?l:Array<String> = null)
@@ -135,6 +132,8 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 
 	var state:FlxState;
+	var options:Array<String> = [];
+	var font:String = "VCR OSD Mono";
 	var curSelected:Int = 0;
 	var cursor:FlxText;
 	var txtLeft:Array<FlxText> = [];
@@ -144,10 +143,11 @@ class FreeplaySandbox extends FlxSpriteGroup
 	var exitFunc:Void->Void;
 	var nav:UINumeralNavigation;
 
-	override public function new(state:FlxState, reloadFunc:Void->Void, exitFunc:Void->Void)
+	override public function new(state:FlxState, reloadFunc:Void->Void, exitFunc:Void->Void, ?font:String = "VCR OSD Mono")
 	{
 		super();
 		this.state = state;
+		this.font = font;
 		this.reloadFunc = reloadFunc;
 		this.exitFunc = exitFunc;
 
@@ -161,42 +161,45 @@ class FreeplaySandbox extends FlxSpriteGroup
 		for (s in sideList)
 			sideListLang.push(Lang.get(s));
 
-		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 240 + (characterCount * 40), FlxColor.BLACK);
+		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 280 + (characterCount * 40), FlxColor.BLACK);
 		bg.alpha = 0.6;
 		add(bg);
 
 		screenCenter();
 
-		var options:Array<String> = [];
 		for (i in 0...characterCount)
-		{
-			var labelString:String = Lang.get("#fpSandboxCharacter", [Std.string(i+1)]);
-			if (characterLabels != null && characterLabels.length > i)
-				labelString = Lang.get(characterLabels[i], [Std.string(i+1)]);
-			if (!labelString.endsWith(":"))
-				labelString += ":";
-			options.push(labelString);
-		}
-		options.push(Lang.get("#fpSandboxStage"));
-		options.push(Lang.get("#fpSandboxSide"));
-		options.push(Lang.get("#fpSandboxRate"));
-		options.push(Lang.get("#fpSandboxReset"));
-		options.push(Lang.get("#fpSandboxExit"));
+			options.push("character" + Std.string(i + 1));
+		options.push("stage");
+		options.push("side");
+		options.push("playbackRate");
+		options.push("missLimit");
+		options.push("reset");
+		options.push("exit");
 
 		for (i in 0...options.length)
 		{
-			var txt:FlxText = new FlxText(20, 20 + (i * 40), 0, options[i], 32);
-			txt.font = "VCR OSD Mono";
+			var labelString:String = Lang.get("#freeplay.sandbox." + options[i]);
+			if (options[i].startsWith("character"))
+			{
+				labelString = Lang.get("#freeplay.sandbox.character", [options[i].substr(9)]);
+				if (characterLabels != null && characterLabels.length > i)
+					labelString = Lang.get(characterLabels[i], [Std.string(i + 1)]);
+				if (!labelString.endsWith(":"))
+					labelString += ":";
+			}
+
+			var txt:FlxText = new FlxText(20, 20 + (i * 40), 0, labelString, 32);
+			txt.font = font;
 			add(txt);
 			txtLeft.push(txt);
 
 			var txt2:FlxText = new FlxText(20, 20 + (i * 40), 0, "", 32);
-			txt2.font = "VCR OSD Mono";
+			txt2.font = font;
 			add(txt2);
 			txtRight.push(txt2);
 		}
 		cursor = new FlxText(20, 20, 0, ">", 32);
-		cursor.font = "VCR OSD Mono";
+		cursor.font = font;
 		add(cursor);
 
 		nav = new UINumeralNavigation(changeOption, changeSelection, acceptOption, function() {
@@ -224,42 +227,43 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 	function acceptOption()
 	{
-		if (curSelected < characterCount)
+		if (options[curSelected].startsWith("character"))
 		{
 			nav.locked = true;
 			new FlxTimer().start(0.001, function(tmr) {
-				state.add(new FreeplaySandboxMenu(state, characterList, characters[curSelected], function(v) {
+				state.add(new FreeplaySandboxMenu(state, characterList, characterNames, characters[curSelected], function(v) {
 					nav.locked = false;
 					characters[curSelected] = v;
 					updateAllTexts();
-				}, function() { nav.locked = false; }));
+				}, function() { nav.locked = false; }, font));
 			});
 		}
 		else
 		{
-			switch (curSelected - characterCount)
+			switch (options[curSelected])
 			{
-				case 0:
+				case "stage":
 					nav.locked = true;
 					new FlxTimer().start(0.001, function(tmr) {
-						state.add(new FreeplaySandboxMenu(state, stageList, stage, function(v) {
+						state.add(new FreeplaySandboxMenu(state, stageList, stageNames, stage, function(v) {
 							nav.locked = false;
 							stage = v;
 							updateAllTexts();
-						}, function() { nav.locked = false; }));
+						}, function() { nav.locked = false; }, font));
 					});
 
-				case 3:
+				case "reset":
 					for (i in 0...characters.length)
 						characters[i] = "";
 					stage = "";
 					chartSide = 0;
 					playbackRate = 1;
+					missLimit = -1;
 
 					reloadFunc();
 					updateAllTexts();
 
-				case 4:
+				case "exit":
 					state.remove(this);
 					state.remove(nav);
 					exitFunc();
@@ -269,14 +273,14 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 	function changeOption(?v:Int = 0)
 	{
-		switch (curSelected - characterCount)
+		switch (options[curSelected])
 		{
-			case 1:
+			case "side":
 				chartSide = Util.loop(chartSide + v, 0, sideList.length - 1);
 				reloadFunc();
 				updateAllTexts();
 
-			case 2:
+			case "playbackRate":
 				if (FlxG.keys.pressed.SHIFT)
 					playbackRate += 0.01 * v;
 				else
@@ -284,6 +288,13 @@ class FreeplaySandbox extends FlxSpriteGroup
 				playbackRate = Math.round(playbackRate * 100) / 100;
 				if (playbackRate < 0.05)
 					playbackRate = 0.05;
+
+				updateAllTexts();
+
+			case "missLimit":
+				missLimit += v;
+				if (missLimit < -1)
+					missLimit = -1;
 
 				updateAllTexts();
 		}
@@ -294,21 +305,28 @@ class FreeplaySandbox extends FlxSpriteGroup
 		for (i in 0...characterCount)
 		{
 			if (characters[i] == "")
-				txtRight[i].text = Lang.get("#fpSandboxDefault");
+				txtRight[i].text = Lang.get("#freeplay.sandbox.default");
 			else
-				txtRight[i].text = characters[i];
+				txtRight[i].text = (characterNames.exists(characters[i]) ? characterNames[characters[i]] : characters[i]);
 		}
 		if (stage == "")
-			txtRight[characterCount].text = Lang.get("#fpSandboxDefault");
+			txtRight[characterCount].text = Lang.get("#freeplay.sandbox.default");
 		else
-			txtRight[characterCount].text = stage;
+			txtRight[characterCount].text = (stageNames.exists(stage) ? stageNames[stage] : stage);
 
 		txtRight[characterCount + 1].text = sideListLang[chartSide];
 		if (curSelected == characterCount + 1)
 			txtRight[characterCount + 1].text = "< " + txtRight[characterCount + 1].text + " >";
+
 		txtRight[characterCount + 2].text = Std.string(playbackRate);
 		if (curSelected == characterCount + 2)
 			txtRight[characterCount + 2].text = "< " + txtRight[characterCount + 2].text + " >";
+
+		txtRight[characterCount + 3].text = Std.string(missLimit);
+		if (missLimit < 0)
+			txtRight[characterCount + 3].text = Lang.get("#freeplay.sandbox.missLimit.none");
+		if (curSelected == characterCount + 3)
+			txtRight[characterCount + 3].text = "< " + txtRight[characterCount + 3].text + " >";
 
 		for (t in txtRight)
 			t.x = x + members[0].width - 20 - t.width;
@@ -319,6 +337,7 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 {
 	var OGlist:Array<String> = [];
 	var list:Array<String> = [];
+	var names:Map<String, String>;
 	var texts:Array<FlxText> = [];
 	var cursor:FlxText;
 	var search:FlxText;
@@ -328,12 +347,13 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 	var curSelected:Int = 0;
 	var selOffset:Int = 0;
 
-	override public function new(state:FlxState, _list:Array<String>, def:String, acceptFunc:String->Void, exitFunc:Void->Void)
+	override public function new(state:FlxState, _list:Array<String>, _names:Map<String, String>, def:String, acceptFunc:String->Void, exitFunc:Void->Void, ?font:String = "VCR OSD Mono")
 	{
 		super();
 
 		OGlist = _list.copy();
 		list = _list.copy();
+		names = _names;
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 600, FlxColor.BLACK);
 		bg.alpha = 0.6;
@@ -341,24 +361,24 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 
 		screenCenter();
 
-		var searchHint:FlxText = new FlxText(20, 20, bg.width - 40, Lang.get("#fpSandboxSearchHint"), 32);
-		searchHint.font = "VCR OSD Mono";
+		var searchHint:FlxText = new FlxText(20, 20, bg.width - 40, Lang.get("#freeplay.sandbox.searchHint"), 32);
+		searchHint.font = font;
 		searchHint.alignment = CENTER;
 		add(searchHint);
 
 		search = new FlxText(20, 60, 0, "", 32);
-		search.font = "VCR OSD Mono";
+		search.font = font;
 		add(search);
 
 		for (i in 0...16)
 		{
 			var txt:FlxText = new FlxText(20, 100 + (i * 30), 0, "", 24);
-			txt.font = "VCR OSD Mono";
+			txt.font = font;
 			add(txt);
 			texts.push(txt);
 		}
 		cursor = new FlxText(20, 100, 0, ">", 24);
-		cursor.font = "VCR OSD Mono";
+		cursor.font = font;
 		add(cursor);
 
 		nav = new UINumeralNavigation(null, changeSelection, function() {
@@ -410,7 +430,7 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 		for (i in 0...texts.length)
 		{
 			if (i + selOffset < list.length)
-				texts[i].text = list[i + selOffset];
+				texts[i].text = (names.exists(list[i + selOffset]) ? names[list[i + selOffset]] : list[i + selOffset]);
 			else
 				texts[i].text = "";
 		}
@@ -459,7 +479,8 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 		list = [];
 		for (l in OGlist)
 		{
-			if (search.text.trim() == "" || l.toLowerCase().indexOf(search.text.toLowerCase()) > -1)
+			var item:String = (names.exists(l) ? names[l] : l);
+			if (search.text.trim() == "" || item.toLowerCase().indexOf(search.text.toLowerCase()) > -1)
 				list.push(l);
 		}
 		changeSelection();
@@ -520,7 +541,7 @@ class FreeplayChartInfo extends FlxSpriteGroup
 			text.text = "";
 
 		if (artist != "")
-			text.text += Lang.get("#fpArtist", [artist]) + "\n";
+			text.text += Lang.get("#freeplay.songInfo.artist", [artist]) + "\n";
 		if (text.text == "")
 			bg.visible = false;
 		else
@@ -555,7 +576,7 @@ class FreeplayMenuState extends MusicBeatState
 	var category:String = "";
 	static var curCategory:Int = 0;
 
-	var weeks:Map<String, WeekData>;
+	var weeks:Map<String, WeekData> = new Map<String, WeekData>();
 	public var songList:Array<WeekSongData> = [];
 	var songLists:Map<String, Array<String>> = new Map<String, Array<String>>();
 	var songUnlocked:Array<Bool> = [];
@@ -601,8 +622,6 @@ class FreeplayMenuState extends MusicBeatState
 		if (FlxG.save.data.unlockedWeeks == null)
 			FlxG.save.data.unlockedWeeks = [];
 
-		Util.menuMusic();
-
 		if (Paths.hscriptExists('data/states/FreeplayMenuState'))
 			myScript = new HscriptHandler('data/states/FreeplayMenuState');
 
@@ -619,7 +638,7 @@ class FreeplayMenuState extends MusicBeatState
 		infoBG.alpha = 0.6;
 		add(infoBG);
 
-		scoreText = new FlxText(0, 5, 0, Lang.get("#fpScore", ["0"]), 32);
+		scoreText = new FlxText(0, 5, 0, "PERSONAL BEST: 0", 32);
 		scoreText.font = "VCR OSD Mono";
 		add(scoreText);
 
@@ -636,66 +655,7 @@ class FreeplayMenuState extends MusicBeatState
 		chartInfo = new FreeplayChartInfo();
 		add(chartInfo);
 
-		categories = new Map<String, Array<String>>();
-		categoriesList = [];
-		var possibleCats:Array<String> = [];
-		weeks = new Map<String, WeekData>();
-		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
-		{
-			var rawData:String = Paths.rawFromMod("data/weeks/"+file[0]+".json", file[1]);
-			var newWeek:WeekData = StoryMenuState.parseWeek(file[0], true, Json.parse(rawData));
-			if (newWeek.condition != "storyonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))
-			{
-				if (categories.exists(file[1]))
-					categories.get(file[1]).push(file[0]);
-				else
-				{
-					categories.set(file[1], [file[0]]);
-					possibleCats.push(file[1]);
-				}
-			}
-		}
-
-		for (file in Paths.listFilesAndModsSub("data/songs/", ".json"))
-		{
-			if (file[0].endsWith("/_auto"))
-			{
-				if (categories.exists(file[1]))
-				{
-					if (!categories.get(file[1]).contains("!AUTO"))
-						categories.get(file[1]).push("!AUTO");
-				}
-				else
-				{
-					categories.set(file[1], ["!AUTO"]);
-					possibleCats.push(file[1]);
-				}
-			}
-		}
-
-		#if ALLOW_SM
-		for (file in Paths.listFilesAndMods("sm/", ""))
-		{
-			if (categories.exists(file[1]))
-			{
-				if (!categories.get(file[1]).contains("!SM"))
-					categories.get(file[1]).push("!SM");
-			}
-			else
-			{
-				categories.set(file[1], ["!SM"]);
-				possibleCats.push(file[1]);
-			}
-		}
-		#end
-
-		if (possibleCats.contains("") && !PackagesState.excludeBase)
-			categoriesList.push("");
-		for (c in ModLoader.modListLoaded)
-		{
-			if (possibleCats.contains(c) || Paths.hscriptExists("data/states/" + c + "-freeplay"))
-				categoriesList.push(c);
-		}
+		findCategories();
 
 		weekOrder = Paths.text("weekOrder").replace("\r","").split("\n");
 
@@ -732,7 +692,7 @@ class FreeplayMenuState extends MusicBeatState
 					});
 				}
 				else
-					gotoSong(songList[curSong].songId, difficulty);
+					Util.gotoSong(songList[curSong].songId, difficulty, songList[curSong].difficulties);
 			}
 		}, function() {
 			menuState = 0;
@@ -750,6 +710,8 @@ class FreeplayMenuState extends MusicBeatState
 		}
 		nav2.leftClick = nav2.accept;
 		nav2.rightClick = nav2.back;
+
+		Util.menuMusic();
 
 		if (myScript != null)
 			myScript.execFunc("create", []);
@@ -850,6 +812,9 @@ class FreeplayMenuState extends MusicBeatState
 					return;
 				}
 
+				if (categories[category].length <= 0)
+					buildCategory(category);
+
 				var weekNames:Array<String> = categories[category].copy();
 				if (!songLists.exists(category))
 					songLists[category] = [];
@@ -879,6 +844,8 @@ class FreeplayMenuState extends MusicBeatState
 						}
 						var newWeek:WeekData = weeks[weekNames[i]];
 						var weekLocked:Bool = (newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(weekNames[i]));
+						if (newWeek.startsLockedInFreeplay && !ScoreSystems.weekBeaten(weekNames[i]))
+							weekLocked = true;
 						for (song in newWeek.songs)
 						{
 							if (song.difficulties == null || song.difficulties.length == 0)
@@ -895,7 +862,7 @@ class FreeplayMenuState extends MusicBeatState
 							{
 								var songName:String = (song.title == "" ? Song.getSongName(song.songId, song.difficulties[0]) : Lang.get(song.title));
 								if (weekLocked)
-									songName = Lang.get("#fpLocked");
+									songName = Lang.get("#freeplay.song.locked");
 								songLists[category].push(songName);
 							}
 							var fontName:String = "bold";
@@ -940,7 +907,7 @@ class FreeplayMenuState extends MusicBeatState
 							if (song.characters == null)
 								song.characters = 3;
 							if (song.characterLabels == null || song.characterLabels.length < 3)
-								song.characterLabels = ["#fpSandboxCharacter0", "#fpSandboxCharacter1", "#fpSandboxCharacter2"];
+								song.characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 
 							songList.push(song);
 							songUnlocked.push(true);
@@ -1012,15 +979,94 @@ class FreeplayMenuState extends MusicBeatState
 		}
 	}
 
+	function findCategories()
+	{
+		categories = new Map<String, Array<String>>();
+		categoriesList = [];
+		var possibleCats:Array<String> = [];
+		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
+		{
+			if (!possibleCats.contains(file[1]))
+			{
+				var rawData:String = Paths.rawFromMod("data/weeks/"+file[0]+".json", file[1]);
+				var newWeek:WeekData = StoryMenuState.parseWeek(file[0], true, Json.parse(rawData));
+				if (newWeek.condition != "storyonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && newWeek.hiddenWhenLocked))
+					possibleCats.push(file[1]);
+			}
+		}
+
+		for (file in Paths.listFilesAndModsSub("data/songs/", ".json"))
+		{
+			if (!possibleCats.contains(file[1]))
+			{
+				if (file[0].endsWith("/_auto"))
+					possibleCats.push(file[1]);
+			}
+		}
+
+		#if ALLOW_SM
+		for (file in Paths.listFilesAndMods("sm/", ""))
+		{
+			if (!possibleCats.contains(file[1]))
+				possibleCats.push(file[1]);
+		}
+		#end
+
+		if (possibleCats.contains("") && !PackagesState.excludeBase)
+		{
+			categoriesList.push("");
+			categories[""] = [];
+		}
+
+		for (c in ModLoader.modListLoaded)
+		{
+			if (possibleCats.contains(c) || Paths.hscriptExists("data/states/" + c + "-freeplay"))
+			{
+				categoriesList.push(c);
+				categories[c] = [];
+			}
+		}
+	}
+
+	function buildCategory(cat:String)
+	{
+		if (categoriesList.contains(cat))
+		{
+			categories[cat] = [];
+
+			for (file in Paths.listFilesFromModSub(cat, "data/weeks/", ".json"))
+			{
+				var rawData:String = Paths.rawFromMod("data/weeks/" + file + ".json", cat);
+				var newWeek:WeekData = StoryMenuState.parseWeek(file, true, Json.parse(rawData));
+				if (newWeek.condition != "storyonly" && !(newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file) && newWeek.hiddenWhenLocked))
+					categories[cat].push(file);
+			}
+
+			for (file in Paths.listFilesFromModSub(cat, "data/songs/", ".json"))
+			{
+				if (file.endsWith("/_auto"))
+				{
+					if (!categories[cat].contains("!AUTO"))
+					{
+						categories[cat].push("!AUTO");
+						break;
+					}
+				}
+			}
+
+			#if ALLOW_SM
+			if (Paths.listFilesAndMods("sm/", "").length > 0 && !categories[cat].contains("!SM"))
+				categories[cat].push("!SM");
+			#end
+		}
+	}
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
 		if (myScript != null)
 			myScript.execFunc("update", [elapsed]);
-
-		if (Options.keyJustPressed("fullscreen") && !DropdownMenu.isOneActive)
-			FlxG.fullscreen = !FlxG.fullscreen;
 
 		if (menuState > 0)
 		{
@@ -1040,7 +1086,7 @@ class FreeplayMenuState extends MusicBeatState
 			if (Math.abs(displayScore - score) <= 10)
 				displayScore = score;
 
-			scoreText.text = Lang.get("#fpScore", [Std.string(displayScore)]);
+			scoreText.text = "PERSONAL BEST: " + Std.string(displayScore);
 			scoreText.x = FlxG.width - scoreText.width - 5;
 			difficultyText.x = scoreText.x;
 			difficultyText.fieldWidth = scoreText.width;
@@ -1076,21 +1122,6 @@ class FreeplayMenuState extends MusicBeatState
 	function getScore()
 	{
 		score = ScoreSystems.loadSongScore(songList[curSong].songId, difficulty, FreeplaySandbox.chartSide);
-	}
-
-	public static function gotoSong(song:String, diff:String, ?delay:Float = 0.75)
-	{
-		ResultsSubState.resetStatics();
-
-		new FlxTimer().start(delay, function(tmr:FlxTimer)
-		{
-			FlxG.sound.music.fadeOut(0.5, 0, function(twn:FlxTween) { FlxG.sound.music.stop(); });
-
-			PlayState.firstPlay = true;
-			if (Std.isOfType(FlxG.state, HscriptState))
-				HscriptState.setFromState();
-			FlxG.switchState(new PlayState(false, song, diff));
-		});
 	}
 
 	override public function beatHit()
@@ -1197,7 +1228,7 @@ class FreeplayMenuState extends MusicBeatState
 
 	function updateDifficultyText()
 	{
-		difficultyText.text = Lang.getNoHash(difficulty).toUpperCase();
+		difficultyText.text = Lang.get("#difficulty." + difficulty, difficulty).toUpperCase();
 		if (songList[curSong].difficulties.length > 1)
 			difficultyText.text = "< " + difficultyText.text + " >";
 	}
@@ -1279,6 +1310,8 @@ class FreeplayMenuResetSubState extends FlxSubState
 			close();
 		});
 		add(nav);
+
+		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
 	}
 
 	function updateText()

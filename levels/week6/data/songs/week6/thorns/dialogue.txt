@@ -1,0 +1,11 @@
+!setting	fadeTimes	2	1
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	spirit
+!setting	flip
+spirit	normal	Direct contact with real humans, after being trapped in here for so long...
+spirit	normal	 and HER of all people.	append
+spirit	normal	I'll make her father pay for what he's done to me and all the others...
+spirit	normal	I'll beat you and make you take my place.
+spirit	normal	You don't mind your bodies being borrowed right?
+spirit	normal	 It's only fair...	append

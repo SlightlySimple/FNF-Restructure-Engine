@@ -3,21 +3,9 @@ package shaders;
 import flixel.system.FlxAssets.FlxShader;
 import flixel.util.FlxColor;
 
-class ColorSwapRGBA
+class ColorSwapRGBA extends FlxShader
 {
-	public var shader(default, null):ColorSwapRGBAShader;
-
-	public function new(colorVals:Array<String>, colors:Array<FlxColor>)
-	{
-		shader = new ColorSwapRGBAShader();
-		shader.r.value = [0, 0, 0];
-		shader.g.value = [0, 0, 0];
-		shader.b.value = [0, 0, 0];
-		shader.ir.value = [0, 0, 0];
-		shader.ig.value = [0, 0, 0];
-		shader.ib.value = [0, 0, 0];
-		reset(colorVals, colors);
-	}
+	public var shader:ColorSwapRGBA;
 
 	public function reset(colorVals:Array<String>, colors:Array<FlxColor>)
 	{
@@ -27,26 +15,17 @@ class ColorSwapRGBA
 			{
 				switch (colorVals[i])
 				{
-					case "r":
-						shader.r.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
-					case "ir":
-						shader.ir.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
-					case "g":
-						shader.g.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
-					case "ig":
-						shader.ig.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
-					case "b":
-						shader.b.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
-					case "ib":
-						shader.ib.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "r": r.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "ir": ir.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "g": g.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "ig": ig.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "b": b.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
+					case "ib": ib.value = [colors[i].redFloat, colors[i].greenFloat, colors[i].blueFloat];
 				}
 			}
 		}
 	}
-}
 
-class ColorSwapRGBAShader extends FlxShader
-{
 	@:glFragmentSource('
         #pragma header
 
@@ -69,8 +48,18 @@ class ColorSwapRGBAShader extends FlxShader
         }
 
     ')
-	public function new()
+
+	public function new(colorVals:Array<String>, colors:Array<FlxColor>)
 	{
 		super();
+		shader = this;
+
+		r.value = [0, 0, 0];
+		g.value = [0, 0, 0];
+		b.value = [0, 0, 0];
+		ir.value = [0, 0, 0];
+		ig.value = [0, 0, 0];
+		ib.value = [0, 0, 0];
+		reset(colorVals, colors);
 	}
 }

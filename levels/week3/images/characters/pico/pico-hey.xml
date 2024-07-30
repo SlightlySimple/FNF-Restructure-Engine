@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Free texture packer v0.6.7 http://free-tex-packer.com
+-->
+<TextureAtlas imagePath="pico-hey.png" width="1522" height="483">
+  <SubTexture name="Pico HEY!!0001.png" x="4" y="4" width="513" height="475" frameX="-1" frameY="-0" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0005.png" x="525" y="4" width="497" height="475" frameX="-0" frameY="-2" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0003.png" x="1030" y="4" width="488" height="474" frameX="-0" frameY="-3" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0002.png" x="4" y="4" width="513" height="475" frameX="-1" frameY="-0" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0004.png" x="1030" y="4" width="488" height="474" frameX="-0" frameY="-3" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0006.png" x="525" y="4" width="497" height="475" frameX="-0" frameY="-2" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0007.png" x="525" y="4" width="497" height="475" frameX="-0" frameY="-2" frameWidth="514" frameHeight="477" />
+  <SubTexture name="Pico HEY!!0008.png" x="525" y="4" width="497" height="475" frameX="-0" frameY="-2" frameWidth="514" frameHeight="477" />
+</TextureAtlas>

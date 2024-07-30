@@ -1,0 +1,108 @@
+<root>
+	<tabmenu id="tabMenu">
+		<tab name="Properties">
+			<vboxscroll y="10">
+				<vbox spacing="0">
+					<label text="Image File:"/>
+					<hbox>
+						<input id="characterAsset" width="200" infoText="The file path of the box's sprite sheet."/>
+						<button id="loadAssetButton" image="buttonLoad" infoText="Browse for a sprite sheet."/>
+					</hbox>
+				</vbox>
+				<label text="Position:"/>
+				<hbox>
+					<stepper id="charX" text="X:" step="5" infoText="The horizonal position of the box."/>
+					<stepper id="charY" text="Y:" step="5" infoText="The vertical position of the box."/>
+				</hbox>
+				<label text="Scale:"/>
+				<hbox>
+					<stepper id="scaleStepperX" text="X:" step="0.05" min="0" decimals="3" infoText="How much the box is stretched horizontally."/>
+					<stepper id="scaleStepperY" text="Y:" step="0.05" min="0" decimals="3" infoText="How much the box is stretched vertically."/>
+				</hbox>
+				<checkbox id="antialiasCheckbox" text="Antialiasing" infoText="Whether the character is smoothed out. Disable this for pixel boxes."/>
+				<checkbox id="flipCheckbox" text="Flip X" infoText="Whether the box is flipped horizontally. Does not affect offsets."/>
+				<checkbox id="canFlipCheckbox" text="Can be Flipped" infoText="Whether the box can be flipped when the speaking character's side changes. If this is checked, the default position of the box is the position when the speaking character is on the right."/>
+				<stepper id="transitionSteps" text="Transition Steps:" min="0" step="1" infoText="If this is non-zero, the box fading in and out will have a &quot;steppy&quot; effect, rather than a smooth fade. This is recommended to use on pixel boxes."/>
+				<label text="Skip Text Position:"/>
+				<hbox>
+					<stepper id="skipX" text="X:" step="5" infoText="The horizonal position of the skip text."/>
+					<stepper id="skipY" text="Y:" step="5" infoText="The vertical position of the skip text."/>
+				</hbox>
+				<label text="Dialogue Sound:"/>
+				<dropdown id="textSound" allowSearch="true" infoText="The sound that plays by default each time a letter of the current dialogue line is typed."/>
+				<label text="Click Sound:"/>
+				<dropdown id="clickSound" allowSearch="true" infoText="The sound that plays when the dialogue advances to the next line."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Text Properties">
+			<vbox y="10">
+				<label text="Sample Text:"/>
+				<input id="sampleText"/>
+				<label text="Position:"/>
+				<hbox>
+					<stepper id="textX" text="X:" step="5" infoText="The horizonal position of the text."/>
+					<stepper id="textY" text="Y:" step="5" infoText="The vertical position of the text."/>
+				</hbox>
+				<stepper id="textWidth" text="Width:" min="0" step="5" infoText="The maximum width the text can be before wrapping to the next line."/>
+				<label text="Font:"/>
+				<dropdown id="textFont" text="Font:" blank="Default" infoText="The font the text should use."/>
+				<stepper id="textSize" text="Font Size:" min="0" step="4" infoText="The font size of the text."/>
+				<textbutton id="textColor" text="Color" image="LONG" infoText="The color the text should be."/>
+				<label text="Border Style:"/>
+				<hbox>
+					<togglebutton id="textBorderStyleOutline" text="Outline" infoText="The style of the text border."/>
+					<togglebutton id="textBorderStyleShadow" text="Shadow" infoText="The style of the text border."/>
+				</hbox>
+				<stepper id="textBorderSize" text="Border Size:" min="0" step="1" infoText="The size of the text border."/>
+				<textbutton id="textBorderColor" text="Border Color" image="LONG" infoText="The color of the text border."/>
+			</vbox>
+		</tab>
+		<tab name="Moods">
+			<vboxscroll y="10">
+				<dropdown id="expressionDropdown" infoText="The current expression to modify."/>
+				<label text="Mood Name:"/>
+				<input id="expressionName"/>
+				<label text="Enter:"/>
+				<dropdown id="expressionEnterAnim" blank="None" infoText="The animation (if any) this mood should play when the box first appears."/>
+				<label text="Open:"/>
+				<dropdown id="expressionOpenAnim" blank="None" infoText="The animation (if any) this mood should play when the box switches moods, characters, or sides."/>
+				<label text="Idle:"/>
+				<dropdown id="expressionIdleAnim" infoText="The animation this mood should play by default."/>
+				<label text="Talking Idle:"/>
+				<dropdown id="expressionIdleTalkingAnim" blank="None" infoText="The animation (if any) this mood should play when the dialogue is still being typed."/>
+				<label text="Idle to Talking:"/>
+				<dropdown id="expressionIdleToTalkingAnim" blank="None" infoText="The animation (if any) this mood should play when transitioning from the idle to the talking idle."/>
+				<label text="Talking to Idle:"/>
+				<dropdown id="expressionTalkingToIdleAnim" blank="None" infoText="The animation (if any) this mood should play when transitioning from the talking idle to the idle."/>
+				<textbutton id="addExpressionButton" text="Add/Update Mood" image="LONG" infoText="Add a new mood to the dialogue box, or replace a mood with the same name."/>
+				<textbutton id="removeExpressionButton" text="Remove Mood" image="LONG" infoText="Remove the currently selected mood from the dialogue box."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Animations">
+			<vbox y="10">
+				<label text="Animation Name:"/>
+				<input id="animName"/>
+				<label text="Prefix:"/>
+				<dropdown id="idlePrefix" infoText="The name of the animation as it appears in the sprite sheet."/>
+				<label text="Indices:"/>
+				<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the prefix to use."/>
+				<textbutton id="allIndices" text="All Indices" image="LONG" infoText="Automatically fill in the above field with all indices in the current prefix."/>
+				<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the box, or replace an animation with the same name."/>
+				<textbutton id="removeAnimButton" text="Remove Animation" image="LONG" infoText="Remove the currently selected animation from the box."/>
+			</vbox>
+		</tab>
+		<tab name="Anim. Properties">
+			<vbox y="10">
+				<label text="Offsets:"/>
+				<hbox>
+					<stepper id="idleOffsetX" text="X:" infoText="The horizontal position of this animation."/>
+					<stepper id="idleOffsetY" text="Y:" infoText="The vertical position of this animation."/>
+				</hbox>
+				<hbox>
+					<checkbox id="idleLoop" text="Loop" infoText="Whether the animation should repeat itself forever."/>
+					<stepper id="idleFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+				</hbox>
+			</vbox>
+		</tab>
+	</tabmenu>
+</root>

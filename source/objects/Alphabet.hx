@@ -157,10 +157,7 @@ class Alphabet extends FlxSpriteGroup
 			this.font = font;
 			var fontFrames:FlxFramesCollection = Paths.sparrow("ui/fonts/" + font);
 
-			forEachAlive(function(letter:FlxSprite)
-			{
-				letter.frames = fontFrames;
-			});
+			forEachAlive(function(letter:FlxSprite) { letter.frames = fontFrames; });
 
 			rebuildText();
 		}

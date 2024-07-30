@@ -1,0 +1,19 @@
+function create()
+{
+	wiggle = new FlxRuntimeShader(Paths.shader("wiggle"));
+	wiggle.data.uSpeed.value = [2];
+	wiggle.data.uFrequency.value = [4];
+	wiggle.data.uWaveAmplitude.value = [0.017];
+	wiggle.data.effectType.value = [0];
+
+	stage.pieces["evilSchoolBG"].shader = wiggle;
+	stage.pieces["evilSchoolFG"].shader = wiggle;
+}
+
+time = 0;
+
+function update(elapsed)
+{
+	time += elapsed;
+	wiggle.data.uTime.value = [time];
+}

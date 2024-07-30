@@ -1,7 +1,5 @@
 package objects;
 
-// why doesn't FlxBar have border thickness already I shouldn't have to do this shit
-
 import flash.display.BitmapData;
 import flash.geom.Rectangle;
 import flixel.FlxG;
@@ -10,10 +8,31 @@ import flixel.util.FlxColor;
 
 class FunkBar extends FlxBar
 {
+	public var emptyColor:FlxColor;
+	public var fillColor:FlxColor;
+	public var borderColor:FlxColor;
+
 	public var borderWidth:Int = 1;
 	public var centerPosition:Float = 0;
 
-	override public function createColoredEmptyBar(empty:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FlxBar
+	override public function createFilledBar(empty:FlxColor, fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FunkBar
+	{
+		super.createFilledBar(empty, fill, showBorder, border);
+		emptyColor = empty;
+		fillColor = fill;
+		borderColor = border;
+		
+		return this;
+	}
+
+	public function recreateFilledBar():FunkBar
+	{
+		createFilledBar(emptyColor, fillColor, true, borderColor);
+
+		return this;
+	}
+
+	override public function createColoredEmptyBar(empty:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FunkBar
 	{
 		if (FlxG.renderTile)
 		{
@@ -55,7 +74,7 @@ class FunkBar extends FlxBar
 		return this;
 	}
 
-	override public function createColoredFilledBar(fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FlxBar
+	override public function createColoredFilledBar(fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FunkBar
 	{
 		if (FlxG.renderTile)
 		{

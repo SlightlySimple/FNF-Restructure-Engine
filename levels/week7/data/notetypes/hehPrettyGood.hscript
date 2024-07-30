@@ -1,0 +1,28 @@
+tracking = [];
+trackingFramerate = 24;
+trackingTime = 0;
+
+function update(elapsed)
+{
+	for (char in tracking)
+	{
+		if (char.animation.curAnim.name == "hehPrettyGood" && !char.animation.curAnim.finished)
+		{
+			var desiredFrame = Std.int(Math.round((game.songProgress - trackingTime) * trackingFramerate / 1000));
+			if (desiredFrame < char.animation.curAnim.numFrames && char.animation.curAnim.curFrame != desiredFrame)
+				char.animation.curAnim.curFrame = desiredFrame;
+		}
+		else
+			tracking.remove(char);
+	}
+}
+
+function noteHit(note)
+{
+	if (note.noteType == "hehPrettyGood")
+	{
+		tracking = note.singers;
+		trackingTime = note.strumTime;
+		trackingFramerate = tracking[0].animation.curAnim.frameRate;
+	}
+}

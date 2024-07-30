@@ -1,0 +1,16 @@
+function create()
+{
+	heyNotes = [];
+
+	for (event in game.songData.events)
+	{
+		if (event.type == "characterPlayAnim")
+			heyNotes.push(event.beat);
+	}
+}
+
+function onNoteSpawned(note)
+{
+	if (heyNotes.contains(note.beat))
+		note.singers = [];
+}

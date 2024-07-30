@@ -1,0 +1,19 @@
+// Week name
+"level.week6"			"HATING SIMULATOR FT. MOAWLING"
+
+// Song names
+"song.week6.senpai"	"Senpai"
+"song.week6.roses"	"Roses"
+"song.week6.thorns"	"Thorns"
+
+// Character names
+"character.bf-pixel"		"Boyfriend (Pixel)"
+"character.bf-pixel-dead"	"Boyfriend (Pixel) (Dead)"
+"character.gf-pixel"		"Girlfriend (Pixel)"
+"character.senpai"			"Senpai"
+"character.senpai-angry"	"Senpai (Angry)"
+"character.spirit"			"Spirit"
+
+// Stage names
+"stage.school"			"School (Date)"
+"stage.schoolEvil"		"School (Hate)"

@@ -1,9 +1,11 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "rate",
-			"label": "Camera Bump Rate",
+			"label": "Bump Rate",
+			"infoText": "How many beats there should be between each camera bump. Set to 0 to prevent the camera from bumping at all.",
 			"type": "stepper",
 			"defaultValue": 4,
 			"min": 0,

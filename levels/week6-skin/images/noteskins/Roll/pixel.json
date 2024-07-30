@@ -1,0 +1,32 @@
+{
+	"assets": [
+		["pixel", 1, 2]
+	],
+	"antialias": false,
+	"scale": -1,
+	"sustainGap": 0,
+	"animations":
+	[
+		{"name": "hold", "indices": [0], "fps": 24, "loop": false},
+		{"name": "holdEnd", "indices": [1], "fps": 24, "loop": false}
+	],
+	"slots": [
+		{"color": "roll", "angle": 0}
+	],
+	"colors": [
+		{"color": "roll", "holdAnim": "hold", "endAnim": "holdEnd", "angle": 0}
+	],
+	"splashes": {
+		"assets": [
+			["pixelHoldCovers", 4, 4],
+			["pixelHoldSplashes", 3, 8]
+		],
+		"animations": [
+			{"name": "hold", "indices": [8, 9, 10, 11], "fps": 24, "loop": true, "offsets": [4.5, 3.5]},
+			{"name": "holdEnd", "asset": 1, "indices": [12, 13, 14, 14, 15, 16, 17, 17], "fps": 24, "loop": true, "offsets": [13.5, 10.5]}
+		],
+		"colors": [
+			{"color": "green", "alpha": 0.6, "holdAnim": "hold", "holdEndAnims": ["holdEnd"]}
+		]
+	}
+}

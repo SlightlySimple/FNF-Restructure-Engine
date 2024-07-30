@@ -1,35 +1,43 @@
 {
+	"icon": "eventIconCamera",
 	"parameters":
 	[
 		{
 			"id": "mainZoom",
 			"label": "Main Cam Zoom",
+			"infoText": "How far the main game camera should zoom in. Leave at 0 to use the default zoom level.",
 			"type": "stepper",
 			"defaultValue": 0,
-			"min": -2,
-			"max": 2,
-			"increment": 0.01,
+			"increment": 0.05,
 			"decimals": 3
 		},
 		{
 			"id": "hudZoom",
 			"label": "Hud Cam Zoom",
+			"infoText": "How far the hud camera should zoom in. Leave at 0 to use the default zoom level.",
 			"type": "stepper",
 			"defaultValue": 0,
-			"min": -2,
-			"max": 2,
-			"increment": 0.01,
+			"increment": 0.05,
 			"decimals": 3
 		},
 		{
 			"id": "time",
 			"label": "Time Multiplier",
+			"infoText": "How fast the cameras should return to their default zoom levels. The higher this number is, the longer it will take.",
 			"type": "stepper",
 			"defaultValue": 1,
 			"min": 0.01,
 			"max": 10,
-			"increment": 0.01,
+			"increment": 0.05,
 			"decimals": 2
+		},
+		{
+			"id": "mode",
+			"label": "Mode",
+			"infoText": "Whether the values should be the exact zoom, or multiplied by the default zoom amount.",
+			"type": "dropdown",
+			"defaultValue": "absolute",
+			"options": ["absolute", "multiplied"]
 		}
 	]
 }

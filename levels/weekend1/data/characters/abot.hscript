@@ -1,0 +1,91 @@
+vizSegments = [[0, 0], [59, -8], [115, -11.5], [181, -11.9], [235, -11.4], [287, -6.7], [338, 0.3]];
+
+function create()
+{
+	audioData = Util.audioData(game.tracks[0]);
+
+	stereoBG = CreateSprite('characters/abot/stereoBG');
+	stereoBG.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), stereoBG);
+
+	abotViz = new FlxSpriteGroup();
+	abotViz.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abotViz);
+	if (game.hscriptIdGet("EVENT_blammedLights", "exceptions") != null)
+		game.hscriptIdGet("EVENT_blammedLights", "exceptions").push(abotViz);
+
+	viz = [];
+	for (i in 0...vizSegments.length)
+	{
+		var abotVizSegment = CreateSprite('characters/abot/aBotViz', vizSegments[i][0], vizSegments[i][1]);
+		for (j in 0...6)
+			abotVizSegment.addAnim(Std.string(j), "viz" + Std.string(i + 1) + "000" + Std.string(j), 24);
+		abotVizSegment.playAnim("5");
+		abotViz.add(abotVizSegment);
+		viz.push(0);
+	}
+
+	eyeWhites = new FlxSprite().makeGraphic(160, 60, FlxColor.WHITE);
+	eyeWhites.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), eyeWhites);
+
+	pupil = new FlxAnimate(this.x, this.y, Paths.atlas("characters/abot/systemEyes"));
+	pupil.anim.addByAnimIndices("left", Util.generateIndices(0, 17), 24);
+	pupil.anim.addByAnimIndices("right", Util.generateIndices(18, 31), 24);
+	pupil.playAnim("right", true);
+	pupil.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), pupil);
+
+	pupilState = true;
+}
+
+function update(elapsed)
+{
+	abotViz.visible = this.visible;
+	abotViz.setPosition(this.x + 200, this.y + 85);
+
+	stereoBG.visible = this.visible;
+	stereoBG.setPosition(this.x + 150, this.y + 30);
+	stereoBG.color = this.color;
+
+	eyeWhites.visible = this.visible;
+	eyeWhites.setPosition(this.x + 40, this.y + 250);
+	eyeWhites.color = this.color;
+
+	pupil.visible = this.visible;
+	pupil.setPosition(this.x + 55, this.y + 240);
+	pupil.color = this.color;
+
+	if (game.tracks[0].playing)
+	{
+		for (i in 0...7)
+		{
+			var ind = Std.int(Conductor.songPosition - game.totalOffset + i);
+			if (ind >= 0 && ind < audioData[0].length)
+			{
+				var yy = (-audioData[0][ind][0] + audioData[0][ind][1]) / 65536;
+				yy = Math.min(5, 5 - (yy * 10));
+				if (yy < viz[i])
+					viz[i] = yy;
+				else
+					viz[i] = FlxMath.lerp(viz[i], yy, elapsed * 5);
+
+				abotViz.members[i].playAnim(Std.string(Math.round(viz[i])));
+			}
+		}
+	}
+}
+
+function beatHit()
+{
+	var mustHitSection = (game.camFocus == game.player1);
+
+	if (pupilState != mustHitSection)
+	{
+		if (mustHitSection)
+			pupil.playAnim("right", true);
+		else
+			pupil.playAnim("left", true);
+	}
+	pupilState = mustHitSection;
+}

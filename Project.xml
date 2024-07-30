@@ -4,7 +4,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.4.2" company="slightlysimple" />
+	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.5.0" company="slightlysimple" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
@@ -37,14 +37,15 @@
 	<!--I'd recommend making a similar folder for your own mod if you're recompiling the game-->
 	<assets path="assets-dialogue" rename="assets" />
 	<assets path="lua" rename="assets/lua" />
-	<assets path="weeks/week1" rename="assets" />
-	<assets path="weeks/week2" rename="assets" />
-	<assets path="weeks/week3" rename="assets" />
-	<assets path="weeks/week4" rename="assets" />
-	<assets path="weeks/week5" rename="assets" />
-	<assets path="weeks/week6" rename="assets" />
-	<assets path="weeks/week6-skin" rename="assets" />		<!--So you can use the pixel stuff without including the whole week-->
-	<assets path="weeks/week7" rename="assets" />
+	<assets path="levels/week1" rename="assets" />
+	<assets path="levels/week2" rename="assets" />
+	<assets path="levels/week3" rename="assets" />
+	<assets path="levels/week4" rename="assets" />
+	<assets path="levels/week5" rename="assets" />
+	<assets path="levels/week6" rename="assets" />
+	<assets path="levels/week6-skin" rename="assets" />		<!--So you can use the pixel stuff without including the whole week-->
+	<assets path="levels/week7" rename="assets" />
+	<assets path="levels/weekend1" rename="assets" />
 
 	<assets path="mods" embed="false" />
 

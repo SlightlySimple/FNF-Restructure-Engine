@@ -1,85 +1,88 @@
 {
-	"label": "#optionsCatColors",
+	"label": "#options.category.colors",
 	"contents": [
 		{
 			"type": "label",
-			"label": "#optionsSubcatUI"
+			"label": "#options.colors.subCategory.ui"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameHealthBarL",
-			"description": "#optionsDescHealthBarL",
+			"label": "#options.colors.healthBarColorL.name",
+			"description": "#options.colors.healthBarColorL.desc",
 			"variable": "healthBarColorL",
 			"defValue": "RED"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameHealthBarR",
-			"description": "#optionsDescHealthBarR",
+			"label": "#options.colors.healthBarColorR.name",
+			"description": "#options.colors.healthBarColorR.desc",
 			"variable": "healthBarColorR",
 			"defValue": "LIME"
 		},
 		{
+			"type": "bool",
+			"label": "#options.colors.healthBarCharacterColor.name",
+			"description": "#options.colors.healthBarCharacterColor.desc",
+			"variable": "healthBarCharacterColor",
+			"defValue": false
+		},
+		{
 			"type": "color",
-			"label": "#optionsNameProgressBarL",
-			"description": "#optionsDescProgressBarL",
+			"label": "#options.colors.progressBarColorL.name",
+			"description": "#options.colors.progressBarColorL.desc",
 			"variable": "progressBarColorL",
 			"defValue": "LIME"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameProgressBarR",
-			"description": "#optionsDescProgressBarR",
+			"label": "#options.colors.progressBarColorR.name",
+			"description": "#options.colors.progressBarColorR.desc",
 			"variable": "progressBarColorR",
 			"defValue": "BLACK"
 		},
 		{
 			"type": "label",
-			"label": ""
-		},
-		{
-			"type": "label",
-			"label": "#optionsSubcatJudgements"
+			"label": "#options.colors.subCategory.judgements"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorMV",
-			"description": "#optionsDescJudgementColorMV",
+			"label": "#options.colors.colorMV.name",
+			"description": "#options.colors.colorMV.desc",
 			"variable": "colorMV",
 			"defValue": "CYAN"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorSK",
-			"description": "#optionsDescJudgementColorSK",
+			"label": "#options.colors.colorSK.name",
+			"description": "#options.colors.colorSK.desc",
 			"variable": "colorSK",
 			"defValue": "LIME"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorGD",
-			"description": "#optionsDescJudgementColorGD",
+			"label": "#options.colors.colorGD.name",
+			"description": "#options.colors.colorGD.desc",
 			"variable": "colorGD",
 			"defValue": "GREEN"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorBD",
-			"description": "#optionsDescJudgementColorBD",
+			"label": "#options.colors.colorBD.name",
+			"description": "#options.colors.colorBD.desc",
 			"variable": "colorBD",
 			"defValue": "RED"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorSH",
-			"description": "#optionsDescJudgementColorSH",
+			"label": "#options.colors.colorSH.name",
+			"description": "#options.colors.colorSH.desc",
 			"variable": "colorSH",
 			"defValue": "0xFF800000"
 		},
 		{
 			"type": "color",
-			"label": "#optionsNameJudgementColorMS",
-			"description": "#optionsDescJudgementColorMS",
+			"label": "#options.colors.colorMS.name",
+			"description": "#options.colors.colorMS.desc",
 			"variable": "colorMS",
 			"defValue": "WHITE"
 		}

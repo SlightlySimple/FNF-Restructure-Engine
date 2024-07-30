@@ -1,17 +1,61 @@
+import flixel.ui.FlxBar;
+
 videoPlaying = false;
 lastAutoProceed = true;
 lastVidName = "";
+subtitleTick = 0;
+allSubtitles = [];
+
+videoSprite = null;
+cutsceneSkipProgress = 0;
+cutsceneSkipProgressBar = null;
 
 function update(elapsed)
 {
-	if (FlxG.keys.justPressed.BACKSPACE && videoPlaying)
-		video.onVLCComplete();
+	if (videoPlaying)
+	{
+		if (Options.keyPressed("introSkip"))
+		{
+			if (cutsceneSkipProgress < 1)
+			{
+				cutsceneSkipProgress += elapsed;
+				cutsceneSkipProgressBar.value = cutsceneSkipProgress;
+				cutsceneSkipProgressBar.alpha = Math.min(1, cutsceneSkipProgress * 10);
+			}
+			else
+				video.onVLCComplete();
+		}
+		else
+		{
+			cutsceneSkipProgress = 0;
+			cutsceneSkipProgressBar.alpha = 0;
+		}
+
+		if (videoSprite != null && videoSprite.visible)
+		{
+			videoSprite.setGraphicSize(FlxG.width, FlxG.height);
+			videoSprite.screenCenter();
+
+			if (subtitleTick < allSubtitles.length && (MP4Handler.vlcBitmap.time / 1000.0) >= allSubtitles[subtitleTick][0])
+			{
+				game.subtitles = allSubtitles[subtitleTick][1];
+				subtitleTick++;
+			}
+		}
+	}
 }
 
 function onEndVideo()
 {
+	if (videoSprite != null)
+	{
+		videoSprite.visible = false;
+		game.subtitles = "";
+	}
+
+	FlxTween.tween(cutsceneSkipProgressBar, {alpha: 0}, 0.25);
+
 	videoPlaying = false;
-	game.remove(black);
 	if (lastAutoProceed)
 	{
 		if (game.endingSong)
@@ -21,12 +65,16 @@ function onEndVideo()
 		}
 		else
 		{
+			remove(black);
 			game.canStartCountdown = true;
 			game.startCountdown();
 		}
 	}
 	else
+	{
+		remove(black);
 		game.hscriptExec("onVideoFinished", [lastVidName]);
+	}
 }
 
 function playVideo(vidName, autoProceed)
@@ -36,9 +84,36 @@ function playVideo(vidName, autoProceed)
 
 	black = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 	black.cameras = [game.camHUD];
-	game.add(black);
+	add(black);
 
+	allSubtitles = [];
+	subtitleTick = 0;
 	videoPlaying = true;
 	video = new MP4Handler();
-	video.playMP4(Paths.video(vidName), onEndVideo);
+	if (Paths.exists("videos/" + vidName + ".txt"))
+	{
+		var subs = Util.splitFile(Paths.raw("videos/" + vidName + ".txt"));
+		for (s in subs)
+			allSubtitles.push([Std.parseFloat(s.split("|")[0]), s.split("|")[1]]);
+	}
+
+	if (videoSprite == null)
+	{
+		videoSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		videoSprite.cameras = [game.camOther];
+		insert(game.members.indexOf(game.subtitleGroup), videoSprite);
+	}
+
+	if (cutsceneSkipProgressBar == null)
+	{
+		cutsceneSkipProgressBar = new FlxBar(200, FlxG.height - 50, 0, FlxG.width - 400, 25, null, null, 0, 1);
+		cutsceneSkipProgressBar.createFilledBar(FlxColor.BLACK, FlxColor.WHITE, true, FlxColor.BLACK);
+		cutsceneSkipProgressBar.alpha = 0;
+		cutsceneSkipProgressBar.cameras = [game.camOther];
+		add(cutsceneSkipProgressBar);
+	}
+	cutsceneSkipProgress = 0;
+
+	videoSprite.visible = true;
+	video.playMP4(Paths.video(vidName), onEndVideo, videoSprite);
 }
