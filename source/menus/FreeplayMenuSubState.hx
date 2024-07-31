@@ -125,6 +125,9 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		super();
 		MainMenuState.curSubstate = "freeplay";
 
+		if (FlxG.save.data.unlockedWeeks == null)
+			FlxG.save.data.unlockedWeeks = [];
+
 		defaultTrack = {name: Paths.music(Util.menuSong), timings: [[0, Std.parseFloat(Paths.raw("music/" + Util.menuSong + ".bpm"))]], start: -1, end: -1};
 		randomTrack = {name: Paths.music("freeplayRandom"), timings: [[0, Std.parseFloat(Paths.raw("music/freeplayRandom.bpm"))]], start: -1, end: -1};
 		curTrack = defaultTrack;
