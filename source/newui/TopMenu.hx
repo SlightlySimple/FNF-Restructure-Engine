@@ -135,7 +135,7 @@ class TopMenu extends FlxSpriteGroup
 
 	function onKeyDown(e:KeyboardEvent)
 	{
-		if (DropdownMenu.isOneActive) return;
+		if (DropdownMenu.isOneActive || InputText.isOneActive) return;
 		if (dropdown != null) return;
 
 		var key:FlxKey = cast e.keyCode;

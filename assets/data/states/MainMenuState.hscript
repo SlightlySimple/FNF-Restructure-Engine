@@ -1,6 +1,6 @@
 import Sys;
 import flixel.effects.FlxFlicker;
-import menus.OptionsMenuState;
+import menus.options.OptionsMenuState;
 
 function create()
 {

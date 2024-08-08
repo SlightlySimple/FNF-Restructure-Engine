@@ -9,6 +9,7 @@ import flixel.util.FlxTimer;
 import flixel.system.FlxSound;
 import flixel.tweens.FlxTween;
 import data.Options;
+import game.results.ResultsState;
 import menus.PauseSubState;
 import objects.Character;
 

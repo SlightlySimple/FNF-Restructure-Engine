@@ -84,6 +84,13 @@ class HscriptState extends MusicBeatState
 
 		myScript.execFunc("stepHit", []);
 	}
+
+	override public function closeSubState()
+	{
+		super.closeSubState();
+
+		myScript.execFunc("closeSubState", []);
+	}
 }
 
 class HscriptSubState extends FlxSubState
@@ -124,6 +131,13 @@ class HscriptSubState extends FlxSubState
 
 		if (!myScript.valid() && FlxG.keys.justPressed.BACKSPACE)
 			close();
+	}
+
+	override public function closeSubState()
+	{
+		super.closeSubState();
+
+		myScript.execFunc("closeSubState", []);
 	}
 }
 

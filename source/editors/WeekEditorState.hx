@@ -17,8 +17,9 @@ import data.Options;
 import data.Song;
 import menus.EditorMenuState;
 import menus.MainMenuState;
-import menus.StoryMenuState;
-import menus.FreeplayMenuSubState;
+import menus.story.StoryMenuState;
+import menus.story.StoryMenuCharacter;
+import menus.freeplay.FreeplayCapsule;
 import objects.Alphabet;
 import objects.Character;
 import objects.HealthIcon;
@@ -58,7 +59,7 @@ class WeekEditorState extends BaseEditorState
 	public var bgYellow:FlxSprite;
 	var banner:FlxSprite;
 	var imageButton:FlxSprite;
-	var menuCharacters:FlxTypedSpriteGroup<MenuCharacter>;
+	var menuCharacters:FlxTypedSpriteGroup<StoryMenuCharacter>;
 	var weekTitle:FlxText;
 
 	override public function create()
@@ -122,11 +123,11 @@ class WeekEditorState extends BaseEditorState
 		refreshImageButton();
 		storyStuff.add(imageButton);
 
-		menuCharacters = new FlxTypedSpriteGroup<MenuCharacter>();
+		menuCharacters = new FlxTypedSpriteGroup<StoryMenuCharacter>();
 		storyStuff.add(menuCharacters);
 		for (i in 0...3)
 		{
-			var char:MenuCharacter = new MenuCharacter(i);
+			var char:StoryMenuCharacter = new StoryMenuCharacter(i);
 			menuCharacters.add(char);
 		}
 		refreshWeekBanner();
@@ -286,9 +287,9 @@ class WeekEditorState extends BaseEditorState
 		var addSong:TextButton = cast element("addSong");
 		addSong.onClicked = function() {
 			if (weekData.songs.length > 0)
-				weekData.songs.push({songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
+				weekData.songs.push({songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			else
-				weekData.songs.push({songId: "test", icon: "none", iconNew: "none", difficulties: weekData.difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
+				weekData.songs.push({songId: "test", iconNew: "none", difficulties: weekData.difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			curSong = weekData.songs.length - 1;
 			refreshSongs();
 		}
@@ -297,7 +298,7 @@ class WeekEditorState extends BaseEditorState
 		insertSong.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
-				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, icon: weekData.songs[curSong].icon, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]};
+				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]};
 				weekData.songs.insert(curSong, newSong);
 				refreshSongs();
 			}
@@ -398,50 +399,6 @@ class WeekEditorState extends BaseEditorState
 						finalName = finalName.substr(0, finalName.length - 9);
 						weekData.songs[curSong].iconNew = finalName;
 						refreshSongs();
-					}
-				}
-				file.load("png;*.json");
-			}
-		}
-
-		var iconInput:InputText = cast element("iconInput");
-		iconInput.condition = function() {
-			if (weekData.songs.length > 0)
-				return weekData.songs[curSong].icon;
-			return iconInput.text;
-		}
-		iconInput.focusLost = function() {
-			if (weekData.songs.length > 0)
-			{
-				if (iconInput.text.trim() != "" && Paths.iconExists(iconInput.text))
-					weekData.songs[curSong].icon = iconInput.text;
-				else
-					weekData.songs[curSong].icon = "none";
-			}
-		}
-
-		var loadIconButton:Button = cast element("loadIconButton");
-		loadIconButton.onClicked = function() {
-			if (weekData.songs.length > 0)
-			{
-				var file:FileBrowser = new FileBrowser();
-				file.loadCallback = function(fullPath:String) {
-					var nameArray:Array<String> = fullPath.replace('\\','/').split('/');
-					if (nameArray.indexOf("icons") != -1)
-					{
-						while (nameArray[0] != "images")
-							nameArray.remove(nameArray[0]);
-						nameArray.remove(nameArray[0]);
-						nameArray.remove("icons");
-						if (nameArray[nameArray.length - 1].startsWith("icon-"))
-							nameArray[nameArray.length - 1] = nameArray[nameArray.length - 1].substr(5);
-
-						var finalName = nameArray.join("/");
-						if (finalName.endsWith(".json"))
-							finalName = finalName.substr(0, finalName.length - 5);
-						else
-							finalName = finalName.substr(0, finalName.length - 4);
-						weekData.songs[curSong].icon = finalName;
 					}
 				}
 				file.load("png;*.json");
@@ -935,8 +892,6 @@ class WeekEditorState extends BaseEditorState
 			{
 				if (!allSongs.contains(weekData.songs[i].songId))
 					weekData.songs[i].songId = allSongs[1];
-				if (!Paths.iconExists(weekData.songs[i].icon))
-					weekData.songs[i].icon = "none";
 
 				var diffs:Array<String> = weekData.songs[i].difficulties;
 				var songName:String = "None";
@@ -951,6 +906,8 @@ class WeekEditorState extends BaseEditorState
 				capsule.icon = weekData.songs[i].iconNew;
 				capsule.text = songName;
 				capsule.lit = true;
+				capsule.weekType = 0;
+				capsule.curQuickInfo = null;
 				grpCapsules.add(capsule);
 			}
 		}
@@ -1000,7 +957,7 @@ class WeekEditorState extends BaseEditorState
 		}
 		bgYellow.color = FlxColor.fromRGB(weekData.color[0], weekData.color[1], weekData.color[2]);
 
-		menuCharacters.forEachAlive(function(char:MenuCharacter)
+		menuCharacters.forEachAlive(function(char:StoryMenuCharacter)
 		{
 			if (char.characterData.matchColor)
 				char.color = bgYellow.color;
@@ -1019,7 +976,7 @@ class WeekEditorState extends BaseEditorState
 	{
 		if (index >= 0 && index < weekData.characters.length && index < menuCharacters.members.length)
 		{
-			var char:MenuCharacter = menuCharacters.members[index];
+			var char:StoryMenuCharacter = menuCharacters.members[index];
 			if (weekData.characters[index][0] == "")
 				char.visible = false;
 			else

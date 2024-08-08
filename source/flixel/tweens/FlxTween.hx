@@ -522,7 +522,7 @@ class FlxTween implements IFlxDestroyable
 			if (PlayState.instance.tracks.length > 0 && PlayState.instance.tracks[0].playing && !PlayState.instance.restarting)
 			{
 				_syncWithSong = true;
-				_startTime = Conductor.songPosition + (_delayToUse * 1000);
+				_startTime = Conductor.songPosition;
 			}
 		}
 

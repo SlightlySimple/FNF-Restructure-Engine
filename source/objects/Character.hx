@@ -860,7 +860,7 @@ class Character extends FlxSprite
 		}
 	}
 
-	public function dance()
+	public function dance(?forced:Bool = false)
 	{
 		if (characterData.idles.length <= 0)
 			return;
@@ -868,7 +868,7 @@ class Character extends FlxSprite
 		if (characterData.asset != "" && canDance && !importantAnim && (!curAnimName.split("-")[0].endsWith("miss") || curAnimFinished))
 		{
 			if (lastIdle < characterData.idles.length)
-				playAnim(characterData.idles[lastIdle] + idleSuffix, characterData.idles.length > 1);
+				playAnim(characterData.idles[lastIdle] + idleSuffix, forced || characterData.idles.length > 1);
 			lastIdle = (lastIdle + 1) % characterData.idles.length;
 		}
 	}
@@ -880,6 +880,6 @@ class Character extends FlxSprite
 	public function stepHit()
 	{
 		if (danceSpeed > 0 && holdTimer <= 0 && PlayState.instance.curStep % Std.int(Math.round(danceSpeed * 4)) == 0)
-			dance();
+			dance(PlayState.instance.curStep == 0 || PlayState.instance.curStep == -16);
 	}
 }

@@ -1,4 +1,4 @@
-package game;
+package game.results;
 
 import flixel.FlxG;
 import flixel.FlxSubState;

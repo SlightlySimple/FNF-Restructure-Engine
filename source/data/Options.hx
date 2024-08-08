@@ -4,7 +4,7 @@ import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxSave;
-import menus.OptionsMenuState;
+import menus.options.OptionsMenuState;
 
 class Options
 {

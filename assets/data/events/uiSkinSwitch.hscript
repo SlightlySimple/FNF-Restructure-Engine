@@ -1,3 +1,5 @@
+import objects.RatingPopup;
+
 function create()
 {
 	var skins = [];
@@ -17,22 +19,34 @@ function create()
 			for (s in uiSkin.countdown)
 			{
 				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+				{
 					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+					RatingPopup.sparrows["ui/skins/" + _s + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + _s + "/" + s.asset);
+				}
 			}
 
 			for (s in uiSkin.judgements)
 			{
 				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+				{
 					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+					RatingPopup.sparrows["ui/skins/" + _s + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + _s + "/" + s.asset);
+				}
 			}
 
 			if (uiSkin.combo.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + uiSkin.combo.asset))
+			{
 				Paths.cacheGraphic("ui/skins/" + _s + "/" + uiSkin.combo.asset);
+				RatingPopup.sparrows["ui/skins/" + _s + "/" + uiSkin.combo.asset] = Paths.sparrowExists("ui/skins/" + _s + "/" + uiSkin.combo.asset);
+			}
 
 			for (s in uiSkin.numbers)
 			{
 				if (s.asset != null && Paths.imageExists("ui/skins/" + _s + "/" + s.asset))
+				{
 					Paths.cacheGraphic("ui/skins/" + _s + "/" + s.asset);
+					RatingPopup.sparrows["ui/skins/" + _s + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + _s + "/" + s.asset);
+				}
 			}
 		}
 	}

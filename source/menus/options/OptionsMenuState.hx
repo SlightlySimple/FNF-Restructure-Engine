@@ -1,4 +1,4 @@
-package menus;
+package menus.options;
 
 import flixel.FlxG;
 import flixel.FlxState;
@@ -166,6 +166,12 @@ class OptionsMenuItem extends FlxSpriteGroup
 		super.update(elapsed);
 
 		y = FlxMath.lerp(y, goalY, FlxG.elapsed * 20);
+	}
+
+	public function initialCheck()
+	{
+		if (!check.animation.curAnim.name.endsWith("ed"))
+			check.playAnim(check.animation.curAnim.name + "ed");
 	}
 
 	public function set_text(val:String):String
@@ -470,7 +476,7 @@ class OptionsCategory extends FlxGroup
 			optItem.ystart = optItem.y;
 			optItem.goalY = optItem.y;
 
-			updateOptionText(i);
+			setupOptionText(i);
 
 			if (opt.label != "")
 				yy += 35;
@@ -744,13 +750,28 @@ class OptionsCategory extends FlxGroup
 		return Reflect.getProperty(Options.options, opt.variable);
 	}
 
-	function updateOptionText(option:Int)
+	function setupOptionText(option:Int)
 	{
 		var opt:OptionMenuStuff = data.contents[option];
 		var item:OptionsMenuItem = optionsDisplay.members[option];
 		item.text = Lang.get(opt.label);
 		item.textR = "";
 		item.showCheck = false;
+
+		if (opt.type == "bool" && (opt.options == null || opt.options.length != 2))
+		{
+			item.showCheck = true;
+			item.checked = getOptionValue(option);
+			item.initialCheck();
+		}
+
+		updateOptionText(option);
+	}
+
+	function updateOptionText(option:Int)
+	{
+		var opt:OptionMenuStuff = data.contents[option];
+		var item:OptionsMenuItem = optionsDisplay.members[option];
 
 		switch (opt.type)
 		{

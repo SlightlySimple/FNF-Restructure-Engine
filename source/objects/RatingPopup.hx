@@ -58,7 +58,6 @@ class RatingPopup extends FlxSprite
 
 			case 2:
 				staticOrAnimatedGraphic(skin.numbers[value]);
-
 				doScale(skin.numbers[value]);
 
 				screenCenter(Y);
@@ -80,15 +79,15 @@ class RatingPopup extends FlxSprite
 			if (comboType == 2)
 			{
 				if (type == 2)
-					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.beatLength * 2) / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
+					FlxTween.tween(this, {alpha: 0}, 0.2, {startDelay: Conductor.beatSeconds * 2, onComplete: function(twn:FlxTween) { destroy(); }});
 				else
-					FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: Conductor.beatLength / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
+					FlxTween.tween(this, {alpha: 0}, 0.2, {startDelay: Conductor.beatSeconds, onComplete: function(twn:FlxTween) { destroy(); }});
 			}
 			else
 			{
 				y += 15;
-				FlxTween.tween(this, {y: y - 15}, 0.1, { ease: FlxEase.quadOut });
-				FlxTween.tween(this, {alpha: 0}, 0.2, { startDelay: (Conductor.stepLength * 2) / 1000, onComplete: function(twn:FlxTween) { destroy(); } });
+				FlxTween.tween(this, {y: y - 15}, 0.1, {ease: FlxEase.quadOut});
+				FlxTween.tween(this, {alpha: 0}, 0.2, {startDelay: Conductor.stepSeconds * 2, onComplete: function(twn:FlxTween) { destroy(); }});
 			}
 		}
 
@@ -136,6 +135,6 @@ class CountdownPopup extends RatingPopup
 		doScale(skin.countdown[value]);
 		screenCenter();
 
-		FlxTween.tween(this, {y: y + 100, alpha: 0}, Conductor.beatLength / 1000.0, { ease: FlxEase.cubeInOut, onComplete: function(twn:FlxTween) { destroy(); } });
+		FlxTween.tween(this, {y: y + 100, alpha: 0}, Conductor.beatSeconds, { ease: FlxEase.cubeInOut, onComplete: function(twn:FlxTween) { destroy(); } });
 	}
 }

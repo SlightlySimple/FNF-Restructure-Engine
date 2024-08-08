@@ -1,0 +1,4 @@
+function create()
+{
+	new FlxTimer().start(0.001, function(tmr) {game.hscriptIdExec("WEEK_shader", "setRainIntensity", [0.2, 0.4]); });
+}

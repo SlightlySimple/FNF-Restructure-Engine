@@ -137,7 +137,6 @@ class StageEditorState extends BaseEditorState
 	var animOffsetY:Stepper;
 	var curAnimDropdown:DropdownMenu;
 	var firstAnimDropdown:DropdownMenu;
-	var beatAnimSpeed:Stepper;
 
 	var topmenu:TopMenu;
 
@@ -1254,7 +1253,12 @@ class StageEditorState extends BaseEditorState
 			window = PopupWindow.CreateWithGroup(vbox);
 		}
 
-		beatAnimSpeed = cast element("beatAnimSpeed");
+		var beatAnimSpeed:Stepper = cast element("beatAnimSpeed");
+		beatAnimSpeed.condition = function() {
+			if (curStagePiece > -1 && stageData.pieces[curStagePiece].beatAnimationSpeed != null)
+				return stageData.pieces[curStagePiece].beatAnimationSpeed;
+			return 1;
+		}
 		beatAnimSpeed.onChanged = function() {
 			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
@@ -1508,7 +1512,7 @@ class StageEditorState extends BaseEditorState
 
 			var prevHoveredObject:FlxSprite = hoveredObject;
 			hoveredObject = null;
-			if (!FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(topmenu, camHUD) && (!members.contains(stagePieces) || !FlxG.mouse.overlaps(stagePieces, camHUD)) && (!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(piecePosBox) || !FlxG.mouse.overlaps(piecePosBox, camHUD)))
+			if (!FlxG.mouse.overlaps(tabMenu, camHUD) && !FlxG.mouse.overlaps(topmenu, camHUD) && (!members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox, camHUD)) && (!members.contains(stagePieces) || !FlxG.mouse.overlaps(stagePieces, camHUD)) && (!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(piecePosBox) || !FlxG.mouse.overlaps(piecePosBox, camHUD)))
 			{
 				var hoveredIndex:Int = -1;
 				for (s in myStage)
@@ -2297,6 +2301,7 @@ class StageEditorState extends BaseEditorState
 				pieceAnimationsSlot.remove(pieceAnimationsBlank, true);
 			if (!pieceAnimationsSlot.members.contains(pieceAnimationsGroup))
 				pieceAnimationsSlot.add(pieceAnimationsGroup);
+			pieceAnimationsGroup.repositionAll();
 		}
 		else
 		{
@@ -2382,11 +2387,6 @@ class StageEditorState extends BaseEditorState
 				curAnimDropdown.value = animData.name;
 				firstAnimDropdown.valueList = pieceAnimList;
 				firstAnimDropdown.value = stageData.pieces[curStagePiece].firstAnimation;
-
-				if (stageData.pieces[curStagePiece].beatAnimationSpeed == null)
-					beatAnimSpeed.value = 1;
-				else
-					beatAnimSpeed.value = stageData.pieces[curStagePiece].beatAnimationSpeed;
 
 				animName.text = animData.name;
 				if (sparrowExists(stageData.pieces[curStagePiece].asset))

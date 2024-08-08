@@ -111,6 +111,13 @@ class AnimatedSprite extends FlxSprite
 		animation.play(name, force, reverse, frame);
 	}
 
+	public function dance(?forced:Bool = false)
+	{
+		if (lastIdle < idles.length)
+			playAnim(idles[lastIdle], forced || idles.length > 1);
+		lastIdle = (lastIdle + 1) % idles.length;
+	}
+
 	public function beatHit()
 	{
 	}
@@ -124,11 +131,7 @@ class AnimatedSprite extends FlxSprite
 			if (danceSpeed > 0 && idles.length > 0 && state.curStep % Std.int(Math.round(danceSpeed * 4)) == 0)
 			{
 				if (animation.curAnim == null || (idles.contains(animation.curAnim.name) || animation.curAnim.finished))
-				{
-					if (lastIdle < idles.length)
-						animation.play(idles[lastIdle], idles.length > 1);
-					lastIdle = (lastIdle + 1) % idles.length;
-				}
+					dance(state.curStep == 0 || state.curStep == -16);
 			}
 		}
 	}

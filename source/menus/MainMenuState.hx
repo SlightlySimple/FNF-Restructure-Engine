@@ -6,6 +6,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import data.Options;
 import menus.UINavigation;
+import menus.freeplay.FreeplayMenuSubState;
 import scripting.HscriptHandler;
 import scripting.HscriptState;
 import transitions.StickerSubState;

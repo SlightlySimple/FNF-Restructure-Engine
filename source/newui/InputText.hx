@@ -29,7 +29,16 @@ class InputText extends FlxInputText
 	var selectionMin(get, null):Int;
 	var selectionMax(get, null):Int;
 
+	public var hovered:Bool = false;
 	public var condition:Void->String = null;
+
+	public static var isOneActive(get, null):Bool = false;
+	public static var currentActive:InputText = null;
+
+	public static function get_isOneActive():Bool
+	{
+		return currentActive != null;
+	}
 
 	override public function new(x:Float, y:Float, ?width:Int = 230, ?text:String = "")
 	{
@@ -47,17 +56,44 @@ class InputText extends FlxInputText
 
 	override public function update(elapsed:Float)
 	{
-		super.update(elapsed);
 		if (DropdownMenu.isOneActive) return;
 
 		if (visible && FlxG.mouse.justMoved)
 		{
 			if (UIControl.mouseOver(this))
 			{
-				UIControl.cursor = MouseCursor.IBEAM;
-				if (infoText != "")
-					UIControl.infoText = infoText;
+				if (!hovered)
+				{
+					hovered = true;
+					if (infoText != "")
+						UIControl.infoText = infoText;
+				}
 			}
+			else if (hovered)
+				hovered = false;
+		}
+
+		var hadFocus:Bool = hasFocus;
+		if (hovered)
+		{
+			UIControl.cursor = MouseCursor.IBEAM;
+			if (Options.mouseJustPressed())
+			{
+				selectionStart = getCaretIndex();
+				hasFocus = true;
+				currentActive = this;
+				if (!hadFocus && focusGained != null)
+					focusGained();
+			}
+		}
+		else if (Options.mouseJustPressed())
+		{
+			hasFocus = false;
+			if (currentActive == this)
+				currentActive = null;
+			clearFormats();
+			if (hadFocus && focusLost != null)
+				focusLost();
 		}
 
 		if (condition != null && !hasFocus)
@@ -67,19 +103,12 @@ class InputText extends FlxInputText
 				text = newVal;
 		}
 
-		if (hasFocus)
+		if (hasFocus && Options.mousePressed())
 		{
-			if (Options.mouseJustPressed())
-				selectionStart = getCaretIndex();
-			if (Options.mousePressed())
-			{
-				selectionEnd = getCaretIndex();
-				caretIndex = getCaretIndex();
-				onSelectionChanged();
-			}
+			selectionEnd = getCaretIndex();
+			caretIndex = getCaretIndex();
+			onSelectionChanged();
 		}
-		else if (Options.mouseJustPressed())
-			clearFormats();
 	}
 
 	override private function onKeyDown(e:KeyboardEvent)

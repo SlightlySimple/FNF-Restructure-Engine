@@ -1,0 +1,41 @@
+rain = null;
+time = 0;
+
+startIntensity = 0;
+endIntensity = 0.1;
+
+function create()
+{
+	if (Options.options.shaders)
+	{
+		rain = new RuntimeScreenspaceShader(Paths.shader("rain"));
+		rain.camera = FlxG.camera;
+		rain.setFloat("uScale", FlxG.height / 200);
+		rain.setFloat("uIntensity", 0);
+		rain.setFloat("uTime", 0);
+
+		filter = new ShaderFilter(rain);
+		FlxG.camera.setFilters([filter]);
+	}
+}
+
+function setRainIntensity(start, end)
+{
+	startIntensity = start;
+	endIntensity = end;
+	if (rain != null)
+		rain.setFloat("uIntensity", start);
+}
+
+function update(elapsed)
+{
+	if (rain != null)
+	{
+		time += elapsed;
+		rain.setFloat("uTime", time);
+		rain.update(elapsed);
+
+		var remappedIntensityValue = Math.max(startIntensity, Math.min(endIntensity, FlxMath.remapToRange(Conductor.songPosition, 0, game.tracks[0].length, startIntensity, endIntensity)));
+		rain.setFloat("uIntensity", remappedIntensityValue);
+	}
+}

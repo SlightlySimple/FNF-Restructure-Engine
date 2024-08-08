@@ -6,7 +6,7 @@ import helpers.Cloner;
 import haxe.ds.ArraySort;
 import flixel.util.FlxStringUtil;
 import lime.app.Application;
-import menus.FreeplayMenuSubState;
+import menus.freeplay.FreeplayMenuSubState;
 
 using StringTools;
 

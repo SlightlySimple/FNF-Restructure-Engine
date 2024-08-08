@@ -14,8 +14,8 @@ import haxe.io.Bytes;
 import data.ObjectData;
 import data.ScoreSystems;
 import game.PlayState;
-import game.ResultsState;
-import menus.StoryMenuState;
+import game.results.ResultsState;
+import menus.story.StoryMenuState;
 import objects.AnimatedSprite;
 import scripting.HscriptState;
 

@@ -347,9 +347,9 @@ class Paths
 		return modFile(path, ".lua");
 	}
 
-	public static function shader(path:String):String
+	public static function shader(path:String, ?isVert:Bool = false):String
 	{
-		return raw("shaders/" + path + ".frag");
+		return raw("shaders/" + path + (isVert ? ".vert" : ".frag"));
 	}
 
 	public static function exists(path:String):Bool

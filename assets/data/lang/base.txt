@@ -12,8 +12,9 @@
 "title.sequence.name.2"				"Funkin"
 
 // Story menu
-"story.highscore"	"LEVEL SCORE: %s1"
-"story.tracks"		"TRACKS"
+"story.highscore"		"LEVEL SCORE: %s1"
+"story.tracks"			"TRACKS"
+"story.resetWarning"	"Are you sure you want to reset your score for this week and difficulty?"
 
 // Freeplay menu
 "freeplay.title"					"FREEPLAY"
@@ -34,6 +35,7 @@
 "freeplay.songInfo.sustains"		"Holds: %s1"
 "freeplay.songInfo.rolls"			"Rolls: %s1"
 "freeplay.songInfo.mines"			"Mines: %s1"
+"freeplay.resetWarning"				"Are you sure you want to reset your score for this song and difficulty?"
 
 // Freeplay sandbox
 "freeplay.sandbox.default"			"Default"
@@ -121,6 +123,11 @@
 
 // Stage names
 "stage.empty"		"Empty Stage"
+
+// Event names
+"event.characterPlayAnim"	"Character Play Animation"
+"event.execScriptFunc"		"Execute Script Function"
+"event.uiSkinSwitch"		"UI Skin Switch"
 
 // Generic strings
 "engineVersion"		"Restructure Engine v%s1"

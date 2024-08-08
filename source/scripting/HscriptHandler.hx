@@ -41,11 +41,12 @@ import data.ScoreSystems;
 import data.Song;
 import game.PlayState;
 import game.GameOverSubState;
-import game.ResultsState;
+import game.results.ResultsState;
 import menus.MainMenuState;
-import menus.StoryMenuState;
-import menus.FreeplayMenuState;
-import menus.FreeplayMenuSubState;
+import menus.story.StoryMenuState;
+import menus.freeplay.FreeplayMenuSubState;
+import menus.freeplay.FreeplaySandbox;
+import menus.freeplay.FreeplayChartInfo;
 import menus.PauseSubState;
 import menus.UINavigation;
 import objects.Alphabet;
@@ -63,6 +64,7 @@ import shaders.ColorFade;
 import shaders.ColorInvert;
 import shaders.ColorSwap;
 import shaders.ColorSwapRGBA;
+import shaders.RuntimeScreenspaceShader;
 
 import hscript.Parser as HSParser;
 import hscript.Interp as HSInterp;
@@ -372,6 +374,8 @@ class HscriptHandler
 
 	public static function parseClass(theClass:String)
 	{
+		if (theClass.startsWith("menus.Options"))		// Dirty backwards compatibility hack, bleh
+			return Type.resolveClass(theClass.replace("menus.Options", "menus.options.Options"));
 		return Type.resolveClass(theClass);
 	}
 
@@ -392,7 +396,6 @@ class HscriptHandler
 		switch (curMenu)
 		{
 			case "story": FlxG.switchState(new StoryMenuState());
-			case "freeplay": FlxG.switchState(new FreeplayMenuState());
 			default: FlxG.switchState(new MainMenuState());
 		}
 	}
@@ -568,6 +571,7 @@ class HscriptHandler
 		interp.variables.set("ColorFade", ColorFade);
 		interp.variables.set("ColorInvert", ColorInvert);
 		interp.variables.set("FlxRuntimeShader", FlxRuntimeShader);
+		interp.variables.set("RuntimeScreenspaceShader", RuntimeScreenspaceShader);
 		interp.variables.set("ShaderFilter", ShaderFilter);
 		interp.variables.set("BlurFilter", BlurFilter);
 		interp.variables.set("GlowFilter", GlowFilter);
@@ -601,7 +605,6 @@ class HscriptHandler
 		interp.variables.set("GotoMenu", GotoMenu);
 		interp.variables.set("MainMenuState", MainMenuState);
 		interp.variables.set("StoryMenuState", StoryMenuState);
-		interp.variables.set("FreeplayMenuState", FreeplayMenuState);
 		interp.variables.set("FreeplayMenuSubState", FreeplayMenuSubState);
 		interp.variables.set("FreeplaySandbox", FreeplaySandbox);
 		interp.variables.set("FreeplayChartInfo", FreeplayChartInfo);

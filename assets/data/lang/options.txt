@@ -116,6 +116,8 @@
 "options.visuals.antialias.desc"		"Smooth edges of visuals at a slight performance cost."
 "options.visuals.flashingLights.name"	"Flashing Lights"
 "options.visuals.flashingLights.desc"	"Disable this if you are sensitive to rapidly flashing lights."
+"options.visuals.shaders.name"			"Shaders"
+"options.visuals.shaders.desc"			"Enables special graphical effects in certain songs, which may be resource intensive."
 
 "options.visuals.subCategory.ui"			"UI ELEMENTS"
 "options.visuals.fps.name"					"FPS & Memory Counter"

@@ -6,7 +6,7 @@ function create()
 	insert(game.members.indexOf(this) + 1, casingGroup);
 
 	this.animation.callback = function(anim, frame) {
-		if (anim == "cock" && frame == 3)
+		if ((anim == "cock" || anim == "preAttack") && frame == 3)
 			createCasing();
 	}
 

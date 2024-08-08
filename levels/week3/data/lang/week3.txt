@@ -13,4 +13,4 @@
 "stage.philly"		"Philly (Train)"
 
 // Pause menu
-"pause.gameover.pico"	"%s1 Mangled Guts"
+"pause.gameOver.pico"	"%s1 Mangled Guts"

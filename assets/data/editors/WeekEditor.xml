@@ -36,11 +36,6 @@
 					<input id="iconNewInput" width="200" infoText="The icon to show on the left side of the song in Freeplay."/>
 					<button id="loadNewIconButton" image="buttonLoad" infoText="Browse for a png of an icon."/>
 				</hbox>
-				<label text="Icon (Old Menu):"/>
-				<hbox>
-					<input id="iconInput" width="200" infoText="The icon to show on the right side of the song in the old Freeplay menu."/>
-					<button id="loadIconButton" image="buttonLoad" infoText="Browse for a png of an icon."/>
-				</hbox>
 				<textbutton id="songAlbums" text="Albums" image="buttonPopupMenu" infoText="The album to show when the song is hovered over in Freeplay. If a certain difficulty uses a different version of the song, it may be from a different album."/>
 				<label text="Title:"/>
 				<input id="songTitle" infoText="The title of the song. This should only be used if the song ID is None."/>

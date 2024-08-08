@@ -21,7 +21,7 @@ import haxe.Json;
 import openfl.ui.Mouse;
 import openfl.ui.MouseCursor;
 import menus.EditorMenuState;
-import menus.StoryMenuState;
+import menus.story.StoryMenuCharacter;
 
 import lime.app.Application;
 
@@ -112,7 +112,7 @@ class StoryCharacterEditorState extends BaseEditorState
 			}
 		}
 		else
-			characterData = MenuCharacter.parseCharacter(id);
+			characterData = StoryMenuCharacter.parseCharacter(id);
 
 		character = new FlxSprite();
 		reloadAsset();

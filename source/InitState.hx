@@ -8,7 +8,7 @@ import flixel.tweens.FlxTween;
 import data.Noteskins;
 import data.Options;
 import data.ScoreSystems;
-import menus.OptionsMenuState;
+import menus.options.OptionsMenuState;
 
 import sys.FileSystem;
 import sys.io.File;

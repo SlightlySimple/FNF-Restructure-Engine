@@ -20,6 +20,13 @@
 			"defValue": true
 		},
 		{
+			"type": "bool",
+			"label": "#options.visuals.shaders.name",
+			"description": "#options.visuals.shaders.desc",
+			"variable": "shaders",
+			"defValue": true
+		},
+		{
 			"type": "label",
 			"label": "#options.visuals.subCategory.ui"
 		},

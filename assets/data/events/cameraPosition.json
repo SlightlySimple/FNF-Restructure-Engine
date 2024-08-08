@@ -67,6 +67,13 @@
 			"infoText": "The type of transition to use for the tween.",
 			"type": "ease",
 			"defaultValue": "linear"
+		},
+		{
+			"id": "init",
+			"label": "Trigger at Start",
+			"infoText": "If checked, this event will trigger when the song first loads in instead of triggering where it's placed in the song.",
+			"type": "checkbox",
+			"defaultValue": false
 		}
 	]
 }

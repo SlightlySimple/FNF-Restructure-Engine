@@ -28,7 +28,7 @@ import data.Song;
 import data.SMFile;
 import data.TimingStruct;
 import editors.ChartEditorState;
-import game.ResultsState;
+import game.results.ResultsState;
 import objects.AnimatedSprite;
 import objects.Character;
 import objects.FunkBar;
@@ -40,10 +40,10 @@ import objects.Stage;
 import objects.Strumline;
 import objects.StrumNote;
 import menus.MainMenuState;
-import menus.StoryMenuState;
-import menus.FreeplayMenuState;
+import menus.story.StoryMenuState;
+import menus.freeplay.FreeplaySandbox;
 import menus.PauseSubState;
-import menus.OptionsMenuState;
+import menus.options.OptionsMenuState;
 import transitions.StickerSubState;
 import scripting.HscriptHandler;
 import scripting.HscriptSprite;
@@ -260,7 +260,7 @@ class PlayState extends MusicBeatState
 		totalOffset = songData.offset - Options.options.offset;
 
 		noteType = songData.noteType.copy();
-		uiSkin = cast Paths.jsonImages('ui/skins/' + songData.uiSkin);
+		uiSkin = cast Paths.jsonImages("ui/skins/" + songData.uiSkin);
 		RatingPopup.sparrows = new Map<String, Bool>();
 
 		for (n in noteType)
@@ -278,22 +278,34 @@ class PlayState extends MusicBeatState
 		for (s in uiSkin.countdown)
 		{
 			if (s.asset != null && Paths.imageExists("ui/skins/" + songData.uiSkin + "/" + s.asset))
+			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+			}
 		}
 
 		for (s in uiSkin.judgements)
 		{
 			if (s.asset != null && Paths.imageExists("ui/skins/" + songData.uiSkin + "/" + s.asset))
+			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+			}
 		}
 
 		if (uiSkin.combo.asset != null && Paths.imageExists("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset))
+		{
 			Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset);
+			RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset);
+		}
 
 		for (s in uiSkin.numbers)
 		{
 			if (s.asset != null && Paths.imageExists("ui/skins/" + songData.uiSkin + "/" + s.asset))
+			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+			}
 		}
 
 		columnDivisions = [];
@@ -523,7 +535,7 @@ class PlayState extends MusicBeatState
 			if (skindef.splashes != null)
 			{
 				for (asset in skindef.splashes.assets)
-					Paths.cacheGraphic("ui/note_splashes/" + asset);
+					Paths.cacheGraphic("ui/note_splashes/" + asset[0]);
 			}
 		}
 
@@ -773,12 +785,12 @@ class PlayState extends MusicBeatState
 		}
 		if (songData.events.length > 0)
 		{
-			for (i in 0...songData.events.length)
+			for (event in songData.events)
 			{
-				if (songData.events[i].type.startsWith(songIdShort) && Paths.hscriptExists('data/songs/' + songId + '/events/' + songData.events[i].typeShort))
-					hscriptAdd('EVENT_' + songData.events[i].type.replace("/","_"), 'data/songs/' + songId + '/events/' + songData.events[i].typeShort);
+				if (event.type.startsWith(songIdShort) && Paths.hscriptExists('data/songs/' + songId + '/events/' + event.typeShort))
+					hscriptAdd('EVENT_' + event.type.replace("/","_"), 'data/songs/' + songId + '/events/' + event.typeShort);
 				else
-					hscriptAdd('EVENT_' + songData.events[i].type.replace("/","_"), 'data/events/' + songData.events[i].type);
+					hscriptAdd('EVENT_' + event.type.replace("/","_"), 'data/events/' + event.type);
 			}
 		}
 
@@ -971,12 +983,12 @@ class PlayState extends MusicBeatState
 			if (songData.events.length > 0)
 			{
 				var poppers:Array<EventData> = [];
-				for (i in 0...songData.events.length)
+				for (event in songData.events)
 				{
-					if (songProgress >= songData.events[i].time)
+					if (songProgress >= event.time)
 					{
-						doEvent(songData.events[i]);
-						poppers.push(songData.events[i]);
+						doEvent(event);
+						poppers.push(event);
 					}
 				}
 
@@ -1057,8 +1069,8 @@ class PlayState extends MusicBeatState
 					note.noteAng = strumNotes.members[note.column].noteAng + 270;
 					if (note.downscroll)
 						note.noteAng -= 180;
-					note.angle = note.noteAng - 270;
 				}
+				note.angle = note.noteAng - 270;
 
 				var noteHeight:Float = getScrollPosition(note.strumTime, songProgress, note.column);
 				note.calcPos(strumNotes.members[note.column], noteHeight);
@@ -2367,7 +2379,6 @@ class PlayState extends MusicBeatState
 				switch (HscriptHandler.curMenu)
 				{
 					case "story": ResultsState.compareRanks = []; StickerSubState.switchState(new StoryMenuState());
-					case "freeplay": ResultsState.compareRanks = []; StickerSubState.switchState(new FreeplayMenuState());
 					default: StickerSubState.switchState(new MainMenuState());
 				}
 			}
@@ -2376,7 +2387,6 @@ class PlayState extends MusicBeatState
 				switch (HscriptHandler.curMenu)
 				{
 					case "story": ResultsState.compareRanks = []; FlxG.switchState(new StoryMenuState());
-					case "freeplay": ResultsState.compareRanks = []; FlxG.switchState(new FreeplayMenuState());
 					default: FlxG.switchState(new MainMenuState());
 				}
 			}
@@ -2423,18 +2433,16 @@ class PlayState extends MusicBeatState
 
 		var note:Note = null;
 		var noteDist:Float = -ScoreSystems.judgeMS[4];
-		notes.forEachAlive(function(thisNote:Note)
+		notes.forEachAlive(function(thisNote:Note) {
+			if (thisNote.column == playerColumns[hitNote] && Math.abs(thisNote.strumTime - songProgress) / playbackRate <= ScoreSystems.judgeMS[4] && !thisNote.isLift)
 			{
-				if (thisNote.column == playerColumns[hitNote] && Math.abs(thisNote.strumTime - songProgress) / playbackRate <= ScoreSystems.judgeMS[4] && !thisNote.isLift)
+				if ((noteDist == -ScoreSystems.judgeMS[4] || Math.abs(thisNote.strumTime - songProgress) / playbackRate < noteDist) && noteCanHit(thisNote))
 				{
-					if ((noteDist == -ScoreSystems.judgeMS[4] || Math.abs(thisNote.strumTime - songProgress) / playbackRate < noteDist) && noteCanHit(thisNote))
-					{
-						note = thisNote;
-						noteDist = (thisNote.strumTime - songProgress) / playbackRate;
-					}
+					note = thisNote;
+					noteDist = (thisNote.strumTime - songProgress) / playbackRate;
 				}
 			}
-		);
+		});
 
 		if (note == null)
 			scriptExec("noNoteHit", [hitNote]);

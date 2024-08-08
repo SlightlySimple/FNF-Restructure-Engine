@@ -711,7 +711,10 @@ class ChartEditorState extends MusicBeatState
 
 		for (ev in eventTypeList)
 		{
-			if (ev.startsWith(songIdShort + "/"))
+			var hash:String = "#event." + ev.replace("/", ".");
+			if (Lang.get(hash) != hash)
+				eventTypeNames[ev] = Lang.get(hash);
+			else if (ev.startsWith(songIdShort + "/"))
 				eventTypeNames[ev] = Util.properCaseString(ev.replace(songIdShort + "/", "songEvent/"));
 			else
 				eventTypeNames[ev] = Util.properCaseString(ev);
@@ -3098,7 +3101,7 @@ class ChartEditorState extends MusicBeatState
 				});
 			}
 
-			hoverTextDisplay.setPosition(FlxG.mouse.x, Math.max(0, Math.min(FlxG.height - hoverTextDisplay.height, FlxG.mouse.y + 30)));
+			hoverTextDisplay.setPosition(Math.max(0, Math.min(FlxG.width - hoverTextDisplay.width, FlxG.mouse.x)), Math.max(0, Math.min(FlxG.height - hoverTextDisplay.height, FlxG.mouse.y + 30)));
 
 			var cellXPrev:Int = cellX;
 			var cellYPrev:Int = cellY;

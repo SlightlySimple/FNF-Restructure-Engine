@@ -1,6 +1,5 @@
 import flixel.util.FlxGradient;
 import flixel.effects.FlxFlicker;
-import game.ResultsState;
 import data.ScoreSystems;
 
 isSubstate = false;
