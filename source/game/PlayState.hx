@@ -1041,7 +1041,7 @@ class PlayState extends MusicBeatState
 				}
 				else
 				{
-					if (note.strumTime - songProgress <= 0 && ((!note.typeData.p1ShouldMiss && botplay && noteCanHit(note)) || (note.typeData.p1ShouldMiss && holdArray[playerColumns.indexOf(note.column)])))
+					if (note.strumTime - songProgress <= 0 && ((!note.typeData.p1ShouldMiss && botplay) || (note.typeData.p1ShouldMiss && holdArray[playerColumns.indexOf(note.column)])) && noteCanHit(note))
 						noteHit(note);
 
 					if (note.strumTime - songProgress < -ScoreSystems.judgeMS[4] && !note.missed && note.hitData == null)
@@ -1051,7 +1051,7 @@ class PlayState extends MusicBeatState
 							setTrackVolume(note.singers, 0);
 					}
 
-					if (noteHeight < -100 - StrumNote.noteSize && note.missed)
+					if (noteHeight < -100 - StrumNote.noteSize && (note.missed || note.hitData != null))
 					{
 						note.kill();
 						note.destroy();
@@ -2234,7 +2234,7 @@ class PlayState extends MusicBeatState
 		if (testingChart)
 			return;
 
-		if (botplay || playbackRate < 1)
+		if (botplay || playbackRate < 1 || scores.score <= 0)
 			canSaveScore = false;
 
 		if (ResultsState.songNames.length > storyProgress)
@@ -2747,7 +2747,7 @@ class PlayState extends MusicBeatState
 		hscriptExec("noteHit", [note]);
 		luaExec("noteHit", [notes.members.indexOf(note)]);
 
-		if (note.hitData != null && note.hitData.rating >= 4)
+		if (note.hitData != null && note.hitData.rating >= 4 && !note.typeData.p1ShouldMiss)
 			note.alph /= 2;
 		else
 		{

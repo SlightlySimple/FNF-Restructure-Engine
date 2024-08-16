@@ -8,6 +8,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.util.FlxTimer;
+import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.addons.display.FlxBackdrop;
 import flixel.FlxCamera;
@@ -51,6 +52,8 @@ using StringTools;
 
 class StageEditorState extends BaseEditorState
 {
+	var cameraZoom:Float = 0.7;
+
 	var myStage:Array<FlxSprite> = [];
 	var allCharacters:Array<Character> = [];
 	var myStageGroup:FlxSpriteGroup;
@@ -286,8 +289,9 @@ class StageEditorState extends BaseEditorState
 		camZoomStepper.onChanged = function()
 		{
 			stageData.camZoom = camZoomStepper.value;
-			camGame.zoom = stageData.camZoom;
+			cameraZoom = stageData.camZoom;
 		}
+		cameraZoom = stageData.camZoom;
 		camGame.zoom = stageData.camZoom;
 
 		var camFollowXStepper:Stepper = cast element("camFollowXStepper");
@@ -1379,6 +1383,23 @@ class StageEditorState extends BaseEditorState
 				label: "View",
 				options: [
 					{
+						label: "Zoom In",
+						action: function() {
+							cameraZoom = cameraZoom + 0.05;
+							cameraZoom = Math.round(cameraZoom * 1000) / 1000;
+						},
+						shortcut: [FlxKey.SHIFT, FlxKey.X]
+					},
+					{
+						label: "Zoom Out",
+						action: function() {
+							cameraZoom = Math.max(0.05, cameraZoom - 0.05);
+							cameraZoom = Math.round(cameraZoom * 1000) / 1000;
+						},
+						shortcut: [FlxKey.SHIFT, FlxKey.Z]
+					},
+					null,
+					{
 						label: "Information Panel",
 						condition: function() { return members.contains(infoBox); },
 						action: function() {
@@ -1557,7 +1578,7 @@ class StageEditorState extends BaseEditorState
 			}
 		}
 
-		var camPosString:String = "Camera X: "+Std.string(Math.round(camFollow.x))+"\nCamera Y: "+Std.string(Math.round(camFollow.y))+"\nCamera Z: "+Std.string(camGame.zoom);
+		var camPosString:String = "Camera X: " + Std.string(Math.round(camFollow.x)) + "\nCamera Y: " + Std.string(Math.round(camFollow.y)) + "\nCamera Z: " + Std.string(cameraZoom);
 		if (camPosText.text != camPosString)
 			camPosText.text = camPosString;
 
@@ -1601,9 +1622,10 @@ class StageEditorState extends BaseEditorState
 
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 		{
-			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
-			camGame.zoom = Math.round(camGame.zoom * 1000) / 1000;
+			cameraZoom = Math.max(0.05, cameraZoom + (FlxG.mouse.wheel * 0.05));
+			cameraZoom = Math.round(cameraZoom * 1000) / 1000;
 		}
+		camGame.zoom = FlxMath.lerp(camGame.zoom, cameraZoom, elapsed * 10);
 
 		if (movingPiece)
 		{

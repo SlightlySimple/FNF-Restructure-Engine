@@ -393,7 +393,7 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 
 	function changeSelection(?v:Int = 0)
 	{
-		curSelected = Std.int(Math.max(0, Math.min(list.length - 1, curSelected + v)));
+		curSelected = Util.loop(curSelected + v, 0, list.length - 1);
 		while (curSelected - selOffset >= texts.length)
 			selOffset++;
 		while (curSelected - selOffset < 0)

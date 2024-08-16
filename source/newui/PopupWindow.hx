@@ -262,6 +262,9 @@ class Confirm extends ChoiceWindow
 
 class ColorPicker extends PopupWindow
 {
+	var swatch:ColorSwatch;
+	var hexLabel:Label;
+
 	override public function new(initialColor:FlxColor, acceptFunc:FlxColor->Void, ?cancelFunc:Void->Void = null)
 	{
 		var vbox:VBox = new VBox(35, 35);
@@ -269,7 +272,7 @@ class ColorPicker extends PopupWindow
 		var hbox:HBox = new HBox();
 		hbox.spacing = 30;
 
-		var swatch:ColorSwatch = new ColorSwatch(0, 0, 125, 125, initialColor);
+		swatch = new ColorSwatch(0, 0, 125, 125, initialColor);
 		hbox.add(swatch);
 
 		var colorGroup:FlxSpriteGroup = new FlxSpriteGroup();
@@ -297,6 +300,7 @@ class ColorPicker extends PopupWindow
 			else
 				swatch.h = r.value * 359 / 255;
 			color.color = swatch.swatchColor;
+			updateHexLabel();
 		};
 		hbox2.add(r);
 
@@ -307,6 +311,7 @@ class ColorPicker extends PopupWindow
 			else
 				swatch.s = g.value / 255;
 			color.color = swatch.swatchColor;
+			updateHexLabel();
 		};
 		hbox2.add(g);
 
@@ -317,6 +322,7 @@ class ColorPicker extends PopupWindow
 			else
 				swatch.v = b.value / 255;
 			color.color = swatch.swatchColor;
+			updateHexLabel();
 		};
 		hbox2.add(b);
 
@@ -342,8 +348,13 @@ class ColorPicker extends PopupWindow
 
 		vbox.add(hbox2);
 
+		hexLabel = new Label("#FFFFFF");
+		vbox.add(hexLabel);
+		updateHexLabel();
+
 		swatch.onChanged = function() {
 			color.color = swatch.swatchColor;
+			updateHexLabel();
 			if (swatch.mode == "rgb")
 			{
 				r.value = swatch.r;
@@ -360,10 +371,13 @@ class ColorPicker extends PopupWindow
 
 		var buttons:HBox = new HBox();
 
-		var copy:TextButton = new TextButton(0, 0, "Copy", Button.SHORT, function() { Clipboard.text = Std.string(swatch.r) + "," + Std.string(swatch.g) + "," + Std.string(swatch.b); });
+		var copy:TextButton = new TextButton(0, 0, "Copy RGB", function() { Clipboard.text = Std.string(swatch.r) + "," + Std.string(swatch.g) + "," + Std.string(swatch.b); });
 		buttons.add(copy);
 
-		var paste:TextButton = new TextButton(0, 0, "Paste", Button.SHORT, function() {
+		var copyHex:TextButton = new TextButton(0, 0, "Copy Hex", function() { Clipboard.text = hexLabel.text; });
+		buttons.add(copyHex);
+
+		var paste:TextButton = new TextButton(0, 0, "Paste", function() {
 			if (Clipboard.text != null)
 			{
 				if (Clipboard.text.indexOf(",") > -1)
@@ -378,28 +392,38 @@ class ColorPicker extends PopupWindow
 					swatch.swatchColor = rgb;
 				}
 				swatch.onChanged();
+				swatch.resetCursorPositions();
 			}
 		});
 		buttons.add(paste);
 
-		var accept:TextButton = new TextButton(0, 0, "Accept", Button.SHORT, function() {
+		vbox.add(buttons);
+
+		var buttons2:HBox = new HBox();
+
+		var accept:TextButton = new TextButton(0, 0, "Accept", function() {
 			acceptFunc(swatch.swatchColor);
 			close();
 		});
-		buttons.add(accept);
+		buttons2.add(accept);
 
-		var cancel:TextButton = new TextButton(0, 0, "Cancel", Button.SHORT, function() {
+		var cancel:TextButton = new TextButton(0, 0, "Cancel", function() {
 			if (cancelFunc != null)
 				cancelFunc();
 			close();
 		});
-		buttons.add(cancel);
+		buttons2.add(cancel);
 
-		vbox.add(buttons);
+		vbox.add(buttons2);
 
 		super("popupBG", 30, Std.int(vbox.width + 70), Std.int(vbox.height + 70));
 
 		group.add(vbox);
+	}
+
+	function updateHexLabel()
+	{
+		hexLabel.text = "#" + StringTools.hex(swatch.swatchColor.red, 2) + StringTools.hex(swatch.swatchColor.green, 2) + StringTools.hex(swatch.swatchColor.blue, 2);
 	}
 }
 

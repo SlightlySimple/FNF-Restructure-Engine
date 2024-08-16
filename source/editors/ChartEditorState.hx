@@ -6440,6 +6440,7 @@ class ChartEditorState extends MusicBeatState
 									Reflect.setField(newParameters, Std.string(i), a.parameters[i]);
 								newEvent.parameters = newParameters;
 							}
+							checkConvertedEventParameters(newEvent);
 							songData.events.push(newEvent);
 						}
 					}
@@ -6453,6 +6454,7 @@ class ChartEditorState extends MusicBeatState
 								Reflect.setField(newParameters, Std.string(i), eventValue.parameters[i]);
 							newEvent.parameters = newParameters;
 						}
+						checkConvertedEventParameters(newEvent);
 						songData.events.push(newEvent);
 					}
 				}
@@ -6478,6 +6480,19 @@ class ChartEditorState extends MusicBeatState
 				updateEventList();
 				refreshEventLines();
 			}]]);
+		}
+	}
+
+	function checkConvertedEventParameters(e:EventData)
+	{
+		if (eventTypeParams.exists(e.type))
+		{
+			var params:EventTypeData = eventTypeParams[e.type];
+			for (p in params.parameters)
+			{
+				if (p.id != null && !Reflect.hasField(e.parameters, p.id))
+					Reflect.setField(e.parameters, p.id, p.defaultValue);
+			}
 		}
 	}
 
@@ -6832,6 +6847,7 @@ class ChartEditorState extends MusicBeatState
 							newEvent.beat = a.beat;
 							newEvent.time = timingStruct.timeFromBeat(a.beat);
 						}
+						checkConvertedEventParameters(newEvent);
 						ret.push(newEvent);
 					}
 				}
@@ -6843,6 +6859,7 @@ class ChartEditorState extends MusicBeatState
 						newEvent.beat = eventValue.beat;
 						newEvent.time = timingStruct.timeFromBeat(eventValue.beat);
 					}
+					checkConvertedEventParameters(newEvent);
 					ret.push(newEvent);
 				}
 			}

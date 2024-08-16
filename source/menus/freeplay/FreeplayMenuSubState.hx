@@ -72,8 +72,10 @@ class FreeplayMenuSubState extends MusicBeatSubState
 	var dj:FreeplayBoyfriend;
 	var ostName:FlxText;
 	var grpCapsules:FlxTypedSpriteGroup<FreeplayCapsule>;
+
 	var difficultySprite:FlxSprite;
 	var difficultyText:FlxText;
+	var difficultySpriteTimer:FlxTimer = new FlxTimer();
 	var diffSelLeft:AnimatedSprite;
 	var diffSelRight:AnimatedSprite;
 
@@ -249,7 +251,8 @@ class FreeplayMenuSubState extends MusicBeatSubState
 			});
 		});
 
-		difficultySprite = new FlxSprite(90, 80, Paths.image("ui/freeplay/difficulties/normal"));
+		difficultySprite = new FlxSprite(200, 117, Paths.image("ui/freeplay/difficulties/normal"));
+		difficultySprite.setPosition(200 - Math.round(difficultySprite.width / 2), 117 - Math.round(difficultySprite.height / 2));
 		add(difficultySprite);
 		songStuff.push(difficultySprite);
 
@@ -258,13 +261,13 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		add(difficultyText);
 		songStuff.push(difficultyText);
 
-		diffSelLeft = new AnimatedSprite(20, difficultySprite.y - 10, Paths.sparrow("ui/freeplay/freeplaySelector"));
+		diffSelLeft = new AnimatedSprite(20, 70, Paths.sparrow("ui/freeplay/freeplaySelector"));
 		diffSelLeft.addAnim("idle", "", 24, true);
 		diffSelLeft.playAnim("idle");
 		add(diffSelLeft);
 		songStuff.push(diffSelLeft);
 
-		diffSelRight = new AnimatedSprite(325, difficultySprite.y - 10, diffSelLeft.frames);
+		diffSelRight = new AnimatedSprite(325, 70, diffSelLeft.frames);
 		diffSelRight.flipX = true;
 		diffSelRight.addAnim("idle", "", 24, true);
 		diffSelRight.playAnim("idle");
@@ -523,6 +526,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 	{
 		nav.locked = true;
 		nav2.locked = true;
+		letterSort.locked = true;
 		new FlxTimer().start(0.5, function(tmr:FlxTimer) {
 			FlxTween.globalManager.forEach(function(twn:FlxTween) { twn.cancel(); });
 			FlxTimer.globalManager.forEach(function(tmr:FlxTimer) { tmr.cancel(); });
@@ -1395,9 +1399,13 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		if (showSprite)
 		{
 			difficultyText.alpha = 0;
+			difficultySprite.updateHitbox();
+			difficultySprite.offset.set();
+			difficultySprite.setPosition(200 - Math.round(difficultySprite.width / 2), 117 - Math.round(difficultySprite.height / 2));
 			difficultySprite.offset.y += 5;
 			difficultySprite.alpha = 0.5;
-			new FlxTimer().start(1 / 24, function(tmr) {
+			difficultySpriteTimer.cancel();
+			difficultySpriteTimer.start(1 / 24, function(tmr) {
 				difficultySprite.alpha = 1;
 				difficultySprite.updateHitbox();
 			});
@@ -1405,9 +1413,11 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		else
 		{
 			difficultySprite.alpha = 0;
+			difficultyText.y = 117 - Math.round(difficultyText.height / 2);
 			difficultyText.offset.y += 5;
 			difficultyText.alpha = 0.5;
-			new FlxTimer().start(1 / 24, function(tmr) {
+			difficultySpriteTimer.cancel();
+			difficultySpriteTimer.start(1 / 24, function(tmr) {
 				difficultyText.alpha = 1;
 				difficultyText.updateHitbox();
 			});

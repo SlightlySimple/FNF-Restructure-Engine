@@ -8,8 +8,10 @@ import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+import flixel.util.FlxSpriteUtil;
 import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxMath;
+import flixel.addons.display.FlxRuntimeShader;
 import helpers.DeepEquals;
 import helpers.Cloner;
 import data.ObjectData;
@@ -71,8 +73,25 @@ class WeekEditorState extends BaseEditorState
 		add(settingsStuff);
 		storyStuff = new FlxSpriteGroup();
 
-		var bg:FlxSprite = new FlxSprite(Paths.image('ui/' + MainMenuState.menuImages[2]));
-		settingsStuff.add(bg);
+		var pinkBack:FlxSprite = new FlxSprite(Paths.image("ui/freeplay/pinkBack"));
+		pinkBack.color = 0xFFFFD863;
+		settingsStuff.add(pinkBack);
+
+		var orangeBackShit:FlxSprite = new FlxSprite(84, 440).makeGraphic(Std.int(pinkBack.width), 75, 0xFFFEDA00);
+		settingsStuff.add(orangeBackShit);
+
+		var alsoOrangeLOL:FlxSprite = new FlxSprite(0, orangeBackShit.y).makeGraphic(100, Std.int(orangeBackShit.height), 0xFFFFD400);
+		settingsStuff.add(alsoOrangeLOL);
+
+		FlxSpriteUtil.alphaMaskFlxSprite(orangeBackShit, pinkBack, orangeBackShit);
+
+		var bgDad:FlxSprite = new FlxSprite(pinkBack.width * 0.75, 0, Paths.image("ui/freeplay/freeplayBGdad"));
+		bgDad.setGraphicSize(0, FlxG.height);
+		bgDad.updateHitbox();
+		var bgDadShader:FlxRuntimeShader = new FlxRuntimeShader(Paths.shader("AngleMask"), null);
+		bgDadShader.data.endPosition.value = [90, 100];
+		bgDad.shader = bgDadShader;
+		settingsStuff.add(bgDad);
 
 		if (isNew)
 		{
@@ -112,6 +131,9 @@ class WeekEditorState extends BaseEditorState
 		grpCapsules = new FlxTypedSpriteGroup<FreeplayCapsule>();
 		settingsStuff.add(grpCapsules);
 		refreshSongs();
+
+		var overhangStuff:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, 64, FlxColor.BLACK);
+		settingsStuff.add(overhangStuff);
 
 		bgYellow = new FlxSprite(0, 56).makeGraphic(FlxG.width, 400, FlxColor.WHITE);
 		storyStuff.add(bgYellow);

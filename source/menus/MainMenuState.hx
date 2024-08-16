@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSubState;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+import flixel.tweens.FlxTween;
 import data.Options;
 import menus.UINavigation;
 import menus.freeplay.FreeplayMenuSubState;
@@ -82,8 +83,9 @@ class MainMenuState extends MusicBeatState
 		if (myScript != null)
 			myScript.execFunc("update", [elapsed]);
 
-		if (PackagesState.allowModTools && Options.keyJustPressed("editorMenu"))
+		if (!nav.locked && PackagesState.allowModTools && Options.keyJustPressed("editorMenu"))
 		{
+			FlxTween.cancelTweensOf(FlxG.sound.music);
 			FlxG.sound.music.fadeOut(0.5, 0, function(twn) { FlxG.sound.music.stop(); });
 			FlxG.switchState(new EditorMenuState());
 		}

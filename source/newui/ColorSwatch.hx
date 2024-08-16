@@ -141,7 +141,7 @@ class ColorSwatch extends FlxSpriteGroup
 		swatchSide.color = FlxColor.fromRGB(0, g, b, 255);
 	}
 
-	function resetCursorPositions()
+	public function resetCursorPositions()
 	{
 		if (mode == "hsv")
 		{

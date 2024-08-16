@@ -111,7 +111,16 @@ class HscriptSubState extends FlxSubState
 
 		if (!Paths.hscriptExists(script) && Paths.hscriptExists("data/states/" + script))
 			script = "data/states/" + script;
-		myScript = new HscriptHandler(script);
+
+		myScript = new HscriptHandler(script, false);
+		myScript.setVar("this", this);
+		if (Std.isOfType(FlxG.state, PlayState))
+			myScript.setVar("game", PlayState.instance);
+
+		myScript.setVar("add", add);
+		myScript.setVar("insert", insert);
+		myScript.setVar("remove", remove);
+
 		myScript.execFunc("new", []);
 
 		if (!myScript.valid())

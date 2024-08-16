@@ -8,6 +8,7 @@ import flixel.graphics.frames.FlxFramesCollection;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.input.keyboard.FlxKey;
 import helpers.DeepEquals;
@@ -42,6 +43,8 @@ using StringTools;
 
 class CharacterEditorState extends BaseEditorState
 {
+	var cameraZoom:Float = 0.7;
+
 	public static var newCharacterImage:String = "";
 	var charPos:Int = 1;
 	var charPosOffset:Array<Int> = [0, 0];
@@ -126,7 +129,7 @@ class CharacterEditorState extends BaseEditorState
 
 		camFollow = new FlxObject();
 		camGame.follow(camFollow, LOCKON, 1);
-		camGame.zoom = 0.7;
+		camGame.zoom = cameraZoom;
 
 		if (isNew)
 		{
@@ -1553,6 +1556,23 @@ class CharacterEditorState extends BaseEditorState
 				label: "View",
 				options: [
 					{
+						label: "Zoom In",
+						action: function() {
+							cameraZoom = cameraZoom + 0.05;
+							cameraZoom = Math.round(cameraZoom * 100) / 100;
+						},
+						shortcut: [FlxKey.SHIFT, FlxKey.X]
+					},
+					{
+						label: "Zoom Out",
+						action: function() {
+							cameraZoom = Math.max(0.05, cameraZoom - 0.05);
+							cameraZoom = Math.round(cameraZoom * 100) / 100;
+						},
+						shortcut: [FlxKey.SHIFT, FlxKey.Z]
+					},
+					null,
+					{
 						label: "Information Panel",
 						condition: function() { return members.contains(infoBox); },
 						action: function() {
@@ -1671,16 +1691,17 @@ class CharacterEditorState extends BaseEditorState
 			}
 		}
 
-		var camPosString:String = "Camera X: "+Std.string(camFollow.x)+"\nCamera Y: "+Std.string(camFollow.y)+"\nCamera Z: "+Std.string(camGame.zoom);
+		var camPosString:String = "Camera X: " + Std.string(camFollow.x) + "\nCamera Y: " + Std.string(camFollow.y) + "\nCamera Z: " + Std.string(cameraZoom);
 		if (camPosText.text != camPosString)
 			camPosText.text = camPosString;
 
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 		{
-			camGame.zoom = Math.max(0.05, camGame.zoom + (FlxG.mouse.wheel * 0.05));
-			camGame.zoom = Math.round(camGame.zoom * 100) / 100;
-			bg.scale.set(1 / camGame.zoom, 1 / camGame.zoom);
+			cameraZoom = Math.max(0.05, cameraZoom + (FlxG.mouse.wheel * 0.05));
+			cameraZoom = Math.round(cameraZoom * 100) / 100;
 		}
+		camGame.zoom = FlxMath.lerp(camGame.zoom, cameraZoom, elapsed * 10);
+		bg.scale.set(1 / camGame.zoom, 1 / camGame.zoom);
 
 		if (movingCharacter)
 		{
