@@ -114,6 +114,8 @@ class Character extends FlxSprite
 					prefix: a.name,
 					fps: a.fps,
 					loop: a.loop,
+					flipX: false,
+					flipY: false,
 					offsets: a.offsets
 				}
 				if (a.indices != null && a.indices.length > 0)
@@ -246,6 +248,12 @@ class Character extends FlxSprite
 
 			if (a.loop == null)
 				a.loop = false;
+
+			if (a.flipX == null)
+				a.flipX = false;
+
+			if (a.flipY == null)
+				a.flipY = false;
 
 			if (a.fps == null)
 				a.fps = 24;
@@ -544,9 +552,9 @@ class Character extends FlxSprite
 			{
 				var anim = characterData.animations[i];
 				if (anim.indices != null && anim.indices.length > 0)
-					animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+					animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop, anim.flipX, anim.flipY);
 				else
-					animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+					animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop, anim.flipX, anim.flipY);
 				if (anim.next != null && anim.next != "")
 					animChain.set(anim.name, anim.next);
 				animData.set(anim.name, anim);
@@ -574,7 +582,7 @@ class Character extends FlxSprite
 				var anim = characterData.animations[i];
 				if (anim.indices != null && anim.indices.length > 0)
 				{
-					animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+					animation.add(anim.name, anim.indices, anim.fps, anim.loop, anim.flipX, anim.flipY);
 					if (anim.next != null && anim.next != "")
 						animChain.set(anim.name, anim.next);
 					animData.set(anim.name, anim);
@@ -633,14 +641,14 @@ class Character extends FlxSprite
 			else if (myCharType == "sparrow")
 			{
 				if (anim.indices != null && anim.indices.length > 0)
-					animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+					animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop, anim.flipX, anim.flipY);
 				else
-					animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+					animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop, anim.flipX, anim.flipY);
 			}
 			else if (myCharType == "tiles")
 			{
 				if (anim.indices != null && anim.indices.length > 0)
-					animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+					animation.add(anim.name, anim.indices, anim.fps, anim.loop, anim.flipX, anim.flipY);
 			}
 		}
 	}
@@ -668,6 +676,7 @@ class Character extends FlxSprite
 			atlas.alpha = alpha;
 			atlas.scale = scale;
 			atlas.antialiasing = antialiasing;
+			atlas.shader = shader;
 			atlas.cameras = cameras;
 			atlas.x = x - offset.x;
 			atlas.y = y - offset.y;

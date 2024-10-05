@@ -1,10 +1,15 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week7"		"TANKMAN FT. JOHNNYUTAH"
 
 // Song names
-"song.week7.ugh"	"Ugh"
-"song.week7.guns"	"Guns"
-"song.week7.stress"	"Stress"
+"song.week7.ugh"		"Ugh"
+"song.erect.week7.ugh"	"Ugh Erect"
+"song.week7.ugh.pico"	"Ugh (Pico Mix)"
+"song.week7.guns"		"Guns"
+"song.week7.guns.pico"	"Guns (Pico Mix)"
+"song.week7.stress"		"Stress"
 
 // Character names
 "character.bf-holding-gf"		"Boyfriend (Holding GF)"

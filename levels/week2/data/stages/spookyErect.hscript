@@ -1,0 +1,91 @@
+rain = null;
+time = 0;
+
+lightningStrikeBeat = 0;
+lightningStrikeOffset = 8;
+
+function create()
+{
+	FlxG.sound.cache(Paths.sound("week2/thunder_1"));
+	FlxG.sound.cache(Paths.sound("week2/thunder_2"));
+
+	if (Options.options.shaders)
+	{
+		rain = new RuntimeScreenspaceShader(Paths.shader("rain"));
+		rain.camera = FlxG.camera;
+		rain.setFloat("uScale", FlxG.height / 200 * 2);
+		rain.setFloat("uIntensity", 0.4);
+		rain.setFloat("uTime", 0);
+		rain.setBool("uSpriteMode", true);
+
+		stage.pieces["bgtrees"].shader = rain;
+		stage.pieces["bgtrees"].animation.callback = onBranchFrame;
+	}
+
+	stage.pieces["bgLight"].alpha = 0.001;
+	stage.pieces["stairsLight"].alpha = 0.001;
+}
+
+function onBranchFrame()
+{
+	rain.updateFrameInfo(stage.pieces["bgtrees"].frame);
+}
+
+function update(elapsed)
+{
+	if (rain != null)
+	{
+		time += elapsed;
+		rain.setFloat("uTime", time);
+	}
+}
+
+function beatHit()
+{
+	if (FlxG.random.bool(10) && game.curBeat > (lightningStrikeBeat + lightningStrikeOffset))
+		doLightningStrike(true);
+}
+
+function doLightningStrike(playSound)
+{
+	if (playSound)
+		PlaySound("week2/thunder_" + Std.string(FlxG.random.int(1, 2)));
+
+	stage.pieces["bgLight"].alpha = 1;
+	stage.pieces["stairsLight"].alpha = 1;
+	for (c in game.allCharacters)
+		c.alpha = 0;
+
+	new FlxTimer().start(0.06, function(tmr) {
+		stage.pieces["bgLight"].alpha = 0;
+		stage.pieces["stairsLight"].alpha = 0;
+		for (c in game.allCharacters)
+			c.alpha = 1;
+	});
+
+	new FlxTimer().start(0.12, function(tmr) {
+		stage.pieces["bgLight"].alpha = 1;
+		stage.pieces["stairsLight"].alpha = 1;
+		FlxTween.tween(stage.pieces["bgLight"], {alpha: 0}, 1.5);
+		FlxTween.tween(stage.pieces["stairsLight"], {alpha: 0}, 1.5);
+		for (c in game.allCharacters)
+		{
+			c.alpha = 0;
+			FlxTween.tween(c, {alpha: 1}, 1.5);
+		}
+	});
+
+	lightningStrikeBeat = game.curBeat;
+	lightningStrikeOffset = FlxG.random.int(8, 24);
+
+	if (game.player1.holdTimer <= 0)
+	{
+		game.player1.playAnim("scared", true);
+		game.player1.holdTimer = Conductor.stepLength;
+	}
+	if (game.gf.holdTimer <= 0)
+	{
+		game.gf.playAnim("scared", true);
+		game.gf.holdTimer = Conductor.stepLength;
+	}
+}

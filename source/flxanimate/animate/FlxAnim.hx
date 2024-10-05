@@ -8,6 +8,7 @@ import flixel.math.FlxMatrix;
 import flxanimate.data.AnimationData;
 import flixel.system.FlxSound;
 import flixel.graphics.frames.FlxFrame;
+import flixel.addons.display.FlxRuntimeShader;
 
 using StringTools;
 
@@ -135,6 +136,11 @@ class FlxAnim extends FlxSprite
 								symbol.colorEffect.push(element.SI.C);
 							}
 						}
+						if (element.SI.F != null)
+							symbol.filters = element.SI.F;
+						if (element.SI.IN != null && element.SI.IN.startsWith("_bl"))
+							symbol.blend = cast Std.parseInt(element.SI.IN.split("_bl")[1].split("_")[0]);
+
 						if (element.SI.bitmap == null)
 							symbol.renderSymbol(timeline);
 						else
@@ -401,14 +407,22 @@ class FlxAnim extends FlxSprite
 		var start:Int = -1;
 		var len:Int = -1;
 
-		for (layer in coolParse.AN.TL.L)
+		if (FrameName == "")
 		{
-			for (frame in layer.FR)
+			start = 0;
+			len = frameLength;
+		}
+		else
+		{
+			for (layer in coolParse.AN.TL.L)
 			{
-				if (frame.N == FrameName)
+				for (frame in layer.FR)
 				{
-					start = frame.I;
-					len = frame.DU;
+					if (frame.N == FrameName)
+					{
+						start = frame.I;
+						len = frame.DU;
+					}
 				}
 			}
 		}
@@ -435,12 +449,17 @@ class FlxAnim extends FlxSprite
 				layers.push({LN: layer.LN, FR: frames});
 			}
 
-			var element = coolParse.AN.STI;
-			var m3d = (element.SI.M3D is Array) ? element.SI.M3D : [element.SI.M3D.m00, element.SI.M3D.m01, 
-				element.SI.M3D.m02, element.SI.M3D.m03, element.SI.M3D.m10,element.SI.M3D.m11,
-				element.SI.M3D.m12,element.SI.M3D.m13,element.SI.M3D.m20,element.SI.M3D.m21,element.SI.M3D.m22,
-				element.SI.M3D.m23,element.SI.M3D.m30,element.SI.M3D.m31,element.SI.M3D.m32,element.SI.M3D.m33];
-			animsMap.set(Name, {timeline: {L: layers}, X: m3d[12], Y: m3d[13], frameRate: FrameRate});
+			if (coolParse.AN.STI != null)
+			{
+				var element = coolParse.AN.STI;
+				var m3d = (element.SI.M3D is Array) ? element.SI.M3D : [element.SI.M3D.m00, element.SI.M3D.m01, 
+					element.SI.M3D.m02, element.SI.M3D.m03, element.SI.M3D.m10,element.SI.M3D.m11,
+					element.SI.M3D.m12,element.SI.M3D.m13,element.SI.M3D.m20,element.SI.M3D.m21,element.SI.M3D.m22,
+					element.SI.M3D.m23,element.SI.M3D.m30,element.SI.M3D.m31,element.SI.M3D.m32,element.SI.M3D.m33];
+				animsMap.set(Name, {timeline: {L: layers}, X: m3d[12], Y: m3d[13], frameRate: FrameRate});
+			}
+			else
+				animsMap.set(Name, {timeline: {L: layers}, X: 0, Y: 0, frameRate: FrameRate});
 		}
 	}
 	public function frameNames():Array<String>
@@ -473,6 +492,9 @@ class FlxAnim extends FlxSprite
 class FlxLimb extends FlxAnim
 {
 	public var transformMatrix:FlxMatrix = new FlxMatrix();
+	public var filters(default, set):Filters = null;
+	static var blurShader:Map<String, FlxRuntimeShader> = new Map<String, FlxRuntimeShader>();
+
 	public function new(X:Float, Y:Float,Settings:FlxAnim) 
 	{
 		super(X, Y, null);
@@ -480,6 +502,9 @@ class FlxLimb extends FlxAnim
 		alpha = Settings.alpha;
 		scale = Settings.scale;
 		antialiasing = Settings.antialiasing;
+		if (Settings.shader != null)
+			shader = Settings.shader;
+		blend = Settings.blend;
 		frames = Settings.frames;
 		offset = Settings.offset;
 		xFlip = Settings.xFlip;
@@ -509,6 +534,38 @@ class FlxLimb extends FlxAnim
 
 		_matrix.translate(_point.x, _point.y);
 		camera.drawPixels(_frame, framePixels, _matrix, colorTransform, blend, antialiasing, shader);
+	}
+
+	public function set_filters(val:Filters):Filters
+	{
+		if (val.BLF != null)
+		{
+			var blur:BlurFilter = val.BLF;
+			var key:String = Std.string(blur.BLX) + "-" + Std.string(blur.BLY);
+			var _alpha:Float = 1;
+
+			if (colorEffect != null)
+			{
+				for (ef in colorEffect)
+				{
+					if (ef.M == "CA" || ef.M == "AD")
+						_alpha = ef.AM;
+				}
+			}
+			key += "-" + Std.string(_alpha);
+
+			if (!blurShader.exists(key))
+			{
+				blurShader[key] = new FlxRuntimeShader(Paths.shader("flxAnimateBlur"), null);
+				blurShader[key].data.BLX.value = [blur.BLX];
+				blurShader[key].data.BLY.value = [blur.BLY];
+				blurShader[key].data._alpha.value = [_alpha];
+			}
+
+			shader = blurShader[key];
+		}
+
+		return filters = val;
 	}
 }
 class ButtonEvent

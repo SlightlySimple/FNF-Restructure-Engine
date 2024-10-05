@@ -16,6 +16,7 @@ import openfl.filters.BitmapFilterQuality;
 
 import data.Options;
 import data.ObjectData;
+import data.PlayableCharacter;
 import data.Song;
 import menus.freeplay.FreeplayMenuSubState;
 import objects.AnimatedSprite;
@@ -29,10 +30,12 @@ class FreeplayCapsule extends FlxSpriteGroup
 	public var filter:String = "";
 	public var tracks:Map<String, FreeplayTrack> = new Map<String, FreeplayTrack>();
 
+	public var category:String = "";
 	public var songId:String = "";		// This can be either the category ID or the song ID, but having one variable is simpler
 	public var songUnlocked:Bool = true;
 	public var songArtist:String = "";
 	public var songInfo:WeekSongData = null;
+	public var variantScore:Bool = false;
 	public var songAlbums:Map<String, String> = new Map<String, String>();
 	public var rank(default, set):Int = -1;
 	public var favorited:Bool = false;
@@ -40,7 +43,8 @@ class FreeplayCapsule extends FlxSpriteGroup
 	public var capsule:AnimatedSprite;
 	var txt:FlxText;
 	var txtBlur:FlxText;
-	var iconGraphic:FlxSprite;
+	var glowColor:FlxColor = 0xFF00AADD;
+	var iconGraphic:FreeplayCharacterIcon;
 	var favIcon:AnimatedSprite;
 	var favIconBlurred:AnimatedSprite;
 	public var ranking:AnimatedSprite;
@@ -75,11 +79,16 @@ class FreeplayCapsule extends FlxSpriteGroup
 	var animExitX:Array<Float> = [0.245, 0.75, 0.98, 0.98, 1.2];
 	var animExitScaleX:Array<Float> = [1.7, 1.8, 0.85, 0.85, 0.97, 0.97, 1];
 
-	public override function new()
+	public override function new(?styleID:String = "bf", ?style:PlayableCharacterFreeplayStyle = null)
 	{
 		super();
 
-		capsule = new AnimatedSprite(Paths.sparrow("ui/freeplay/capsule/freeplayCapsule"));
+		if (style == null)
+			style = cast Paths.json("players/" + styleID).freeplayStyle;
+
+		glowColor = FlxColor.fromString(style.capsuleTextColors[1]);
+
+		capsule = new AnimatedSprite(Paths.sparrow("ui/freeplay/characters/" + styleID + "/" + style.capsuleAsset));
 		capsule.addAnim("selected", "mp3 capsule w backing0", 24, true);
 		capsule.addOffsets("selected", [0, 0]);
 		capsule.addAnim("unselected", "mp3 capsule w backing NOT SELECTED", 24, true);
@@ -95,7 +104,7 @@ class FreeplayCapsule extends FlxSpriteGroup
 
 		txtBlur = new FlxText(156, 45, 0, "", 32);
 		txtBlur.font = "5by7";
-		txtBlur.color = 0xFF00CCFF;
+		txtBlur.color = FlxColor.fromString(style.capsuleTextColors[0]);
 		txtBlur.shader = blur;
 		add(txtBlur);
 
@@ -130,10 +139,7 @@ class FreeplayCapsule extends FlxSpriteGroup
 		add(sparkle);
 		sparkleTimer = new FlxTimer().start(1, sparkleEffect);
 
-		iconGraphic = new FlxSprite(160, 35);
-		iconGraphic.makeGraphic(32, 32, FlxColor.TRANSPARENT);
-		iconGraphic.antialiasing = false;
-		iconGraphic.active = false;
+		iconGraphic = new FreeplayCharacterIcon(160, 35, "none");
 		add(iconGraphic);
 
 		favIcon = new AnimatedSprite(405, 40, Paths.sparrow("ui/freeplay/capsule/favHeart"));
@@ -368,6 +374,9 @@ class FreeplayCapsule extends FlxSpriteGroup
 	var flickerState:Bool = false;
 	public function confirmAnim()
 	{
+		if (iconGraphic != null)
+			iconGraphic.confirm();
+
 		new FlxTimer().start(1 / 24, function(tmr:FlxTimer) {
 			if (flickerState)
 			{
@@ -379,7 +388,7 @@ class FreeplayCapsule extends FlxSpriteGroup
 			}
 			else
 			{
-				txtBlur.color = 0xFF00aadd;
+				txtBlur.color = glowColor;
 				txt.color = 0xFFDDDDDD;
 				txt.textField.filters = [new openfl.filters.GlowFilter(0xDDDDDD, 1, 5, 5, 210, BitmapFilterQuality.MEDIUM)];
 			}
@@ -501,21 +510,12 @@ class FreeplayCapsule extends FlxSpriteGroup
 		if (iconGraphic != null)
 		{
 			if (!songUnlocked)
-			{
-				iconGraphic.loadGraphic(Paths.image("ui/freeplay/lock"));
-				iconGraphic.scale.set(2, 2);
-				iconGraphic.x = x + 260 - (iconGraphic.width * 2);
-				iconGraphic.origin.x = 100;
-			}
-			else if (val == "none")
-				iconGraphic.makeGraphic(32, 32, FlxColor.TRANSPARENT);
+				iconGraphic.refreshCharacter("lock");
 			else
-			{
-				iconGraphic.loadGraphic(Paths.image("ui/freeplay/icons/" + val + "pixel"));
-				iconGraphic.scale.set(2, 2);
-				iconGraphic.x = x + 260 - (iconGraphic.width * 2);
-				iconGraphic.origin.x = 100;
-			}
+				iconGraphic.refreshCharacter(val);
+
+			iconGraphic.x = x + 260 - (iconGraphic.width * 2);
+			iconGraphic.origin.x = 100;
 		}
 		return icon = val;
 	}
@@ -570,6 +570,8 @@ class FreeplayCapsule extends FlxSpriteGroup
 		}
 		else
 		{
+			text = val.name;
+
 			bpmText.alpha = 1;
 			difficultyText.alpha = 1;
 

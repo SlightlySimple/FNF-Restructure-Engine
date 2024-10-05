@@ -1,1 +1,1 @@
-{"events":[[96,0],[144,1]],"eventData":[{"type":"characterDanceSpeed","parameters":{"speed":2,"id":"gf"}},{"type":"characterDanceSpeed","parameters":{"speed":1,"id":"gf"}}]}
+{"events":[[96,0],[144,1]],"eventData":[{"type":"characterDanceSpeed","parameters":{"init":false,"speed":2,"id":"gf"}},{"type":"characterDanceSpeed","parameters":{"init":false,"speed":1,"id":"gf"}}]}

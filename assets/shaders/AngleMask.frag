@@ -1,5 +1,7 @@
 #pragma header
 
+uniform vec3 extraTint;
+
 uniform vec2 endPosition;
 vec2 hash22(vec2 p) {
 	vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
@@ -62,6 +64,7 @@ vec4 antialias(vec2 fragCoord) {
 
 void main() {
 	vec4 col = antialias(openfl_TextureCoordv);
+	col.xyz = col.xyz * extraTint.xyz;
 	// col.xyz = gamma(col.xyz);
 	gl_FragColor = col;
 }

@@ -1,0 +1,120 @@
+flicker = 0;
+
+function create()
+{
+	casingGroup = new FlxSpriteGroup(this.x + 250, this.y + 100);
+	insert(game.members.indexOf(this) + 1, casingGroup);
+
+	this.animation.callback = function(anim, frame) {
+		if ((anim == "cock" || anim == "preAttack") && frame == 3)
+			createCasing();
+	}
+
+	this.animation.finishCallback = function(anim) {
+		if (Options.options.flashingLights && anim == "shootMISS") {
+			flicker = 60;
+			new FlxTimer().start(1 / 30, function(tmr) {
+				this.visible = !this.visible;
+				flicker--;
+				if (flicker > 30)
+					tmr.reset(1 / 30);
+				else
+				{
+					tmr.start(1 / 60, function(tmr) {
+						this.visible = !this.visible;
+						flicker--;
+						if (flicker > 0)
+							tmr.reset(1 / 60);
+						else
+							this.visible = true;
+					});
+				}
+			});
+		}
+	}
+}
+
+function createCasing()
+{
+	var casing = new Weekend1Casing();
+	casingGroup.add(casing);
+}
+
+function gameOverCreate()
+{
+	if (this == GameOverSubState.character)
+	{
+		deadCharacter = GameOverSubState.instance.deadCharacter;
+
+		if (GameOverSubState.sfx == "weekend1/fnf_loss_sfx-pico-explode")
+		{
+			deadCharacter.visible = false;
+
+			picoDeathExplosion = new FlxAnimate(deadCharacter.x - 640, deadCharacter.y - 340, Paths.atlas("characters/pico/picoExplosionDeath"));
+			picoDeathExplosion.anim.addByFrameName('intro', 'intro', 24);
+			picoDeathExplosion.anim.addByFrameName('Loop Start', 'Loop Start', 24);
+			picoDeathExplosion.anim.addByFrameName('Confirm', 'Confirm', 24);
+			GameOverSubState.instance.add(picoDeathExplosion);
+
+			picoDeathExplosion.playAnim("intro");
+			picoDeathExplosion.onComplete = function()
+			{
+				if (picoDeathExplosion.curAnim == "intro")
+					picoDeathExplosion.playAnim("Loop Start", true, true);
+			}
+
+			new FlxTimer().start(3, function(tmr) {
+				if (!GameOverSubState.transitioning)
+				{
+					GameOverSubState.instance.menuMusic = new FlxSound().loadEmbedded(Paths.music("weekend1/gameOverStart-pico-explode"), false);
+					FlxG.sound.list.add(GameOverSubState.instance.menuMusic);
+					GameOverSubState.instance.menuMusic.onComplete = function() {
+						GameOverSubState.instance.menuMusic.loadEmbedded(Paths.music("weekend1/gameOver-pico"), true);
+						GameOverSubState.instance.menuMusic.play();
+						GameOverSubState.instance.menuMusic.onComplete = null;
+					}
+					GameOverSubState.instance.menuMusic.play();
+				}
+			});
+		}
+		else
+		{
+			deathSpriteRetry = CreateSprite("characters/pico/Pico_Death_Retry", deadCharacter.x - deadCharacter.offset.x + 416, deadCharacter.y - deadCharacter.offset.y + 42);
+			deathSpriteRetry.addAnim('idle', "Retry Text Loop0", 24, true);
+			deathSpriteRetry.addAnim('confirm', "Retry Text Confirm0", 24, false);
+			deathSpriteRetry.addOffsets("confirm", [250, 200]);
+			deathSpriteRetry.playAnim('idle');
+			deathSpriteRetry.alpha = 0.001;
+			GameOverSubState.instance.add(deathSpriteRetry);
+
+			if (StringTools.startsWith(game.gf.curCharacter, "nene"))
+			{
+				var diffX = deadCharacter.charX - game.player1.charX;
+				var diffY = deadCharacter.charY - game.player1.charY;
+
+				deathSpriteNene = CreateSprite("characters/nene/" + (game.gf.curCharacter == "nene-christmas" ? "neneChristmasKnife" : "NeneKnifeToss"), game.gf.x + diffX + 120, game.gf.y + diffY + 70);
+				deathSpriteNene.addAnim("throw", "knife toss", 24, false);
+				deathSpriteNene.animation.finishCallback = function(name) { deathSpriteNene.visible = false; }
+				deathSpriteNene.playAnim("throw");
+				GameOverSubState.instance.add(deathSpriteNene);
+			}
+
+			deadCharacter.animation.callback = function(anim, frame) {
+				if (anim == "firstDeath" && frame == 35) {
+					deathSpriteRetry.alpha = 1;
+				}
+			}
+		}
+	}
+}
+
+function gameOverConfirm()
+{
+	if (this == GameOverSubState.character)
+	{
+		if (GameOverSubState.sfx == "weekend1/fnf_loss_sfx-pico-explode")
+			picoDeathExplosion.playAnim("Confirm");
+		else
+			deathSpriteRetry.playAnim("confirm");
+	}
+}

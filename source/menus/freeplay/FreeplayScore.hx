@@ -12,13 +12,13 @@ class FreeplayScore extends FlxTypedSpriteGroup<AnimatedSprite>
 
 	static var numberAnims:Array<String> = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
 
-	public override function new(x:Float, y:Float, digitCount:Int)
+	public override function new(x:Float, y:Float, digitCount:Int, ?asset:String = "ui/freeplay/characters/bf/digital_numbers")
 	{
 		super(x, y);
 
 		for (i in 0...digitCount)
 		{
-			var num:AnimatedSprite = new AnimatedSprite(45 * i, 0, Paths.sparrow("ui/freeplay/digital_numbers"));
+			var num:AnimatedSprite = new AnimatedSprite(45 * i, 0, Paths.sparrow(asset));
 			for (i in 0...numberAnims.length)
 				num.addAnim(Std.string(i), numberAnims[i], 24, false);
 			num.playAnim("0");

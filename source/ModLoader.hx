@@ -10,6 +10,12 @@ import PackagesState;
 
 using StringTools;
 
+typedef ModMenus =
+{
+	var story:String;
+	var freeplay:String;
+}
+
 class ModLoader
 {
 	public static var modListFile:String = "modList";
@@ -22,6 +28,7 @@ class ModLoader
 	public static var modMetaListLoaded:Array<polymod.ModMetadata>;
 	public static var modsEnabledByDefault:Bool = true;
 	public static var hiddenMods:Array<String> = [];
+	public static var modMenus:Map<String, ModMenus> = new Map<String, ModMenus>();
 
 	public static function initMods()
 	{
@@ -134,10 +141,21 @@ class ModLoader
 		hiddenMods = [];
 		for (mod in modList)
 		{
+			var parsedMetadata:Dynamic = haxe.Json.parse(File.getContent("mods/" + mod[0] + "/_polymod_meta.json"));
 			if (mod[1])
 				loadedMods.push(mod[0]);
-			if (haxe.Json.parse(File.getContent("mods/" + mod[0] + "/_polymod_meta.json")).hidden)
+			if (parsedMetadata.hidden)
 				hiddenMods.push(mod[0]);
+			if (parsedMetadata.menus != null)
+			{
+				modMenus[mod[0]] = cast parsedMetadata.menus;
+				if (modMenus[mod[0]].story == null)
+					modMenus[mod[0]].story = mod[0] + "-story";
+				if (modMenus[mod[0]].freeplay == null)
+					modMenus[mod[0]].freeplay = mod[0] + "-freeplay";
+			}
+			else
+				modMenus[mod[0]] = {story: mod[0] + "-story", freeplay: mod[0] + "-freeplay"};
 		}
 
 		modMetaListLoaded = Polymod.init({

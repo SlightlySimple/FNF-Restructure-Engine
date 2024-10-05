@@ -1,16 +1,25 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week3"		"PICO"
 
 // Song names
-"song.week3.pico"			"Pico"
-"song.week3.philly-nice"	"Philly Nice"
-"song.week3.blammed"		"Blammed"
+"song.week3.pico"				"Pico"
+"song.erect.week3.pico"			"Pico Erect"
+"song.week3.pico.pico"			"Pico (Pico Mix)"
+"song.week3.philly-nice"		"Philly Nice"
+"song.erect.week3.philly-nice"	"Philly Nice Erect"
+"song.week3.philly-nice.pico"	"Philly Nice (Pico Mix)"
+"song.week3.blammed"			"Blammed"
+"song.erect.week3.blammed"		"Blammed Erect"
+"song.week3.blammed.pico"		"Blammed (Pico Mix)"
 
 // Character names
 "character.pico"	"Pico"
 
 // Stage names
 "stage.philly"		"Philly (Train)"
+"stage.phillyErect"	"Philly (Train) [Erect]"
 
 // Pause menu
 "pause.gameOver.pico"	"%s1 Mangled Guts"

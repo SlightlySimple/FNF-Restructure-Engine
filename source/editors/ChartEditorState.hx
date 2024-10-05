@@ -549,6 +549,7 @@ class ChartEditorState extends MusicBeatState
 				stage: TitleState.defaultVariables.stage,
 				tracks: [["Inst", 0, 0]],
 				notes: [{camOn: 1, lengthInSteps: 16, defaultNotetypes: ["", ""], sectionNotes: []}],
+				metaFile: "_meta",
 				eventFile: "_events",
 				events: [],
 				music: { pause: "", gameOver: "", gameOverEnd: "", results: "" }
@@ -1182,6 +1183,11 @@ class ChartEditorState extends MusicBeatState
 		skipCountdownCheckbox.checked = songData.skipCountdown;
 		skipCountdownCheckbox.condition = function() { return songData.skipCountdown; }
 		skipCountdownCheckbox.onClicked = function() { songData.skipCountdown = skipCountdownCheckbox.checked; }
+
+		var metaFileInput:InputText = cast ui.element("metaFileInput");
+		metaFileInput.condition = function() { return (songData.metaFile == null ? "" : songData.metaFile); }
+		metaFileInput.focusGained = function() { suspendControls = true; }
+		metaFileInput.focusLost = function() { songData.metaFile = metaFileInput.text; suspendControls = false; }
 
 		var eventFileInput:InputText = cast ui.element("eventFileInput");
 		eventFileInput.text = songData.eventFile;
@@ -2132,8 +2138,13 @@ class ChartEditorState extends MusicBeatState
 						label: "Save",
 						action: function() {
 							_save(false);
-							if (songData.events.length > 0)
-								_saveEvents(false);
+							if (filename != "" && !filename.endsWith(".sm"))
+							{
+								if (songData.metaFile != null && songData.metaFile != "")
+									_saveMeta(false);
+								if (songData.events.length > 0)
+									_saveEvents(false);
+							}
 						},
 						shortcut: [FlxKey.CONTROL, FlxKey.S],
 						icon: "save"
@@ -2142,6 +2153,11 @@ class ChartEditorState extends MusicBeatState
 						label: "Save As...",
 						action: function() { _save(true); },
 						shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.S],
+						icon: "save"
+					},
+					{
+						label: "Save Metadata As...",
+						action: function() { _saveMeta(true); },
 						icon: "save"
 					},
 					{
@@ -2182,7 +2198,8 @@ class ChartEditorState extends MusicBeatState
 									PlayState.songId = songId;
 									FlxG.mouse.visible = false;
 									FlxG.switchState(new PlayState());
-								}
+								},
+								shortcut: [FlxKey.CONTROL, FlxKey.T]
 							},
 							{
 								label: "From Current Time",
@@ -2204,7 +2221,8 @@ class ChartEditorState extends MusicBeatState
 									PlayState.songId = songId;
 									FlxG.mouse.visible = false;
 									FlxG.switchState(new PlayState());
-								}
+								},
+								shortcut: [FlxKey.CONTROL, FlxKey.SHIFT, FlxKey.T]
 							},
 							{
 								label: "On Side...",
@@ -2667,8 +2685,7 @@ class ChartEditorState extends MusicBeatState
 								refreshSustains();
 								refreshSelectedNotes();
 							}
-						},
-						shortcut: [FlxKey.CONTROL, FlxKey.T]
+						}
 					},
 					{
 						label: "Delete Selected Notes",
@@ -3144,7 +3161,7 @@ class ChartEditorState extends MusicBeatState
 			}
 			if (allowMakingNoteMouse)
 			{
-				ghostNote.visible = (ghostNote.overlaps(mousePos) && !foundNote && !selecting && !movingSelection && !TopMenu.busy && !DropdownMenu.isOneActive && !(sustainWidget.visible && sustainWidget.overlaps(mousePos)));
+				ghostNote.visible = (ghostNote.overlaps(mousePos) && !foundNote && !selecting && !movingSelection && !TopMenu.busy && !DropdownMenu.isOneActive && !sustainWidget.visible);
 				if (ghostNote.visible)
 					UIControl.cursor = MouseCursor.BUTTON;
 
@@ -3492,7 +3509,7 @@ class ChartEditorState extends MusicBeatState
 						else
 							FlxG.sound.play(Paths.sound("ui/editors/charting/noteStretch"), 0.5);
 					}
-					else if (ghostNote.visible && makingNotes.filter(function(val:Float) { return val == -1; }).length == makingNotes.length)
+					else if (ghostNote.visible && ghostNote.overlaps(mousePos) && makingNotes.filter(function(val:Float) { return val == -1; }).length == makingNotes.length)
 					{
 						FlxG.sound.play(Paths.sound(notePlaceSound), 0.5);
 						makingNoteMouse = [ghostNote.beat * 4, ghostNote.column];
@@ -3666,7 +3683,7 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (!autosavePaused && !isSM)
+		if (!autosavePaused && !pauseUndo && !isSM)
 		{
 			timeSinceLastAutosave += elapsed;
 			if (Options.options.autosaveSecs > 0 && timeSinceLastAutosave >= Options.options.autosaveSecs)
@@ -5823,6 +5840,9 @@ class ChartEditorState extends MusicBeatState
 				savedData.music = songData.music;
 		}
 
+		if (songData.metaFile != null && songData.metaFile != "")
+			savedData.metaFile = songData.metaFile;
+
 		if (songData.eventFile != null && songData.eventFile != "_events")
 			savedData.eventFile = songData.eventFile;
 
@@ -6088,6 +6108,89 @@ class ChartEditorState extends MusicBeatState
 		return savedData;
 	}
 
+	function prepareMetaSave(songData:SongData):SongData
+	{
+		var savedData:SongData = 
+		{
+			song: songData.song,
+			artist: songData.artist,
+			charter: songData.charter,
+			preview: songData.preview,
+			offset: songData.offset,
+			stage: songData.stage
+		}
+
+		savedData.characters = [];
+
+		var i:Int = 1;
+		while (Reflect.hasField(songData, "player" + Std.string(i)))
+		{
+			savedData.characters.push(Reflect.field(songData, "player" + Std.string(i)));
+			i++;
+		}
+
+		if (songData.music != null)
+		{
+			if (songData.music.pause.trim() != "" || songData.music.gameOver.trim() != "" || songData.music.gameOverEnd.trim() != "" || songData.music.results.trim() != "")
+				savedData.music = songData.music;
+		}
+
+		if (songData.eventFile != null && songData.eventFile != "_events")
+			savedData.eventFile = songData.eventFile;
+
+		if (songData.altSpeedCalc)
+			savedData.altSpeedCalc = songData.altSpeedCalc;
+
+		if (songData.bpmMap.length > 1)
+			savedData.bpmMap = songData.bpmMap;
+		else
+			savedData.bpm = songData.bpmMap[0][1];
+
+		if (songData.skipCountdown)
+			savedData.skipCountdown = songData.skipCountdown;
+
+		if (songData.columnDivisionNames != null)
+		{
+			var includeColumnDivisionNames:Bool = false;
+			if (songData.columnDivisionNames.length != 2)
+				includeColumnDivisionNames = true;
+			if (songData.columnDivisionNames.length > 0 && songData.columnDivisionNames[0] != "#freeplay.sandbox.side.0")
+				includeColumnDivisionNames = true;
+			if (songData.columnDivisionNames.length > 1 && songData.columnDivisionNames[1] != "#freeplay.sandbox.side.1")
+				includeColumnDivisionNames = true;
+
+			if (includeColumnDivisionNames)
+				savedData.columnDivisionNames = songData.columnDivisionNames;
+		}
+
+		if (songData.noteType != null && songData.noteType[0] != "default" || songData.noteType.length > 1)
+			savedData.noteType = songData.noteType;
+
+		if (songData.uiSkin != null && songData.uiSkin != "default")
+			savedData.uiSkin = songData.uiSkin;
+
+		if (songData.tracks[0][0].toLowerCase() != "inst" || songData.tracks[0][1] != 0 || (songData.tracks.length > 1 && (songData.tracks[1][0].toLowerCase() != "voices" || songData.tracks[1][1] != 1)) || songData.tracks.length > 2)
+			savedData.tracks = songData.tracks;
+
+		if (songData.notetypeSingers != null)
+		{
+			var includeSingers:Bool = false;
+			for (n in songData.notetypeSingers)
+			{
+				if (n.length > 0)
+					includeSingers = true;
+			}
+			if (includeSingers)
+			{
+				savedData.notetypeSingers = songData.notetypeSingers;
+				if (!songData.notetypeOverridesCam)
+					savedData.notetypeOverridesCam = songData.notetypeOverridesCam;
+			}
+		}
+
+		return savedData;
+	}
+
 	function prepareEventsSave(events:Array<EventData>):String
 	{
 		var savedEventData:Array<EventData> = [];
@@ -6220,6 +6323,22 @@ class ChartEditorState extends MusicBeatState
 					for (j in 0...jsonNameArray.length-1)
 						songIdArray.push(jsonNameArray[j]);
 
+					if (songIdArray.length > 1)		// Dumb hack to allow character variant charts to be loaded
+					{
+						var tempTrackList:Array<String> = Paths.listFiles("songs/" + songIdArray.join("/") + "/", ".ogg");
+						tempTrackList = tempTrackList.concat(Paths.listFiles("data/songs/" + songIdArray.join("/") + "/", ".ogg"));
+
+						if (tempTrackList.length <= 0)
+						{
+							while (tempTrackList.length <= 0 && songIdArray.length > 1)
+							{
+								songIdArray.pop();
+								tempTrackList = Paths.listFiles("songs/" + songIdArray.join("/") + "/", ".ogg");
+								tempTrackList = tempTrackList.concat(Paths.listFiles("data/songs/" + songIdArray.join("/") + "/", ".ogg"));
+							}
+						}
+					}
+
 					isNew = false;
 					songId = songIdArray.join("/");
 					songFile = jsonNameArray.join("/").split('.json')[0];
@@ -6263,6 +6382,32 @@ class ChartEditorState extends MusicBeatState
 			else
 			{
 				FileBrowser.saveAs(filename, data.trim());
+				unsaved = false;
+				refreshFilename();
+				autosavePaused = false;
+			}
+		}
+	}
+
+	function _saveMeta(?browse:Bool = true)
+	{
+		autosavePaused = true;
+		var data:String = Json.stringify(prepareMetaSave(songData));
+
+		if (data != null && data.length > 0)
+		{
+			if (browse || filename == "")
+			{
+				var file:FileBrowser = new FileBrowser();
+				file.saveCallback = function(path:String) { autosavePaused = false; };
+				file.failureCallback = function() { autosavePaused = false; };
+				file.save(songData.metaFile + ".json", data.trim());
+			}
+			else
+			{
+				var metaFilename:String = filename.replace("\\","/");
+				metaFilename = metaFilename.substring(0, metaFilename.lastIndexOf("/")+1) + songData.metaFile + ".json";
+				FileBrowser.saveAs(metaFilename, data.trim());
 				unsaved = false;
 				refreshFilename();
 				autosavePaused = false;
@@ -6582,6 +6727,7 @@ class ChartEditorState extends MusicBeatState
 					trackSuffix = metadata.playData.characters.instrumental;
 
 				var p1:String = metadata.playData.characters.player;
+				var p1Old:String = p1;
 				if (!Paths.jsonExists("characters/" + p1) && Paths.jsonExists("characters/" + p1.split("-")[0]))
 					p1 = p1.split("-")[0];
 				var p2:String = metadata.playData.characters.opponent;
@@ -6612,14 +6758,14 @@ class ChartEditorState extends MusicBeatState
 					else if (FileSystem.exists(trueMusicPath + "Voices.ogg"))
 						tracks.push(["Voices", 1]);
 
-					if (FileSystem.exists(trueMusicPath + "Voices-" + p1.split("-")[0] + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p1.split("-")[0] + "-" + trackSuffix, 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1 + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p1 + "-" + trackSuffix, 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1.split("-")[0] + ".ogg"))
-						tracks.push(["Voices-" + p1.split("-")[0], 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1 + ".ogg"))
-						tracks.push(["Voices-" + p1, 2]);
+					if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old.split("-")[0] + "-" + trackSuffix + ".ogg"))
+						tracks.push(["Voices-" + p1Old.split("-")[0] + "-" + trackSuffix, 2]);
+					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old + "-" + trackSuffix + ".ogg"))
+						tracks.push(["Voices-" + p1Old + "-" + trackSuffix, 2]);
+					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old.split("-")[0] + ".ogg"))
+						tracks.push(["Voices-" + p1Old.split("-")[0], 2]);
+					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old + ".ogg"))
+						tracks.push(["Voices-" + p1Old, 2]);
 
 					if (FileSystem.exists(trueMusicPath + "Voices-" + p2.split("-")[0] + "-" + trackSuffix + ".ogg"))
 						tracks.push(["Voices-" + p2.split("-")[0] + "-" + trackSuffix, 3]);
@@ -6668,6 +6814,10 @@ class ChartEditorState extends MusicBeatState
 						var timingStruct:TimingStruct = new TimingStruct();
 						timingStruct.recalculateTimings(bpmMap);
 
+						var metaFile:String = "_meta";
+						if (trackSuffix != "")
+							metaFile += "_" + trackSuffix;
+
 						var eventFile:String = "_events";
 						if (trackSuffix != "")
 							eventFile += "_" + trackSuffix;
@@ -6694,6 +6844,29 @@ class ChartEditorState extends MusicBeatState
 							return 0;
 						});
 
+						var chartMeta:SongData = {
+							song: metadata.songName,
+							artist: metadata.artist,
+							charter: "",
+							preview: [0, 32],
+							tracks: tracks,
+							offset: offset,
+							characters: [p1, p2, gf],
+							stage: metadata.playData.stage,
+							eventFile: eventFile
+						};
+
+						if (bpmMap.length > 1)
+							chartMeta.bpmMap = bpmMap;
+						else
+							chartMeta.bpm = bpmMap[0][1];
+
+						if (baseStages.exists(chartMeta.stage))
+							chartMeta.stage = baseStages[chartMeta.stage];
+
+						if (metadata.charter != null)
+							chartMeta.charter = metadata.charter;
+
 						var difficulties:Array<String> = cast metadata.playData.difficulties;
 						for (d in difficulties)
 						{
@@ -6716,8 +6889,10 @@ class ChartEditorState extends MusicBeatState
 								bpmMap: bpmMap,
 								speed: speed,
 								notes: [],
+								metaFile: metaFile,
 								eventFile: eventFile
 							};
+
 							if (baseStages.exists(newChart.stage))
 								newChart.stage = baseStages[newChart.stage];
 
@@ -6781,11 +6956,14 @@ class ChartEditorState extends MusicBeatState
 
 							var firstBeat:Float = Math.max(0, Math.floor(timingStruct.beatFromTime(firstNote)));
 							newChart.preview = [firstBeat, firstBeat + 32];
+							chartMeta.preview = [firstBeat, firstBeat + 32];
 
 							var parsedData:SongData = Song.parseSongData(newChart, false, false);
 							parsedData.useBeats = true;
 							File.saveContent(trueSavePath + convertedSongId + "-" + d + ".json", Json.stringify({song: prepareChartSave(parsedData)}));
 						}
+
+						File.saveContent(trueSavePath + metaFile + ".json", Json.stringify(chartMeta));
 
 						ArraySort.sort(convertedEvents, function(a:Dynamic, b:Dynamic) {
 							if (a.t < b.t)

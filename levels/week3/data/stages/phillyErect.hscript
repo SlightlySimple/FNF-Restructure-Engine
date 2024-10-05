@@ -1,0 +1,17 @@
+function create()
+{
+	colorShader = new FlxRuntimeShader(Paths.shader("adjustColor"));
+	colorShader.setFloat("hue", -26);
+	colorShader.setFloat("saturation", -16);
+	colorShader.setFloat("brightness", -5);
+	colorShader.setFloat("contrast", 0);
+
+	for (c in game.allCharacters)
+		c.shader = colorShader;
+
+	stage.pieces["train"].shader = colorShader;
+
+	game.hscriptAdd("STAGE_philly", "data/stages/philly");
+	game.hscriptIdSet("STAGE_philly", "stage", stage);
+	game.hscriptIdExec("STAGE_philly", "create");
+}

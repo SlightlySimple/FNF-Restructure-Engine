@@ -1,0 +1,135 @@
+introActions = [];
+outroActions = [];
+
+function create()
+{
+	state.pinkBack.color = 0xFF98A2F3;
+
+	card = new FlxSpriteGroup();
+	insert(state.members.indexOf(state.cardGlow), card);
+	outroActions.push(function() {
+		remove(card, true);
+	});
+
+
+
+	scrollBack = new FlxBackdrop(Paths.image("ui/freeplay/characters/pico/lowerLoop"), 1, 1, true, false, 20);
+	scrollBack.setPosition(0, 200);
+	scrollBack.flipX = true;
+	scrollBack.alpha = 0.39;
+	scrollBack.velocity.x = 110;
+	card.add(scrollBack);
+	state.createCharacterSelectTransition([scrollBack], -50, 0.8);
+
+	scrollLower = new FlxBackdrop(Paths.image("ui/freeplay/characters/pico/lowerLoop"), 1, 1, true, false, 20);
+	scrollLower.setPosition(0, 406);
+	scrollLower.velocity.x = -110;
+	card.add(scrollLower);
+	state.createCharacterSelectTransition([scrollLower], -60, 0.8);
+
+	blueBar = CreateSprite("ui/freeplay/characters/pico/blueBar", 0, 239);
+	blueBar.blend = BlendMode.MULTIPLY;
+	blueBar.alpha = 0.4;
+	card.add(blueBar);
+	state.createCharacterSelectTransition([blueBar], -70, 0.8);
+
+	scrollTop = new FlxBackdrop(null, 1, 1, true, false, 20);
+	scrollTop.frames = Paths.sparrow("ui/freeplay/characters/pico/topLoop");
+	scrollTop.loadFrame(scrollTop.frames.frames[0]);
+	scrollTop.setPosition(0, 80);
+	scrollTop.velocity.x = -220;
+	scrollTop.animation.addByPrefix("uzi", "uzi info", 24, false);
+	scrollTop.animation.addByPrefix("sniper", "sniper info", 24, false);
+	scrollTop.animation.addByPrefix("rocket launcher", "rocket launcher info", 24, false);
+	scrollTop.animation.addByPrefix("rifle", "rifle info", 24, false);
+	scrollTop.animation.addByPrefix("base", "base", 24, false);
+	scrollTop.animation.play("base");
+	card.add(scrollTop);
+	state.createCharacterSelectTransition([scrollTop], -90, 0.8);
+
+	scrollMiddle = new FlxBackdrop(Paths.image("ui/freeplay/characters/pico/middleLoop"), 1, 1, true, false, 15);
+	scrollMiddle.setPosition(0, 346);
+	scrollMiddle.velocity.x = 220;
+	card.add(scrollMiddle);
+	state.createCharacterSelectTransition([scrollMiddle], -80, 0.8);
+
+    glowDark = CreateSprite("ui/freeplay/characters/pico/glow", -300, 330);
+    glowDark.blend = BlendMode.MULTIPLY;
+    card.add(glowDark);
+
+    glow = CreateSprite("ui/freeplay/characters/pico/glow", -300, 330);
+    glow.blend = BlendMode.ADD;
+    card.add(glow);
+
+	introActions.push(function() {
+		scrollBack.visible = false;
+		scrollLower.visible = false;
+		blueBar.visible = false;
+		scrollTop.visible = false;
+		scrollMiddle.visible = false;
+		glowDark.visible = false;
+		glow.visible = false;
+
+		new FlxTimer().start(18 / 24, function(tmr:FlxTimer) {
+			state.pinkBack.color = 0xFF98A2F3;
+			scrollBack.visible = true;
+			scrollLower.visible = true;
+			blueBar.visible = true;
+			scrollTop.visible = true;
+			scrollMiddle.visible = true;
+			glowDark.visible = true;
+			glow.visible = true;
+		});
+	});
+
+
+
+	confirmAtlas = new FlxAnimate(5, 55, Paths.atlas("ui/freeplay/characters/pico/pico-confirm"));
+	confirmAtlas.anim.addBySymbol("go", "Pico Back Card Confirm", 640, 360, 24);
+	confirmAtlas.visible = false;
+	card.add(confirmAtlas);
+}
+
+function doIntro()
+{
+	for (action in introActions)
+		action();
+}
+
+function doOutro()
+{
+	for (action in outroActions)
+		action();
+}
+
+beatFreq = 1;
+beatFreqList = [1, 2, 4, 8];
+
+function beatHit()
+{
+	beatFreq = beatFreqList[Math.floor(Conductor.bpm / 140)];
+
+	if (state.curBeat % beatFreq != 0)
+		return;
+
+	FlxTween.cancelTweensOf(glow);
+	FlxTween.cancelTweensOf(glowDark);
+
+	glow.alpha = 1;
+	FlxTween.tween(glow, {alpha: 0}, 16 / 24, {ease: FlxEase.quartOut});
+	glowDark.alpha = 0;
+	FlxTween.tween(glowDark, {alpha: 1}, 18 / 24, {ease: FlxEase.quartOut});
+}
+
+function confirmAnim()
+{
+	confirmAtlas.visible = true;
+	confirmAtlas.playAnim("go");
+
+    FlxTween.color(state.bgDad, 10 / 24, 0xFFFFFFFF, 0xFF8A8A8A, {ease: FlxEase.expoOut});
+    new FlxTimer().start(10 / 24, function(tmr) { FlxTween.color(state.bgDad, 3 / 24, 0xFF343036, 0xFF696366, {ease: FlxEase.expoOut}); });
+    new FlxTimer().start(14 / 24, function(tmr) { FlxTween.color(state.bgDad, 3 / 24, 0xFF27292D, 0xFF686A6F, {ease: FlxEase.expoOut}); });
+    new FlxTimer().start(18 / 24, function(tmr) { FlxTween.color(state.bgDad, 3 / 24, 0xFF2D282D, 0xFF676164, {ease: FlxEase.expoOut}); });
+    new FlxTimer().start(21 / 24, function(tmr) { FlxTween.color(state.bgDad, 3 / 24, 0xFF29292F, 0xFF62626B, {ease: FlxEase.expoOut}); });
+    new FlxTimer().start(24 / 24, function(tmr) { FlxTween.color(state.bgDad, 3 / 24, 0xFF29232C, 0xFF808080, {ease: FlxEase.expoOut}); });
+}

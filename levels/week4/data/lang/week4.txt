@@ -1,12 +1,17 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week4"			"MOMMY MUST MURDER"
 
 // Song names
-"song.week4.satin-panties"			"Satin Panties"
-"song.week4.satin-panties.censor"	"Satin Pants"
-"song.week4.high"					"High"
-"song.week4.milf"					"M.I.L.F."
-"song.week4.milf.censor"			"Mom"
+"song.week4.satin-panties"				"Satin Panties"
+"song.week4.satin-panties.censor"		"Satin Pants"
+"song.erect.week4.satin-panties"		"Satin Panties Erect"
+"song.erect.week4.satin-panties.censor"	"Satin Pants Erect"
+"song.week4.high"						"High"
+"song.erect.week4.high"					"High Erect"
+"song.week4.milf"						"M.I.L.F."
+"song.week4.milf.censor"				"Mom"
 
 // Character names
 "character.bf-car"		"Boyfriend (Car)"
@@ -16,3 +21,4 @@
 
 // Stage names
 "stage.limo"			"Limo Ride"
+"stage.limoErect"		"Limo Ride [Erect]"

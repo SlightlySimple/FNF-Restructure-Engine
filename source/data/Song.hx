@@ -16,7 +16,7 @@ typedef SongData =
 	var artist:String;
 	var charter:String;
 	var preview:Array<Float>;
-	var ratings:Array<Int>;
+	var ?ratings:Array<Int>;
 	var ?useBeats:Bool;
 	var ?useMustHit:Null<Bool>;
 	var ?skipCountdown:Null<Bool>;
@@ -26,6 +26,7 @@ typedef SongData =
 	var ?speed:Null<Float>;
 	var ?scrollSpeeds:Array<Array<Float>>;
 	var ?altSpeedCalc:Null<Bool>;
+	var ?metaFile:String;
 	var ?eventFile:String;
 	var ?columns:Array<SongColumnData>;
 	var ?columnDivisions:Array<Int>;
@@ -33,8 +34,9 @@ typedef SongData =
 	var ?allNotetypes:Array<String>;
 	var ?notetypeSingers:Array<Array<String>>;
 	var ?notetypeOverridesCam:Null<Bool>;
-	var player1:String;
-	var player2:String;
+	var ?characters:Array<String>;
+	var ?player1:String;
+	var ?player2:String;
 	var ?player3:String;
 	var ?characterPrefix:String;
 	var ?characterSuffix:String;
@@ -44,7 +46,7 @@ typedef SongData =
 	var stage:String;
 	var ?tracks:Array<Array<Dynamic>>;
 	var ?needsVoices:Null<Bool>;
-	var notes:Array<SectionData>;
+	var ?notes:Array<SectionData>;
 	var ?noteType:Array<String>;
 	var ?uiSkin:String;
 	var ?events:Array<EventData>;
@@ -128,6 +130,7 @@ typedef EventParams =
 
 typedef SongQuickInfo =
 {
+	var name:String;
 	var bpmRange:Array<Float>;
 	var ratings:Array<Int>;
 }
@@ -165,11 +168,11 @@ class Song
 		return retSong;
 	}
 
-	public static function chartPath(id:String, ?difficulty:String = "normal", ?alert:Bool = true):String
+	public static function chartPath(id:String, ?difficulty:String = "normal", ?variant:String = "bf", ?alert:Bool = true):String
 	{
-		var idShort:String = id.substring(id.lastIndexOf("/")+1, id.length);
+		var idShort:String = id.substring(id.lastIndexOf("/") + 1, id.length);
 
-		var fileChecks:Array<String> = [id + "/" + idShort + "-" + difficulty, id + "/" + difficulty, id + "/" + idShort];
+		var fileChecks:Array<String> = [id + "/" + variant + "/" + idShort + "-" + difficulty, id + "/" + variant + "/" + difficulty, id + "/" + variant + "/" + idShort, id + "/" + idShort + "-" + difficulty, id + "/" + difficulty, id + "/" + idShort];
 		for (f in fileChecks)
 		{
 			if (Paths.jsonExists("songs/" + f))
@@ -193,18 +196,21 @@ class Song
 		return "";
 	}
 
-	public static function loadSong(id:String, difficulty:String, ?shouldCorrectEvents:Bool = true, ?shouldParse:Bool = true):SongData
+	public static function loadSong(id:String, difficulty:String, ?variant:String = "bf", ?shouldCorrectEvents:Bool = true, ?shouldParse:Bool = true):SongData
 	{
-		return loadSongDirect(chartPath(id, difficulty), true, shouldCorrectEvents, shouldParse);
+		return loadSongDirect(chartPath(id, difficulty, variant), true, shouldCorrectEvents, shouldParse);
 	}
 
-	public static function getSongName(id:String, ?difficulty:String = "normal"):String
+	public static function getSongName(id:String, ?difficulty:String = "normal", ?variant:String = "bf"):String
 	{
-		var filename:String = chartPath(id, difficulty);
+		var filename:String = chartPath(id, difficulty, variant);
 
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
+		{
 			data = cast Paths.json(filename).song;
+			data = applyDataAndMeta(data, filename);
+		}
 
 		if (data != null)
 		{
@@ -212,7 +218,11 @@ class Song
 				return Lang.get(data.song);
 		}
 
-		var hash:String = "#song." + id.replace("/", ".");
+		var hash:String = "#song." + difficulty + "." + id.replace("/", ".");
+		if (Lang.get(hash) != hash)
+			return Lang.get(hash);
+
+		hash = "#song." + id.replace("/", ".");
 		if (Lang.get(hash) != hash)
 			return Lang.get(hash);
 
@@ -222,57 +232,49 @@ class Song
 		return id;
 	}
 
-	public static function getSongNameFromData(id:String, data:SongData):String
+	public static function getSongNameFromData(id:String, ?difficulty:String = "normal", data:SongData):String
 	{
 		if (data.song.startsWith("#"))
 			return Lang.get(data.song);
 
-		var hash:String = "#song." + id.replace("/", ".");
+		var hash:String = "#song." + difficulty + "." + id.replace("/", ".");
+		if (Lang.get(hash) != hash)
+			return Lang.get(hash);
+
+		hash = "#song." + id.replace("/", ".");
 		if (Lang.get(hash) != hash)
 			return Lang.get(hash);
 
 		return data.song;
 	}
 
-	public static function getSongArtist(id:String, ?difficulty:String = "normal"):String
+	public static function getSongArtist(id:String, ?difficulty:String = "normal", ?variant:String = "bf"):String
 	{
-		var filename:String = chartPath(id, difficulty);
+		var filename:String = chartPath(id, difficulty, variant);
 
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
 			data = cast Paths.json(filename).song;
-			if (data != null && data.artist != null)
-				return data.artist;
+			data = applyDataAndMeta(data, filename);
 		}
 
-		filename = filename.substring(0, filename.lastIndexOf("/")+1) + "_data";
-		if (Paths.jsonExists(filename))
-		{
-			data = cast Paths.json(filename);
-			if (data != null && data.artist != null)
-				return data.artist;
-		}
-
-		filename = filename.substring(0, filename.lastIndexOf("/"));
-		filename = filename.substring(0, filename.lastIndexOf("/")+1) + "_data";
-		if (Paths.jsonExists(filename))
-		{
-			data = cast Paths.json(filename);
-			if (data != null && data.artist != null)
-				return data.artist;
-		}
+		if (data != null && data.artist != null)
+			return data.artist;
 
 		return "";
 	}
 
-	public static function getSongSideList(id:String, ?difficulty:String = "normal"):Array<String>
+	public static function getSongSideList(id:String, ?difficulty:String = "normal", ?variant:String = "bf"):Array<String>
 	{
-		var filename:String = chartPath(id, difficulty);
+		var filename:String = chartPath(id, difficulty, variant);
 
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
+		{
 			data = cast Paths.json(filename).song;
+			data = applyDataAndMeta(data, filename);
+		}
 
 		if (data != null)
 		{
@@ -283,17 +285,20 @@ class Song
 		return [];
 	}
 
-	public static function getSongQuickInfo(id:String, difficulty:String):SongQuickInfo
+	public static function getSongQuickInfo(id:String, difficulty:String, ?variant:String = "bf"):SongQuickInfo
 	{
-		var filename:String = chartPath(id, difficulty);
+		var filename:String = chartPath(id, difficulty, variant);
 
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
+		{
 			data = cast Paths.json(filename).song;
+			data = applyDataAndMeta(data, filename);
+		}
 
 		if (data != null)
 		{
-			var quickInfo:SongQuickInfo = {bpmRange: [], ratings: [0, 0]};
+			var quickInfo:SongQuickInfo = {name: getSongNameFromData(id, difficulty, data), bpmRange: [], ratings: [0, 0]};
 			if (data.ratings != null)
 				quickInfo.ratings = data.ratings;
 			if (data.bpmMap != null)
@@ -332,15 +337,18 @@ class Song
 		return null;
 	}
 
-	public static function getFreeplayTrackFromSong(id:String, ?difficulty:String = "normal"):FreeplayTrack
+	public static function getFreeplayTrackFromSong(id:String, ?difficulty:String = "normal", ?variant:String = "bf"):FreeplayTrack
 	{
 		var ret:FreeplayTrack = {name: "Inst", timings: [], start: -1, end: -1};
 
-		var filename:String = chartPath(id, difficulty);
+		var filename:String = chartPath(id, difficulty, variant);
 
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
+		{
 			data = cast Paths.json(filename).song;
+			data = applyDataAndMeta(data, filename);
+		}
 
 		if (data != null)
 		{
@@ -407,27 +415,11 @@ class Song
 			tracks: [["Inst", 0, 0], ["Voices", 1, 0]],
 			notes: [{mustHitSection: false, lengthInSteps: 16, sectionNotes: []}]
 		}
-		if ( Paths.jsonExists(filename) )
+		if (Paths.jsonExists(filename))
 			retSong = cast Paths.json(filename).song;
 
 		// Load in external song data if it exists
-		var dataPaths:Array<String> = [];
-		var dataPathArray:Array<String> = filename.split("/");
-		dataPathArray.pop();
-		dataPathArray.push("_data");
-		var dataPath:String = dataPathArray.join("/");
-		if ( Paths.jsonExists(dataPath) )
-			dataPaths.unshift(dataPath);
-
-		dataPathArray.pop();
-		dataPathArray.pop();
-		dataPathArray.push("_data");
-		dataPath = dataPathArray.join("/");
-		if ( Paths.jsonExists(dataPath) )
-			dataPaths.unshift(dataPath);
-
-		if (dataPaths.length > 0)
-			retSong = applyDataFile(retSong, combineDataFile(dataPaths));
+		retSong = applyDataAndMeta(retSong, filename);
 
 		if (retSong.eventFile == null || retSong.eventFile == "")
 			retSong.eventFile = "_events";
@@ -438,11 +430,45 @@ class Song
 		eventsPathArray.pop();
 		eventsPathArray.push(retSong.eventFile);
 		var eventsPath:String = eventsPathArray.join("/");
-		if ( Paths.jsonExists(eventsPath) )
+		if (Paths.jsonExists(eventsPath))
 			retSong.events = loadEvents(eventsPath);
 
 		if (shouldParse)
 			return parseSongData(retSong, deleteOutsideNotes, shouldCorrectEvents);
+		return retSong;
+	}
+
+	static function applyDataAndMeta(song:SongData, filename:String):SongData
+	{
+		var retSong:SongData = song;
+
+		var dataPaths:Array<String> = [];
+		var dataPathArray:Array<String> = filename.split("/");
+		dataPathArray.pop();
+		dataPathArray.push("_data");
+		var dataPath:String = dataPathArray.join("/");
+		if (Paths.jsonExists(dataPath))
+			dataPaths.unshift(dataPath);
+
+		dataPathArray.pop();
+		dataPathArray.pop();
+		dataPathArray.push("_data");
+		dataPath = dataPathArray.join("/");
+		if (Paths.jsonExists(dataPath))
+			dataPaths.unshift(dataPath);
+
+		if (dataPaths.length > 0)
+			retSong = applyDataFile(retSong, combineDataFile(dataPaths));
+
+		if (retSong.metaFile != null && retSong.metaFile != "")
+		{
+			var metaPathArray:Array<String> = filename.split("/");
+			metaPathArray.pop();
+			metaPathArray.push(retSong.metaFile);
+			var metaPath:String = metaPathArray.join("/");
+			retSong = applyMetaFile(retSong, Paths.json(metaPath));
+		}
+
 		return retSong;
 	}
 
@@ -478,6 +504,9 @@ class Song
 
 		if (retSong.skipCountdown == null)
 			retSong.skipCountdown = baseData.skipCountdown;
+
+		if (retSong.metaFile == null || retSong.metaFile == "")
+			retSong.metaFile = baseData.metaFile;
 
 		if (retSong.eventFile == null || retSong.eventFile == "")
 			retSong.eventFile = baseData.eventFile;
@@ -535,9 +564,6 @@ class Song
 		if (retSong.tracks == null)
 			retSong.tracks = baseData.tracks;
 
-		if (retSong.allNotetypes == null)
-			retSong.allNotetypes = baseData.allNotetypes;
-
 		if (retSong.notetypeSingers == null)
 			retSong.notetypeSingers = baseData.notetypeSingers;
 
@@ -545,6 +571,105 @@ class Song
 			retSong.notetypeOverridesCam = baseData.notetypeOverridesCam;
 
 		if (retSong.music == null)
+			retSong.music = baseData.music;
+
+		return retSong;
+	}
+
+	static function applyMetaFile(song:SongData, baseData:SongData):SongData
+	{
+		var retSong:SongData = song;
+
+		if (baseData.song != null)
+			retSong.song = baseData.song;
+
+		if (baseData.artist != null)
+			retSong.artist = baseData.artist;
+
+		if (baseData.charter != null)
+			retSong.charter = baseData.charter;
+
+		if (baseData.preview != null && baseData.preview.length >= 2)
+			retSong.preview = baseData.preview;
+
+		if (baseData.skipCountdown != null)
+			retSong.skipCountdown = baseData.skipCountdown;
+
+		if (baseData.eventFile != null)
+			retSong.eventFile = baseData.eventFile;
+
+		if (baseData.offset != null)
+			retSong.offset = baseData.offset;
+
+		if (baseData.characters != null)
+		{
+			for (i in 0...baseData.characters.length)
+			{
+				if (baseData.characters[i] != null && baseData.characters[i] != "")
+					Reflect.setField(retSong, "player" + Std.string(i + 1), baseData.characters[i]);
+			}
+		}
+		else
+		{
+			if (baseData.player1 != null && baseData.player1 != "")
+				retSong.player1 = baseData.player1;
+
+			if (baseData.player2 != null && baseData.player2 != "")
+				retSong.player2 = baseData.player2;
+
+			if (baseData.player3 != null && baseData.player3 != "")
+				retSong.player3 = baseData.player3;
+
+			var i:Int = 4;
+			while (Reflect.hasField(retSong, "player" + Std.string(i)) || Reflect.hasField(baseData, "player" + Std.string(i)))
+			{
+				if (Reflect.hasField(baseData, "player" + Std.string(i)))
+					Reflect.setField(retSong, "player" + Std.string(i), Reflect.field(baseData, "player" + Std.string(i)));
+				i++;
+			}
+		}
+
+		if (baseData.characterPrefix != null)
+			retSong.characterPrefix = baseData.characterPrefix;
+
+		if (baseData.characterSuffix != null)
+			retSong.characterSuffix = baseData.characterSuffix;
+
+		if (baseData.stage != null && baseData.stage != "")
+			retSong.stage = baseData.stage;
+
+		if (baseData.uiSkin != null && baseData.uiSkin != "")
+			retSong.uiSkin = baseData.uiSkin;
+
+		if (baseData.noteType != null && baseData.noteType.length > 0)
+			retSong.noteType = baseData.noteType;
+
+		if (baseData.columnDivisionNames != null)
+			retSong.columnDivisionNames = baseData.columnDivisionNames;
+
+		if (baseData.bpmMap != null && baseData.bpmMap.length > 0)
+			retSong.bpmMap = baseData.bpmMap;
+		else if (baseData.bpm != null)
+			retSong.bpmMap = [[0, baseData.bpm]];
+
+		if (baseData.scrollSpeeds != null && baseData.scrollSpeeds.length > 0)
+			retSong.scrollSpeeds = baseData.scrollSpeeds;
+		else if (baseData.speed != null)
+			retSong.scrollSpeeds = [[0, baseData.speed]];
+
+		if (baseData.altSpeedCalc != null)
+			retSong.altSpeedCalc = baseData.altSpeedCalc;
+
+		if (baseData.tracks != null)
+			retSong.tracks = baseData.tracks;
+
+		if (baseData.notetypeSingers != null)
+			retSong.notetypeSingers = baseData.notetypeSingers;
+
+		if (baseData.notetypeOverridesCam != null)
+			retSong.notetypeOverridesCam = baseData.notetypeOverridesCam;
+
+		if (baseData.music != null)
 			retSong.music = baseData.music;
 
 		return retSong;
@@ -679,16 +804,22 @@ class Song
 		if (retSong.bpmMap == null || retSong.bpmMap.length == 0)
 		{
 			retSong.bpmMap = [[0, retSong.bpm]];
+			var totalSteps:Int = 0;
 
 			for (i in 0...retSong.notes.length)
 			{
 				if (retSong.notes[i].changeBPM)
 				{
 					if (i > 0)
-						retSong.bpmMap.push([i * 4, retSong.notes[i].bpm]);
+						retSong.bpmMap.push([totalSteps / 4.0, retSong.notes[i].bpm]);
 					else
 						retSong.bpmMap[0][1] = retSong.notes[i].bpm;
 				}
+
+				if (retSong.notes[i].lengthInSteps == null)
+					totalSteps += 16;
+				else
+					totalSteps += retSong.notes[i].lengthInSteps;
 			}
 		}
 
@@ -853,12 +984,21 @@ class Song
 				if (n[1] < 0 || (n[1] >= retSong.columns.length && deleteOutsideNotes))
 					poppers.push(n);
 
-				for (quickNote in quickNotes)
+				if (!poppers.contains(n))
 				{
-					if (Math.abs(quickNote[0] - n[0]) < 15 && quickNote[1] == n[1])
-						poppers.push(n);
+					if (quickNotes.length > n[1])
+					{
+						if (quickNotes[n[1]].filter(function(quickNote:Float) { return Math.abs(quickNote - n[0]) < 15; }).length > 0)
+							poppers.push(n);
+					}
 				}
-				quickNotes.push([n[0], n[1]]);
+
+				if (quickNotes.length <= n[1])
+				{
+					while (quickNotes.length <= n[1])
+						quickNotes.push([]);
+				}
+				quickNotes[n[1]].push(n[0]);
 			}
 			for (p in poppers)
 				s.sectionNotes.remove(p);

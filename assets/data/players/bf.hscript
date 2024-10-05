@@ -1,0 +1,203 @@
+introActions = [];
+outroActions = [];
+
+function create()
+{
+	state.pinkBack.color = 0xFFFFD863;
+
+	card = new FlxSpriteGroup();
+	insert(state.members.indexOf(state.cardGlow), card);
+	outroActions.push(function() {
+		remove(card, true);
+	});
+	state.createCharacterSelectTransition([card], -60, 0.8);
+
+
+
+	orangeRect = new FlxSprite(84, 440).makeGraphic(Std.int(state.pinkBack.width), 75, 0xFFFEDA00);
+	card.add(orangeRect);
+
+	orangeRectLeft = new FlxSprite(0, orangeRect.y).makeGraphic(100, Std.int(orangeRect.height), 0xFFFFD400);
+	card.add(orangeRectLeft);
+
+	FlxSpriteUtil.alphaMaskFlxSprite(orangeRect, state.pinkBack, orangeRect);
+
+	if (state.newCharacter)
+	{
+		newCharacterCard = [];
+		darkBg = CreateSprite("ui/freeplay/newCharacter/darkback");
+		card.add(darkBg);
+		newCharacterCard.push(darkBg);
+	}
+
+
+
+	grpTxtScrolls = new FlxSpriteGroup();
+	card.add(grpTxtScrolls);
+
+	if (state.newCharacter)
+	{
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 163, Lang.get("#freeplay.backgroundText.newCharacter.0"), FlxG.width, true, 43, 0xFF139376, -4));
+		grpTxtScrolls.add(new FreeplayScrollingText(-440, 215, Lang.get("#freeplay.backgroundText.newCharacter.1"), FlxG.width, true, 80, 0xFF99BDF2, 2));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 286, Lang.get("#freeplay.backgroundText.newCharacter.2"), FlxG.width, true, 43, 0xFF40EA84, -2));
+		grpTxtScrolls.add(new FreeplayScrollingText(-220, 331, Lang.get("#freeplay.backgroundText.newCharacter.1"), FlxG.width, true, 80, 0xFF99BDF2, 2));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 402, Lang.get("#freeplay.backgroundText.newCharacter.0"), FlxG.width, true, 43, 0xFF139376, -4));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 458, Lang.get("#freeplay.backgroundText.newCharacter.1"), FlxG.width, true, 80, 0xFF99BDF2, 2));
+	}
+	else
+	{
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 160, Lang.get("#freeplay.backgroundText.0"), FlxG.width, true, 43, 0xFFFFF383, 6.8));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 220, Lang.get("#freeplay.backgroundText.1"), FlxG.width, false, 60, 0xFFFF9963, -3.8));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 285, Lang.get("#freeplay.backgroundText.2"), FlxG.width, true, 43, FlxColor.WHITE, 3.5));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 335, Lang.get("#freeplay.backgroundText.1"), FlxG.width, false, 60, 0xFFFF9963, -3.8));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 397, Lang.get("#freeplay.backgroundText.0"), FlxG.width, true, 43, 0xFFFFF383, 6.8));
+		grpTxtScrolls.add(new FreeplayScrollingText(0, 450, Lang.get("#freeplay.backgroundText.1"), FlxG.width, false, 60, 0xFFFEA400, -3.8));
+	}
+
+	if (state.newCharacter)
+	{
+		multiplyBar = CreateSprite("ui/freeplay/newCharacter/multiplyBar", -10, 440);
+		multiplyBar.blend = BlendMode.MULTIPLY;
+		card.add(multiplyBar);
+		newCharacterCard.push(multiplyBar);
+
+		lightLayer = CreateSprite("ui/freeplay/newCharacter/orange gradient", -360, 230);
+		lightLayer.blend = BlendMode.ADD;
+		card.add(lightLayer);
+		newCharacterCard.push(lightLayer);
+
+		multiply1 = CreateSprite("ui/freeplay/newCharacter/red", -15, -125);
+		multiply1.blend = BlendMode.MULTIPLY;
+		card.add(multiply1);
+		newCharacterCard.push(multiply1);
+
+		multiply2 = CreateSprite("ui/freeplay/newCharacter/red", -15, -125);
+		multiply2.blend = BlendMode.MULTIPLY;
+		card.add(multiply2);
+		newCharacterCard.push(multiply2);
+
+		lightLayer2 = CreateSprite("ui/freeplay/newCharacter/orange gradient", -360, 230);
+		lightLayer2.blend = BlendMode.ADD;
+		card.add(lightLayer2);
+		newCharacterCard.push(lightLayer2);
+
+		yellow = CreateSprite("ui/freeplay/newCharacter/yellow bg piece");
+		yellow.blend = BlendMode.MULTIPLY;
+		card.add(yellow);
+		newCharacterCard.push(yellow);
+
+		lightLayer3 = CreateSprite("ui/freeplay/newCharacter/red gradient", -360, 290);
+		lightLayer3.blend = BlendMode.ADD;
+		card.add(lightLayer3);
+		newCharacterCard.push(lightLayer3);
+	}
+
+	introActions.push(function() {
+		orangeRect.visible = false;
+		orangeRectLeft.visible = false;
+		grpTxtScrolls.visible = false;
+
+		if (state.newCharacter)
+		{
+			for (s in newCharacterCard)
+				s.visible = false;
+		}
+
+		new FlxTimer().start(18 / 24, function(tmr:FlxTimer) {
+			if (state.newCharacter)
+			{
+				for (s in newCharacterCard)
+					s.visible = true;
+			}
+			else
+			{
+				state.pinkBack.color = 0xFFFFD863;
+				orangeRect.visible = true;
+				orangeRectLeft.visible = true;
+			}
+			grpTxtScrolls.visible = true;
+		});
+	});
+
+
+
+	confirmGlow = CreateSprite("ui/freeplay/characters/bf/confirmGlow", -30, 240);
+	confirmGlow.blend = BlendMode.ADD;
+	confirmGlow.visible = false;
+
+	confirmGlow2 = CreateSprite("ui/freeplay/characters/bf/confirmGlow2", confirmGlow.x, confirmGlow.y);
+	confirmGlow2.visible = false;
+
+	card.add(confirmGlow2);
+	card.add(confirmGlow);
+
+	confirmTextGlow = CreateSprite("ui/freeplay/characters/bf/glowingText", -8, 115);
+	confirmTextGlow.blend = BlendMode.ADD;
+	confirmTextGlow.visible = false;
+	card.add(confirmTextGlow);
+
+	backingTextYeah = new FlxAnimate(640, 370, Paths.atlas("ui/freeplay/characters/bf/backing-text-yeah"));
+	backingTextYeah.anim.addBySymbol("BF back card confirm raw", "BF back card confirm raw", 0, 0, 24);
+	backingTextYeah.visible = false;
+	card.add(backingTextYeah);
+}
+
+function doIntro()
+{
+	for (action in introActions)
+		action();
+}
+
+function doOutro()
+{
+	for (action in outroActions)
+		action();
+}
+
+_timer = 0;
+function update(elapsed)
+{
+	if (state.newCharacter)
+	{
+		_timer += elapsed * 2;
+		var sinTest = (FlxMath.fastSin(_timer) + 1) / 2;
+		lightLayer.alpha = FlxMath.lerp(0.4, 1, sinTest);
+		lightLayer2.alpha = FlxMath.lerp(0.2, 0.5, sinTest);
+		lightLayer3.alpha = FlxMath.lerp(0.1, 0.7, sinTest);
+
+		multiply1.alpha = FlxMath.lerp(1, 0.21, sinTest);
+		multiply2.alpha = FlxMath.lerp(1, 0.21, sinTest);
+
+		yellow.alpha = FlxMath.lerp(0.2, 0.72, sinTest);
+
+		state.bgDad.color = FlxColor.interpolate(0xFF2E2E46, 0xFF60607B, sinTest);
+	}
+}
+
+function confirmAnim()
+{
+	FlxTween.color(state.pinkBack, 0.33, 0xFFFFD0D5, 0xFF171831, {ease: FlxEase.quadOut});
+	orangeRect.visible = false;
+	orangeRectLeft.visible = false;
+	grpTxtScrolls.forEachAlive(function(txt) { txt.visible = false; });
+
+	confirmGlow.alpha = 0;
+	confirmGlow.visible = true;
+	confirmGlow2.alpha = 0;
+	confirmGlow2.visible = true;
+
+	backingTextYeah.visible = true;
+	backingTextYeah.playAnim("BF back card confirm raw", true, false);
+
+	FlxTween.tween(confirmGlow2, {alpha: 0.5}, 0.33, {
+		ease: FlxEase.quadOut,
+		onComplete: function(twn) {
+			confirmGlow2.alpha = 0.6;
+			confirmGlow.alpha = 1;
+			confirmTextGlow.visible = true;
+			confirmTextGlow.alpha = 1;
+			FlxTween.tween(confirmTextGlow, {alpha: 0.4}, 0.5);
+			FlxTween.tween(confirmGlow, {alpha: 0}, 0.5);
+		}
+	});
+}

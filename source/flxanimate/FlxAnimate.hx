@@ -83,7 +83,11 @@ class FlxAnimate extends FlxSprite
 		 * At first, it was thought that this was some type of hoax, but now the U.S. Geological Survey has confirmed that it is indeed a natural meteorite.
 		 */
 		makeGraphic(1, 1, 0);
+		loadAtlas(Path, Settings);
+	}
 
+	public function loadAtlas(Path:String, ?Settings:Settings)
+	{
 		if (!Assets.exists('$Path/Animation.json') && haxe.io.Path.extension(Path) != "zip")
 		{
 			FlxG.log.error('Animation file hasnt been found in Path $Path, Have you written the correct Path?');
@@ -91,7 +95,7 @@ class FlxAnimate extends FlxSprite
 		}
 		var jsontxt:AnimAtlas = atlasSetting(Path);
 		timeline = jsontxt.AN.TL;
-		anim = new FlxAnim(X, Y, jsontxt);
+		anim = new FlxAnim(x, y, jsontxt);
 		setTheSettings(Settings);
 		anim.setLayers();
 		anim.frames = FlxSpriteMap.fromAnimate(Path);
@@ -107,6 +111,8 @@ class FlxAnimate extends FlxSprite
 			anim.alpha = alpha;
 			anim.scale = scale;
 			anim.antialiasing = antialiasing;
+			if (shader != null)
+				anim.shader = shader;
 			anim.cameras = cameras;
 			anim.x = x - offset.x + curAnimX;
 			anim.y = y - offset.y + curAnimY;

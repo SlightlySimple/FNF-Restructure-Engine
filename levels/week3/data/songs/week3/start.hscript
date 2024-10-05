@@ -1,0 +1,55 @@
+function create()
+{
+	if (PlayState.variant == "pico" && PlayState.firstPlay)
+		game.canStartCountdown = false;
+	game.hscriptAdd("cutscene");
+}
+
+sides = ["l", "r"];
+tick = 0;
+
+function startCountdown()
+{
+	if (!game.canStartCountdown)
+	{
+		side = (FlxG.random.bool(50) ? 0 : 1);
+		rare = (FlxG.random.bool(8) ? "_rare" : "");
+
+		if (rare == "_rare")
+		{
+			if (side == game.chartSide)
+				game.hscriptIdSet("cutscene", "endFunction", gameOverYeah);
+			else
+			{
+				for (note in game.noteArray)
+				{
+					if (!game.playerColumns.contains(note.column))
+					{
+						note.typeData.p2ShouldMiss = true;
+						if (note.child != null)
+							note.child.typeData.p2ShouldMiss = true;
+					}
+				}
+				game.tracks[side + 1].volume = 0;
+				game.allCharacters[side].visible = false;
+			}
+		}
+
+		game.hscriptIdExec("cutscene", "initCutscene", ["songs/week3/cutscene_" + sides[side] + rare]);
+
+		new FlxTimer().start(0.001, function(tmr) {
+			game.hscriptIdExec("cutscene", "startCutscene", []);
+		});
+	}
+}
+
+function gameOverYeah()
+{
+	new FlxTimer().start(1, function(tmr) {
+		game.camOther.fade(FlxColor.BLACK, 1, false, null, true);
+	});
+
+	new FlxTimer().start(2, function(tmr) {
+		game.songFinished();
+	});
+}

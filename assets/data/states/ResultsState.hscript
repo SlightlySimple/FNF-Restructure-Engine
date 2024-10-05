@@ -1,4 +1,5 @@
 import flixel.util.FlxGradient;
+import flixel.math.FlxRect;
 import flixel.effects.FlxFlicker;
 import data.ScoreSystems;
 
@@ -18,6 +19,7 @@ categories = [
 ];
 
 rankData = new StringMap();
+charSprites = [];
 
 rankData["SHIT"] = {
 	displayText: "LOSS",
@@ -25,19 +27,7 @@ rankData["SHIT"] = {
 	musicDelay: 2 / 24,
 	charactersDelay: 95 / 24,
 	textDelay: 186 / 24,
-	highscoreDelay: 207 / 24,
-	spawnCharacters: function() {
-		chars = new FlxAnimate(0, 20, Paths.atlas("ui/results/ranks/resultsSHIT"));
-		chars.anim.addByFrameName("Intro", "Intro", 24);
-		chars.anim.addByFrameName("Loop Start", "Loop Start", 24);
-		chars.visible = false;
-		this.add(chars);
-	},
-	rankSequence: function() {
-		chars.visible = true;
-		chars.playAnim("Intro");
-		chars.onComplete = function() { chars.playAnim("Loop Start", true, true); }
-	}
+	highscoreDelay: 207 / 24
 }
 
 rankData["GOOD"] = {
@@ -46,32 +36,7 @@ rankData["GOOD"] = {
 	musicDelay: 3 / 24,
 	charactersDelay: 95 / 24,
 	textDelay: 107 / 24,
-	highscoreDelay: 127 / 24,
-	spawnCharacters: function() {
-		gf = CreateSprite("ui/results/ranks/resultsGOOD/resultGirlfriendGOOD", 625, 325);
-		gf.addAnim("clap", "Girlfriend Good Anim", 24, false);
-		gf.animation.finishCallback = function(anim) {
-			gf.animation.play(anim, true, false, gf.animation.curAnim.curFrame - 5);
-		}
-		gf.visible = false;
-		this.add(gf);
-
-		bf = CreateSprite("ui/results/ranks/resultsGOOD/resultBoyfriendGOOD", 640, -200);
-		bf.addAnim("fall", "Boyfriend Good Anim", 24, false);
-		bf.animation.finishCallback = function(anim) {
-			bf.animation.play(anim, true, false, bf.animation.curAnim.curFrame - 5);
-		}
-		bf.visible = false;
-		this.add(bf);
-	},
-	rankSequence: function() {
-		bf.visible = true;
-		bf.playAnim("fall");
-		new FlxTimer().start(11 / 12, function(tmr) {
-			gf.visible = true;
-			gf.playAnim("clap");
-		});
-	}
+	highscoreDelay: 127 / 24
 }
 
 rankData["GREAT"] = {
@@ -80,30 +45,7 @@ rankData["GREAT"] = {
 	musicDelay: 5 / 24,
 	charactersDelay: 95 / 24,
 	textDelay: 109 / 24,
-	highscoreDelay: 129 / 24,
-	spawnCharacters: function() {
-		gf = new FlxAnimate(802, 331, Paths.atlas("ui/results/ranks/resultsGREAT/gf"));
-		gf.scale.set(0.93, 0.93);
-		gf.anim.addBySymbol("gf jumping", "gf jumping", 0, 0, 24);
-		gf.visible = false;
-		this.add(gf);
-
-		bf = new FlxAnimate(929, 363, Paths.atlas("ui/results/ranks/resultsGREAT/bf"));
-		bf.scale.set(0.93, 0.93);
-		bf.anim.addBySymbol("bf jumping ", "bf jumping ", 0, 0, 24);
-		bf.visible = false;
-		this.add(bf);
-	},
-	rankSequence: function() {
-		bf.visible = true;
-		bf.playAnim("bf jumping ");
-		bf.onComplete = function() { bf.isPlaying = true; bf.anim.curFrame = 15; }
-		new FlxTimer().start(0.25, function(tmr) {
-			gf.visible = true;
-			gf.playAnim("gf jumping");
-			gf.onComplete = function() { gf.isPlaying = true; gf.anim.curFrame = 9; }
-		});
-	}
+	highscoreDelay: 129 / 24
 }
 
 rankData["EXCELLENT"] = {
@@ -112,18 +54,7 @@ rankData["EXCELLENT"] = {
 	musicDelay: 0,
 	charactersDelay: 97 / 24,
 	textDelay: 122 / 24,
-	highscoreDelay: 140 / 24,
-	spawnCharacters: function() {
-		chars = new FlxAnimate(1329, 429, Paths.atlas("ui/results/ranks/resultsEXCELLENT"));
-		chars.anim.addBySymbol("bf results excellent", "bf results excellent", 0, 0, 24);
-		chars.visible = false;
-		this.add(chars);
-	},
-	rankSequence: function() {
-		chars.visible = true;
-		chars.playAnim("bf results excellent");
-		chars.onComplete = function() { chars.isPlaying = true; chars.anim.curFrame = 28; }
-	}
+	highscoreDelay: 140 / 24
 }
 
 rankData["PERFECT"] = {
@@ -132,34 +63,7 @@ rankData["PERFECT"] = {
 	musicDelay: 95 / 24,
 	charactersDelay: 95 / 24,
 	textDelay: 129 / 24,
-	highscoreDelay: 140 / 24,
-	spawnCharacters: function() {
-		chars = new FlxAnimate(1342, 370, Paths.atlas("ui/results/ranks/resultsPERFECT"));
-		chars.anim.addBySymbol("boyfriend perfect rank", "boyfriend perfect rank", 0, 0, 24);
-		chars.visible = false;
-		this.add(chars);
-
-		hearts = new FlxAnimate(1342, 370, Paths.atlas("ui/results/ranks/resultsPERFECT/hearts"));
-		hearts.anim.addBySymbol("hearts full anim", "hearts full anim", 0, 0, 24);
-		hearts.onComplete = function() { hearts.isPlaying = true; hearts.anim.curFrame = 43; }
-		hearts.visible = false;
-		this.add(hearts);
-	},
-	rankSequence: function() {
-		chars.visible = true;
-		chars.playAnim("boyfriend perfect rank");
-		chars.onComplete = function() { chars.isPlaying = true; chars.anim.curFrame = 137; }
-		new FlxTimer().start(106 / 24, function(tmr) {
-			hearts.visible = true;
-			hearts.playAnim("hearts full anim");
-		});
-	}
-}
-
-if (!Options.options.naughtiness)
-{
-	rankData["PERFECT"].spawnCharacters = rankData["EXCELLENT"].spawnCharacters;
-	rankData["PERFECT"].rankSequence = rankData["EXCELLENT"].rankSequence;
+	highscoreDelay: 140 / 24
 }
 
 rankData["PERFECT_GOLD"] = rankData["PERFECT"];
@@ -173,6 +77,8 @@ function create(data)
 	playbackRate = data.playbackRate;
 	add = this.add;
 	viewingSong = 0;
+
+	characterData = Paths.json("players/" + PlayState.variant);
 
 	rank = rankData[ResultsState.ranks[data.score.rank]];
 
@@ -192,10 +98,10 @@ function create(data)
 	spawnRankText();
 	new FlxTimer().start(rank.textDelay, function(tmr) { displayRankText(); });
 
-	rank.spawnCharacters();
+	spawnCharacters();
 	new FlxTimer().start(rank.charactersDelay, function(tmr) {
 		timerThenSongName();
-		rank.rankSequence();
+		rankSequence();
 	});
 
 	var songNameFont = FlxBitmapFont.fromMonospace(Paths.image("ui/results/tardlingSpritesheet"), "AaBbCcDdEeFfGgHhiIJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz:1234567890-.,!()", FlxPoint.get(49, 62));
@@ -249,7 +155,10 @@ function create(data)
 	resultsGraphGroup = new FlxSpriteGroup(510, -750);
 	add(resultsGraphGroup);
 
-	var resultsGraph = CreateSprite("ui/results/resultsGraph");
+	var resultsGraphPath = "ui/results/resultsGraph";
+	if (Paths.imageExists(resultsGraphPath + "-" + PlayState.variant))
+		resultsGraphPath += "-" + PlayState.variant;
+	var resultsGraph = CreateSprite(resultsGraphPath);
 	resultsGraphGroup.add(resultsGraph);
 
 	var soundSystem = CreateSprite("ui/results/soundSystem", -15, -180);
@@ -262,25 +171,27 @@ function create(data)
 		soundSystem.playAnim("idle");
 	});
 
-	graphSongName = new FlxText(90, 130, 650, data.songNames[0]).setFormat("FNF Dialogue", 24, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+	var blur = new FlxRuntimeShader(Paths.shader("gaussianBlur"), null);
+	blur.data._amount.value = [1];
+
+	graphSongNameBlur = new FlxText(100, 150, 0, data.songNames[0]).setFormat("5by7", 32, FlxColor.fromString(characterData.freeplayStyle.capsuleTextColors[0]));
 	if (data.artistNames[0] != "")
-		graphSongName.text = Lang.get("#results.songNameAndArtist", [data.songNames[0], data.artistNames[0]]);
+		graphSongNameBlur.text = Lang.get("#results.songNameAndArtist", [data.songNames[0], data.artistNames[0]]);
 	if (data.songNames.length > 1)
-		graphSongName.text = "< " + graphSongName.text + " >";
-	graphSongName.alignment = CENTER;
+		graphSongNameBlur.text = "< " + graphSongName.text + " >";
+	graphSongNameBlur.shader = blur;
+	resultsGraphGroup.add(graphSongNameBlur);
+
+	graphSongName = new FlxText(100, 150, 0, graphSongNameBlur.text).setFormat("5by7", 32, FlxColor.WHITE);
 	resultsGraphGroup.add(graphSongName);
 
-	hitGraph = new FlxSprite(90, 160);
+	refreshGraphSongNameMinMax();
+
+	hitGraph = new FlxSprite(90, 230);
 	hitGraph.antialiasing = false;
 	resultsGraphGroup.add(hitGraph);
 
-	var lateText = new FlxText(90, 135, 0, Lang.get("#results.hitGraph.late", [Std.string(ScoreSystems.judgeMS[4])])).setFormat("FNF Dialogue", 18, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-	resultsGraphGroup.add(lateText);
-
-	var earlyText = new FlxText(90, 360, 0, Lang.get("#results.hitGraph.early", [Std.string(ScoreSystems.judgeMS[4])])).setFormat("FNF Dialogue", 18, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-	resultsGraphGroup.add(earlyText);
-
-	healthGraph = new FlxSprite(90, 390);
+	healthGraph = new FlxSprite(90, 460);
 	healthGraph.antialiasing = false;
 	resultsGraphGroup.add(healthGraph);
 
@@ -385,7 +296,11 @@ function create(data)
 	if (ResultsState.music != "")
 	{
 		var musicPath = ResultsState.music;
-		if (Paths.musicExists(musicPath + rank.musicPath))
+		if (Paths.musicExists(musicPath + rank.musicPath + "-" + PlayState.variant))
+			musicPath += rank.musicPath + "-" + PlayState.variant;
+		else if (Paths.musicExists(musicPath + "-" + PlayState.variant))
+			musicPath += "-" + PlayState.variant;
+		else if (Paths.musicExists(musicPath + rank.musicPath))
 			musicPath += rank.musicPath;
 		this.menuMusic = new FlxSound().loadEmbedded(Paths.music(musicPath), true);
 		FlxG.sound.list.add(this.menuMusic);
@@ -484,6 +399,84 @@ function displayRankText()
 	rankTextBackGrp.forEachAlive(function(txt) { txt.alpha = 1; });
 }
 
+function spawnCharacters()
+{
+	var rankCharacters = [];
+	switch (ResultsState.ranks[resultsData.score.rank])
+	{
+		case "SHIT": rankCharacters = characterData.results.loss;
+		case "GOOD": rankCharacters = characterData.results.good;
+		case "GREAT": rankCharacters = characterData.results.great;
+		case "EXCELLENT": rankCharacters = characterData.results.excellent;
+		case "PERFECT": rankCharacters = characterData.results.perfect;
+		case "PERFECT_GOLD": rankCharacters = characterData.results.perfectGold;
+	}
+
+	rankCharacters.sort(function(a, b) { return a.zIndex - b.zIndex; });
+
+	for (s in rankCharacters)
+	{
+		switch (s.renderType)
+		{
+			case "sparrow":
+				var spr = CreateSprite("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath, s.offsets[0], s.offsets[1]);
+				spr.addAnim("go", "", 24, false);
+				if (s.scale != null)
+					spr.scale.set(s.scale, s.scale);
+				spr.alpha = 0.001;
+				add(spr);
+				charSprites.push({sprite: spr, type: s.renderType, delay: s.delay, loopFrame: s.loopFrame, loopFrameLabel: s.loopFrameLabel});
+
+			case "animateatlas":
+				var spr = new FlxAnimate(s.offsets[0], s.offsets[1], Paths.atlas("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath));
+				spr.anim.addByFrameName("go", "", 24);
+				if (s.loopFrameLabel != null)
+					spr.anim.addByFrameName("loop", s.loopFrameLabel, 24);
+				if (s.scale != null)
+					spr.scale.set(s.scale, s.scale);
+				spr.alpha = 0.001;
+				add(spr);
+				charSprites.push({sprite: spr, type: s.renderType, delay: s.delay, loopFrame: s.loopFrame, loopFrameLabel: s.loopFrameLabel});
+		}
+	}
+}
+
+function rankSequence()
+{
+	for (s in charSprites)
+	{
+		if (s.delay != null)
+		{
+			new FlxTimer().start(s.delay, function(tmr) {
+				rankSequenceAction(s);
+			});
+		}
+		else
+			rankSequenceAction(s);
+	}
+}
+
+function rankSequenceAction(s)
+{
+	s.sprite.alpha = 1;
+	switch (s.type)
+	{
+		case "sparrow":
+			s.sprite.playAnim("go");
+			if (s.loopFrame != null)
+				s.sprite.animation.finishCallback = function(anim) { s.sprite.animation.play("go", true, false, s.loopFrame); }
+
+		case "animateatlas":
+			s.sprite.playAnim("go");
+			s.sprite.curAnimX *= s.sprite.scale.x;
+			s.sprite.curAnimY *= s.sprite.scale.y;
+			if (s.loopFrameLabel != null)
+				s.sprite.onComplete = function() { s.sprite.playAnim("loop"); }
+			else if (s.loopFrame != null)
+				s.sprite.onComplete = function() { s.sprite.isPlaying = true; s.sprite.anim.curFrame = s.loopFrame; }
+	}
+}
+
 function update(elapsed)
 {
 	if (!this.transitioning)
@@ -500,13 +493,42 @@ function update(elapsed)
 			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
 		}
 
-		if (resultsData.noteGraphData.length > 1)
+		if (resultsGraphGroup.y > -30)
 		{
-			if (Options.keyJustPressed("ui_right"))
-				changeSelection(1);
+			graphSongNameTimer += elapsed;
+			if (graphSongNameMinX > graphSongNameMaxX)
+			{
+				if (graphSongNameTimer <= 0.3)
+					graphSongName.x = graphSongNameMinX;
+				else if (graphSongNameTimer <= 2.3)
+				{
+					var tweenVal = (graphSongNameTimer - 0.3) / 2;
+					graphSongName.x = graphSongNameMinX + ((graphSongNameMaxX - graphSongNameMinX) * FlxEase.sineInOut(tweenVal));
+				}
+				else if (graphSongNameTimer <= 2.6)
+					graphSongName.x = graphSongNameMaxX;
+				else if (graphSongNameTimer <= 4.6)
+				{
+					var tweenVal = (graphSongNameTimer - 2.6) / 2;
+					graphSongName.x = graphSongNameMaxX + ((graphSongNameMinX - graphSongNameMaxX) * FlxEase.sineInOut(tweenVal));
+				}
+				else
+					graphSongNameTimer = 0;
+				graphSongNameBlur.x = graphSongName.x;
 
-			if (Options.keyJustPressed("ui_left"))
-				changeSelection(-1);
+				var rect = new FlxRect(-(graphSongName.x - graphSongNameMinX), 0, 630, graphSongName.height);
+				graphSongName.clipRect = rect;
+				graphSongNameBlur.clipRect = rect;
+			}
+
+			if (resultsData.noteGraphData.length > 1)
+			{
+				if (Options.keyJustPressed("ui_right"))
+					changeSelection(1);
+
+				if (Options.keyJustPressed("ui_left"))
+					changeSelection(-1);
+			}
 		}
 	}
 
@@ -593,11 +615,33 @@ function changeSelection(val)
 	graphSongName.text = "< " + resultsData.songNames[viewingSong] + " >";
 	if (resultsData.artistNames[viewingSong] != "")
 		graphSongName.text = "< " + Lang.get("#results.songNameAndArtist", [resultsData.songNames[viewingSong], resultsData.artistNames[viewingSong]]) + " >";
+	graphSongNameBlur.text = graphSongName.text;
+
+	refreshGraphSongNameMinMax();
 	rebuildGraphs();
+}
+
+function refreshGraphSongNameMinMax()
+{
+	graphSongNameMinX = graphSongName.x;
+	graphSongNameMaxX = graphSongName.x;
+	graphSongNameTimer = 0;
+	if (graphSongName.width > 630)
+	{
+		graphSongNameMaxX = graphSongName.x - (graphSongName.width - 630);
+		var rect = new FlxRect(-(graphSongName.x - graphSongNameMinX), 0, 630, graphSongName.height);
+		graphSongName.clipRect = rect;
+		graphSongNameBlur.clipRect = rect;
+	}
+	else
+	{
+		graphSongName.clipRect = null;
+		graphSongNameBlur.clipRect = null;
+	}
 }
 
 function rebuildGraphs()
 {
 	hitGraph.pixels = new HitGraph(650, 200, resultsData.noteGraphData[viewingSong], playbackRate);
-	healthGraph.pixels = new HealthGraph(650, 150, ResultsState.healthData[viewingSong]);
+	healthGraph.pixels = new HealthGraph(650, 120, ResultsState.healthData[viewingSong]);
 }

@@ -1,11 +1,23 @@
 curLight = -1;
+alphaShit = 1;
 
 function create()
 {
+	lightShader = new FlxRuntimeShader(Paths.shader("building"));
+
 	for (i in 0...5)
+	{
 		stage.pieces["win" + Std.string(i)].visible = false;
+		stage.pieces["win" + Std.string(i)].shader = lightShader;
+	}
 	curLight = FlxG.random.int(0, 4);
 	showWindow();
+}
+
+function update(elapsed)
+{
+	alphaShit += Conductor.beatSeconds * elapsed * 1.5;
+	lightShader.setFloat("alphaShit", alphaShit);
 }
 
 function beatHit()
@@ -20,9 +32,6 @@ function beatHit()
 
 function showWindow()
 {
-	var win = stage.pieces["win" + Std.string(curLight)];
-	win.visible = true;
-	FlxTween.cancelTweensOf(win, ["alpha"]);
-	win.alpha = 1;
-	FlxTween.tween(win, {alpha: 0}, Conductor.beatSeconds * 4);
+	stage.pieces["win" + Std.string(curLight)].visible = true;
+	alphaShit = 0;
 }

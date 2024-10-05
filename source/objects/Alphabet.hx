@@ -204,7 +204,7 @@ class TypedAlphabet extends Alphabet
 	var timer:Float = 0;
 
 	public var delay:Float = 0.05;
-	public var paused:Bool = false;
+	public var paused:Bool = true;
 	public var sounds:Array<FlxSound> = [];
 	public var finishSounds = false;
 	public var completeCallback:Void->Void;

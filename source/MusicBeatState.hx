@@ -32,7 +32,15 @@ class MusicBeatState extends FlxState
 				transitionScript.execFunc("transitionIn", []);
 			}
 			else
-				add(new FunkinTransition(this, false));
+			{
+				var state:FlxState = this;
+				if (state.subState != null)
+				{
+					while (state.subState != null)
+						state = state.subState;
+				}
+				state.add(new FunkinTransition(this, false));
+			}
 		}
 		else
 			doTransIn = true;

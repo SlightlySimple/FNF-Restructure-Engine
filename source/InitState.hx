@@ -53,6 +53,11 @@ class InitState extends MusicBeatState
 				Util.favoriteSongs = cast Json.parse(File.getContent("assets/data/favorites.json"));
 			File.saveContent("assets/data/favorites.json", Json.stringify(Util.favoriteSongs));
 
+			if (FlxG.save.data.unlockedCharacters == null)
+				FlxG.save.data.unlockedCharacters = ["bf"];
+			if (FlxG.save.data.unlockedCharactersSeen == null)
+				FlxG.save.data.unlockedCharactersSeen = ["bf"];
+
 			FlxG.autoPause = Options.options.autoPause;
 			FlxG.sound.muteKeys = Options.getKeys("mute");
 			FlxG.sound.volumeUpKeys = Options.getKeys("vol_up");

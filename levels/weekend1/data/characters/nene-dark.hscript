@@ -1,0 +1,31 @@
+function create()
+{
+	game.hscriptAdd(scriptId + "-shared", "data/characters/nene-shared", false, this);
+	game.hscriptAdd(scriptId + "-dark", "data/scripts/darkCharacter", false, this);
+	game.hscriptIdExec(scriptId + "-shared", "create");
+
+	abot = new Character(this.charX, this.charY, "abot-dark");
+	abot.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abot);
+
+	game.hscriptAdd(scriptId + "-abot", "data/" + abot.characterData.script, false, abot);
+	game.hscriptIdExec(scriptId + "-abot", "create");
+
+	game.hscriptIdExec(scriptId + "-dark", "create");
+}
+
+function destroy()
+{
+	game.hscriptIdExec(scriptId + "-shared", "destroy");
+	game.hscriptIdExec(scriptId + "-dark", "destroy");
+	game.hscriptRemove(scriptId + "-shared");
+	game.hscriptRemove(scriptId + "-dark");
+}
+
+function update(elapsed)
+{
+	abot.visible = this.visible;
+	abot.repositionCharacter(this.charX, this.charY);
+	abot.color = this.color;
+	game.hscriptIdSet(scriptId + "-abot", "alpha", this.alpha);
+}

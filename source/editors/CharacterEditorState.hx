@@ -111,6 +111,8 @@ class CharacterEditorState extends BaseEditorState
 	var animOffsetY:Stepper;
 	var animLooped:Checkbox;
 	var animFPS:Stepper;
+	var animFlipX:Checkbox;
+	var animFlipY:Checkbox;
 	var animLoopedFrames:Stepper;
 	var animSustainFrame:Stepper;
 	var animImportant:Checkbox;
@@ -215,7 +217,7 @@ class CharacterEditorState extends BaseEditorState
 					break;
 				}
 			}
-			characterData.animations.push({name: "idle", prefix: idleIndex, fps: 24, loop: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
+			characterData.animations.push({name: "idle", prefix: idleIndex, fps: 24, loop: false, flipX: false, flipY: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
 			characterData.firstAnimation = "idle";
 			characterData.idles = ["idle"];
 		}
@@ -1024,6 +1026,36 @@ class CharacterEditorState extends BaseEditorState
 			}
 		}
 
+		animFlipX = cast element("animFlipX");
+		animFlipX.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].flipX;
+			return animFlipX.checked;
+		}
+		animFlipX.onClicked = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].flipX = animFlipX.checked;
+				reloadSingleAnimation(curCharAnim);
+				playCurrentAnim();
+			}
+		}
+
+		animFlipY = cast element("animFlipY");
+		animFlipY.condition = function() {
+			if (characterData.animations.length > 0)
+				return characterData.animations[curCharAnim].flipY;
+			return animFlipY.checked;
+		}
+		animFlipY.onClicked = function() {
+			if (characterData.animations.length > 0)
+			{
+				characterData.animations[curCharAnim].flipY = animFlipY.checked;
+				reloadSingleAnimation(curCharAnim);
+				playCurrentAnim();
+			}
+		}
+
 		animLoopedFrames = cast element("animLoopedFrames");
 		animLoopedFrames.condition = function() {
 			if (characterData.animations.length > 0)
@@ -1105,6 +1137,8 @@ class CharacterEditorState extends BaseEditorState
 					asset: "",
 					fps: animFPS.valueInt,
 					loop: animLooped.checked,
+					flipX: animFlipX.checked,
+					flipY: animFlipY.checked,
 					loopedFrames: animLoopedFrames.valueInt,
 					sustainFrame: animSustainFrame.valueInt,
 					important: animImportant.checked,
@@ -1805,7 +1839,7 @@ class CharacterEditorState extends BaseEditorState
 		if (ind == -1 && !optional)
 			ind = 0;
 		if (ind > -1)
-			characterData.animations.push({name: name, prefix: allAnimPrefixes[ind], fps: 24, loop: loop, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
+			characterData.animations.push({name: name, prefix: allAnimPrefixes[ind], fps: 24, loop: loop, flipX: false, flipY: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
 	}
 
 	function createTemplateAnimationTwoConditions(name:String, cond1:String->Bool, cond2:String->Bool, optional:Bool)
@@ -1833,7 +1867,7 @@ class CharacterEditorState extends BaseEditorState
 		if (ind == -1 && !optional)
 			ind = 0;
 		if (ind > -1)
-			characterData.animations.push({name: name, prefix: allAnimPrefixes[ind], fps: 24, loop: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
+			characterData.animations.push({name: name, prefix: allAnimPrefixes[ind], fps: 24, loop: false, flipX: false, flipY: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
 	}
 
 	function createTemplateAnimationLeftRight(name:String, condition:String->Bool, optional:Bool)
@@ -1853,8 +1887,8 @@ class CharacterEditorState extends BaseEditorState
 		{
 			var len:Int = allAnimData.split(allAnimPrefixes[ind]).length - 1;
 			var lenHalf:Int = Std.int(len / 2);
-			characterData.animations.push({name: name + "Left", prefix: allAnimPrefixes[ind], indices: Character.uncompactIndices([-1, 0, lenHalf - 1]), fps: 24, loop: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
-			characterData.animations.push({name: name + "Right", prefix: allAnimPrefixes[ind], indices: Character.uncompactIndices([-1, lenHalf, len - 1]), fps: 24, loop: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
+			characterData.animations.push({name: name + "Left", prefix: allAnimPrefixes[ind], indices: Character.uncompactIndices([-1, 0, lenHalf - 1]), fps: 24, loop: false, flipX: false, flipY: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
+			characterData.animations.push({name: name + "Right", prefix: allAnimPrefixes[ind], indices: Character.uncompactIndices([-1, lenHalf, len - 1]), fps: 24, loop: false, flipX: false, flipY: false, loopedFrames: 0, sustainFrame: -1, offsets: [0, 0]});
 		}
 	}
 
@@ -2139,8 +2173,8 @@ class CharacterEditorState extends BaseEditorState
 				case "tiles":
 					if (anim.indices != null && anim.indices.length > 0)
 					{
-						character.animation.add(anim.name, anim.indices, anim.fps, anim.loop);
-						characterGhost.animation.add(anim.name, anim.indices, anim.fps, anim.loop);
+						character.animation.add(anim.name, anim.indices, anim.fps, anim.loop, anim.flipX, anim.flipY);
+						characterGhost.animation.add(anim.name, anim.indices, anim.fps, anim.loop, anim.flipX, anim.flipY);
 					}
 
 				default:
@@ -2148,13 +2182,13 @@ class CharacterEditorState extends BaseEditorState
 					{
 						if (anim.indices != null && anim.indices.length > 0)
 						{
-							character.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
-							characterGhost.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop);
+							character.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop, anim.flipX, anim.flipY);
+							characterGhost.animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.fps, anim.loop, anim.flipX, anim.flipY);
 						}
 						else
 						{
-							character.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
-							characterGhost.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop);
+							character.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop, anim.flipX, anim.flipY);
+							characterGhost.animation.addByPrefix(anim.name, anim.prefix, anim.fps, anim.loop, anim.flipX, anim.flipY);
 						}
 					}
 			}
@@ -2274,8 +2308,7 @@ class CharacterEditorState extends BaseEditorState
 				else if (ghost)
 				{
 					characterGhost.animation.play(animName, forced);
-					characterGhost.offset.x = animData.offsets[0] + baseOffsets[0];
-					characterGhost.offset.y = animData.offsets[1] + baseOffsets[1];
+					updateOffsetsForAnimation(characterGhost, animData);
 				}
 				else
 				{
@@ -2339,33 +2372,36 @@ class CharacterEditorState extends BaseEditorState
 					character.offset.y = animData.offsets[1];
 				}
 				else
-				{
-					character.offset.x = animData.offsets[0] + baseOffsets[0];
-					character.offset.y = animData.offsets[1] + baseOffsets[1];
+					updateOffsetsForAnimation(character, animData);
+			}
+		}
+	}
 
-					if (baseFrameSize[1] > 0)
-					{
-						switch (characterData.offsetAlign[0])
-						{
-							case "bottom":
-								character.offset.y -= (baseFrameSize[1] - character.frameHeight) * character.scale.y;
+	function updateOffsetsForAnimation(sprite:FlxSprite, anim:CharacterAnimation)
+	{
+		sprite.offset.x = anim.offsets[0] + baseOffsets[0];
+		sprite.offset.y = anim.offsets[1] + baseOffsets[1];
 
-							case "middle":
-								character.offset.y -= Math.round(((baseFrameSize[1] - character.frameHeight) * character.scale.y) / 2);
-						}
-					}
-					if (baseFrameSize[0] > 0)
-					{
-						switch (characterData.offsetAlign[1])
-						{
-							case "right":
-								character.offset.x -= (baseFrameSize[0] - character.frameWidth) * character.scale.x;
+		if (baseFrameSize[1] > 0)
+		{
+			switch (characterData.offsetAlign[0])
+			{
+				case "bottom":
+					sprite.offset.y -= (baseFrameSize[1] - sprite.frameHeight) * sprite.scale.y;
 
-							case "center":
-								character.offset.x -= Math.round(((baseFrameSize[0] - character.frameWidth) * character.scale.x) / 2);
-						}
-					}
-				}
+				case "middle":
+					sprite.offset.y -= Math.round(((baseFrameSize[1] - sprite.frameHeight) * sprite.scale.y) / 2);
+			}
+		}
+		if (baseFrameSize[0] > 0)
+		{
+			switch (characterData.offsetAlign[1])
+			{
+				case "right":
+					sprite.offset.x -= (baseFrameSize[0] - sprite.frameWidth) * sprite.scale.x;
+
+				case "center":
+					sprite.offset.x -= Math.round(((baseFrameSize[0] - sprite.frameWidth) * sprite.scale.x) / 2);
 			}
 		}
 	}
@@ -2663,6 +2699,12 @@ class CharacterEditorState extends BaseEditorState
 			if (a.fps == 24)
 				Reflect.deleteField(a, "fps");
 
+			if (a.flipX == false)
+				Reflect.deleteField(a, "flipX");
+
+			if (a.flipY == false)
+				Reflect.deleteField(a, "flipY");
+
 			if (a.indices != null)
 			{
 				if (a.indices.length <= 0)
@@ -2858,6 +2900,10 @@ class CharacterEditorState extends BaseEditorState
 										anim.offsets = a.offsets;
 									if (a.looped != null)
 										anim.loop = a.looped;
+									if (a.flipX != null)
+										anim.flipX = a.flipX;
+									if (a.flipY != null)
+										anim.flipY = a.flipY;
 									if (a.frameRate != null)
 										anim.fps = a.frameRate;
 									if (a.frameIndices != null)

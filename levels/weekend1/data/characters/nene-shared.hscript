@@ -1,0 +1,24 @@
+function update(elapsed)
+{
+	if (game.health > 25)
+	{
+		if (this.curAnimName == "raiseKnife" && this.curAnimFinished)
+		{
+			this.canDance = true;
+			this.playAnim("lowerKnife", true, true);
+			this.lastIdle = 0;
+		}
+	}
+}
+
+function beatHit()
+{
+	if (game.health <= 25)
+	{
+		if (StringTools.startsWith(this.curAnimName, "dance"))
+		{
+			this.canDance = false;
+			this.playAnim("raiseKnife");
+		}
+	}
+}

@@ -436,14 +436,58 @@ class ScoreSystems
 		save.flush();
 	}
 
-	public static function weekBeaten(week:String):Bool
+	public static function songBeaten(song:String, ?difficulties:Array<String> = null):Bool
+	{
+		if (songScores.exists(song.toLowerCase()))
+		{
+			if (difficulties == null)
+			{
+				for (diff in songScores[song.toLowerCase()].keys())
+				{
+					for (side in songScores[song.toLowerCase()][diff])
+					{
+						if (side.score > 0)
+							return true;
+					}
+				}
+			}
+			else
+			{
+				for (diff in difficulties)
+				{
+					if (songScores[song.toLowerCase()].exists(diff))
+					{
+						for (side in songScores[song.toLowerCase()][diff])
+						{
+							if (side.score > 0)
+								return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public static function weekBeaten(week:String, ?difficulties:Array<String> = null):Bool
 	{
 		if (weekScores.exists(week.toLowerCase()))
 		{
-			for (diff in weekScores[week.toLowerCase()].keys())
+			if (difficulties == null)
 			{
-				if (weekScores[week.toLowerCase()][diff].score > 0)
-					return true;
+				for (diff in weekScores[week.toLowerCase()].keys())
+				{
+					if (weekScores[week.toLowerCase()][diff].score > 0)
+						return true;
+				}
+			}
+			else
+			{
+				for (diff in difficulties)
+				{
+					if (weekScores[week.toLowerCase()].exists(diff) && weekScores[week.toLowerCase()][diff].score > 0)
+						return true;
+				}
 			}
 		}
 		return false;

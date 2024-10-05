@@ -289,7 +289,7 @@ class SMFile
 				thisSongData.events = Song.correctEvents(thisSongData.events, smTimingStruct);
 			}
 
-			newSM.quickInfo[diff] = {bpmRange: [bpmMin, bpmMax], ratings: thisSongData.ratings};
+			newSM.quickInfo[diff] = {name: newSM.title, bpmRange: [bpmMin, bpmMax], ratings: thisSongData.ratings};
 
 			if (shouldParse)
 				newSM.songData.push(Song.parseSongData(thisSongData, true, true));

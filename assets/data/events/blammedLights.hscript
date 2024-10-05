@@ -3,6 +3,7 @@ lightColor = "blue";
 allColors = ["blue", "green", "pink", "red", "orange"];
 allColorIndexes = [0xFF31A2FD, 0xFF31FD8C, 0xFFF794F7, 0xFFF96D63, 0xFFFBA633];
 allWindows = [];
+windowShader = null;
 exceptions = [];
 
 function create()
@@ -22,6 +23,9 @@ function onEvent(event)
 		if (Std.isOfType(m, Character))
 			chars.push(m);
 	}
+
+	if (allWindows.length > 0 && windowShader == null)
+		windowShader = game.stage.pieces["win0"].shader;
 
 	if (event.parameters.enabled)
 	{
@@ -56,14 +60,13 @@ function onEvent(event)
 		}
 
 		for (w in allWindows)
+		{
 			w.visible = false;
+			w.shader = null;
+		}
 
 		if (colorIndex < allWindows.length)
-		{
 			allWindows[colorIndex].visible = true;
-			FlxTween.cancelTweensOf(allWindows[colorIndex], ["alpha"]);
-			allWindows[colorIndex].alpha = 1;
-		}
 	}
 	else if (lightsOn)
 	{
@@ -77,8 +80,7 @@ function onEvent(event)
 
 		lightsOn = false;
 
-		var colorIndex = allColors.indexOf(lightColor);
-		if (colorIndex < allWindows.length)
-			FlxTween.tween(allWindows[colorIndex], {alpha: 0}, Conductor.beatSeconds * 4);
+		for (w in allWindows)
+			w.shader = windowShader;
 	}
 }

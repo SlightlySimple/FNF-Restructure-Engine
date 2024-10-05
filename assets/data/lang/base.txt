@@ -17,25 +17,29 @@
 "story.resetWarning"	"Are you sure you want to reset your score for this week and difficulty?"
 
 // Freeplay menu
-"freeplay.title"					"FREEPLAY"
-"freeplay.ost"						"OFFICIAL OST"
-"freeplay.backgroundText.0"			"HOT BLOODED IN MORE WAYS THAN ONE"
-"freeplay.backgroundText.1"			"BOYFRIEND"
-"freeplay.backgroundText.2"			"PROTECT YO NUTS"
-"freeplay.backgroundText.2.censor"	"PROTECT YO SELF"
-"freeplay.song.random"				"Random"
-"freeplay.song.locked"				"Locked"
-"freeplay.songInfo.artist"			"By %s1"
-"freeplay.songInfo.numKeys"			"Key Count: %s1"
-"freeplay.songInfo.length"			"Length: %s1"
-"freeplay.songInfo.notes"			"Notes: %s1"
-"freeplay.songInfo.noteCombos.1"	"Jumps: %s1"
-"freeplay.songInfo.noteCombos.2"	"Hands: %s1"
-"freeplay.songInfo.noteCombos.3"	"Quads: %s1"
-"freeplay.songInfo.sustains"		"Holds: %s1"
-"freeplay.songInfo.rolls"			"Rolls: %s1"
-"freeplay.songInfo.mines"			"Mines: %s1"
-"freeplay.resetWarning"				"Are you sure you want to reset your score for this song and difficulty?"
+"freeplay.title"							"FREEPLAY"
+"freeplay.ost"								"OFFICIAL OST"
+"freeplay.characterSelect"					"Press [ %s1 ] to change characters"
+"freeplay.backgroundText.0"					"HOT BLOODED IN MORE WAYS THAN ONE"
+"freeplay.backgroundText.1"					"BOYFRIEND"
+"freeplay.backgroundText.2"					"PROTECT YO NUTS"
+"freeplay.backgroundText.2.censor"			"PROTECT YO SELF"
+"freeplay.backgroundText.newCharacter.0"	"COULD IT BE A NEW FRIEND? OR FOE??"
+"freeplay.backgroundText.newCharacter.1"	"NEW UNLOCK!"
+"freeplay.backgroundText.newCharacter.2"	"SOMEONE'S WAITING!"
+"freeplay.song.random"						"Random"
+"freeplay.song.locked"						"Locked"
+"freeplay.songInfo.artist"					"By %s1"
+"freeplay.songInfo.numKeys"					"Key Count: %s1"
+"freeplay.songInfo.length"					"Length: %s1"
+"freeplay.songInfo.notes"					"Notes: %s1"
+"freeplay.songInfo.noteCombos.1"			"Jumps: %s1"
+"freeplay.songInfo.noteCombos.2"			"Hands: %s1"
+"freeplay.songInfo.noteCombos.3"			"Quads: %s1"
+"freeplay.songInfo.sustains"				"Holds: %s1"
+"freeplay.songInfo.rolls"					"Rolls: %s1"
+"freeplay.songInfo.mines"					"Mines: %s1"
+"freeplay.resetWarning"						"Are you sure you want to reset your score for this song and difficulty?"
 
 // Freeplay sandbox
 "freeplay.sandbox.default"			"Default"
@@ -101,10 +105,11 @@
 
 // Results screen
 "results.songNameAndArtist"	"%s1 by %s2"
-"results.hitGraph.early"	"Early (%s1 ms)"
-"results.hitGraph.late"		"Late (-%s1 ms)"
 "results.chartSide"			"Side: %s1"
 "results.playbackRate"		"Playback Rate: %s1x"
+
+// Character Unlock
+"characterUnlock.newCharacter"	"You can now play as     %s1."
 
 // Difficulties
 "difficulty.easy"		"Easy"

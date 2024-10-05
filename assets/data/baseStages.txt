@@ -1,6 +1,11 @@
 limoRide|limo
+limoRideErect|limoErect
 mainStage|stage
+mainStageErect|stageErect
 mallXmas|mall
+mallXmasErect|mallErect
 phillyTrain|philly
+phillyTrainErect|phillyErect
 spookyMansion|spooky
+spookyMansionErect|spookyErect
 tankmanBattlefield|tank

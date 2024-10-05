@@ -85,11 +85,12 @@ class WeekEditorState extends BaseEditorState
 
 		FlxSpriteUtil.alphaMaskFlxSprite(orangeBackShit, pinkBack, orangeBackShit);
 
-		var bgDad:FlxSprite = new FlxSprite(pinkBack.width * 0.75, 0, Paths.image("ui/freeplay/freeplayBGdad"));
+		var bgDad:FlxSprite = new FlxSprite(pinkBack.width * 0.75, 0, Paths.image("ui/freeplay/characters/bf/freeplayBGdad"));
 		bgDad.setGraphicSize(0, FlxG.height);
 		bgDad.updateHitbox();
 		var bgDadShader:FlxRuntimeShader = new FlxRuntimeShader(Paths.shader("AngleMask"), null);
 		bgDadShader.data.endPosition.value = [90, 100];
+		bgDadShader.data.extraTint.value = [1, 1, 1];
 		bgDad.shader = bgDadShader;
 		settingsStuff.add(bgDad);
 
@@ -441,6 +442,23 @@ class WeekEditorState extends BaseEditorState
 			}
 		}
 
+		var allVariants:Array<String> = Paths.listFilesSub("data/players/", ".json");
+
+		var songVariant:DropdownMenu = cast element("songVariant");
+		songVariant.valueList = allVariants;
+		songVariant.condition = function() {
+			if (weekData.songs.length > 0 && weekData.songs[curSong].variant != null)
+				return weekData.songs[curSong].variant;
+			return "bf";
+		}
+		songVariant.onChanged = function() {
+			if (weekData.songs.length > 0)
+			{
+				weekData.songs[curSong].variant = songVariant.value;
+				refreshSongs();
+			}
+		}
+
 		var songAlbums:TextButton = cast element("songAlbums");
 		songAlbums.onClicked = function()
 		{
@@ -681,6 +699,37 @@ class WeekEditorState extends BaseEditorState
 			}
 		}
 
+		var makeVariantFile:Button = cast element("makeVariantFile");
+		makeVariantFile.onClicked = function() {
+			if (weekData.songs.length > 0)
+			{
+				var _variant:WeekSongData = {
+					songId: weekData.songs[curSong].songId,
+					iconNew: weekData.songs[curSong].iconNew
+				}
+
+				if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, weekData.difficulties))
+					_variant.difficulties = weekData.songs[curSong].difficulties;
+
+				if (weekData.songs[curSong].albums != null && weekData.songs[curSong].albums.length > 0)
+					_variant.albums = weekData.songs[curSong].albums;
+
+				if (weekData.songs[curSong].title != null && weekData.songs[curSong].title.trim() != "")
+					_variant.title = weekData.songs[curSong].title;
+
+				if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
+				{
+					_variant.characters = weekData.songs[curSong].characters;
+					_variant.characterLabels = weekData.songs[curSong].characterLabels;
+				}
+
+				Reflect.deleteField(_variant, "songId");
+				var data:String = Json.stringify(_variant);
+				var file:FileBrowser = new FileBrowser();
+				file.save("_variant.json", data.trim());
+			}
+		}
+
 
 
 		var weekName:InputText = cast element("weekName");
@@ -918,7 +967,7 @@ class WeekEditorState extends BaseEditorState
 				var diffs:Array<String> = weekData.songs[i].difficulties;
 				var songName:String = "None";
 				if (weekData.songs[i].songId != "")
-					songName = Song.getSongName(weekData.songs[i].songId, diffs[0]);
+					songName = Song.getSongName(weekData.songs[i].songId, diffs[0], weekData.songs[i].variant);
 				if (weekData.songs[i].title != null && weekData.songs[i].title != "")
 					songName = Lang.get(weekData.songs[i].title);
 
@@ -1099,6 +1148,9 @@ class WeekEditorState extends BaseEditorState
 
 			if (s.albums != null && s.albums.length <= 0)
 				Reflect.deleteField(s, "albums");
+
+			if (s.variant != null && s.variant == "bf")
+				Reflect.deleteField(s, "variant");
 
 			if (s.title != null && s.title.trim() == "")
 				Reflect.deleteField(s, "title");

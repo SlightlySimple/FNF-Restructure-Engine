@@ -139,6 +139,9 @@ class StoryMenuState extends MusicBeatState
 					s.songId = id.substr(0, id.lastIndexOf("/")+1) + s.songId;
 			}
 
+			if (s.variant == null || s.variant == "")
+				s.variant = "bf";
+
 			if (s.difficulties == null || s.difficulties.length <= 0)
 				s.difficulties = wData.difficulties.copy();
 		}
@@ -319,7 +322,7 @@ class StoryMenuState extends MusicBeatState
 			categoriesList.push("");
 		for (c in ModLoader.modListLoaded)
 		{
-			if (possibleCats.contains(c) || Paths.hscriptExists("data/states/" + c + "-story"))
+			if (possibleCats.contains(c) || Paths.hscriptExists("data/states/" + ModLoader.modMenus[c].story))
 				categoriesList.push(c);
 		}
 
@@ -328,8 +331,8 @@ class StoryMenuState extends MusicBeatState
 			ArraySort.sort(categories[c], sortWeeks);
 
 		nav = new UINumeralNavigation(changeCategory, null, function() {
-			if (Paths.hscriptExists("data/states/" + categoriesList[curCategory] + "-story"))
-				FlxG.switchState(new HscriptState("data/states/" + categoriesList[curCategory] + "-story"));
+			if (ModLoader.modMenus.exists(categoriesList[curCategory]) && Paths.hscriptExists("data/states/" + ModLoader.modMenus[categoriesList[curCategory]].story))
+				FlxG.switchState(new HscriptState("data/states/" + ModLoader.modMenus[categoriesList[curCategory]].story));
 			else
 			{
 				menuState = 1;
@@ -769,7 +772,7 @@ class StoryMenuState extends MusicBeatState
 			var track:WeekSongData = weekData.songs[i];
 			if ((track.songId != null && track.songId != "") && (track.difficulties == null || track.difficulties.contains(difficulty)))
 			{
-				var songName:String = Song.getSongName(track.songId, difficulty);
+				var songName:String = Song.getSongName(track.songId, difficulty, track.variant);
 				tracks.text += songName;
 				if (i < weekData.songs.length - 1)
 					tracks.text += "\n";

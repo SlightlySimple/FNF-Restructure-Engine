@@ -8,6 +8,7 @@ import flixel.util.FlxTimer;
 import data.ObjectData;
 import data.Options;
 import menus.MainMenuState;
+import game.CharacterUnlockState;
 import objects.Alphabet;
 import objects.AnimatedSprite;
 import objects.Character;

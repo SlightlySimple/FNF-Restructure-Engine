@@ -1,17 +1,27 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week2"		"SPOOKY MONTH"
 
 // Song names
-"song.week2.spookeez"	"Spookeez"
-"song.week2.south"		"South"
-"song.week2.monster"	"Monster"
+"song.week2.spookeez"		"Spookeez"
+"song.erect.week2.spookeez"	"Spookeez Erect"
+"song.week2.spookeez.pico"	"Spookeez (Pico Mix)"
+"song.week2.south"			"South"
+"song.erect.week2.south"	"South Erect"
+"song.week2.south.pico"		"South (Pico Mix)"
+"song.week2.monster"		"Monster"
 
 // Character names
+"character.bf-dark"		"Boyfriend (Dark)"
+"character.gf-dark"		"Girlfriend (Dark)"
 "character.monster"		"Monster"
 "character.spooky"		"Spooky Kids"
+"character.spooky-dark"	"Spooky Kids (Dark)"
 
 // Stage names
 "stage.spooky"			"Spooky Mansion"
+"stage.spookyErect"		"Spooky Mansion [Erect]"
 
 // Subtitles
 "subtitles.monster.1"		"Guess it's time,"

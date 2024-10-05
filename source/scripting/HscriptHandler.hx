@@ -20,6 +20,7 @@ import flixel.text.FlxBitmapText;
 import flixel.graphics.frames.FlxBitmapFont;
 import flixel.addons.text.FlxTypeText;
 import flixel.util.FlxColor;
+import flixel.util.FlxSpriteUtil;
 import flixel.util.FlxTimer;
 import flixel.util.FlxAxes;
 import flixel.ui.FlxBar;
@@ -198,6 +199,11 @@ class HscriptColor			// FlxColor can't be used with hscript directly so we gotta
 	public static function lightness(color:FlxColor):Float
 	{
 		return color.lightness;
+	}
+
+	public static inline function interpolate(Color1:FlxColor, Color2:FlxColor, Factor:Float = 0.5):FlxColor
+	{
+		return FlxColor.interpolate(Color1, Color2, Factor);
 	}
 }
 
@@ -520,6 +526,7 @@ class HscriptHandler
 		interp.variables.set("AnimatedSprite", AnimatedSprite);
 		interp.variables.set("FlxSpriteGroup", FlxSpriteGroup);
 		interp.variables.set("FlxTypedSpriteGroup", FlxTypedSpriteGroup);
+		interp.variables.set("FlxSpriteUtil", FlxSpriteUtil);
 		interp.variables.set("FlxFramesCollection", FlxFramesCollection);
 		interp.variables.set("FlxFilterFrames", FlxFilterFrames);
 		interp.variables.set("CreateStrip", CreateStrip);

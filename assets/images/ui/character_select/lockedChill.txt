@@ -1,0 +1,6 @@
+770,208
+idle,0,0
+slideout,70,-3
+slidein,-13,-7
+death,152,194
+cannot select Label,-22,-7

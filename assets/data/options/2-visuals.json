@@ -127,6 +127,13 @@
 		},
 		{
 			"type": "bool",
+			"label": "#options.visuals.scoreCommas.name",
+			"description": "#options.visuals.scoreCommas.desc",
+			"variable": "scoreCommas",
+			"defValue": true
+		},
+		{
+			"type": "bool",
 			"label": "#options.visuals.comboBreaks.name",
 			"description": "#options.visuals.comboBreaks.desc",
 			"variable": "comboBreaks",

@@ -1,0 +1,42 @@
+shootingStarBeat = 0;
+shootingStarOffset = 2;
+
+function create()
+{
+	var shader = new FlxRuntimeShader(Paths.shader("adjustColor"));
+	shader.setFloat("hue", -30);
+	shader.setFloat("saturation", -20);
+	shader.setFloat("brightness", -30);
+	shader.setFloat("contrast", 0);
+
+	for (c in game.allCharacters)
+		c.shader = shader;
+	for (i in 0...5)
+		stage.pieces["limoDancer" + Std.string(i + 1)].shader = shader;
+	stage.pieces["fastCarLol"].shader = shader;
+
+	shootingStar = stage.pieces["shooting star"];
+
+	stage.pieces["mist1"].velocity.x = 1700;
+	stage.pieces["mist2"].velocity.x = 2100;
+	stage.pieces["mist3"].velocity.x = 900;
+	stage.pieces["mist4"].velocity.x = 700;
+	stage.pieces["mist5"].velocity.x = 100;
+}
+
+function beatHit()
+{
+	if (FlxG.random.bool(10) && game.curBeat > (shootingStarBeat + shootingStarOffset))
+		doShootingStar();
+}
+
+function doShootingStar()
+{
+	shootingStar.x = FlxG.random.int(50, 900);
+	shootingStar.y = FlxG.random.int(-10, 20);
+	shootingStar.flipX = FlxG.random.bool(50);
+	shootingStar.playAnim("shooting star");
+
+	shootingStarBeat = game.curBeat;
+	shootingStarOffset = FlxG.random.int(4, 8);
+}

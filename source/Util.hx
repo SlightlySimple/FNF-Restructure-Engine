@@ -38,7 +38,7 @@ class Util
 			Conductor.playMusic(menuSong, 0.7);
 	}
 
-	public static function gotoSong(song:String, diff:String, ?difficultyList:Array<String> = null, ?delay:Float = 0.75)
+	public static function gotoSong(song:String, diff:String, ?difficultyList:Array<String> = null, ?variant:String = "bf", ?variantScore:Bool = false, ?delay:Float = 0.75)
 	{
 		ResultsState.resetStatics();
 
@@ -47,6 +47,7 @@ class Util
 			FlxG.sound.music.fadeOut(0.5, 0, function(twn:FlxTween) { FlxG.sound.music.stop(); });
 
 			PlayState.firstPlay = true;
+			PlayState.variantScore = variantScore;
 			if (Std.isOfType(FlxG.state, HscriptState))
 				HscriptState.setFromState();
 			var diffs:Array<String> = [diff];
@@ -61,7 +62,7 @@ class Util
 				if (!diffs.contains(diff))
 					diffs.push(diff);
 			}
-			FlxG.switchState(new PlayState(false, song, diff, diffs));
+			FlxG.switchState(new PlayState(false, song, diff, diffs, null, variant));
 		});
 	}
 
@@ -74,6 +75,7 @@ class Util
 		{
 			FlxG.sound.music.fadeOut(0.5, 0, function(twn:FlxTween) { FlxG.sound.music.stop(); });
 			PlayState.firstPlay = true;
+			PlayState.variantScore = false;
 			var weekD:WeekData = StoryMenuState.parseWeek(week, true);
 			if (weekD.hscript != null && weekD.hscript != "")
 			{
@@ -96,7 +98,7 @@ class Util
 					if (!diffs.contains(diff))
 						diffs.push(diff);
 				}
-				FlxG.switchState(new PlayState(true, "", diff, diffs, week, 0));
+				FlxG.switchState(new PlayState(true, "", diff, diffs, week, 0, weekD.songs[0].variant));
 			}
 		});
 	}

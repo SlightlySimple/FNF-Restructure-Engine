@@ -43,6 +43,7 @@ class DropdownMenu extends FlxSpriteGroup
 	var dropdownTextObjects:Array<FlxText> = [];
 
 	public static var isOneActive:Bool = false;
+	public static var currentActive:DropdownMenu = null;
 
 	override public function new(x:Float, y:Float, text:String, list:Array<String>, ?blankOption:String = "", ?allowSearch:Bool = false)
 	{
@@ -117,13 +118,7 @@ class DropdownMenu extends FlxSpriteGroup
 							onChanged();
 					}
 
-					state.remove(dropdownList, true);
-					if (state.members.contains(scrollBar))
-						state.remove(scrollBar, true);
-					dropdownStatus = 0;
-					isOneActive = false;
-					if (searchObject != null)
-						searchObject.hasFocus = false;
+					close();
 				}
 				else if (FlxG.mouse.wheel != 0 && dropdownList.height > FlxG.height)
 				{
@@ -181,6 +176,7 @@ class DropdownMenu extends FlxSpriteGroup
 						hovered = false;
 						hoveredItem = -1;
 						isOneActive = true;
+						currentActive = this;
 						button.scale.set(1, 1);
 						FlxG.sound.play(Paths.sound("ui/editors/ClickDown"), 0.5);
 
@@ -224,6 +220,18 @@ class DropdownMenu extends FlxSpriteGroup
 						value = newVal;
 				}
 		}
+	}
+
+	public function close()
+	{
+		state.remove(dropdownList, true);
+		if (state.members.contains(scrollBar))
+			state.remove(scrollBar, true);
+		dropdownStatus = 0;
+		isOneActive = false;
+		currentActive = null;
+		if (searchObject != null)
+			searchObject.hasFocus = false;
 	}
 
 	function rebuildDropdownList()

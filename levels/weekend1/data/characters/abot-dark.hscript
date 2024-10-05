@@ -1,0 +1,27 @@
+import openfl.display.BitmapData;
+
+alpha = 1;
+
+function create()
+{
+	game.hscriptAdd(scriptId + "-shared", "data/characters/abot", false, this);
+	game.hscriptIdExec(scriptId + "-shared", "create");
+
+	stereoBG = game.hscriptIdGet(scriptId + "-shared", "stereoBG");
+
+    shader = new FlxRuntimeShader(Paths.shader("textureSwap"));
+    shader.data.fadeAmount.value = [0.0];
+	shader.data.image.input = Paths.image("characters/abot/abotSystem/spritemap1").bitmap;
+	this.shader = shader;
+}
+
+function updatePost(elapsed)
+{
+	stereoBG.color = 0xFF616785;
+    shader.data.fadeAmount.value = [1.0 - alpha];
+}
+
+function destroy()
+{
+	game.hscriptRemove(scriptId + "-shared");
+}

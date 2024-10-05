@@ -58,17 +58,13 @@ function onEvent(event)
 	var slot = getSlot(event.parameters.id.toLowerCase());
 	if (allowedSlots.contains(slot) && characterIds.contains(event.parameters.character))
 	{
-		doSwitch(game.allCharacters[slot], event.parameters.character);
+		var characterScript = "player" + Std.string(slot + 1);
 		if (slot == 2)
-		{
-			game.hscriptAdd('gf', 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
-			game.hscriptIdExec('gf', 'create', []);
-		}
-		else
-		{
-			game.hscriptAdd('player' + Std.string(slot+1), 'data/' + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
-			game.hscriptIdExec('player' + Std.string(slot+1), 'create', []);
-		}
+			characterScript = "gf";
+		game.hscriptIdExec(characterScript, "destroy", []);
+		doSwitch(game.allCharacters[slot], event.parameters.character);
+		game.hscriptAdd(characterScript, "data/" + game.allCharacters[slot].characterData.script, true, game.allCharacters[slot]);
+		game.hscriptIdExec(characterScript, "create", []);
 	}
 }
 

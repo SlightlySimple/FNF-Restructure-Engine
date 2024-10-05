@@ -1,0 +1,35 @@
+function create()
+{
+	game.hscriptAdd(scriptId + "-base", "data/stages/phillyStreets");
+	game.hscriptIdSet(scriptId + "-base", "stage", stage);
+	game.hscriptIdExec(scriptId + "-base", "create");
+
+	var shader = new FlxRuntimeShader(Paths.shader("adjustColor"));
+	shader.setFloat("hue", -5);
+	shader.setFloat("saturation", -40);
+	shader.setFloat("brightness", -20);
+	shader.setFloat("contrast", -25);
+
+	for (c in game.allCharacters)
+		c.shader = shader;
+
+	stage.pieces["mist0"].velocity.x = 172;
+	stage.pieces["mist1"].velocity.x = 150;
+	stage.pieces["mist2"].velocity.x = -80;
+	stage.pieces["mist3"].velocity.x = -50;
+	stage.pieces["mist4"].velocity.x = 40;
+	stage.pieces["mist5"].velocity.x = 20;
+}
+
+_timer = 0;
+function update(elapsed)
+{
+	_timer += elapsed;
+
+	stage.pieces["mist0"].y = 660 + (FlxMath.fastSin(_timer * 0.35) * 70);
+	stage.pieces["mist1"].y = 500 + (FlxMath.fastSin(_timer * 0.3) * 80);
+	stage.pieces["mist2"].y = 540 + (FlxMath.fastSin(_timer * 0.4) * 60);
+	stage.pieces["mist3"].y = 230 + (FlxMath.fastSin(_timer * 0.3) * 70);
+	stage.pieces["mist4"].y = 170 + (FlxMath.fastSin(_timer * 0.35) * 50);
+	stage.pieces["mist5"].y = -80 + (FlxMath.fastSin(_timer * 0.08) * 100);
+}

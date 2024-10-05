@@ -1,10 +1,15 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week6"			"HATING SIMULATOR FT. MOAWLING"
 
 // Song names
-"song.week6.senpai"	"Senpai"
-"song.week6.roses"	"Roses"
-"song.week6.thorns"	"Thorns"
+"song.week6.senpai"			"Senpai"
+"song.erect.week6.senpai"	"Senpai Erect"
+"song.week6.roses"			"Roses"
+"song.erect.week6.roses"	"Roses Erect"
+"song.week6.thorns"			"Thorns"
+"song.erect.week6.thorns"	"Thorns Erect"
 
 // Character names
 "character.bf-pixel"		"Boyfriend (Pixel)"

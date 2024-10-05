@@ -2,18 +2,25 @@
 "level.weekend1"		"DUE DEBTS"
 
 // Song names
-"song.weekend1.darnell"	"Darnell"
-"song.weekend1.lit-up"	"Lit Up"
-"song.weekend1.2hot"	"2Hot"
-"song.weekend1.blazin"	"Blazin'"
+"song.weekend1.darnell"		"Darnell"
+"song.weekend1.darnell.bf"	"Darnell (BF Mix)"
+"song.weekend1.lit-up"		"Lit Up"
+"song.weekend1.2hot"		"2Hot"
+"song.weekend1.blazin"		"Blazin'"
 
 // Character names
 "character.abot"			"ABot"
+"character.abot-dark"		"ABot (Dark)"
 "character.darnell"			"Darnell"
 "character.darnell-blazin"	"Darnell (Blazin')"
 "character.nene"			"Nene"
+"character.nene-christmas"	"Nene (Christmas)"
+"character.nene-dark"		"Nene (Dark)"
 "character.pico-blazin"		"Pico (Blazin')"
+"character.pico-christmas"	"Pico (Christmas)"
+"character.pico-dark"		"Pico (Dark)"
 
 // Stage names
-"stage.phillyBlazin"	"Philly (Blazin')"
-"stage.phillyStreets"	"Philly (Streets)"
+"stage.phillyBlazin"		"Philly (Blazin')"
+"stage.phillyStreets"		"Philly (Streets)"
+"stage.phillyStreetsErect"	"Philly (Streets) [Erect]"

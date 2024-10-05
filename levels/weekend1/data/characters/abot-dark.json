@@ -1,0 +1,1 @@
+{"asset":"characters/abot/dark/abotSystem/spritemap1","firstAnimation":"idle","danceSpeed":1,"camPosition":[0,0],"position":[-190,415],"facing":"right","healthbarColor":[255,255,255],"flip":false,"camPositionGameOver":[0,0],"antialias":true,"idles":["idle","idle"],"animations":[{"offsets":[0,0],"indices":[-1,0,15],"name":"idle"}]}

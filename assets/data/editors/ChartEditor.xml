@@ -69,6 +69,8 @@
 		</tab>
 		<tab name="Adv. Properties">
 			<vbox y="10">
+				<label text="Metadata File:"/>
+				<input id="metaFileInput" infoText="The file where certain song properties that are shared between charts of different difficulties are saved. Leave this blank if you do not wish to have any properties shared between chart difficulties."/>
 				<label text="Events File:"/>
 				<input id="eventFileInput" infoText="The file where events are read from. Events can not be saved in chart files themselves, so if this file is not saved, the song will have no events."/>
 				<checkbox id="useMustHitCheckbox" text='Use "Must Hit Section"' infoText="Whether or not to use the base Friday Night Funkin system for section camera characters. It's recommended to uncheck this if the chart's strumlines have different numbers of notes."/>

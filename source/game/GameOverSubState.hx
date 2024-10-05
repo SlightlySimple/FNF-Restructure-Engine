@@ -36,7 +36,7 @@ class GameOverSubState extends FlxSubState
 		gameOverMusic = "gameOver";
 		gameOverMusicEnd = "gameOverEnd";
 		PauseSubState.music = "breakfast";
-		ResultsState.music = "results";
+		ResultsState.music = "results/results";
 	}
 
 	override public function new()

@@ -36,14 +36,21 @@
 					<input id="iconNewInput" width="200" infoText="The icon to show on the left side of the song in Freeplay."/>
 					<button id="loadNewIconButton" image="buttonLoad" infoText="Browse for a png of an icon."/>
 				</hbox>
+				<textbutton id="songDifficulties" text="Difficulties" image="buttonPopupMenu" infoText="The difficulties the song has. In Story Mode, a song will only be part of a week if that song has the week's currently selected difficulty."/>
 				<textbutton id="songAlbums" text="Albums" image="buttonPopupMenu" infoText="The album to show when the song is hovered over in Freeplay. If a certain difficulty uses a different version of the song, it may be from a different album."/>
+				<textbutton id="makeVariantFile" text="Make &quot;_variant&quot; file" image="LONG" infoText="Create a &quot;_variant&quot; file for the current song. Variants are versions of a song used when a different playable character is selected, i.e. &quot;_variant_pico&quot;"/>
+				<textbutton id="makeAutoFile" text="Make &quot;_auto&quot; file" image="LONG" infoText="Create an &quot;_auto&quot; file for the current song. When this file is saved in the same folder as the song's charts, the song will appear in the freeplay menu without being part of a week."/>
+			</vboxscroll>
+		</tab>
+		<tab name="Adv. Songs">
+			<vboxscroll y="10">
+				<label text="Default Variant:"/>
+				<dropdown id="songVariant" infoText="The ID of the song's default variant. Variants control certain properties of the song based on the selected playable character."/>
 				<label text="Title:"/>
 				<input id="songTitle" infoText="The title of the song. This should only be used if the song ID is None."/>
-				<textbutton id="songDifficulties" text="Difficulties" image="buttonPopupMenu" infoText="The difficulties the song has. In Story Mode, a song will only be part of a week if that song has the week's currently selected difficulty."/>
 				<textbutton id="songCharLabels" text="Characters" image="buttonPopupMenu" infoText="The characters in the song as they're labelled in the Freeplay Sandbox."/>
 				<label text="Custom State:"/>
 				<dropdown id="songScriptDropdown" blank="None" allowSearch="true" infoText="The scripted state to go to when this song is selected, instead of the play state."/>
-				<textbutton id="makeAutoFile" text="Make &quot;_auto&quot; file" image="LONG" infoText="Create an &quot;_auto&quot; file for the current song. When this file is saved in the same folder as the song's charts, the song will appear in the freeplay menu without being part of a week."/>
 			</vboxscroll>
 		</tab>
 		<tab name="Story">

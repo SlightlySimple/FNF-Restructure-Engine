@@ -1,18 +1,27 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.tutorial"	"TEACHING TIME"
 "level.week1"		"DADDY DEAREST"
 
 // Song names
-"song.tutorial.tutorial"	"Tutorial"
-"song.week1.bopeebo"		"Bopeebo"
-"song.week1.fresh"			"Fresh"
-"song.week1.dadbattle"		"DadBattle"
+"song.tutorial.tutorial"		"Tutorial"
+"song.week1.bopeebo"			"Bopeebo"
+"song.erect.week1.bopeebo"		"Bopeebo Erect"
+"song.week1.bopeebo.pico"		"Bopeebo (Pico Mix)"
+"song.week1.fresh"				"Fresh"
+"song.erect.week1.fresh"		"Fresh Erect"
+"song.week1.fresh.pico"			"Fresh (Pico Mix)"
+"song.week1.dadbattle"			"DadBattle"
+"song.erect.week1.dadbattle"	"DadBattle Erect"
+"song.week1.dadbattle.pico"		"DadBattle (Pico Mix)"
 
 // Character names
 "character.dad"			"Daddy Dearest"
 
 // Stage names
 "stage.stage"			"Main Stage"
+"stage.stageErect"		"Main Stage [Erect]"
 
 // Subtitles
 "subtitles.tutorial.1"	"Left."

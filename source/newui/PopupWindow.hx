@@ -36,6 +36,9 @@ class PopupWindow extends FlxSubState
 
 	override public function new(graphic:String, borderSize:Int, width:Int, height:Int)
 	{
+		if (DropdownMenu.isOneActive)
+			DropdownMenu.currentActive.close();
+
 		super();
 
 		var bgColor:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);

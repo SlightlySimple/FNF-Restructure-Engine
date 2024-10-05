@@ -23,6 +23,7 @@ import flixel.math.FlxMath;
 import data.Noteskins;
 import data.ObjectData;
 import data.Options;
+import data.PlayableCharacter;
 import data.ScoreSystems;
 import data.Song;
 import data.SMFile;
@@ -65,6 +66,8 @@ class PlayState extends MusicBeatState
 
 	public static var songId:String = "";
 	public static var songIdShort:String = "";
+	public static var variant:String = "bf";
+	public static var variantScore:Bool = false;
 	public static var difficulty:String = "normal";
 	public static var difficultyList:Array<String> = ["easy", "normal", "hard"];
 	public static var deaths:Int = 0;
@@ -165,6 +168,7 @@ class PlayState extends MusicBeatState
 
 	var health:Float = 50;
 	var healthVis:Float = 50;
+	static var prevHealthVis:Null<Float> = null;
 	var healthGraphInfo:Array<Array<Float>> = [];
 	var healthBar:FunkBar;
 	var iconCharacters:Array<Character> = [];
@@ -182,7 +186,7 @@ class PlayState extends MusicBeatState
 	var subtitleBG:FlxSprite;
 	var subtitleText:FlxText;
 
-	override public function new(?_inStoryMode:Bool = null, ?_songId:String = null, ?_difficulty:String = null, ?_difficultyList:Array<String> = null, ?_storyWeekName:String = null, ?_storyProgress:Int = null)
+	override public function new(?_inStoryMode:Bool = null, ?_songId:String = null, ?_difficulty:String = null, ?_difficultyList:Array<String> = null, ?_storyWeekName:String = null, ?_storyProgress:Int = null, ?_variant:String = null)
 	{
 		if (_inStoryMode != null)
 			inStoryMode = _inStoryMode;
@@ -200,6 +204,9 @@ class PlayState extends MusicBeatState
 			if (_difficultyList != null)
 				difficultyList = _difficultyList.copy();
 		}
+
+		if (_variant != null)
+			variant = _variant;
 
 		if (inStoryMode && _storyWeekName != null)
 		{
@@ -248,9 +255,9 @@ class PlayState extends MusicBeatState
 			isSM = true;
 		}
 		else
-			songData = Song.loadSong(songId, difficulty);
+			songData = Song.loadSong(songId, difficulty, variant);
 
-		songName = Song.getSongNameFromData(songId, songData);
+		songName = Song.getSongNameFromData(songId, difficulty, songData);
 		skipCountdown = songData.skipCountdown;
 		Conductor.recalculateTimings(songData.bpmMap);
 		numKeys = Std.int(Math.ceil(songData.columns.length / 2));
@@ -548,6 +555,11 @@ class PlayState extends MusicBeatState
 		}
 
 		health = 50;
+		if (prevHealthVis != null)
+		{
+			healthVis = prevHealthVis;
+			prevHealthVis = null;
+		}
 
 		iconCharacters = [];
 		for (i in 0...strumNotes.members.length)
@@ -1772,7 +1784,7 @@ class PlayState extends MusicBeatState
 	function updateScoreText()
 	{
 		var separator:String = (scoreTxt.alignment == CENTER ? " | " : "\n");
-		var scoreTextArray:Array<String> = [Lang.get("#game.score", [Std.string(scores.score)])];
+		var scoreTextArray:Array<String> = [Lang.get("#game.score", [(Options.options.scoreCommas ? FlxStringUtil.formatMoney(scores.score, false) : Std.string(scores.score))])];
 		if (Options.options.nps)
 		{
 			if (scoreTxt.alignment == CENTER)
@@ -2210,6 +2222,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public var endingSong:Bool = false;
+	public static var charactersToUnlock:Array<String> = [];
 	function songFinished()
 	{
 		tracks[0].onComplete = null;
@@ -2224,6 +2237,22 @@ class PlayState extends MusicBeatState
 
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyPressed);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyReleased);
+
+		charactersToUnlock = [];
+		for (c in Paths.listFilesSub("data/players/", ".json"))
+		{
+			if (!FlxG.save.data.unlockedCharacters.contains(c))
+			{
+				var playerData:PlayableCharacter = cast Paths.json("players/" + c);
+				if (playerData.unlockCondition != null)
+				{
+					if (playerData.unlockCondition.type == "week" && inStoryMode && storyWeekName == playerData.unlockCondition.id && (playerData.unlockCondition.difficulties == null || playerData.unlockCondition.difficulties.contains(difficulty)))
+						charactersToUnlock.push(c);
+					else if (playerData.unlockCondition.type == "song" && songId == playerData.unlockCondition.id && (playerData.unlockCondition.difficulties == null || playerData.unlockCondition.difficulties.contains(difficulty)))
+						charactersToUnlock.push(c);
+				}
+			}
+		}
 
 		saveScores();
 		endSong();
@@ -2248,9 +2277,9 @@ class PlayState extends MusicBeatState
 			ResultsState.artistNames.push(songData.artist);
 		}
 
-		ResultsState.oldScore = ScoreSystems.loadSongScoreData(songId, difficulty, chartSide);
+		ResultsState.oldScore = ScoreSystems.loadSongScoreData(songId, difficulty + (variantScore ? "-" + variant : ""), chartSide);
 		if (canSaveScore)
-			ScoreSystems.saveSongScoreData(songId, difficulty, {score: scores.score, clear: ScoreSystems.clearFromJudgements(scores.judgements), rank: ScoreSystems.rankFromJudgements(scores.judgements)}, chartSide);
+			ScoreSystems.saveSongScoreData(songId, difficulty + (variantScore ? "-" + variant : ""), {score: scores.score, clear: ScoreSystems.clearFromJudgements(scores.judgements), rank: ScoreSystems.rankFromJudgements(scores.judgements)}, chartSide);
 
 		if (ResultsState.healthData.length > storyProgress)
 			ResultsState.healthData[storyProgress] = healthGraphInfo;
@@ -2299,6 +2328,7 @@ class PlayState extends MusicBeatState
 					if (!doNextSongTrans)
 					{
 						prevCamFollow = camFollow;
+						prevHealthVis = healthVis;
 						MusicBeatState.doTransIn = false;
 						MusicBeatState.doTransOut = false;
 					}
@@ -2818,7 +2848,7 @@ class PlayState extends MusicBeatState
 					strumlineFromColumn(note.column).noteSplashes.add(newSplash);
 					hscriptExec("sustainEndSplash", [note, newSplash]);
 				}
-				else if (noteSplashes.members.contains(newSplash))
+				else if (strumlineFromColumn(note.column).noteSplashes.members.contains(newSplash))
 					newSplash.kill();
 			}
 

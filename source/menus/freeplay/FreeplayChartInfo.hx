@@ -29,7 +29,8 @@ class FreeplayChartInfo extends FlxSpriteGroup
 		if (alignY == "top")
 			bottom = false;
 
-		bg = new FlxSprite(0, 0).makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.BLACK);
+		bg = new FlxSprite().makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.BLACK);
+		bg.visible = false;
 		bg.alpha = 0.6;
 		add(bg);
 
@@ -40,19 +41,21 @@ class FreeplayChartInfo extends FlxSpriteGroup
 		add(text);
 	}
 
-	public function reload(songId:String, difficulty:String, ?side:Int = 0, ?artist:String = "")
+	public function reload(songId:String, difficulty:String, ?side:Int = 0, ?artist:String = "", ?variant:String = "bf")
 	{
 		if (Options.options.chartInfo && songId != "")
 		{
 			var label:String = songId.toLowerCase() + difficulty.toUpperCase();
 			if (!infoMap.exists(label))
 			{
-				var chart:SongData = Song.loadSong(songId, difficulty, false);
+				var chart:SongData = null;
 				if (Paths.smExists(songId))
 				{
 					var smFile:SMFile = SMFile.load(songId);
 					chart = smFile.songData[smFile.difficulties.indexOf(difficulty)];
 				}
+				else
+					chart = Song.loadSong(songId, difficulty, variant, false);
 				var chartInfoArray:Array<String> = [];
 				for (i in 0...FreeplaySandbox.sideList.length)
 					chartInfoArray.push(Song.calcChartInfo(chart, i));
@@ -70,21 +73,14 @@ class FreeplayChartInfo extends FlxSpriteGroup
 		else
 		{
 			bg.visible = true;
-			if (right)
-				x = FlxG.width - text.width - 10;
-			else
-			{
-				x = 0;
-				bg.scale.x = ((text.width + 10) / FlxG.width);
-			}
-			if (bottom)
-				y = FlxG.height - text.height - 10;
-			else
-			{
-				y = 0;
-				bg.scale.y = ((text.height + 10) / FlxG.height);
-			}
+			bg.setGraphicSize(Std.int(text.width + 10), Std.int(text.height + 10));
 			bg.updateHitbox();
+
+			if (right)
+				x = FlxG.width - width;
+
+			if (bottom)
+				y = FlxG.height - height;
 		}
 	}
 }

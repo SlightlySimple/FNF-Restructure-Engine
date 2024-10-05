@@ -1,0 +1,64 @@
+active = false;
+heldTimer = 0;
+
+function create()
+{
+	var state = FlxG.state;
+
+	if (!state.unlockedWeeks.contains("weekend1"))
+	{
+		active = true;
+
+		holdTabText = new FlxText(0, 15, 0, "Hold TAB to unlock all weeks").setFormat("VCR OSD Mono", 24);
+		holdTabText.screenCenter(X);
+		holdTabText.visible = false;
+		state.add(holdTabText);
+	}
+}
+
+function update(elapsed)
+{
+	if (active)
+	{
+		var state = FlxG.state;
+
+		if (state.weekNames[StoryMenuState.curWeek] == scriptId && FlxG.keys.pressed.TAB)
+		{
+			heldTimer += elapsed;
+			holdTabText.scale.x = FlxMath.lerp(holdTabText.scale.x, 0.95, elapsed * 15);
+			holdTabText.scale.y = holdTabText.scale.x;
+
+			if (heldTimer >= 3)
+			{
+				PlaySound("ui/confirmMenu");
+				active = false;
+				for (week in ["week1", "week2", "week3", "week4", "week5", "week6", "week7", "weekend1"])
+				{
+					StoryMenuState.unlockWeek(week);
+					ScoreSystems.weekScore = 1;
+					ScoreSystems.saveWeekScore(week, "hard");
+				}
+				FlxG.save.flush();
+				FlxG.switchState(new StoryMenuState());
+			}
+		}
+		else
+		{
+			heldTimer = 0;
+			holdTabText.scale.x = FlxMath.lerp(holdTabText.scale.x, 1, elapsed * 15);
+			holdTabText.scale.y = holdTabText.scale.x;
+		}
+	}
+}
+
+function weekSelected()
+{
+	if (active)
+		holdTabText.visible = true;
+}
+
+function weekUnselected()
+{
+	if (active)
+		holdTabText.visible = false;
+}

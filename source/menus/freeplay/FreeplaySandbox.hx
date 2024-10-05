@@ -143,20 +143,21 @@ class FreeplaySandbox extends FlxSpriteGroup
 		for (s in sideList)
 			sideListLang.push(Lang.get(s));
 
-		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 280 + (characterCount * 40), FlxColor.BLACK);
-		bg.alpha = 0.6;
-		add(bg);
-
-		screenCenter();
-
 		for (i in 0...characterCount)
 			options.push("character" + Std.string(i + 1));
 		options.push("stage");
-		options.push("side");
+		if (sideList.length > 1)
+			options.push("side");
 		options.push("playbackRate");
 		options.push("missLimit");
 		options.push("reset");
 		options.push("exit");
+
+		var bg:FlxSprite = new FlxSprite().makeGraphic(800, 40 + (options.length * 40), FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
+
+		screenCenter();
 
 		for (i in 0...options.length)
 		{
@@ -393,7 +394,11 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 
 	function changeSelection(?v:Int = 0)
 	{
-		curSelected = Util.loop(curSelected + v, 0, list.length - 1);
+		if (list.length > 0)
+			curSelected = Util.loop(curSelected + v, 0, list.length - 1);
+		else
+			curSelected = 0;
+
 		while (curSelected - selOffset >= texts.length)
 			selOffset++;
 		while (curSelected - selOffset < 0)

@@ -160,6 +160,10 @@
 				</hbox>
 				<checkbox id="animLooped" text="Loop" infoText="Whether the animation should repeat itself forever."/>
 				<stepper id="animFPS" text="FPS:" default="24" min="0" infoText="The speed of the animation, in frames per second."/>
+				<if condition="2" inverted="true">
+					<checkbox id="animFlipX" text="Flip X" infoText="Whether the animation should be flipped horizontally."/>
+					<checkbox id="animFlipY" text="Flip Y" infoText="Whether the animation should be flipped vertically."/>
+				</if>
 				<stepper id="animLoopedFrames" text="Trailing frames:" min="0" infoText="If the animation does not loop, this amount of frames at the end of the animation will repeat forever."/>
 				<stepper id="animSustainFrame" text="Held frame:" default="-1" min="-1" infoText="If the animation is a singing animation, it will stop on this frame while a held note is being pressed."/>
 				<checkbox id="animImportant" text="Prevents Idle" infoText="If checked, this animation will never be interrupted by the idle animation."/>

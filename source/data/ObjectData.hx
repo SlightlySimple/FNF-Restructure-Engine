@@ -37,6 +37,8 @@ typedef CharacterAnimation =
 	var ?prefix:String;
 	var ?fps:Null<Int>;
 	var ?loop:Null<Bool>;
+	var ?flipX:Null<Bool>;
+	var ?flipY:Null<Bool>;
 	var ?loopedFrames:Null<Int>;
 	var ?sustainFrame:Null<Int>;
 	var ?indices:Array<Int>;
@@ -206,6 +208,7 @@ typedef WeekData =
 typedef WeekSongData =
 {
 	var songId:String;
+	var ?variant:String;
 	var ?icon:String;
 	var ?iconNew:String;
 	var ?difficulties:Array<String>;

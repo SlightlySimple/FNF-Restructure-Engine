@@ -1,5 +1,6 @@
 rain = null;
 time = 0;
+timeScale = 1;
 
 startIntensity = 0;
 endIntensity = 0.1;
@@ -31,11 +32,30 @@ function update(elapsed)
 {
 	if (rain != null)
 	{
-		time += elapsed;
+		if (PlayState.songIdShort == "blazin")
+			timeScale = coolLerp(timeScale, 0.02, 0.05);
+
+		time += elapsed * timeScale;
 		rain.setFloat("uTime", time);
 		rain.update(elapsed);
 
 		var remappedIntensityValue = Math.max(startIntensity, Math.min(endIntensity, FlxMath.remapToRange(Conductor.songPosition, 0, game.tracks[0].length, startIntensity, endIntensity)));
 		rain.setFloat("uIntensity", remappedIntensityValue);
 	}
+}
+
+function noteHit(note)
+{
+	if (PlayState.songIdShort == "blazin")
+		timeScale += 0.7;
+}
+
+function coolLerp(base, target, ratio)
+{
+	return base + cameraLerp(ratio) * (target - base);
+}
+
+function cameraLerp(lerp)
+{
+	return lerp * (FlxG.elapsed / (1 / 60));
 }

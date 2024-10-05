@@ -1,9 +1,14 @@
+!duplicate	"song.erect"	"song.nightmare"
+
 // Week name
 "level.week5"				"RED SNOW"
 
 // Song names
 "song.week5.cocoa"				"Cocoa"
+"song.erect.week5.cocoa"		"Cocoa Erect"
 "song.week5.eggnog"				"Eggnog"
+"song.erect.week5.eggnog"		"Eggnog Erect"
+"song.week5.eggnog.pico"		"Eggnog (Pico Mix)"
 "song.week5.winter-horrorland"	"Winter Horrorland"
 
 // Character names
@@ -15,6 +20,7 @@
 // Stage names
 "stage.mall"			"Christmas Mall (Nice)"
 "stage.mallEvil"		"Christmas Mall (Naughty)"
+"stage.mallErect"		"Christmas Mall (Nice) [Erect]"
 
 // Subtitles
 "subtitles.eggnog.erect.cutscene.1"		"...Wow..."

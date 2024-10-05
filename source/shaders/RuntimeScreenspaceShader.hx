@@ -2,6 +2,7 @@ package shaders;
 
 import flixel.FlxG;
 import flixel.FlxCamera;
+import flixel.graphics.frames.FlxFrame;
 import flixel.addons.display.FlxRuntimeShader;
 
 using StringTools;
@@ -109,6 +110,9 @@ class RuntimeScreenspaceShader extends FlxRuntimeShader
 		// equals (camera.viewLeft, camera.viewTop, camera.viewRight, camera.viewBottom)
 		uniform vec4 uCameraBounds;
 
+		// equals (frame.left, frame.top, frame.right, frame.bottom)
+		uniform vec4 uFrameBounds;
+
 		// screen coord -> world coord conversion
 		// returns world coord in px
 		vec2 screenToWorld(vec2 screenCoord) {
@@ -131,6 +135,25 @@ class RuntimeScreenspaceShader extends FlxRuntimeShader
 			vec2 scale = vec2(right - left, bottom - top);
 			vec2 offset = vec2(left, top);
 			return (worldCoord - offset) / scale;
+		}
+
+		// screen coord -> frame coord conversion
+		// returns normalized frame coord
+		vec2 screenToFrame(vec2 screenCoord) {
+			float left = uFrameBounds.x;
+			float top = uFrameBounds.y;
+			float right = uFrameBounds.z;
+			float bottom = uFrameBounds.w;
+			float width = right - left;
+			float height = bottom - top;
+
+			float clampedX = clamp(screenCoord.x, left, right);
+			float clampedY = clamp(screenCoord.y, top, bottom);
+
+			return vec2(
+				(clampedX - left) / (width),
+				(clampedY - top) / (height)
+			);
 		}
 
 		// internally used to get the maximum `openfl_TextureCoordv`
@@ -157,6 +180,8 @@ class RuntimeScreenspaceShader extends FlxRuntimeShader
 	{
 		super(fragmentSource, vertexSource);
 		setFloatArray("uScreenResolution", [FlxG.width, FlxG.height]);
+		setFloatArray("uCameraBounds", [0, 0, FlxG.width, FlxG.height]);
+		setFloatArray("uFrameBounds", [0, 0, FlxG.width, FlxG.height]);
 	}
 
 	public function update(elapsed:Float)
@@ -186,5 +211,11 @@ class RuntimeScreenspaceShader extends FlxRuntimeShader
 			__glSourceDirty = true;
 
 		return __glVertexSource = value;
+	}
+
+	public function updateFrameInfo(frame:FlxFrame)
+	{
+		// NOTE: uv.width is actually the right pos and uv.height is the bottom pos
+		setFloatArray("uFrameBounds", [frame.uv.x, frame.uv.y, frame.uv.width, frame.uv.height]);
 	}
 }

@@ -1,5 +1,8 @@
 function create()
 {
+	game.hscriptAdd(scriptId + "-shared", "data/characters/nene-shared", false, this);
+	game.hscriptIdExec(scriptId + "-shared", "create");
+
 	abot = new Character(this.charX, this.charY, "abot");
 	abot.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
 	insert(game.members.indexOf(this), abot);
@@ -8,31 +11,15 @@ function create()
 	game.hscriptIdExec(scriptId + "-abot", "create");
 }
 
+function destroy()
+{
+	game.hscriptRemove(scriptId + "-shared");
+}
+
 function update(elapsed)
 {
 	abot.visible = this.visible;
 	abot.repositionCharacter(this.charX, this.charY);
 	abot.color = this.color;
-
-	if (game.health > 25)
-	{
-		if (this.curAnimName == "raiseKnife" && this.curAnimFinished)
-		{
-			this.canDance = true;
-			this.playAnim("lowerKnife", true, true);
-			this.lastIdle = 0;
-		}
-	}
-}
-
-function beatHit()
-{
-	if (game.health <= 25)
-	{
-		if (StringTools.startsWith(this.curAnimName, "dance"))
-		{
-			this.canDance = false;
-			this.playAnim("raiseKnife");
-		}
-	}
+	abot.shader = this.shader;
 }

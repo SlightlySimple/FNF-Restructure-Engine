@@ -190,6 +190,13 @@
 		},
 		{
 			"type": "control",
+			"label": "#options.controls.characterSelect.name",
+			"description": "",
+			"variable": "characterSelect",
+			"defValue": ["TAB", "NONE"]
+		},
+		{
+			"type": "control",
 			"label": "#options.controls.filter_left.name",
 			"description": "",
 			"variable": "filter_left",

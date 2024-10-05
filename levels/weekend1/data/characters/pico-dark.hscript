@@ -1,0 +1,15 @@
+function create()
+{
+	game.hscriptAdd(scriptId + "-shared", "data/characters/pico", false, this);
+	game.hscriptAdd(scriptId + "-dark", "data/scripts/darkCharacter", false, this);
+	game.hscriptIdExec(scriptId + "-shared", "create");
+	game.hscriptIdExec(scriptId + "-dark", "create");
+}
+
+function destroy()
+{
+	game.hscriptIdExec(scriptId + "-shared", "destroy");
+	game.hscriptIdExec(scriptId + "-dark", "destroy");
+	game.hscriptRemove(scriptId + "-shared");
+	game.hscriptRemove(scriptId + "-dark");
+}

@@ -13,7 +13,7 @@ class FunkBar extends FlxBar
 	public var borderColor:FlxColor;
 
 	public var borderWidth:Int = 1;
-	public var centerPosition:Float = 0;
+	public var centerPosition(get, never):Float;
 
 	override public function createFilledBar(empty:FlxColor, fill:FlxColor, showBorder:Bool = false, border:FlxColor = FlxColor.WHITE):FunkBar
 	{
@@ -115,13 +115,11 @@ class FunkBar extends FlxBar
 		return this;
 	}
 
-	override public function updateBar()
+	public function get_centerPosition():Float
 	{
-		super.updateBar();
-
 		var perc:Float = percent / 100;
 		if ((fillDirection == LEFT_TO_RIGHT && flipX) || (fillDirection == RIGHT_TO_LEFT && !flipX))
 			perc = 1 - perc;
-		centerPosition = (x + borderWidth) + ((width - (borderWidth * 2)) * perc);
+		return (x + borderWidth) + ((width - (borderWidth * 2)) * perc);
 	}
 }

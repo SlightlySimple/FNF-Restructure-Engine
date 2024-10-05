@@ -486,10 +486,16 @@ abstract Filters({})
 	 * Adjusting the color filter... This is the filter which has small support, the rest doesn't have a shit
 	 */
 	public var ACF(get, never):AdjustColorFilter;
+	public var BLF(get, never):BlurFilter;
 
 	inline function get_ACF()
 	{
 		return AnimationData.setFieldBool(this, "ACF", "AdjustColorFilter");
+	}
+
+	inline function get_BLF()
+	{
+		return AnimationData.setFieldBool(this, "BLF", "BlurFilter");
 	}
 }
 // The filters aren't looked much lol
@@ -515,6 +521,41 @@ abstract AdjustColorFilter({})
 	inline function get_H()
 	{
 		return AnimationData.setFieldBool(this, "H", "hue");
+	}
+}
+
+/**
+ * This blur filter gives instructions of how the blur should be applied onto the symbol/frame.
+ */
+abstract BlurFilter({})
+{
+	/**
+	 * The amount of blur horizontally.
+	 */
+	public var BLX(get, never):Float;
+	/**
+	 * The amount of blur vertically.
+	 */
+	public var BLY(get, never):Float;
+	/**
+	 * The number of passes the filter has.
+	 * When the quality is set to three, it should approximate to a Gaussian Blur.
+	 * Obviously you can go beyond three, but it'll take more time to render.
+	 */
+	public var Q(get, never):Int;
+
+
+	function get_BLX()
+	{
+		return AnimationData.setFieldBool(this, "BLX", "blurX");
+	}
+	function get_BLY()
+	{
+		return AnimationData.setFieldBool(this, "BLY", "blurY");
+	}
+	function get_Q()
+	{
+		return AnimationData.setFieldBool(this, "Q", "quality");
 	}
 }
 
