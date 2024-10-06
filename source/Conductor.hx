@@ -30,6 +30,10 @@ class Conductor
 	public static function playMusic(song:String, ?volume:Float = 1)
 	{
 		FlxG.sound.playMusic(Paths.music(song), volume);
+		if (Paths.exists("music/" + song + ".loop"))
+			FlxG.sound.music.loopTime = Std.parseFloat(Paths.raw("music/" + song + ".loop"));
+		else
+			FlxG.sound.music.loopTime = 0;
 		songPosition = 0;
 		overrideSongPosition = false;
 		if (Paths.exists("music/" + song + ".bpm"))

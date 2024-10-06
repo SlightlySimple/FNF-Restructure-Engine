@@ -178,7 +178,7 @@ function create(data)
 	if (data.artistNames[0] != "")
 		graphSongNameBlur.text = Lang.get("#results.songNameAndArtist", [data.songNames[0], data.artistNames[0]]);
 	if (data.songNames.length > 1)
-		graphSongNameBlur.text = "< " + graphSongName.text + " >";
+		graphSongNameBlur.text = "< " + graphSongNameBlur.text + " >";
 	graphSongNameBlur.shader = blur;
 	resultsGraphGroup.add(graphSongNameBlur);
 
