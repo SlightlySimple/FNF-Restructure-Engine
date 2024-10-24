@@ -177,6 +177,12 @@ class FlxAnimate extends FlxSprite
 		anim.curFrame = 0;
 	}
 
+	public function hasAnim(Name:String):Bool
+	{
+		@:privateAccess
+		return anim.animsMap.exists(Name);
+	}
+
 	function set_framerate(value:Float):Float
 	{
 		frameDelay = 1 / value;

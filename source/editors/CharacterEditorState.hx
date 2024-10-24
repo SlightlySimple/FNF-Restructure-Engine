@@ -63,6 +63,7 @@ class CharacterEditorState extends BaseEditorState
 
 	var allAnimData:String = "";
 	var allAnimPrefixes:Array<String> = [];
+	var allAnimAtlasSymbols:Array<String> = [];
 	var otherCharacterGhost:Character;
 	var stage:Stage = null;
 	var stageID:String = "";
@@ -106,6 +107,7 @@ class CharacterEditorState extends BaseEditorState
 	var animAsset:InputText;
 	var animPrefix:InputText;
 	var animPrefixDropdown:DropdownMenu = null;
+	var isSymbol:Checkbox;
 	var animIndices:InputText;
 	var animOffsetX:Stepper;
 	var animOffsetY:Stepper;
@@ -267,6 +269,13 @@ class CharacterEditorState extends BaseEditorState
 				{
 					animPrefix.text = animData.prefix;
 					animAsset.text = animData.asset;
+				}
+				if (myCharType == "atlas")
+				{
+					if (animData.isSymbol != null)
+						isSymbol.checked = animData.isSymbol;
+					else
+						isSymbol.checked = false;
 				}
 				if (animData.indices != null && animData.indices.length > 0)
 					animIndices.text = Character.compactIndices(animData.indices).join(",");
@@ -898,6 +907,17 @@ class CharacterEditorState extends BaseEditorState
 			};
 		}
 
+		if (myCharType == "atlas")
+		{
+			isSymbol = cast element("isSymbol");
+			isSymbol.onClicked = function() {
+				if (isSymbol.checked)
+					animPrefixDropdown.valueList = allAnimAtlasSymbols;
+				else
+					animPrefixDropdown.valueList = allAnimPrefixes;
+			}
+		}
+
 		if (myCharType == "sparrow")
 		{
 			animAsset = cast element("animAsset");
@@ -1026,33 +1046,36 @@ class CharacterEditorState extends BaseEditorState
 			}
 		}
 
-		animFlipX = cast element("animFlipX");
-		animFlipX.condition = function() {
-			if (characterData.animations.length > 0)
-				return characterData.animations[curCharAnim].flipX;
-			return animFlipX.checked;
-		}
-		animFlipX.onClicked = function() {
-			if (characterData.animations.length > 0)
-			{
-				characterData.animations[curCharAnim].flipX = animFlipX.checked;
-				reloadSingleAnimation(curCharAnim);
-				playCurrentAnim();
+		if (myCharType != "atlas")
+		{
+			animFlipX = cast element("animFlipX");
+			animFlipX.condition = function() {
+				if (characterData.animations.length > 0)
+					return characterData.animations[curCharAnim].flipX;
+				return animFlipX.checked;
 			}
-		}
+			animFlipX.onClicked = function() {
+				if (characterData.animations.length > 0)
+				{
+					characterData.animations[curCharAnim].flipX = animFlipX.checked;
+					reloadSingleAnimation(curCharAnim);
+					playCurrentAnim();
+				}
+			}
 
-		animFlipY = cast element("animFlipY");
-		animFlipY.condition = function() {
-			if (characterData.animations.length > 0)
-				return characterData.animations[curCharAnim].flipY;
-			return animFlipY.checked;
-		}
-		animFlipY.onClicked = function() {
-			if (characterData.animations.length > 0)
-			{
-				characterData.animations[curCharAnim].flipY = animFlipY.checked;
-				reloadSingleAnimation(curCharAnim);
-				playCurrentAnim();
+			animFlipY = cast element("animFlipY");
+			animFlipY.condition = function() {
+				if (characterData.animations.length > 0)
+					return characterData.animations[curCharAnim].flipY;
+				return animFlipY.checked;
+			}
+			animFlipY.onClicked = function() {
+				if (characterData.animations.length > 0)
+				{
+					characterData.animations[curCharAnim].flipY = animFlipY.checked;
+					reloadSingleAnimation(curCharAnim);
+					playCurrentAnim();
+				}
 			}
 		}
 
@@ -1137,13 +1160,20 @@ class CharacterEditorState extends BaseEditorState
 					asset: "",
 					fps: animFPS.valueInt,
 					loop: animLooped.checked,
-					flipX: animFlipX.checked,
-					flipY: animFlipY.checked,
 					loopedFrames: animLoopedFrames.valueInt,
 					sustainFrame: animSustainFrame.valueInt,
 					important: animImportant.checked,
 					offsets: [animOffsetX.valueInt, animOffsetY.valueInt]
-				};
+				}
+
+
+				if (myCharType == "atlas")
+					newAnim.isSymbol = isSymbol.checked;
+				else
+				{
+					newAnim.flipX = animFlipX.checked;
+					newAnim.flipY = animFlipY.checked;
+				}
 
 				if (myCharType == "sparrow" && animAsset.text.trim() != "" && Paths.sparrowExists(animAsset.text.trim()))
 					newAnim.asset = animAsset.text.trim();
@@ -1175,6 +1205,8 @@ class CharacterEditorState extends BaseEditorState
 					if (newAnim.prefix != null)
 						characterData.animations[animToReplace].prefix = newAnim.prefix;
 					characterData.animations[animToReplace].indices = newAnim.indices;
+					if (myCharType == "atlas")
+						characterData.animations[animToReplace].isSymbol = newAnim.isSymbol;
 				}
 				else
 				{
@@ -2014,6 +2046,7 @@ class CharacterEditorState extends BaseEditorState
 
 		allAnimData = "";
 		allAnimPrefixes = [];
+		allAnimAtlasSymbols = [];
 		if (Paths.exists("images/" + asset + ".json"))
 		{
 			myCharType = "atlas";
@@ -2025,6 +2058,13 @@ class CharacterEditorState extends BaseEditorState
 			allAnimPrefixes = atlas.anim.frameNames();
 			if (allAnimPrefixes.length <= 0)
 				allAnimPrefixes = [""];
+			for (k in atlas.anim.symbolDictionary.keys())
+			{
+				if (!allAnimAtlasSymbols.contains(k))
+					allAnimAtlasSymbols.push(k);
+			}
+			if (allAnimAtlasSymbols.length <= 0)
+				allAnimAtlasSymbols = [""];
 		}
 		else if (Paths.sparrowExists(asset))
 		{
@@ -2167,6 +2207,8 @@ class CharacterEditorState extends BaseEditorState
 				case "atlas":
 					if (anim.indices != null && anim.indices.length > 0)
 						atlas.anim.addByAnimIndices(anim.name, anim.indices, anim.fps);
+					else if (anim.isSymbol)
+						atlas.anim.addBySymbol(anim.name, anim.prefix, 0, 0, anim.fps);
 					else
 						atlas.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
 

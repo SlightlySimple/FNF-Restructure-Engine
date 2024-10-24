@@ -452,11 +452,8 @@ class FlxAnim extends FlxSprite
 			if (coolParse.AN.STI != null)
 			{
 				var element = coolParse.AN.STI;
-				var m3d = (element.SI.M3D is Array) ? element.SI.M3D : [element.SI.M3D.m00, element.SI.M3D.m01, 
-					element.SI.M3D.m02, element.SI.M3D.m03, element.SI.M3D.m10,element.SI.M3D.m11,
-					element.SI.M3D.m12,element.SI.M3D.m13,element.SI.M3D.m20,element.SI.M3D.m21,element.SI.M3D.m22,
-					element.SI.M3D.m23,element.SI.M3D.m30,element.SI.M3D.m31,element.SI.M3D.m32,element.SI.M3D.m33];
-				animsMap.set(Name, {timeline: {L: layers}, X: m3d[12], Y: m3d[13], frameRate: FrameRate});
+				var m3d = (element.SI.M3D is Array) ? [element.SI.M3D[12], element.SI.M3D[13]] : [element.SI.M3D.m30, element.SI.M3D.m31];
+				animsMap.set(Name, {timeline: {L: layers}, X: m3d[0], Y: m3d[1], frameRate: FrameRate});
 			}
 			else
 				animsMap.set(Name, {timeline: {L: layers}, X: 0, Y: 0, frameRate: FrameRate});

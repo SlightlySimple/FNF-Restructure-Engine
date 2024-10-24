@@ -22,6 +22,8 @@ using StringTools;
 
 class Stage
 {
+	public var data:Map<String, Dynamic> = new Map<String, Dynamic>();
+
 	public var stageData:StageData;
 	public var curStage:String = "stage";
 	public var pieces:Map<String, FlxSprite>;

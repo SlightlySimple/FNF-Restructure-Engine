@@ -3403,6 +3403,18 @@ class StageEditorState extends BaseEditorState
 						if (p.scroll != null)
 							stagePiece.scrollFactor = p.scroll;
 
+						if (p.alpha != null)
+							stagePiece.alpha = p.alpha;
+
+						if (p.blend != null)
+							stagePiece.blend = p.blend;
+
+						if (p.color != null)
+						{
+							var pieceColor:FlxColor = FlxColor.fromString(p.color);
+							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
+						}
+
 						if (stagePiece.asset.charAt(0) == "#")
 						{
 							var pieceColor:FlxColor = FlxColor.fromString(stagePiece.asset);

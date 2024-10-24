@@ -12,6 +12,28 @@
 			"max": 9999,
 			"increment": 0.25,
 			"decimals": 2
+		},
+		{
+			"id": "intensityMain",
+			"label": "Bump Intensity (Main)",
+			"infoText": "How much the game's main camera should zoom when it bumps. Set to 1 for the default intensity, or set to 0 to not change the intensity at all.",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.05,
+			"decimals": 2
+		},
+		{
+			"id": "intensityHUD",
+			"label": "Bump Intensity (HUD)",
+			"infoText": "How much the game's HUD camera should zoom when it bumps. Set to 1 for the default intensity, or set to 0 to not change the intensity at all.",
+			"type": "stepper",
+			"defaultValue": 0,
+			"min": 0,
+			"max": 9999,
+			"increment": 0.05,
+			"decimals": 2
 		}
 	]
 }

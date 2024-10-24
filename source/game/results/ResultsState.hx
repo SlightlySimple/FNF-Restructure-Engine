@@ -98,6 +98,7 @@ class ResultsSubState extends MusicBeatSubState
 	var menuMusic:FlxSound = null;
 	var nums:Array<Float> = [];
 	var transitioning:Bool = false;
+	var stickerTransition:Bool = true;
 
 	var scores:ScoreSystems;
 	var data:ResultsData;
@@ -152,6 +153,10 @@ class ResultsSubState extends MusicBeatSubState
 		camera.bgColor = FlxColor.TRANSPARENT;
 		FlxG.cameras.add(camera, false);
 
+		PlayState.charactersToUnlock = PlayState.charactersToUnlock.filter(function(c:String) { return !FlxG.save.data.unlockedCharacters.contains(c); });
+		if ((!PlayState.inStoryMode && ResultsState.compareRanks[1] > ResultsState.compareRanks[0]) || PlayState.charactersToUnlock.length > 0)
+			stickerTransition = false;
+
 		if (!Paths.hscriptExists(ResultsState.script) && Paths.hscriptExists("data/states/" + ResultsState.script))
 			ResultsState.script = "data/states/" + ResultsState.script;
 		myScript = new HscriptHandler(ResultsState.script);
@@ -175,8 +180,9 @@ class ResultsSubState extends MusicBeatSubState
 		{
 			transitioning = true;
 			stopMusic();
-			PlayState.charactersToUnlock = PlayState.charactersToUnlock.filter(function(c:String) { return !FlxG.save.data.unlockedCharacters.contains(c); });
-			if ((!PlayState.inStoryMode && ResultsState.compareRanks[1] > ResultsState.compareRanks[0]) || PlayState.charactersToUnlock.length > 0)
+			if (stickerTransition)
+				PlayState.GotoMenu(true);
+			else
 			{
 				var rankBg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 				rankBg.alpha = 0;
@@ -192,8 +198,6 @@ class ResultsSubState extends MusicBeatSubState
 						PlayState.GotoMenu(false);
 				}});
 			}
-			else
-				PlayState.GotoMenu(true);
 		}
 	}
 

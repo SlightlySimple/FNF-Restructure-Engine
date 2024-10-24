@@ -1,5 +1,4 @@
 {
-	"unlocked": true,
 	"unlockCondition": {
 		"type": "week",
 		"id": "weekend1"
@@ -21,9 +20,6 @@
 	},
 	"freeplayDJ": {
 		"assetPath": "freeplay-pico",
-		"text1": "PICO",
-		"text2": "GOD DAMN HE DOWN ON THE NUT",
-		"text3": "ZEBOIM DAMN IMA NUT",
 		"fistPump": {
 			"introStartFrame": 0,
 			"introEndFrame": 4,

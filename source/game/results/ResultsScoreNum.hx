@@ -63,7 +63,7 @@ class ResultsScoreNum extends FlxSprite
 	}
 
 
-	function shuffleProgress(shuffleTimer:FlxTimer):Void
+	function shuffleProgress(shuffleTimer:FlxTimer)
 	{
 		var tempDigit:Int = digit;
 		tempDigit += 1;

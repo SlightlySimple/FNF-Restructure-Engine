@@ -42,8 +42,8 @@ function eventGo(event)
 		switch (event.parameters.movement.toLowerCase())
 		{
 			case "tween":
-				FlxTween.tween(game.camFollow, {x: camX, y: camY}, event.parameters.time, {ease: Reflect.field(FlxEase, event.parameters.ease)});
-				FlxTween.tween(game.camFollowPos, {x: camX, y: camY}, event.parameters.time, {ease: Reflect.field(FlxEase, event.parameters.ease)});
+				FlxTween.tween(game.camFollow, {x: camX, y: camY}, getTime(event.parameters.time, event.parameters.timeUnit), {ease: Reflect.field(FlxEase, event.parameters.ease)});
+				FlxTween.tween(game.camFollowPos, {x: camX, y: camY}, getTime(event.parameters.time, event.parameters.timeUnit), {ease: Reflect.field(FlxEase, event.parameters.ease)});
 
 			case "instant":
 				game.camFollow.x = camX;
@@ -67,4 +67,14 @@ function getSlot(str)
 		return 2;
 
 	return 0;
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

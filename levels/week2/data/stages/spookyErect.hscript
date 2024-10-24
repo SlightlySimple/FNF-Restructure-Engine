@@ -70,8 +70,8 @@ function doLightningStrike(playSound)
 		FlxTween.tween(stage.pieces["stairsLight"], {alpha: 0}, 1.5);
 		for (c in game.allCharacters)
 		{
-			c.alpha = 0;
-			FlxTween.tween(c, {alpha: 1}, 1.5);
+			c.data["darkLevel"] = 0;
+			FlxTween.num(0, 1, 1.5, null, function(num) { c.data["darkLevel"] = num; });
 		}
 	});
 

@@ -3,6 +3,7 @@ package data;
 typedef PlayableCharacter =
 {
 	var unlockCondition:PlayableCharacterUnlockCondition;
+	var unlockData:PlayableCharacterUnlockData;
 	var freeplayStyle:PlayableCharacterFreeplayStyle;
 	var freeplayDJ:PlayableCharacterDJ;
 	var charSelect:PlayableCharacterSelect;
@@ -35,7 +36,9 @@ typedef PlayableCharacterDJ =
 {
 	var assetPath:String;
 	var animations:Array<PlayableCharacterAnimation>;
+	var fistPump:PlayableCharacterDJFistPump;
 	var charSelect:PlayableCharacterDJSelect;
+	var cartoon:PlayableCharacterDJCartoon;
 }
 
 typedef PlayableCharacterAnimation =
@@ -45,9 +48,30 @@ typedef PlayableCharacterAnimation =
 	var offsets:Array<Float>;
 }
 
+typedef PlayableCharacterDJFistPump =
+{
+	var introStartFrame:Int;
+	var introEndFrame:Int;
+	var loopStartFrame:Int;
+	var loopEndFrame:Int;
+	var introBadStartFrame:Int;
+	var introBadEndFrame:Int;
+	var loopBadStartFrame:Int;
+	var loopBadEndFrame:Int;
+}
+
 typedef PlayableCharacterDJSelect =
 {
 	var transitionDelay:Float;
+}
+
+typedef PlayableCharacterDJCartoon =
+{
+	var soundClickFrame:Int;
+	var soundCartoonFrame:Int;
+	var loopBlinkFrame:Int;
+	var loopFrame:Int;
+	var channelChangeFrame:Int;
 }
 
 typedef PlayableCharacterSelect =

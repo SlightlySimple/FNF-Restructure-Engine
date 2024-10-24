@@ -44,6 +44,9 @@ function create()
 	scrollTop.animation.addByPrefix("rifle", "rifle info", 24, false);
 	scrollTop.animation.addByPrefix("base", "base", 24, false);
 	scrollTop.animation.play("base");
+	scrollTop.animation.callback = function(nam, frameNumber, frameIndex) {
+		scrollTop.loadFrame(scrollTop.frames.frames[frameIndex]);
+	}
 	card.add(scrollTop);
 	state.createCharacterSelectTransition([scrollTop], -90, 0.8);
 
@@ -88,6 +91,26 @@ function create()
 	confirmAtlas.anim.addBySymbol("go", "Pico Back Card Confirm", 640, 360, 24);
 	confirmAtlas.visible = false;
 	card.add(confirmAtlas);
+}
+
+function update(elapsed)
+{
+	var scrollProgress = Math.abs(scrollTop.x % (scrollTop.frameWidth + 20));
+
+	if (scrollTop.animation.curAnim.finished)
+	{
+		if (FlxMath.inBounds(scrollProgress, 500, 700) && scrollTop.animation.curAnim.name != 'sniper')
+			scrollTop.animation.play('sniper', true, false);
+
+		if (FlxMath.inBounds(scrollProgress, 700, 1300) && scrollTop.animation.curAnim.name != 'rifle')
+			scrollTop.animation.play('rifle', true, false);
+
+		if (FlxMath.inBounds(scrollProgress, 1450, 2000) && scrollTop.animation.curAnim.name != 'rocket launcher')
+			scrollTop.animation.play('rocket launcher', true, false);
+
+		if (FlxMath.inBounds(scrollProgress, 0, 300) && scrollTop.animation.curAnim.name != 'uzi')
+			scrollTop.animation.play('uzi', true, false);
+	}
 }
 
 function doIntro()

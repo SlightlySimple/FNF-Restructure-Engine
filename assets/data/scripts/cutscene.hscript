@@ -135,28 +135,33 @@ function endCutscene()
 	}
 	else
 	{
-		for (obj in cutsceneHiddenObjects)
-			obj.alpha = 1;
-
-		syncedSprites = [];
-		syncedAtlases = [];
-		syncedSounds = [];
-
-		for (k in cutsceneObjects.keys())
-		{
-			if (!cutscenePersistentObjects.contains(cutsceneObjects[k]))
-			{
-				remove(cutsceneObjects[k], true);
-				cutsceneObjects[k].destroy();
-			}
-		}
+		postCutsceneCleanup();
 
 		FlxTween.tween(game.camHUD, {alpha: 1}, 0.5);
 		game.canStartCountdown = true;
 		game.startCountdown();
 
 		game.camZoom = FlxG.camera.zoom;
-		FlxTween.tween(game, {camZoom: game.stage.stageData.camZoom}, (Conductor.beatLength / 1000) * 1.25, { ease: FlxEase.quadInOut });
+		FlxTween.tween(game, {camZoom: game.stage.stageData.camZoom}, (Conductor.beatLength / 1000) * 1.25, {ease: FlxEase.quadInOut});
+	}
+}
+
+function postCutsceneCleanup()
+{
+	for (obj in cutsceneHiddenObjects)
+		obj.alpha = 1;
+
+	syncedSprites = [];
+	syncedAtlases = [];
+	syncedSounds = [];
+
+	for (k in cutsceneObjects.keys())
+	{
+		if (!cutscenePersistentObjects.contains(cutsceneObjects[k]))
+		{
+			remove(cutsceneObjects[k], true);
+			cutsceneObjects[k].destroy();
+		}
 	}
 }
 

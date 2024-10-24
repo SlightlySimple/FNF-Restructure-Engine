@@ -7,39 +7,38 @@ function create()
 			allowedSlots.push(c);
 	}
 
-	var chars = [];
 	characterIds = [];
 
 	for (e in game.songData.events)
 	{
-		if (e.type == "characterSwitch" && !chars.contains(e.parameters.character) && allowedSlots.contains(getSlot(e.parameters.id.toLowerCase())))
-			chars.push(e.parameters.character);
+		if (e.type == "characterSwitch" && !characterIds.contains(e.parameters.character) && allowedSlots.contains(getSlot(e.parameters.id.toLowerCase())))
+			registerCharacter(e.parameters.character);
 	}
+}
 
-	for (c in chars)
+function registerCharacter(c)
+{
+	if (!characterIds.contains(c) && Paths.jsonExists("characters/" + c))
 	{
-		if (Paths.jsonExists("characters/" + c))
+		if (!Character.parsedCharacters.exists(c))
+			Character.parsedCharacters[c] = Character.parseCharacter(c);
+		var curC = Character.parsedCharacters[c];
+		var asset:String = curC.asset;
+		if (Paths.imageExists(asset))
+			Paths.cacheGraphic(asset);
+
+		var cIcon = curC.icon;
+		if (cIcon == null || cIcon == "")
 		{
-			if (!Character.parsedCharacters.exists(c))
-				Character.parsedCharacters[c] = Character.parseCharacter(c);
-			var curC = Character.parsedCharacters[c];
-			var asset:String = curC.asset;
-			if (Paths.imageExists(asset))
-				Paths.cacheGraphic(asset);
-
-			var cIcon = curC.icon;
-			if (cIcon == null || cIcon == "")
-			{
-				cIcon = c;
-				if (!Paths.iconExists(cIcon, false) && Paths.iconExists(cIcon.split("-")[0], false))
-					cIcon = cIcon.split("-")[0];
-			}
-
-			if (Paths.iconExists(cIcon, false))
-				Paths.cacheGraphicDirect(Paths.icon(cIcon));
-
-			characterIds.push(c);
+			cIcon = c;
+			if (!Paths.iconExists(cIcon, false) && Paths.iconExists(cIcon.split("-")[0], false))
+				cIcon = cIcon.split("-")[0];
 		}
+
+		if (Paths.iconExists(cIcon, false))
+			Paths.cacheGraphicDirect(Paths.icon(cIcon));
+
+		characterIds.push(c);
 	}
 }
 

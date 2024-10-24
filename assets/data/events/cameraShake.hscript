@@ -2,7 +2,17 @@ function onEvent(event)
 {
 	switch (event.parameters.camera)
 	{
-		case "main": FlxG.camera.shake(event.parameters.intensity, event.parameters.duration);
-		case "hud": game.camHUD.shake(event.parameters.intensity, event.parameters.duration);
+		case "main": FlxG.camera.shake(event.parameters.intensity, getTime(event.parameters.duration, event.parameters.timeUnit));
+		case "hud": game.camHUD.shake(event.parameters.intensity, getTime(event.parameters.duration, event.parameters.timeUnit));
 	}
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

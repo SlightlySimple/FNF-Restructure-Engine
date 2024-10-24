@@ -2292,9 +2292,9 @@ class PlayState extends MusicBeatState
 				ScoreSystems.onWeekSongBeaten(scores);
 			if (PlayState.storyProgress + 1 >= storyWeek.length)
 			{
-				ResultsState.oldScore = {score: ScoreSystems.loadWeekScore(storyWeekName, difficulty), clear: ScoreSystems.clearFromJudgements(ScoreSystems.weekJudgements), rank: ScoreSystems.rankFromJudgements(ScoreSystems.weekJudgements)};
+				ResultsState.oldScore = ScoreSystems.loadWeekScoreData(storyWeekName, difficulty);
 				if (canSaveScore)
-					ScoreSystems.saveWeekScore(storyWeekName, difficulty);
+					ScoreSystems.saveWeekScoreData(storyWeekName, difficulty);
 				StoryMenuState.unlockWeeks(storyWeekName);
 			}
 		}

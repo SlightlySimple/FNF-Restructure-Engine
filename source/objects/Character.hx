@@ -13,6 +13,8 @@ using StringTools;
 
 class Character extends FlxSprite
 {
+	public var data:Map<String, Dynamic> = new Map<String, Dynamic>();
+
 	public var characterData:CharacterData = null;
 	public var curCharacter:String = TitleState.defaultVariables.player1;
 	public var camPosition:CharacterCamPosition = {x: 0, y: 0, abs: false};
@@ -527,6 +529,8 @@ class Character extends FlxSprite
 				var anim = characterData.animations[i];
 				if (anim.indices != null && anim.indices.length > 0)
 					atlas.anim.addByAnimIndices(anim.name, anim.indices, anim.fps);
+				else if (anim.isSymbol)
+					atlas.anim.addBySymbol(anim.name, anim.prefix, 0, 0, anim.fps);
 				else
 					atlas.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
 				if (anim.next != null && anim.next != "")
@@ -635,6 +639,8 @@ class Character extends FlxSprite
 			{
 				if (anim.indices != null && anim.indices.length > 0)
 					atlas.anim.addByAnimIndices(anim.name, anim.indices, anim.fps);
+				else if (anim.isSymbol)
+					atlas.anim.addBySymbol(anim.name, anim.prefix, 0, 0, anim.fps);
 				else
 					atlas.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
 			}

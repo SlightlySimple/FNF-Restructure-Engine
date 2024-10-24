@@ -18,6 +18,11 @@ typedef PlayResults =
 {
 	var hitGraph:Array<HitNotes>;
 	var songLength:Float;
+	var score:ScoreData;
+	var accuracy:Float;
+	var judgements:Array<Int>;
+	var sustains:Int;
+	var highestCombo:Int;
 }
 
 typedef ScoreData =
@@ -61,7 +66,7 @@ class ScoreSystems
 
 	public function new()
 	{
-		results = { hitGraph: [], songLength: 0 };
+		results = {hitGraph: [], songLength: 0, score: {score: 0, clear: 0, rank: -1}, accuracy: 0, judgements: [], sustains: 0, highestCombo: 0};
 		judgeMS = [Options.options.msMV, Options.options.msSK, Options.options.msGD, Options.options.msBD, Options.options.msSH];
 		recalculateRating();
 	}
@@ -97,6 +102,11 @@ class ScoreSystems
 		if (scores.highestCombo > highestComboInWeek)
 			highestComboInWeek = scores.highestCombo;
 
+		scores.results.score = {score: scores.score, clear: clearFromJudgements(scores.judgements), rank: rankFromJudgements(scores.judgements)};
+		scores.results.accuracy = scores.accuracy;
+		scores.results.judgements = scores.judgements;
+		scores.results.sustains = scores.sustains;
+		scores.results.highestCombo = scores.highestCombo;
 		resultsArray.push(scores.results);
 	}
 
@@ -434,6 +444,42 @@ class ScoreSystems
 		}
 		save.data.weekScores = weekScores;
 		save.flush();
+	}
+
+	public static function saveWeekScoreData(week:String, difficulty:String)
+	{
+		if (!weekScores.exists(week.toLowerCase()))
+			weekScores.set(week.toLowerCase(), new Map<String, ScoreData>());
+
+		var clear:Float = ScoreSystems.clearFromJudgements(ScoreSystems.weekJudgements);
+		var rank:Int = ScoreSystems.rankFromJudgements(ScoreSystems.weekJudgements);
+
+		var weekScoreMap:Map<String, ScoreData> = weekScores[week.toLowerCase()];
+		if (weekScoreMap.exists(difficulty.toLowerCase()))
+		{
+			if (weekScoreMap[difficulty.toLowerCase()].score < weekScore)
+				weekScoreMap[difficulty.toLowerCase()].score = weekScore;
+
+			if (weekScoreMap[difficulty.toLowerCase()].clear < clear)
+				weekScoreMap[difficulty.toLowerCase()].clear = clear;
+
+			if (weekScoreMap[difficulty.toLowerCase()].rank < rank)
+				weekScoreMap[difficulty.toLowerCase()].rank = rank;
+		}
+		else
+			weekScoreMap[difficulty.toLowerCase()] = {score: weekScore, clear: clear, rank: rank};
+		save.data.weekScores = weekScores;
+		save.flush();
+	}
+
+	public static function loadWeekScoreData(week:String, difficulty:String):ScoreData
+	{
+		if (weekScores.exists(week.toLowerCase()))
+		{
+			if (weekScores[week.toLowerCase()].exists(difficulty.toLowerCase()))
+				return Reflect.copy(weekScores[week.toLowerCase()][difficulty.toLowerCase()]);
+		}
+		return {score: 0, clear: 0, rank: -1};
 	}
 
 	public static function songBeaten(song:String, ?difficulties:Array<String> = null):Bool

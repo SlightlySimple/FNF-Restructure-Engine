@@ -35,6 +35,7 @@ typedef CharacterAnimation =
 	var name:String;
 	var ?asset:String;
 	var ?prefix:String;
+	var ?isSymbol:Null<Bool>;
 	var ?fps:Null<Int>;
 	var ?loop:Null<Bool>;
 	var ?flipX:Null<Bool>;

@@ -653,9 +653,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 
 	function findCategories()
 	{
-		categoriesList = [];
-		if (ModLoader.packagePath == "")
-			categoriesList = ["!favorites"];
+		categoriesList = ["!favorites"];
 		var possibleCats:Array<String> = [];
 		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
@@ -801,12 +799,15 @@ class FreeplayMenuSubState extends MusicBeatSubState
 					var catMap:Map<String, Array<FavoriteSongData>> = new Map<String, Array<FavoriteSongData>>();
 					for (song in Util.favoriteSongs)
 					{
-						if (!cats.contains(song.group))
+						if (Paths.smExists(song.song.songId) || Paths.listFiles("songs/" + song.song.songId + "/", ".ogg").length > 0 || Paths.listFiles("data/songs/" + song.song.songId + "/", ".ogg").length > 0)
 						{
-							cats.push(song.group);
-							catMap[song.group] = [];
+							if (!cats.contains(song.group))
+							{
+								cats.push(song.group);
+								catMap[song.group] = [];
+							}
+							catMap[song.group].push(song);
 						}
-						catMap[song.group].push(song);
 					}
 
 					for (cat in cats)
@@ -1261,7 +1262,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 	{
 		dj.stopTv();
 		dj.playAnim("confirm");
-		dj.state = 1;
+		dj.state = FreeplayDJState.ACCEPT;
 
 		var capsule:FreeplayCapsule = currentCapsule();
 		capsule.confirmAnim();
@@ -1657,11 +1658,16 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		capsule.rank = oldRank;
 		capsule.anim = "rankUpgrade";
 
-		dj.state = 4;
 		if (newRank == 0)
+		{
 			dj.playAnim("loss", true, false);
+			dj.state = FreeplayDJState.RANKING_BAD;
+		}
 		else
+		{
 			dj.playAnim("fistPump", true, false);
+			dj.state = FreeplayDJState.RANKING;
+		}
 		rankCamera.fade(FlxColor.BLACK, 0.5, true, null, true);
 		rankBg.alpha = 1;
 
@@ -1778,12 +1784,17 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		new FlxTimer().start(0.5, function(tmr:FlxTimer) {
 			camera.shake(0.0045, 0.35);
 
-			dj.state = 0;
+			dj.state = FreeplayDJState.IDLE;
 			if (newRank == 0)
+			{
 				dj.playAnim("loss", true, false);
+				dj.anim.curFrame = dj.data.fistPump.loopBadStartFrame;
+			}
 			else
+			{
 				dj.playAnim("fistPump", true, false);
-			dj.anim.curFrame = 4;
+				dj.anim.curFrame = dj.data.fistPump.loopStartFrame;
+			}
 
 			camera.zoom = 0.8;
 			FlxTween.tween(camera, {zoom: 1}, 0.8, {ease: FlxEase.elasticOut});

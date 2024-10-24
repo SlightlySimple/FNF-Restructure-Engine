@@ -27,5 +27,5 @@ function update(elapsed)
 	abot.visible = this.visible;
 	abot.repositionCharacter(this.charX, this.charY);
 	abot.color = this.color;
-	game.hscriptIdSet(scriptId + "-abot", "alpha", this.alpha);
+	game.hscriptIdSet(scriptId + "-abot", "darkLevel", this.data["darkLevel"]);
 }

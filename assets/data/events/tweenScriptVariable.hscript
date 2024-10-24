@@ -27,12 +27,12 @@ function onEvent(event)
 		}
 
 		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
-		applyProperty(function(v) { Reflect.setProperty(affect, varSplit[varSplit.length - 1], v); }, prev, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(function(v) { Reflect.setProperty(affect, varSplit[varSplit.length - 1], v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 	}
 	else
 	{
 		var prev = game.hscriptIdGet(event.parameters.id, event.parameters.variable);
-		applyProperty(function(v) { game.hscriptIdSet(event.parameters.id, event.parameters.variable, v); }, prev, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(function(v) { game.hscriptIdSet(event.parameters.id, event.parameters.variable, v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 	}
 }
 
@@ -72,4 +72,14 @@ function applyProperty(func, oldValue, newValue, operation, time, ease)
 		case "divide": final = prev / value;
 	}
 	FlxTween.num(prev, final, time, {ease: ease}, func);
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

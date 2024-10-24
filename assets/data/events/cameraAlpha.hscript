@@ -25,8 +25,18 @@ function eventGo(event)
 	if (cam != null)
 	{
 		if (event.parameters.time > 0)
-			FlxTween.tween(cam, {alpha: event.parameters.alpha}, event.parameters.time);
+			FlxTween.tween(cam, {alpha: event.parameters.alpha}, getTime(event.parameters.time, event.parameters.timeUnit));
 		else
 			cam.alpha = event.parameters.alpha;
 	}
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

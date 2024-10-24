@@ -1,5 +1,4 @@
 {
-	"unlocked": true,
 	"freeplayStyle": {
 		"bgAsset": "freeplayBGdad",
 		"selectorAsset": "freeplaySelector",
@@ -33,9 +32,6 @@
 		"charSelect": {
 			"transitionDelay": 0.45
 		},
-		"text1": "#freeplay.backgroundText.1",
-		"text2": "#freeplay.backgroundText.0",
-		"text3": "#freeplay.backgroundText.2",
 		"animations": [
 			{
 				"name": "intro",

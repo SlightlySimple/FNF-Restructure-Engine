@@ -1,6 +1,6 @@
 import openfl.display.BitmapData;
 
-alpha = 1;
+darkLevel = 1;
 
 function create()
 {
@@ -18,7 +18,7 @@ function create()
 function updatePost(elapsed)
 {
 	stereoBG.color = 0xFF616785;
-    shader.data.fadeAmount.value = [1.0 - alpha];
+    shader.data.fadeAmount.value = [1.0 - darkLevel];
 }
 
 function destroy()

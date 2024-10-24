@@ -42,15 +42,23 @@
 		},
 		{
 			"id": "duration",
-			"label": "Duration (Seconds)",
+			"label": "Duration",
 			"infoText": "How long it takes to fade the color in or out.",
 			"type": "stepper",
-			"time": "seconds",
+			"time": "_timeUnit",
 			"defaultValue": 1,
 			"min": 0,
 			"max": 9999,
 			"increment": 0.1,
 			"decimals": 3
+		},
+		{
+			"id": "timeUnit",
+			"label": "Time Unit",
+			"infoText": "The unit of measurement that should be used for the Duration parameter.",
+			"type": "dropdown",
+			"defaultValue": "seconds",
+			"options": ["seconds", "beats", "steps"]
 		},
 		{
 			"id": "reverse",

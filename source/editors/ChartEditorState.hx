@@ -403,6 +403,7 @@ class ChartEditorState extends MusicBeatState
 	var addStrumButton:FlxSprite;
 	var makingSustains:FlxTypedSpriteGroup<EditorSustainNote>;
 	var sustains:FlxTypedSpriteGroup<EditorSustainNote>;
+	var makingNoteGroup:FlxTypedSpriteGroup<Note>;
 	var notes:FlxTypedSpriteGroup<Note>;
 	var noteSplashes:FlxTypedSpriteGroup<NoteSplash>;
 	var ghostNote:Note;
@@ -617,8 +618,7 @@ class ChartEditorState extends MusicBeatState
 		add(strums);
 
 		ghostNote = new Note(0, 0, "", songData.noteType[0]);
-		ghostNote.setGraphicSize(NOTE_SIZE);
-		ghostNote.updateHitbox();
+		scaleObjectToNoteSize(ghostNote);
 		ghostNote.alpha = 0.5;
 		ghostNote.visible = false;
 		add(ghostNote);
@@ -631,11 +631,13 @@ class ChartEditorState extends MusicBeatState
 		add(sustains);
 
 		sustainWidget = new FlxSprite(Paths.image("ui/editors/sustainWidget"));
-		sustainWidget.setGraphicSize(NOTE_SIZE);
-		sustainWidget.updateHitbox();
+		scaleObjectToNoteSize(sustainWidget);
 		sustainWidget.alpha = 0.5;
 		sustainWidget.visible = false;
 		add(sustainWidget);
+
+		makingNoteGroup = new FlxTypedSpriteGroup<Note>();
+		add(makingNoteGroup);
 
 		notes = new FlxTypedSpriteGroup<Note>();
 		add(notes);
@@ -1624,8 +1626,7 @@ class ChartEditorState extends MusicBeatState
 		updateReplaceTypeList();
 
 		var selectTypeButton:TextButton = cast ui.element("selectTypeButton");
-		selectTypeButton.onClicked = function()
-		{
+		selectTypeButton.onClicked = function() {
 			selectedNotes = [];
 			var selectedIndexes:Array<Int> = [];
 
@@ -1652,8 +1653,7 @@ class ChartEditorState extends MusicBeatState
 		}
 
 		var removeTypeButton:TextButton = cast ui.element("removeTypeButton");
-		removeTypeButton.onClicked = function()
-		{
+		removeTypeButton.onClicked = function() {
 			var noteTypeString:String = replaceTypeDropdown.value;
 			if (noteTypeString == "")
 				noteTypeString = "default";
@@ -2501,12 +2501,10 @@ class ChartEditorState extends MusicBeatState
 					{
 						label: "Select All Notes",
 						action: function() {
-							notes.forEachAlive(function(note:Note)
-								{
-									if (!selectedNotes.contains(note))
-										selectedNotes.push(note);
-								}
-							);
+							notes.forEachAlive(function(note:Note) {
+								if (!selectedNotes.contains(note))
+									selectedNotes.push(note);
+							});
 
 							refreshSelectedNotes();
 						},
@@ -2517,12 +2515,10 @@ class ChartEditorState extends MusicBeatState
 						action: function() {
 							selectedNotes = [];
 
-							notes.forEachAlive(function(note:Note)
-								{
-									if (note.beat <= songProgress / 4)
-										selectedNotes.push(note);
-								}
-							);
+							notes.forEachAlive(function(note:Note) {
+								if (note.beat <= songProgress / 4)
+									selectedNotes.push(note);
+							});
 
 							refreshSelectedNotes();
 						},
@@ -3145,8 +3141,7 @@ class ChartEditorState extends MusicBeatState
 					ghostNote.updateTypeData();
 
 					ghostNote.onNotetypeChanged(noteTypeFromColumn(cellX));
-					ghostNote.setGraphicSize(NOTE_SIZE);
-					ghostNote.updateHitbox();
+					scaleObjectToNoteSize(ghostNote);
 					if (makingNoteMouse[0] > -1)
 						refreshMakingSustains();
 
@@ -3278,12 +3273,10 @@ class ChartEditorState extends MusicBeatState
 
 			if (Options.mouseJustReleased())
 			{
-				notes.forEachAlive(function(note:Note)
-					{
-						if (note.overlaps(selectionBox) && !selectedNotes.contains(note))
-							selectedNotes.push(note);
-					}
-				);
+				notes.forEachAlive(function(note:Note) {
+					if (note.overlaps(selectionBox) && !selectedNotes.contains(note))
+						selectedNotes.push(note);
+				});
 
 				selecting = false;
 				selectionBox.visible = false;
@@ -3320,8 +3313,10 @@ class ChartEditorState extends MusicBeatState
 			UIControl.cursor = MouseCursor.HAND;
 			if (Options.mouseJustReleased())
 			{
-				placeNote(makingNoteMouse[0], ghostNote.beat * 4, Std.int(makingNoteMouse[1]));
+				var noteBeat:Float = makingNoteMouse[0];
+				var noteColumn:Int = Std.int(makingNoteMouse[1]);
 				makingNoteMouse = [-1, -1];
+				placeNote(noteBeat, ghostNote.beat * 4, noteColumn);
 				refreshMakingSustains();
 			}
 		}
@@ -3849,8 +3844,10 @@ class ChartEditorState extends MusicBeatState
 				}
 				if (releasedArray[i] && makingNotes[i] > -1)
 				{
-					placeNote(makingNotes[i], songProgress, i);
+					var noteBeat:Float = makingNotes[i];
+					var noteColumn:Int = i;
 					makingNotes[i] = -1;
+					placeNote(noteBeat, songProgress, noteColumn);
 					refreshMakingSustains();
 				}
 			}
@@ -4281,8 +4278,7 @@ class ChartEditorState extends MusicBeatState
 			Noteskins.addSlotAnims(strum, noteType, strumColumns[i]);
 			strum.animation.play("static");
 			strum.updateHitbox();
-			strum.setGraphicSize(NOTE_SIZE);
-			strum.updateHitbox();
+			scaleObjectToNoteSize(strum);
 			strum.y -= strum.height / 2;
 			if (downscroll)
 				strum.y += FlxG.height * 0.35;
@@ -4296,8 +4292,7 @@ class ChartEditorState extends MusicBeatState
 
 		addStrumButton.x = xx + (strums.members.length * NOTE_SIZE);
 		addStrumButton.y = strums.members[0].y;
-		addStrumButton.setGraphicSize(NOTE_SIZE);
-		addStrumButton.updateHitbox();
+		scaleObjectToNoteSize(addStrumButton);
 		addStrumButton.visible = allowEditingStrumline;
 		addStrumButton.alpha = 0.5;
 		strums.add(addStrumButton);
@@ -4407,13 +4402,6 @@ class ChartEditorState extends MusicBeatState
 	function refreshNotes(?forceUpdate:Bool = false)
 	{
 		var totalNotes:Int = noteData.length;
-		if (makingNoteMouse[0] > -1)
-			totalNotes++;
-		for (i in 0...makingNotes.length)
-		{
-			if (makingNotes[i] > -1)
-				totalNotes++;
-		}
 
 		while (notes.members.length > totalNotes)
 		{
@@ -4469,8 +4457,7 @@ class ChartEditorState extends MusicBeatState
 				notes.members[i].updateTypeData();
 				notes.members[i].onNotetypeChanged(noteskinType);
 
-				notes.members[i].setGraphicSize(NOTE_SIZE);
-				notes.members[i].updateHitbox();
+				scaleObjectToNoteSize(notes.members[i]);
 				notes.members[i].x = Std.int((FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) + (NOTE_SIZE * notes.members[i].column));
 				notes.members[i].y = Std.int(NOTE_SIZE * zoom * Conductor.stepFromTime(noteData[i][0]));
 				if (downscroll)
@@ -4479,55 +4466,83 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (totalNotes > noteData.length)
+		noteMinimap.refresh();
+
+		refreshMakingNotes();
+	}
+
+	function refreshMakingNotes()
+	{
+		var totalNotes:Int = 0;
+		if (makingNoteMouse[0] > -1)
+			totalNotes++;
+		for (i in 0...makingNotes.length)
 		{
-			var j:Int = noteData.length;
+			if (makingNotes[i] > -1)
+				totalNotes++;
+		}
+
+		while (makingNoteGroup.members.length > totalNotes)
+		{
+			var popper:Note = makingNoteGroup.members[makingNoteGroup.members.length-1];
+			makingNoteGroup.remove(popper, true);
+			popper.kill();
+			popper.destroy();
+		}
+
+		while (makingNoteGroup.members.length < totalNotes)
+		{
+			var newNote:Note = new Note(0, 0, "", songData.noteType[0]);
+			makingNoteGroup.add(newNote);
+		}
+
+		if (totalNotes > 0)
+		{
+			var j:Int = 0;
 			for (i in 0...makingNotes.length)
 			{
 				if (makingNotes[i] > -1)
 				{
-					notes.members[j].strumTime = Conductor.timeFromStep(makingNotes[i]);
-					notes.members[j].beat = makingNotes[i] / 4;
-					notes.members[j].column = i;
-					notes.members[j].strumColumn = strumColumns[i];
+					makingNoteGroup.members[j].strumTime = Conductor.timeFromStep(makingNotes[i]);
+					makingNoteGroup.members[j].beat = makingNotes[i] / 4;
+					makingNoteGroup.members[j].column = i;
+					makingNoteGroup.members[j].strumColumn = strumColumns[i];
 
 					var noteType:String = noteTypeInput.text;
-					notes.members[j].noteType = noteType;
-					notes.members[j].updateTypeData();
+					makingNoteGroup.members[j].noteType = noteType;
+					makingNoteGroup.members[j].updateTypeData();
 
-					notes.members[j].onNotetypeChanged(noteTypeFromColumn(i));
+					makingNoteGroup.members[j].onNotetypeChanged(noteTypeFromColumn(i));
 
-					notes.members[j].setGraphicSize(NOTE_SIZE);
-					notes.members[j].updateHitbox();
-					notes.members[j].x = Std.int((FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) + (NOTE_SIZE * i));
-					notes.members[j].y = Std.int(NOTE_SIZE * zoom * makingNotes[i]);
+					scaleObjectToNoteSize(makingNoteGroup.members[j]);
+					makingNoteGroup.members[j].x = Std.int((FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) + (NOTE_SIZE * i));
+					makingNoteGroup.members[j].y = Std.int(NOTE_SIZE * zoom * makingNotes[i]);
 					if (downscroll)
-						notes.members[j].y = -notes.members[j].y;
-					notes.members[j].y -= notes.members[j].height / 2;
+						makingNoteGroup.members[j].y = -makingNoteGroup.members[j].y;
+					makingNoteGroup.members[j].y -= makingNoteGroup.members[j].height / 2;
 					j++;
 				}
 			}
 
 			if (makingNoteMouse[0] > -1)
 			{
-				notes.members[j].strumTime = Conductor.timeFromStep(makingNoteMouse[0]);
-				notes.members[j].beat = makingNoteMouse[0] / 4;
-				notes.members[j].column = Std.int(makingNoteMouse[1]);
-				notes.members[j].strumColumn = strumColumns[notes.members[j].column];
+				makingNoteGroup.members[j].strumTime = Conductor.timeFromStep(makingNoteMouse[0]);
+				makingNoteGroup.members[j].beat = makingNoteMouse[0] / 4;
+				makingNoteGroup.members[j].column = Std.int(makingNoteMouse[1]);
+				makingNoteGroup.members[j].strumColumn = strumColumns[makingNoteGroup.members[j].column];
 
 				var noteType:String = noteTypeInput.text;
-				notes.members[j].noteType = noteType;
-				notes.members[j].updateTypeData();
+				makingNoteGroup.members[j].noteType = noteType;
+				makingNoteGroup.members[j].updateTypeData();
 
-				notes.members[j].onNotetypeChanged(noteTypeFromColumn(notes.members[j].column));
+				makingNoteGroup.members[j].onNotetypeChanged(noteTypeFromColumn(makingNoteGroup.members[j].column));
 
-				notes.members[j].setGraphicSize(NOTE_SIZE);
-				notes.members[j].updateHitbox();
-				notes.members[j].x = Std.int((FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) + (NOTE_SIZE * makingNoteMouse[1]));
-				notes.members[j].y = Std.int(NOTE_SIZE * zoom * makingNoteMouse[0]);
+				scaleObjectToNoteSize(makingNoteGroup.members[j]);
+				makingNoteGroup.members[j].x = Std.int((FlxG.width / 2) - (NOTE_SIZE * numColumns / 2) + (NOTE_SIZE * makingNoteMouse[1]));
+				makingNoteGroup.members[j].y = Std.int(NOTE_SIZE * zoom * makingNoteMouse[0]);
 				if (downscroll)
-					notes.members[j].y = -notes.members[j].y;
-				notes.members[j].y -= notes.members[j].height / 2;
+					makingNoteGroup.members[j].y = -makingNoteGroup.members[j].y;
+				makingNoteGroup.members[j].y -= makingNoteGroup.members[j].height / 2;
 				j++;
 			}
 		}
@@ -4603,30 +4618,6 @@ class ChartEditorState extends MusicBeatState
 			if (updateThis)
 				sustains.members[i].refreshPosition(zoom, downscroll);
 		}
-	}
-
-	function repositionNotes()
-	{
-		notes.forEachAlive(function(note:Note)
-		{
-			note.strumTime = Conductor.timeFromBeat(note.beat);
-			note.y = Std.int(NOTE_SIZE * zoom * note.beat * 4);
-			if (downscroll)
-				note.y = -note.y;
-			note.y -= note.height / 2;
-		});
-
-		noteMinimap.refresh();
-	}
-
-	function repositionSustains()
-	{
-		sustains.forEachAlive(function(note:EditorSustainNote)
-		{
-			note.strumTime = Conductor.timeFromBeat(note.beat);
-			note.sustainLength = Conductor.timeFromBeat(note.endBeat) - note.strumTime;
-			note.refreshPosition(zoom, downscroll);
-		});
 	}
 
 	function refreshMakingSustains()
@@ -4708,6 +4699,29 @@ class ChartEditorState extends MusicBeatState
 			makingSustainMouse.visible = false;
 	}
 
+	function repositionNotes()
+	{
+		notes.forEachAlive(function(note:Note) {
+			note.strumTime = Conductor.timeFromBeat(note.beat);
+			note.y = Std.int(NOTE_SIZE * zoom * note.beat * 4);
+			if (downscroll)
+				note.y = -note.y;
+			note.y -= note.height / 2;
+		});
+
+		noteMinimap.refresh();
+	}
+
+	function repositionSustains()
+	{
+		sustains.forEachAlive(function(note:EditorSustainNote)
+		{
+			note.strumTime = Conductor.timeFromBeat(note.beat);
+			note.sustainLength = Conductor.timeFromBeat(note.endBeat) - note.strumTime;
+			note.refreshPosition(zoom, downscroll);
+		});
+	}
+
 	function refreshGhostNotes()
 	{
 		ghostNotes.forEachAlive(function(note:Note)
@@ -4736,8 +4750,7 @@ class ChartEditorState extends MusicBeatState
 					if (maintainSidesCheckbox.checked)
 						column = note[1];
 					var newNote:Note = new Note(note[0], column, noteType, noteTypeFromColumn(column));
-					newNote.setGraphicSize(NOTE_SIZE);
-					newNote.updateHitbox();
+					scaleObjectToNoteSize(newNote);
 					newNote.alpha = 0.5;
 					newNote.x = Std.int((FlxG.width / 2) - (NOTE_SIZE * (numColumns / 2)) + (NOTE_SIZE * column));
 					newNote.y = Std.int(NOTE_SIZE * zoom * (Conductor.stepFromTime(note[0]) - sec.firstStep + curSec.firstStep));
@@ -4752,12 +4765,21 @@ class ChartEditorState extends MusicBeatState
 
 	function refreshSelectedNotes()
 	{
-		selNoteBoxes.forEachAlive(function(note:NoteSelection)
-		{
+		selNoteBoxes.forEachAlive(function(note:NoteSelection) {
 			note.kill();
 			note.destroy();
 		});
 		selNoteBoxes.clear();
+
+		var poppers:Array<Note> = [];
+		for (n in selectedNotes)
+		{
+			if (notes.members.indexOf(n) < 0 || notes.members.indexOf(n) >= noteData.length)
+				poppers.push(n);
+		}
+
+		for (p in poppers)
+			selectedNotes.remove(p);
 
 		for (n in selectedNotes)
 			selNoteBoxes.add(new NoteSelection(n).refreshPosition(zoom, downscroll));
@@ -4867,6 +4889,17 @@ class ChartEditorState extends MusicBeatState
 		}
 
 		sectionTab.repositionAll();
+	}
+
+	function scaleObjectToNoteSize(obj:FlxSprite)
+	{
+		obj.setGraphicSize(NOTE_SIZE);
+		obj.updateHitbox();
+		if (obj.height > NOTE_SIZE)
+		{
+			obj.setGraphicSize(0, NOTE_SIZE);
+			obj.updateHitbox();
+		}
 	}
 
 	function noteTypeFromColumn(column:Int):String
@@ -5207,6 +5240,9 @@ class ChartEditorState extends MusicBeatState
 					timeVal = Reflect.field(songData.events[curEvent].parameters, p.id);
 				}
 			}
+
+			if (time.startsWith("_") && Reflect.hasField(songData.events[curEvent].parameters, time.substr(1)))
+				time = Reflect.field(songData.events[curEvent].parameters, time.substr(1));
 
 			if (time != "")
 			{
@@ -6137,9 +6173,6 @@ class ChartEditorState extends MusicBeatState
 
 		if (songData.eventFile != null && songData.eventFile != "_events")
 			savedData.eventFile = songData.eventFile;
-
-		if (songData.altSpeedCalc)
-			savedData.altSpeedCalc = songData.altSpeedCalc;
 
 		if (songData.bpmMap.length > 1)
 			savedData.bpmMap = songData.bpmMap;

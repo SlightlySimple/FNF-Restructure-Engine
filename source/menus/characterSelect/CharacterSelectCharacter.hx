@@ -66,6 +66,14 @@ class CharacterSelectCharacter extends FlxSprite
 		}
 	}
 
+	public function hasAnim(anim:String):Bool
+	{
+		if (usingAtlas)
+			return atlas.hasAnim(anim);
+
+		return true;
+	}
+
 	public function playAnim(anim:String)
 	{
 		if (usingAtlas)

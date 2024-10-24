@@ -17,10 +17,10 @@ function onEvent(event)
 				affect = Reflect.getProperty(affect, varSplit[i]);
 		}
 
-		applyProperty(affect, varSplit[varSplit.length - 1], val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(affect, varSplit[varSplit.length - 1], val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 	}
 	else
-		applyProperty(game, event.parameters.variable, val, event.parameters.operation, event.parameters.time, Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(game, event.parameters.variable, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 }
 
 function analyzeValue(val)
@@ -64,4 +64,14 @@ function applyProperty(base, property, value, operation, time, ease)
 		Reflect.setProperty(tweenStruct, property, final);
 		FlxTween.tween(base, tweenStruct, time, {ease: ease});
 	}
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

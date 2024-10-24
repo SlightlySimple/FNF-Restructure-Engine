@@ -34,11 +34,10 @@ class FreeplayDJ extends FlxAnimate
 		anim.callback = function() {
 			if (animName == "cartoon")
 			{
-				switch (anim.curFrame)
-				{
-					case 80: FlxG.sound.play(Paths.sound("freeplay/remote_click"));
-					case 85: runTvLogic();
-				}
+				if (anim.curFrame == data.cartoon.soundClickFrame)
+					FlxG.sound.play(Paths.sound("freeplay/remote_click"));
+				else if (anim.curFrame == data.cartoon.soundCartoonFrame)
+					runTvLogic();
 			}
 		}
 	}
@@ -54,7 +53,7 @@ class FreeplayDJ extends FlxAnimate
 			idleTimer += elapsed;
 			if (idleTimer >= 60 && !spooked)
 				state = EASTER_EGG;
-			if (idleTimer >= 180 && animOffsets.exists("cartoon"))
+			if (idleTimer >= 180 && data.cartoon != null && animOffsets.exists("cartoon"))
 				state = WATCHING_TV;
 		}
 
@@ -81,9 +80,9 @@ class FreeplayDJ extends FlxAnimate
 						playAnim("cartoon");
 					else if (animName == "cartoon")
 					{
-						var frame:Int = FlxG.random.bool(33) ? 112 : 166;
+						var frame:Int = FlxG.random.bool(33) ? data.cartoon.loopBlinkFrame : data.cartoon.loopFrame;
 						if (FlxG.random.bool(5) || forceRemote)
-							frame = 60;
+							frame = data.cartoon.channelChangeFrame;
 
 						isPlaying = true;
 						anim.curFrame = frame;
@@ -94,10 +93,15 @@ class FreeplayDJ extends FlxAnimate
 			}
 		}
 
-		if (state == RANKING)
+		switch (state)
 		{
-			if (anim.curFrame >= 4)
-				anim.curFrame = 0;
+			case RANKING:
+				if (anim.curFrame >= data.fistPump.introEndFrame)
+					anim.curFrame = data.fistPump.introStartFrame;
+
+			case RANKING_BAD:
+				if (anim.curFrame >= data.fistPump.introBadEndFrame)
+					anim.curFrame = data.fistPump.introBadStartFrame;
 		}
 
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justPressed.SPACE)
@@ -175,5 +179,6 @@ enum abstract FreeplayDJState(Int) from Int to Int
 	var EASTER_EGG = 2;
 	var WATCHING_TV = 3;
 	var RANKING = 4;
-	var NEW_CHARACTER = 5;
+	var RANKING_BAD = 5;
+	var NEW_CHARACTER = 6;
 }

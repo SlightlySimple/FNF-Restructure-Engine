@@ -19,8 +19,18 @@ function onEvent(event)
 		game.camZoom = camZoom;
 	else
 	{
-		var twn = FlxTween.tween(game, {camZoom: camZoom}, event.parameters.time, { ease: Reflect.field(FlxEase, event.parameters.ease) });
+		var twn = FlxTween.tween(game, {camZoom: camZoom}, getTime(event.parameters.time, event.parameters.timeUnit), {ease: Reflect.field(FlxEase, event.parameters.ease)});
 		twn._syncWithSong = true;
 		twn._startTime = event.time;
 	}
+}
+
+function getTime(time, unit)
+{
+	switch (unit)
+	{
+		case "beats": return time * Conductor.beatSeconds;
+		case "steps": return time * Conductor.stepSeconds;
+	}
+	return time;
 }

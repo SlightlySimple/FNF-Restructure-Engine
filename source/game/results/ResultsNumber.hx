@@ -56,7 +56,15 @@ class ResultsNumber extends FlxTypedSpriteGroup<AnimatedSprite>
 			}
 		}
 
-		for (i in 0...digits.length)
-			members[i].playAnim(Std.string(digits[i]));
+		for (i in 0...members.length)
+		{
+			if (i >= digits.length)
+				members[i].visible = false;
+			else
+			{
+				members[i].visible = true;
+				members[i].playAnim(Std.string(digits[i]));
+			}
+		}
 	}
 }

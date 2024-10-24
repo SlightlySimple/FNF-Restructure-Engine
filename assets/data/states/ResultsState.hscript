@@ -71,6 +71,9 @@ rankData["PERFECT_GOLD"] = rankData["PERFECT"];
 movingSongStuff = false;
 playbackRateY = 0;
 
+canShowResultsGraph = false;
+resultsGraphDown = false;
+
 function create(data)
 {
 	resultsData = data;
@@ -177,13 +180,55 @@ function create(data)
 	graphSongNameBlur = new FlxText(100, 150, 0, data.songNames[0]).setFormat("5by7", 32, FlxColor.fromString(characterData.freeplayStyle.capsuleTextColors[0]));
 	if (data.artistNames[0] != "")
 		graphSongNameBlur.text = Lang.get("#results.songNameAndArtist", [data.songNames[0], data.artistNames[0]]);
-	if (data.songNames.length > 1)
-		graphSongNameBlur.text = "< " + graphSongNameBlur.text + " >";
 	graphSongNameBlur.shader = blur;
 	resultsGraphGroup.add(graphSongNameBlur);
 
 	graphSongName = new FlxText(100, 150, 0, graphSongNameBlur.text).setFormat("5by7", 32, FlxColor.WHITE);
 	resultsGraphGroup.add(graphSongName);
+
+	graphSongNameX = graphSongName.x;
+	graphSongNameW = 630;
+	if (data.songNames.length > 1)
+	{
+		var graphSongLBlur = new FlxText(100, 150, 0, "<").setFormat("5by7", 32, FlxColor.fromString(characterData.freeplayStyle.capsuleTextColors[0]));
+		graphSongLBlur.shader = blur;
+		resultsGraphGroup.add(graphSongLBlur);
+
+		var graphSongL = new FlxText(100, 150, 0, "<").setFormat("5by7", 32, FlxColor.WHITE);
+		resultsGraphGroup.add(graphSongL);
+
+		var graphSongRBlur = new FlxText(730, 150, 0, ">").setFormat("5by7", 32, FlxColor.fromString(characterData.freeplayStyle.capsuleTextColors[0]));
+		graphSongRBlur.x -= graphSongRBlur.width;
+		graphSongRBlur.shader = blur;
+		resultsGraphGroup.add(graphSongRBlur);
+
+		var graphSongR = new FlxText(graphSongRBlur.x - resultsGraphGroup.x, 150, 0, ">").setFormat("5by7", 32, FlxColor.WHITE);
+		resultsGraphGroup.add(graphSongR);
+
+		graphRank = CreateSprite("ui/freeplay/capsule/rankbadges", 675, 147);
+		graphRankBlur = CreateSprite("ui/freeplay/capsule/rankbadges", 675, 147);
+		graphRankBlur.shader = blur;
+
+		for (r in [graphRank, graphRankBlur])
+		{
+			r.addAnim("0", 'LOSS rank0', 24, false);
+			r.addAnim("1", 'GOOD rank0', 24, false);
+			r.addAnim("2", 'GREAT rank0', 24, false);
+			r.addAnim("3", 'EXCELLENT rank0', 24, false);
+			r.addAnim("4", 'PERFECT rank0', 24, false);
+			r.addAnim("5", 'PERFECT rank GOLD', 24, false);
+			r.playAnim(Std.string(data.noteGraphData[0].score.rank));
+			r.blend = BlendMode.ADD;
+			r.scale.set(0.9, 0.9);
+			r.updateHitbox();
+			resultsGraphGroup.add(r);
+		}
+
+		graphSongNameX += 30;
+		graphSongNameW -= 60;
+		graphSongName.x = graphSongNameX;
+		graphSongNameBlur.x = graphSongNameX;
+	}
 
 	refreshGraphSongNameMinMax();
 
@@ -237,7 +282,7 @@ function create(data)
 	if (data.score.score > data.oldScore.score)
 		add(highscoreNew);
 
-	var ratingGrp = [];
+	ratingGrp = [];
 
 	ratingGrp.push([new ResultsNumber(300, 130, 0, FlxColor.WHITE), data.judgements[0] + data.judgements[1] + data.judgements[2] + data.judgements[3] + data.judgements[4]]);
 	ratingGrp.push([new ResultsPercentage(240, 180, 0, FlxColor.WHITE), Math.fround(data.accuracy * 100) / 100]);
@@ -343,7 +388,7 @@ function startRankTallySequence()
 				FlxTween.tween(clearPercentCounter, {alpha: 0}, 0.5, {
 					startDelay: 0.5,
 					ease: FlxEase.quartOut,
-					onComplete: function(twn) { this.remove(clearPercentCounter, true); }
+					onComplete: function(twn) { this.remove(clearPercentCounter, true); canShowResultsGraph = true; }
 				});
 			});
 		}
@@ -481,19 +526,28 @@ function update(elapsed)
 {
 	if (!this.transitioning)
 	{
-		if (Options.keyJustPressed("ui_down") && resultsGraphGroup.y < -50 && resultsGraphGroup.y > -600)
+		if (Options.keyJustPressed("ui_down") && !resultsGraphDown)
 		{
-			FlxTween.tween(resultsGraphGroup, {y: -25}, 0.4, {ease: FlxEase.quintOut});
-			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
+			if (canShowResultsGraph)
+			{
+				FlxTween.tween(resultsGraphGroup, {y: -25}, 0.4, {ease: FlxEase.quintOut});
+				FlxG.sound.play(Paths.sound("ui/scrollMenu"));
+				resultsGraphDown = true;
+				refreshNumbers();
+			}
+			else
+				FlxG.sound.play(Paths.sound("ui/cancelMenu"));
 		}
 
-		if (Options.keyJustPressed("ui_up") && resultsGraphGroup.y > -30)
+		if (Options.keyJustPressed("ui_up") && resultsGraphDown)
 		{
 			FlxTween.tween(resultsGraphGroup, {y: -550}, 0.2, {ease: FlxEase.cubeIn});
 			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
+			resultsGraphDown = false;
+			refreshNumbers();
 		}
 
-		if (resultsGraphGroup.y > -30)
+		if (resultsGraphDown)
 		{
 			graphSongNameTimer += elapsed;
 			if (graphSongNameMinX > graphSongNameMaxX)
@@ -514,12 +568,12 @@ function update(elapsed)
 				}
 				else
 					graphSongNameTimer = 0;
-				graphSongNameBlur.x = graphSongName.x;
 
-				var rect = new FlxRect(-(graphSongName.x - graphSongNameMinX), 0, 630, graphSongName.height);
+				var rect = new FlxRect(-(graphSongName.x - graphSongNameMinX), 0, graphSongNameW, graphSongName.height);
 				graphSongName.clipRect = rect;
 				graphSongNameBlur.clipRect = rect;
 			}
+			graphSongNameBlur.x = graphSongName.x;
 
 			if (resultsData.noteGraphData.length > 1)
 			{
@@ -612,24 +666,30 @@ function changeSelection(val)
 	viewingSong = Util.loop(viewingSong + val, 0, resultsData.noteGraphData.length - 1);
 	FlxG.sound.play(Paths.sound("ui/scrollMenu"));
 
-	graphSongName.text = "< " + resultsData.songNames[viewingSong] + " >";
+	graphSongName.text = resultsData.songNames[viewingSong];
 	if (resultsData.artistNames[viewingSong] != "")
-		graphSongName.text = "< " + Lang.get("#results.songNameAndArtist", [resultsData.songNames[viewingSong], resultsData.artistNames[viewingSong]]) + " >";
+		graphSongName.text = Lang.get("#results.songNameAndArtist", [resultsData.songNames[viewingSong], resultsData.artistNames[viewingSong]]);
 	graphSongNameBlur.text = graphSongName.text;
 
+	if (graphRank.animation.curAnim.name != Std.string(resultsData.noteGraphData[viewingSong].score.rank))
+	{
+		graphRank.playAnim(Std.string(resultsData.noteGraphData[viewingSong].score.rank));
+		graphRankBlur.playAnim(Std.string(resultsData.noteGraphData[viewingSong].score.rank));
+	}
 	refreshGraphSongNameMinMax();
 	rebuildGraphs();
+	refreshNumbers();
 }
 
 function refreshGraphSongNameMinMax()
 {
-	graphSongNameMinX = graphSongName.x;
-	graphSongNameMaxX = graphSongName.x;
+	graphSongNameMinX = graphSongNameX;
+	graphSongNameMaxX = graphSongNameX;
 	graphSongNameTimer = 0;
-	if (graphSongName.width > 630)
+	if (graphSongName.width > graphSongNameW)
 	{
-		graphSongNameMaxX = graphSongName.x - (graphSongName.width - 630);
-		var rect = new FlxRect(-(graphSongName.x - graphSongNameMinX), 0, 630, graphSongName.height);
+		graphSongNameMaxX = graphSongNameX - (graphSongName.width - graphSongNameW);
+		var rect = new FlxRect(-(graphSongNameX - graphSongNameMinX), 0, graphSongNameW, graphSongName.height);
 		graphSongName.clipRect = rect;
 		graphSongNameBlur.clipRect = rect;
 	}
@@ -638,10 +698,60 @@ function refreshGraphSongNameMinMax()
 		graphSongName.clipRect = null;
 		graphSongNameBlur.clipRect = null;
 	}
+	graphSongName.x = graphSongNameMinX;
+	graphSongNameBlur.x = graphSongNameMinX;
 }
 
 function rebuildGraphs()
 {
 	hitGraph.pixels = new HitGraph(650, 200, resultsData.noteGraphData[viewingSong], playbackRate);
 	healthGraph.pixels = new HealthGraph(650, 120, ResultsState.healthData[viewingSong]);
+}
+
+function refreshNumbers()
+{
+	if (!PlayState.inStoryMode) return;
+
+	var scoreValue = resultsData.score.score;
+	var nums = [];
+
+	nums.push(resultsData.judgements[0] + resultsData.judgements[1] + resultsData.judgements[2] + resultsData.judgements[3] + resultsData.judgements[4]);
+	nums.push(Math.fround(resultsData.accuracy * 100) / 100);
+	nums.push(this.nums[1]);
+
+	nums.push(resultsData.judgements[0]);
+	nums.push(resultsData.judgements[1]);
+	nums.push(resultsData.judgements[2]);
+	nums.push(resultsData.judgements[3]);
+	nums.push(resultsData.judgements[4]);
+	nums.push(this.nums[2]);
+	nums.push(resultsData.judgements[5]);
+
+	if (resultsGraphDown)
+	{
+		nums = [];
+		var data = resultsData.noteGraphData[viewingSong];
+		scoreValue = data.score.score;
+
+		nums.push(data.judgements[0] + data.judgements[1] + data.judgements[2] + data.judgements[3] + data.judgements[4]);
+		nums.push(Math.fround(data.accuracy * 100) / 100);
+		nums.push(data.highestCombo);
+
+		nums.push(data.judgements[0]);
+		nums.push(data.judgements[1]);
+		nums.push(data.judgements[2]);
+		nums.push(data.judgements[3]);
+		nums.push(data.judgements[4]);
+		nums.push(data.sustains);
+		nums.push(data.judgements[5]);
+	}
+
+	score.tweenScore(scoreValue, 0.25, FlxEase.quartOut);
+	var ind = 0;
+	for (rating in ratingGrp)
+	{
+		FlxTween.cancelTweensOf(rating[0]);
+		FlxTween.tween(rating[0], {number: nums[ind]}, 0.25, {ease: FlxEase.quartOut});
+		ind++;
+	}
 }

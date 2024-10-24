@@ -141,6 +141,7 @@
 					<label text="Prefix:"/>
 					<input id="animPrefix" infoText="The name, if any, of the animation as it appears in the texture atlas."/>
 					<dropdown id="animPrefixDropdown" allowSearch="true" infoText="A list of all prefixes detected in the texture atlas."/>
+					<checkbox id="isSymbol" text="Allow Symbols" infoText="Whether the animation prefix should be a symbol instead of a frame label."/>
 					<label text="Indices:"/>
 					<input id="animIndices" infoText="A comma-separated list of numbers indicating which frames of the texture atlas to use."/>
 					<stepper id="indRangeStart" text="Start:" min="0" infoText="The start of a range of indices to fill the above field with."/>

@@ -2,6 +2,8 @@ package game.results;
 
 import flixel.group.FlxSpriteGroup;
 import flixel.util.FlxTimer;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 
 class ResultsScore extends FlxTypedSpriteGroup<ResultsScoreNum>
 {
@@ -9,12 +11,12 @@ class ResultsScore extends FlxTypedSpriteGroup<ResultsScoreNum>
 
 	public var scoreStart:Int = 0;
 
-	function set_scoreShit(val):Int
+	function set_scoreShit(val:Int):Int
 	{
 		if (group == null || group.members == null) return val;
 
 		var loopNum:Int = group.members.length - 1;
-		var dumbNumb = Std.parseInt(Std.string(val));
+		var dumbNumb:Int = Std.parseInt(Std.string(val));
 		var prevNum:ResultsScoreNum;
 
 		while (dumbNumb > 0)
@@ -60,5 +62,29 @@ class ResultsScore extends FlxTypedSpriteGroup<ResultsScoreNum>
 	public function updateScore(scoreNew:Int)
 	{
 		scoreShit = scoreNew;
+	}
+
+	public function tweenScore(scoreNew:Int, time:Float, ease:EaseFunction)
+	{
+		FlxTween.num(scoreShit, scoreNew, time, {ease: ease}, function(num:Float) {
+			var loopNum:Int = group.members.length - 1;
+			var dumbNumb:Int = Std.int(Math.round(num));
+			var prevNum:ResultsScoreNum;
+
+			while (dumbNumb > 0)
+			{
+				scoreStart += 1;
+				group.members[loopNum].digit = dumbNumb % 10;
+
+				dumbNumb = Math.floor(dumbNumb / 10);
+				loopNum--;
+			}
+
+			while (loopNum > 0)
+			{
+				group.members[loopNum].digit = 10;
+				loopNum--;
+			}
+		});
 	}
 }

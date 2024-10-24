@@ -194,6 +194,8 @@ class FlxTimer implements IFlxDestroyable
 		{
 			_timeCounter -= time;
 			_loopsCounter++;
+			if (_syncWithSong)
+				_startTime += time * 1000.0;
 
 			if (loops > 0 && (_loopsCounter >= loops))
 			{

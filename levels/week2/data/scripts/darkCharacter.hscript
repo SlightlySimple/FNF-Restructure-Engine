@@ -2,14 +2,16 @@ function create()
 {
 	light = new Character(this.charX, this.charY, this.curCharacter.substr(0, this.curCharacter.length - 5), this.wasFlipped);
 	insert(game.members.indexOf(this), light);
+	this.data["darkLevel"] = 1;
 }
 
 function update(elapsed)
 {
-	if (this.alpha >= 1)
+	if (this.data["darkLevel"] >= 1)
 		light.alpha = 0.001;
 	else
 		light.alpha = 1;
+	this.alpha = this.data["darkLevel"];
 
 	if (light.curAnimName != this.curAnimName)
 		light.playAnim(this.curAnimName, true);

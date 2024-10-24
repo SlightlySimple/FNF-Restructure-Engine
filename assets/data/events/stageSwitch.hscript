@@ -6,23 +6,22 @@ function create()
 
 	if (allowed)
 	{
-		var stages = [];
 		stageIds = [];
 
 		for (e in game.songData.events)
 		{
-			if (e.type == "stageSwitch" && !stages.contains(e.parameters.stage))
-				stages.push(e.parameters.stage);
+			if (e.type == "stageSwitch" && !stageIds.contains(e.parameters.stage))
+				registerStage(e.parameters.stage);
 		}
+	}
+}
 
-		for (s in stages)
-		{
-			if (Paths.jsonExists("stages/" + s))
-			{
-				game.cacheStage(s);
-				stageIds.push(s);
-			}
-		}
+function registerStage(s)
+{
+	if (!stageIds.contains(s) && Paths.jsonExists("stages/" + s))
+	{
+		game.cacheStage(s);
+		stageIds.push(s);
 	}
 }
 

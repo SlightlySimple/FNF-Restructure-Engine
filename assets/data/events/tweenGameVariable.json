@@ -25,15 +25,23 @@
 		},
 		{
 			"id": "time",
-			"label": "Time (Seconds)",
+			"label": "Time",
 			"infoText": "How long the tween will take.",
 			"type": "stepper",
-			"time": "seconds",
+			"time": "_timeUnit",
 			"defaultValue": 1,
 			"min": 0.01,
 			"max": 9999,
 			"increment": 0.05,
 			"decimals": 3
+		},
+		{
+			"id": "timeUnit",
+			"label": "Time Unit",
+			"infoText": "The unit of measurement that should be used for the Time parameter.",
+			"type": "dropdown",
+			"defaultValue": "seconds",
+			"options": ["seconds", "beats", "steps"]
 		},
 		{
 			"id": "ease",

@@ -389,7 +389,10 @@ class CharacterSelectState extends MusicBeatState
 				refreshBF();
 				refreshGF();
 
-				bf.playAnim("unlock");
+				if (bf.hasAnim("unlock"))
+					bf.playAnim("unlock");
+				else
+					bf.playAnim("slidein");
 				bf.visible = true;
 
 				FlxG.save.data.unlockedCharactersSeen.push(char);
