@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxG;
 import openfl.utils.Assets;
+import openfl.system.System;
 import sys.FileSystem;
 import sys.io.File;
 import lime.app.Application;
@@ -478,6 +479,8 @@ class Paths
 	public static function clearCache()
 	{
 		FlxG.bitmap.dumpCache();
+		Assets.cache.clear();
+		System.gc();
 	}
 
 	static function listFilesSort(a:String, b:String):Int

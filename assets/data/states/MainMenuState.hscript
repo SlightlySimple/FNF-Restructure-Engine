@@ -54,6 +54,9 @@ function create()
 	version.borderColor = FlxColor.BLACK;
 	version.borderStyle = FlxTextBorderStyle.OUTLINE;
 	add(version);
+
+	changeSelection(0);
+	FlxG.camera.snapToTarget();
 }
 
 function onAccept()

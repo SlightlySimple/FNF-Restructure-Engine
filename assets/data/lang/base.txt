@@ -52,6 +52,8 @@
 "freeplay.sandbox.side"				"Side:"
 "freeplay.sandbox.side.0"			"Normal"
 "freeplay.sandbox.side.1"			"Opponent"
+"freeplay.sandbox.variant"			"Variant:"
+"freeplay.sandbox.variant.default"	"Default"
 "freeplay.sandbox.playbackRate"		"Playback Rate:"
 "freeplay.sandbox.missLimit"		"Miss Limit:"
 "freeplay.sandbox.missLimit.none"	"None"

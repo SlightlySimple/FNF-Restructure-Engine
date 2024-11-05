@@ -20,6 +20,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 	public static var characters:Array<String> = ["","",""];
 	public static var stage:String = "";
 	public static var chartSide:Int = 0;
+	public static var songVariant:String = "";
 	public static var playbackRate:Float = 1;
 	public static var missLimit:Int = -1;
 
@@ -30,6 +31,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 	public static var stageList:Array<String> = [];
 	public static var stageNames:Map<String, String>;
 	public static var sideList:Array<String> = ["#freeplay.sandbox.side.0", "#freeplay.sandbox.side.1"];
+	public static var variantList:Array<String> = [""];
 
 	public static function character(slot:Int, ?def:String = "")
 	{
@@ -121,6 +123,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 	var txtLeft:Array<FlxText> = [];
 	var txtRight:Array<FlxText> = [];
 	var sideListLang:Array<String>;
+	var variantListLang:Array<String>;
 	var reloadFunc:Void->Void;
 	var exitFunc:Void->Void;
 	var nav:UINumeralNavigation;
@@ -143,11 +146,22 @@ class FreeplaySandbox extends FlxSpriteGroup
 		for (s in sideList)
 			sideListLang.push(Lang.get(s));
 
+		variantListLang = [];
+		for (v in variantList)
+		{
+			if (v == "")
+				variantListLang.push(Lang.get("#freeplay.sandbox.variant.default"));
+			else
+				variantListLang.push(Lang.get("#freeplay.sandbox.variant." + v));
+		}
+
 		for (i in 0...characterCount)
 			options.push("character" + Std.string(i + 1));
 		options.push("stage");
 		if (sideList.length > 1)
 			options.push("side");
+		if (variantList.length > 1)
+			options.push("variant");
 		options.push("playbackRate");
 		options.push("missLimit");
 		options.push("reset");
@@ -240,6 +254,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 						characters[i] = "";
 					stage = "";
 					chartSide = 0;
+					songVariant = "";
 					playbackRate = 1;
 					missLimit = -1;
 
@@ -260,6 +275,13 @@ class FreeplaySandbox extends FlxSpriteGroup
 		{
 			case "side":
 				chartSide = Util.loop(chartSide + v, 0, sideList.length - 1);
+				reloadFunc();
+				updateAllTexts();
+
+			case "variant":
+				var variantIndex:Int = variantList.indexOf(songVariant);
+				variantIndex = Util.loop(variantIndex + v, 0, variantList.length - 1);
+				songVariant = variantList[variantIndex];
 				reloadFunc();
 				updateAllTexts();
 
@@ -285,31 +307,45 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 	function updateAllTexts()
 	{
-		for (i in 0...characterCount)
+		for (i in 0...options.length)
 		{
-			if (characters[i] == "")
-				txtRight[i].text = Lang.get("#freeplay.sandbox.default");
-			else
-				txtRight[i].text = (characterNames.exists(characters[i]) ? characterNames[characters[i]] : characters[i]);
+			switch (options[i])
+			{
+				case "stage":
+					if (stage == "")
+						txtRight[i].text = Lang.get("#freeplay.sandbox.default");
+					else
+						txtRight[i].text = (stageNames.exists(stage) ? stageNames[stage] : stage);
+
+				case "side":
+					txtRight[i].text = sideListLang[chartSide];
+					if (curSelected == i)
+						txtRight[i].text = "< " + txtRight[i].text + " >";
+
+				case "variant":
+					txtRight[i].text = variantListLang[variantList.indexOf(songVariant)];
+					if (curSelected == i)
+						txtRight[i].text = "< " + txtRight[i].text + " >";
+
+				case "playbackRate":
+					txtRight[i].text = Std.string(playbackRate);
+					if (curSelected == i)
+						txtRight[i].text = "< " + txtRight[i].text + " >";
+
+				case "missLimit":
+					txtRight[i].text = Std.string(missLimit);
+					if (missLimit < 0)
+						txtRight[i].text = Lang.get("#freeplay.sandbox.missLimit.none");
+					if (curSelected == i)
+						txtRight[i].text = "< " + txtRight[i].text + " >";
+
+				default:
+					if (characters[i] == "")
+						txtRight[i].text = Lang.get("#freeplay.sandbox.default");
+					else
+						txtRight[i].text = (characterNames.exists(characters[i]) ? characterNames[characters[i]] : characters[i]);
+			}
 		}
-		if (stage == "")
-			txtRight[characterCount].text = Lang.get("#freeplay.sandbox.default");
-		else
-			txtRight[characterCount].text = (stageNames.exists(stage) ? stageNames[stage] : stage);
-
-		txtRight[characterCount + 1].text = sideListLang[chartSide];
-		if (curSelected == characterCount + 1)
-			txtRight[characterCount + 1].text = "< " + txtRight[characterCount + 1].text + " >";
-
-		txtRight[characterCount + 2].text = Std.string(playbackRate);
-		if (curSelected == characterCount + 2)
-			txtRight[characterCount + 2].text = "< " + txtRight[characterCount + 2].text + " >";
-
-		txtRight[characterCount + 3].text = Std.string(missLimit);
-		if (missLimit < 0)
-			txtRight[characterCount + 3].text = Lang.get("#freeplay.sandbox.missLimit.none");
-		if (curSelected == characterCount + 3)
-			txtRight[characterCount + 3].text = "< " + txtRight[characterCount + 3].text + " >";
 
 		for (t in txtRight)
 			t.x = x + members[0].width - 20 - t.width;

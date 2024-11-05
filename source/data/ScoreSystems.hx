@@ -515,6 +515,25 @@ class ScoreSystems
 		return false;
 	}
 
+	public static function songVariantBeaten(song:String, variant:String):Bool
+	{
+		if (songScores.exists(song.toLowerCase()))
+		{
+			for (diff in songScores[song.toLowerCase()].keys())
+			{
+				if (diff.endsWith("-" + variant))
+				{
+					for (side in songScores[song.toLowerCase()][diff])
+					{
+						if (side.score > 0)
+							return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	public static function weekBeaten(week:String, ?difficulties:Array<String> = null):Bool
 	{
 		if (weekScores.exists(week.toLowerCase()))

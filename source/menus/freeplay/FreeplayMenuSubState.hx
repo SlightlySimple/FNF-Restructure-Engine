@@ -1633,16 +1633,24 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				divChart = Song.correctDivisions(divChart);
 
 				FreeplaySandbox.sideList = divChart.columnDivisionNames.copy();
+				FreeplaySandbox.variantList = [""];
 			}
 			else
+			{
 				FreeplaySandbox.sideList = Song.getSongSideList(capsule.songId, difficulty, CharacterSelectState.player);
+				FreeplaySandbox.variantList = Song.getSongVariantList(capsule.songId, difficulty, CharacterSelectState.player);
+			}
 
 			if (FreeplaySandbox.chartSide >= FreeplaySandbox.sideList.length)
 				FreeplaySandbox.chartSide = 0;
 
+			if (!FreeplaySandbox.variantList.contains(FreeplaySandbox.songVariant))
+				FreeplaySandbox.songVariant = "";
+
 			var songArtist:String = capsule.songArtist;
 			if (songArtist == "!get_artist")
 				songArtist = Song.getSongArtist(capsule.songId, difficulty, CharacterSelectState.player);
+
 			chartInfo.reload(capsule.songId, difficulty, FreeplaySandbox.chartSide, songArtist, CharacterSelectState.player);
 		}
 	}

@@ -1,5 +1,3 @@
-!duplicate	"song.erect"	"song.nightmare"
-
 // Week name
 "level.week4"			"MOMMY MUST MURDER"
 

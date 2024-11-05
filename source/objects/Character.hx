@@ -32,6 +32,7 @@ class Character extends FlxSprite
 	public var curAnimFrame:Int = 0;
 	public var curAnimFinished:Bool = false;
 	public var sad:String = "sad";
+	public var reactions:Array<Dynamic> = [];
 
 	public var charX(get, set):Float;
 	public var charY(get, set):Float;
@@ -614,6 +615,15 @@ class Character extends FlxSprite
 		for (k in assets.keys())
 			assets[k].parent.destroyOnNoUse = false;
 
+		reactions = [];
+		for (a in characterData.animations)
+		{
+			if (a.name.startsWith("combo"))
+				reactions.push([false, Std.parseInt(a.name.substr("combo".length)), a.name]);
+			else if (a.name.startsWith("drop"))
+				reactions.push([true, Std.parseInt(a.name.substr("drop".length)), a.name]);
+		}
+
 		scale.x *= scaleMult[0];
 		scale.y *= scaleMult[1];
 		if (characterData.fixes == null || characterData.fixes < 1)
@@ -872,6 +882,46 @@ class Character extends FlxSprite
 			else if (animation.curAnim != null)
 				animation.curAnim.paused = false;
 			sustain = false;
+		}
+	}
+
+	public function reactToCombo(amount:Int, broken:Bool)
+	{
+		if (broken)
+		{
+			if (amount > 5)
+			{
+				playAnim(sad);
+				if (animData.exists(sad))
+					holdTimer = Conductor.beatLength;
+			}
+
+			var maxDropped:Int = 0;
+			var anim:String = "";
+			for (r in reactions)
+			{
+				if (r[0] && r[1] <= amount && r[1] > maxDropped)
+				{
+					maxDropped = r[1];
+					anim = r[2];
+				}
+			}
+			if (anim != "")
+			{
+				playAnim(anim);
+				holdTimer = Conductor.beatLength;
+			}
+		}
+		else
+		{
+			for (r in reactions)
+			{
+				if (!r[0] && r[1] == amount)
+				{
+					playAnim(r[2]);
+					holdTimer = Conductor.beatLength;
+				}
+			}
 		}
 	}
 

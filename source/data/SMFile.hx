@@ -243,9 +243,9 @@ class SMFile
 					var endBeat:Float = holdEnds[c][i];
 					var sec:Int = Std.int(Math.floor(holdStarts[c][i][0]));
 					if (holdStarts[c][i][2])
-						thisSongData.notes[sec].sectionNotes.push([smTimingStruct.timeFromBeat(startBeat),c,smTimingStruct.timeFromBeat(endBeat) - smTimingStruct.timeFromBeat(startBeat),"roll"]);
+						thisSongData.notes[sec].sectionNotes.push([smTimingStruct.timeFromBeat(startBeat), c, smTimingStruct.timeFromBeat(endBeat) - smTimingStruct.timeFromBeat(startBeat), "roll"]);
 					else
-						thisSongData.notes[sec].sectionNotes.push([smTimingStruct.timeFromBeat(startBeat),c,smTimingStruct.timeFromBeat(endBeat) - smTimingStruct.timeFromBeat(startBeat)]);
+						thisSongData.notes[sec].sectionNotes.push([smTimingStruct.timeFromBeat(startBeat), c, smTimingStruct.timeFromBeat(endBeat) - smTimingStruct.timeFromBeat(startBeat)]);
 				}
 			}
 

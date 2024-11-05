@@ -24,3 +24,6 @@
 "stage.phillyBlazin"		"Philly (Blazin')"
 "stage.phillyStreets"		"Philly (Streets)"
 "stage.phillyStreetsErect"	"Philly (Streets) [Erect]"
+
+// Miscellaneous
+"freeplay.sandbox.variant.pico"	"Pico"

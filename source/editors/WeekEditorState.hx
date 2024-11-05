@@ -703,30 +703,48 @@ class WeekEditorState extends BaseEditorState
 		makeVariantFile.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
-				var _variant:WeekSongData = {
-					songId: weekData.songs[curSong].songId,
-					iconNew: weekData.songs[curSong].iconNew
-				}
+				var window:PopupWindow = null;
+				var vbox:VBox = new VBox(35, 35);
 
-				if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, weekData.difficulties))
-					_variant.difficulties = weekData.songs[curSong].difficulties;
+				var allowVariantOnBase:Checkbox = new Checkbox(0, 0, "Allow the variant's instrumental to be used on the base song", true);
+				vbox.add(allowVariantOnBase);
 
-				if (weekData.songs[curSong].albums != null && weekData.songs[curSong].albums.length > 0)
-					_variant.albums = weekData.songs[curSong].albums;
+				var lockedOnBase:Checkbox = new Checkbox(0, 0, "Lock the variant's instrumental from the base song until the variant is beaten", true);
+				vbox.add(lockedOnBase);
 
-				if (weekData.songs[curSong].title != null && weekData.songs[curSong].title.trim() != "")
-					_variant.title = weekData.songs[curSong].title;
+				var create:TextButton = new TextButton(0, 0, "Create", function() {
+					window.close();
 
-				if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
-				{
-					_variant.characters = weekData.songs[curSong].characters;
-					_variant.characterLabels = weekData.songs[curSong].characterLabels;
-				}
+					var _variant:WeekSongData = {
+						songId: weekData.songs[curSong].songId,
+						iconNew: weekData.songs[curSong].iconNew,
+						allowVariantOnBase: allowVariantOnBase.checked,
+						lockedOnBase: lockedOnBase.checked
+					}
 
-				Reflect.deleteField(_variant, "songId");
-				var data:String = Json.stringify(_variant);
-				var file:FileBrowser = new FileBrowser();
-				file.save("_variant.json", data.trim());
+					if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, weekData.difficulties))
+						_variant.difficulties = weekData.songs[curSong].difficulties;
+
+					if (weekData.songs[curSong].albums != null && weekData.songs[curSong].albums.length > 0)
+						_variant.albums = weekData.songs[curSong].albums;
+
+					if (weekData.songs[curSong].title != null && weekData.songs[curSong].title.trim() != "")
+						_variant.title = weekData.songs[curSong].title;
+
+					if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
+					{
+						_variant.characters = weekData.songs[curSong].characters;
+						_variant.characterLabels = weekData.songs[curSong].characterLabels;
+					}
+
+					Reflect.deleteField(_variant, "songId");
+					var data:String = Json.stringify(_variant);
+					var file:FileBrowser = new FileBrowser();
+					file.save("_variant.json", data.trim());
+				});
+				vbox.add(create);
+
+				window = PopupWindow.CreateWithGroup(vbox);
 			}
 		}
 

@@ -274,6 +274,7 @@ class EditorMenuState extends MusicBeatState
 					var modMeta:Dynamic = {
 						title: modNameInput.text,
 						description: modDescInput.text,
+						contributors: [{name: "", role: ""}],
 						api_version: "0.1.0",
 						mod_version: "1.0.0",
 						license: "CC BY 4.0,MIT"

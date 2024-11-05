@@ -216,18 +216,9 @@ class Song
 		{
 			if (data.song.startsWith("#"))
 				return Lang.get(data.song);
-		}
 
-		var hash:String = "#song." + difficulty + "." + id.replace("/", ".");
-		if (Lang.get(hash) != hash)
-			return Lang.get(hash);
-
-		hash = "#song." + id.replace("/", ".");
-		if (Lang.get(hash) != hash)
-			return Lang.get(hash);
-
-		if (data != null)
 			return data.song;
+		}
 
 		return id;
 	}
@@ -236,14 +227,6 @@ class Song
 	{
 		if (data.song.startsWith("#"))
 			return Lang.get(data.song);
-
-		var hash:String = "#song." + difficulty + "." + id.replace("/", ".");
-		if (Lang.get(hash) != hash)
-			return Lang.get(hash);
-
-		hash = "#song." + id.replace("/", ".");
-		if (Lang.get(hash) != hash)
-			return Lang.get(hash);
 
 		return data.song;
 	}
@@ -283,6 +266,49 @@ class Song
 		}
 
 		return [];
+	}
+
+	public static function getSongVariantList(id:String, ?difficulty:String = "normal", ?variant:String = "bf"):Array<String>
+	{
+		var variants:Array<String> = [""];
+		var track:String = "Inst";
+
+		var filename:String = chartPath(id, difficulty, variant);
+
+		var data:SongData = null;
+		if (Paths.jsonExists(filename))
+		{
+			data = cast Paths.json(filename).song;
+			data = applyDataAndMeta(data, filename);
+		}
+
+		if (data != null)
+		{
+			if (data.tracks != null && data.tracks.length > 0)
+				track = data.tracks[0][0];
+		}
+
+		for (file in Paths.listFilesSub("data/songs/" + id + "/", ".json"))
+		{
+			if (file.startsWith("_variant_"))
+			{
+				var variant:String = file.substr("_variant_".length);
+				if (!variants.contains(variant) && Paths.songExists(id, track + "-" + variant))
+				{
+					var variantInfo:WeekSongData = cast Paths.json("songs/" + id + "/" + file);
+					if (variantInfo.allowVariantOnBase)
+					{
+						var songBeaten:Bool = true;
+						if (variantInfo.lockedOnBase)
+							songBeaten = ScoreSystems.songVariantBeaten(id, variant);
+						if (songBeaten)
+							variants.push(variant);
+					}
+				}
+			}
+		}
+
+		return variants;
 	}
 
 	public static function getSongQuickInfo(id:String, difficulty:String, ?variant:String = "bf"):SongQuickInfo
@@ -993,12 +1019,15 @@ class Song
 					}
 				}
 
-				if (quickNotes.length <= n[1])
+				if (!poppers.contains(n))
 				{
-					while (quickNotes.length <= n[1])
-						quickNotes.push([]);
+					if (quickNotes.length <= n[1])
+					{
+						while (quickNotes.length <= n[1])
+							quickNotes.push([]);
+					}
+					quickNotes[n[1]].push(n[0]);
 				}
-				quickNotes[n[1]].push(n[0]);
 			}
 			for (p in poppers)
 				s.sectionNotes.remove(p);

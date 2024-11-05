@@ -784,8 +784,7 @@ class CharacterEditorState extends BaseEditorState
 		};
 
 		var autoAnimButton:TextButton = cast element("autoAnimButton");
-		autoAnimButton.onClicked = function()
-		{
+		autoAnimButton.onClicked = function() {
 			if (charAnimList.contains("danceLeft") && charAnimList.contains("danceRight"))
 			{
 				characterData.idles = ["danceLeft", "danceRight"];

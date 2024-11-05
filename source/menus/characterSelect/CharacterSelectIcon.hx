@@ -78,7 +78,7 @@ class CharacterSelectIcon extends FilteredSprite
 		{
 			character = char;
 
-			frames = Paths.sparrow("ui/freeplay/icons/" + character + "pixel");
+			frames = Paths.sparrow("ui/character_select/characters/" + character + "/" + character + "pixel");
 			animation.addByPrefix('idle', 'idle0', 10, true);
 			animation.addByPrefix('confirm', 'confirm0', 10, false);
 			animation.play("idle");

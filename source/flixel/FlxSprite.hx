@@ -271,9 +271,6 @@ class FlxSprite extends FlxObject
 	{
 		super(X, Y);
 
-		if (Options.options != null)
-			antialiasing = Options.options.antialias;
-
 		useFramePixels = FlxG.renderBlit;
 		if (SimpleGraphic != null)
 			loadGraphic(SimpleGraphic);
@@ -1397,8 +1394,6 @@ class FlxSprite extends FlxObject
 	@:noCompletion
 	function set_antialiasing(value:Bool):Bool
 	{
-		if (Options.options != null && !Options.options.antialias)
-			return antialiasing = false;
 		return antialiasing = value;
 	}
 

@@ -3305,6 +3305,7 @@ class ChartEditorState extends MusicBeatState
 			{
 				sustainWidgetAdjusting = false;
 				pauseUndo = false;
+				autosavePaused = false;
 				FlxG.sound.play(Paths.sound("ui/editors/charting/notePlace"), 0.5);
 			}
 		}
@@ -3490,6 +3491,7 @@ class ChartEditorState extends MusicBeatState
 					{
 						sustainWidgetAdjusting = true;
 						pauseUndo = true;
+						autosavePaused = true;
 						sustainWidgetLimit = -1;
 						for (n in noteData)
 						{
@@ -3500,6 +3502,7 @@ class ChartEditorState extends MusicBeatState
 						{
 							sustainWidgetAdjusting = false;
 							pauseUndo = false;
+							autosavePaused = false;
 						}
 						else
 							FlxG.sound.play(Paths.sound("ui/editors/charting/noteStretch"), 0.5);
@@ -6745,8 +6748,7 @@ class ChartEditorState extends MusicBeatState
 
 		var file:FileBrowser = new FileBrowser();
 		file.label = "Choose a \"-chart\" file that you want to convert";
-		file.loadCallback = function(fullPath:String)
-		{
+		file.loadCallback = function(fullPath:String) {
 			if (fullPath.indexOf("-chart") > -1 && FileSystem.exists(fullPath.replace("-chart", "-metadata")))
 			{
 				var pathArray:Array<String> = fullPath.replace('\\','/').split('/');
@@ -6776,8 +6778,7 @@ class ChartEditorState extends MusicBeatState
 
 				var file2:FileBrowser = new FileBrowser();
 				file2.label = "Choose an ogg file in the folder for this chart's music";
-				file2.loadCallback = function(musicPath:String)
-				{
+				file2.loadCallback = function(musicPath:String) {
 					var musicPathArray:Array<String> = musicPath.replace('\\','/').split('/');
 					musicPathArray.pop();
 					var trueMusicPath:String = musicPathArray.join("/") + "/";
@@ -6810,8 +6811,7 @@ class ChartEditorState extends MusicBeatState
 						tracks.push(["Voices-" + p2, 3]);
 
 					var file3:FileBrowser = new FileBrowser();
-					file3.saveCallback = function(savePath:String)
-					{
+					file3.saveCallback = function(savePath:String) {
 						var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
 						savePathArray.pop();
 						var trueSavePath:String = savePathArray.join("/") + "/";

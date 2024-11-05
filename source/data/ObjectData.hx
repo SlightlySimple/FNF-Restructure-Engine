@@ -218,6 +218,9 @@ typedef WeekSongData =
 	var ?title:String;
 	var ?hscript:String;
 	var ?albums:Array<Array<String>>;
+
+	var ?allowVariantOnBase:Bool;
+	var ?lockedOnBase:Bool;
 }
 
 typedef WeekCharacterData =

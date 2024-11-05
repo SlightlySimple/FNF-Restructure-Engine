@@ -7,6 +7,7 @@ import flixel.util.FlxTimer;
 import flixel.tweens.FlxTween;
 import data.Options;
 import menus.UINavigation;
+import menus.mod.ModMenuState;
 import menus.freeplay.FreeplayMenuSubState;
 import scripting.HscriptHandler;
 import scripting.HscriptState;

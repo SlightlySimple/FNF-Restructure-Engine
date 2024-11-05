@@ -130,6 +130,7 @@ class PlayState extends MusicBeatState
 	var missLimit:Int = -1;
 	var missLimitText:FlxText;
 
+	public var songVariant:String = "";
 	public var tracks:Array<FlxSound> = [];
 	var trackTypes:Array<Int> = [];
 	var songProgress:Float;
@@ -341,6 +342,7 @@ class PlayState extends MusicBeatState
 			if (FreeplaySandbox.stage != "")
 				songData.stage = FreeplaySandbox.stage;
 			chartSide = FreeplaySandbox.chartSide;
+			songVariant = FreeplaySandbox.songVariant;
 		}
 		playerColumns = [];
 		for (i in 0...songData.columns.length)
@@ -393,9 +395,9 @@ class PlayState extends MusicBeatState
 			i++;
 		}
 
-		if (FreeplaySandbox.character(i-1, "") != "")
+		if (FreeplaySandbox.character(i - 1, "") != "")
 		{
-			while (FreeplaySandbox.character(i-1, "") != "")
+			while (FreeplaySandbox.character(i - 1, "") != "")
 			{
 				spawnCharacter(Reflect.field(songData, "player" + Std.string(i)));
 				i++;
@@ -445,11 +447,14 @@ class PlayState extends MusicBeatState
 		}
 		else
 		{
+			var i:Int = 0;
 			for (t in songData.tracks)
 			{
 				var tPath:String = "";
-				if (t[1] >= 2 && Paths.songExists(songId, t[0] + "_" + allCharacters[Std.int(t[1] - 2)].curCharacter.replace("/", "-")))
-					tPath = "_" + allCharacters[Std.int(t[1] - 2)].curCharacter.replace("/", "-");
+				if (i == 0 && songVariant != "" && Paths.songExists(songId, t[0] + "-" + songVariant))
+					tPath += "-" + songVariant;
+				if (t[1] >= 2 && Paths.songExists(songId, t[0] + tPath + "_" + allCharacters[Std.int(t[1] - 2)].curCharacter.replace("/", "-")))
+					tPath += "_" + allCharacters[Std.int(t[1] - 2)].curCharacter.replace("/", "-");
 				FlxG.sound.cache(Paths.song(songId, t[0] + tPath));
 				var newTrack:FlxSound = new FlxSound().loadEmbedded(Paths.song(songId, t[0] + tPath), false, true);
 				if (playbackRate < 1)
@@ -457,6 +462,7 @@ class PlayState extends MusicBeatState
 				FlxG.sound.list.add(newTrack);
 				tracks.push(newTrack);
 				trackTypes.push(t[1]);
+				i++;
 			}
 		}
 
@@ -2663,6 +2669,12 @@ class PlayState extends MusicBeatState
 		if (note.child != null)
 			note.child.canBeHit = true;
 
+		if (allReactors.length > 0)
+		{
+			for (r in allReactors)
+				r.reactToCombo(scores.combo, (rating >= 4));
+		}
+
 		updateScoreText();
 
 		onNoteHit(note);
@@ -2691,10 +2703,10 @@ class PlayState extends MusicBeatState
 		{
 			for (s in note.singers)
 				s.playAnim(note.missAnim, true);
-			if (scores.combo > 5 && allReactors.length > 0)
+			if (allReactors.length > 0)
 			{
 				for (r in allReactors)
-					r.playAnim(r.sad);
+					r.reactToCombo(scores.combo, true);
 			}
 			scores.missNote((note.strumTime - totalOffset) / playbackRate);
 			updateJudgementCounter();
@@ -2722,10 +2734,10 @@ class PlayState extends MusicBeatState
 		{
 			for (s in note.singers)
 				s.playAnim(note.missAnim, true);
-			if (scores.combo > 5 && allReactors.length > 0)
+			if (allReactors.length > 0)
 			{
 				for (r in allReactors)
-					r.playAnim(r.sad);
+					r.reactToCombo(scores.combo, true);
 			}
 			scores.missNote(-1);
 			updateJudgementCounter();
