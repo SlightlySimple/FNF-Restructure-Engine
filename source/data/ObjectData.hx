@@ -115,11 +115,14 @@ typedef StagePiece =
 	var ?scriptClass:String;
 	var ?scriptParameters:Dynamic;
 	var position:Array<Int>;
+	var ?velocity:Array<Int>;
+	var ?velocityMultipliedByScroll:Bool;
 	var ?scale:Array<Float>;
 	var ?align:String;
 	var ?scrollFactor:Array<Float>;
 	var ?flip:Array<Bool>;
 	var ?tile:Array<Bool>;
+	var ?tileSpace:Array<Int>;
 	var ?visible:Null<Bool>;
 	var ?animations:Array<StageAnimation>;
 	var ?firstAnimation:String;

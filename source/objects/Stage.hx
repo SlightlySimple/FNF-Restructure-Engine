@@ -137,6 +137,12 @@ class Stage
 				p.updateHitbox = true;
 			}
 
+			if (p.velocity == null)
+				p.velocity = [0, 0];
+
+			if (p.velocityMultipliedByScroll == null)
+				p.velocityMultipliedByScroll = false;
+
 			if (p.align == null)
 				p.align = "topleft";
 
@@ -157,6 +163,9 @@ class Stage
 
 			if (p.tile == null)
 				p.tile = [true, true];
+
+			if (p.tileSpace == null)
+				p.tileSpace = [0, 0];
 
 			if (p.tileCount == null)
 				p.tileCount = [1, 1];
@@ -274,17 +283,11 @@ class Stage
 						else
 							piece = new FlxSprite(stagePiece.position[0], stagePiece.position[1], image(stagePiece.asset));
 						if (stagePiece.scale != null && stagePiece.scale.length == 2)
-						{
-							piece.scale.x = stagePiece.scale[0];
-							piece.scale.y = stagePiece.scale[1];
-						}
+							piece.scale.set(stagePiece.scale[0], stagePiece.scale[1]);
 						if (stagePiece.updateHitbox)
 							piece.updateHitbox();
 						if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
-						{
-							piece.scrollFactor.x = stagePiece.scrollFactor[0];
-							piece.scrollFactor.y = stagePiece.scrollFactor[1];
-						}
+							piece.scrollFactor.set(stagePiece.scrollFactor[0], stagePiece.scrollFactor[1]);
 						if (stagePiece.flip != null && stagePiece.flip.length == 2)
 						{
 							piece.flipX = stagePiece.flip[0];
@@ -338,19 +341,13 @@ class Stage
 							aPiece.danceSpeed = stagePiece.beatAnimationSpeed;
 
 						if (stagePiece.scale != null && stagePiece.scale.length == 2)
-						{
-							aPiece.scale.x = stagePiece.scale[0];
-							aPiece.scale.y = stagePiece.scale[1];
-						}
+							aPiece.scale.set(stagePiece.scale[0], stagePiece.scale[1]);
 						if (stagePiece.updateHitbox)
 							aPiece.updateHitbox();
 						piece = aPiece;
 
 						if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
-						{
-							piece.scrollFactor.x = stagePiece.scrollFactor[0];
-							piece.scrollFactor.y = stagePiece.scrollFactor[1];
-						}
+							piece.scrollFactor.set(stagePiece.scrollFactor[0], stagePiece.scrollFactor[1]);
 						if (stagePiece.flip != null && stagePiece.flip.length == 2)
 						{
 							piece.flipX = stagePiece.flip[0];
@@ -363,21 +360,21 @@ class Stage
 				case "tiled":
 					if (imageExists(stagePiece.asset))
 					{
-						piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1]);
-						piece.x = stagePiece.position[0];
-						piece.y = stagePiece.position[1];
-						if (stagePiece.scale != null && stagePiece.scale.length == 2)
+						piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1], stagePiece.tileSpace[0], stagePiece.tileSpace[1]);
+						piece.setPosition(stagePiece.position[0], stagePiece.position[1]);
+						if (stagePiece.velocity != null && stagePiece.velocity.length == 2)
 						{
-							piece.scale.x = stagePiece.scale[0];
-							piece.scale.y = stagePiece.scale[1];
+							if (stagePiece.velocityMultipliedByScroll)
+								piece.velocity.set(stagePiece.velocity[0] * stagePiece.scrollFactor[0], stagePiece.velocity[1] * stagePiece.scrollFactor[1]);
+							else
+								piece.velocity.set(stagePiece.velocity[0], stagePiece.velocity[1]);
 						}
+						if (stagePiece.scale != null && stagePiece.scale.length == 2)
+							piece.scale.set(stagePiece.scale[0], stagePiece.scale[1]);
 						if (stagePiece.updateHitbox)
 							piece.updateHitbox();
 						if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
-						{
-							piece.scrollFactor.x = stagePiece.scrollFactor[0];
-							piece.scrollFactor.y = stagePiece.scrollFactor[1];
-						}
+							piece.scrollFactor.set(stagePiece.scrollFactor[0], stagePiece.scrollFactor[1]);
 						if (stagePiece.flip != null && stagePiece.flip.length == 2)
 						{
 							piece.flipX = stagePiece.flip[0];
@@ -390,20 +387,14 @@ class Stage
 				case "solid":
 					piece = new FlxSprite(stagePiece.position[0], stagePiece.position[1]).makeGraphic(Std.int(stagePiece.scale[0]), Std.int(stagePiece.scale[1]), FlxColor.fromRGB(stagePiece.color[0], stagePiece.color[1], stagePiece.color[2]));
 					if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
-					{
-						piece.scrollFactor.x = stagePiece.scrollFactor[0];
-						piece.scrollFactor.y = stagePiece.scrollFactor[1];
-					}
+						piece.scrollFactor.set(stagePiece.scrollFactor[0], stagePiece.scrollFactor[1]);
 					piece.active = false;
 					piece.antialiasing = false;
 
 				case "group":
 					piece = new FlxSpriteGroup();
 					if (stagePiece.scrollFactor != null && stagePiece.scrollFactor.length == 2)
-					{
-						piece.scrollFactor.x = stagePiece.scrollFactor[0];
-						piece.scrollFactor.y = stagePiece.scrollFactor[1];
-					}
+						piece.scrollFactor.set(stagePiece.scrollFactor[0], stagePiece.scrollFactor[1]);
 			}
 			piece.pixelPerfect = stageData.pixelPerfect;
 			piece.visible = stagePiece.visible;

@@ -33,6 +33,7 @@ import data.SMFile;
 import data.Song;
 import data.TimingStruct;
 import data.Noteskins;
+import data.converters.BaseGameConverter;
 import game.PlayState;
 import objects.AnimatedSprite;
 import objects.Character;
@@ -2248,6 +2249,19 @@ class ChartEditorState extends MusicBeatState
 						]
 					},
 					null,
+					{
+						label: "Clear Autosaves",
+						action: function() {
+							if (FileSystem.isDirectory("autosaves"))
+							{
+								for (file in FileSystem.readDirectory("autosaves"))
+								{
+									if (file.toLowerCase().endsWith(".json"))
+										FileSystem.deleteFile("autosaves/" + file);
+								}
+							}
+						}
+					},
 					{
 						label: "Help",
 						action: function() { new Notify(help); },
@@ -6227,7 +6241,7 @@ class ChartEditorState extends MusicBeatState
 		return savedData;
 	}
 
-	function prepareEventsSave(events:Array<EventData>):String
+	public static function prepareEventsSave(events:Array<EventData>):String
 	{
 		var savedEventData:Array<EventData> = [];
 		for (e in events)
@@ -6451,7 +6465,7 @@ class ChartEditorState extends MusicBeatState
 		}
 	}
 
-	function DynamicMatches(a1:Dynamic, a2:Dynamic):Bool
+	static function DynamicMatches(a1:Dynamic, a2:Dynamic):Bool
 	{
 		for (f in Reflect.fields(a1))
 		{
@@ -6664,11 +6678,19 @@ class ChartEditorState extends MusicBeatState
 		}
 	}
 
-	function checkConvertedEventParameters(e:EventData)
+	public static function checkConvertedEventParameters(e:EventData)
 	{
-		if (eventTypeParams.exists(e.type))
+		var thisEventPath:String = "events/" + e.type;
+		if (e.type.startsWith(songIdShort) && !Paths.jsonExists(thisEventPath))
 		{
-			var params:EventTypeData = eventTypeParams[e.type];
+			var newEventName:String = e.type.substr(songIdShort.length + 1);
+			if (Paths.jsonExists("songs/" + songId + "/events/" + newEventName))
+				thisEventPath = "songs/" + songId + "/events/" + newEventName;
+		}
+
+		if (Paths.jsonExists(thisEventPath))
+		{
+			var params:EventTypeData = cast Paths.json(thisEventPath);
 			for (p in params.parameters)
 			{
 				if (p.id != null && !Reflect.hasField(e.parameters, p.id))
@@ -6733,363 +6755,10 @@ class ChartEditorState extends MusicBeatState
 		refreshSectionIcons();
 	}
 
-
-
 	function convertFromBase()
 	{
 		autosavePaused = true;
 
-		var baseStages:Map<String, String> = new Map<String, String>();
-		for (stage in Util.splitFile(Paths.text("baseStages")))
-		{
-			var stageSplit:Array<String> = stage.split("|");
-			baseStages[stageSplit[0]] = stageSplit[1];
-		}
-
-		var file:FileBrowser = new FileBrowser();
-		file.label = "Choose a \"-chart\" file that you want to convert";
-		file.loadCallback = function(fullPath:String) {
-			if (fullPath.indexOf("-chart") > -1 && FileSystem.exists(fullPath.replace("-chart", "-metadata")))
-			{
-				var pathArray:Array<String> = fullPath.replace('\\','/').split('/');
-				var convertedSongId:String = pathArray[pathArray.length - 1].split("-chart")[0];
-
-				var chart:Dynamic = Json.parse(File.getContent(fullPath));
-				var metadata:Dynamic = Json.parse(File.getContent(fullPath.replace("-chart", "-metadata")));
-
-				var trackSuffix:String = "";
-				if (Reflect.hasField(metadata.playData.characters, "instrumental"))
-					trackSuffix = metadata.playData.characters.instrumental;
-
-				var p1:String = metadata.playData.characters.player;
-				var p1Old:String = p1;
-				if (!Paths.jsonExists("characters/" + p1) && Paths.jsonExists("characters/" + p1.split("-")[0]))
-					p1 = p1.split("-")[0];
-				var p2:String = metadata.playData.characters.opponent;
-				if (!Paths.jsonExists("characters/" + p2) && Paths.jsonExists("characters/" + p2.split("-")[0]))
-					p2 = p2.split("-")[0];
-				var gf:String = metadata.playData.characters.girlfriend;
-				if (!Paths.jsonExists("characters/" + gf) && Paths.jsonExists("characters/" + gf.split("-")[0]))
-					gf = gf.split("-")[0];
-
-				var noteStyle:String = "funkin";
-				if (metadata.playData.noteStyle != null)
-					noteStyle = metadata.playData.noteStyle;
-
-				var file2:FileBrowser = new FileBrowser();
-				file2.label = "Choose an ogg file in the folder for this chart's music";
-				file2.loadCallback = function(musicPath:String) {
-					var musicPathArray:Array<String> = musicPath.replace('\\','/').split('/');
-					musicPathArray.pop();
-					var trueMusicPath:String = musicPathArray.join("/") + "/";
-
-					var tracks:Array<Array<Dynamic>> = [["Inst", 0]];
-					if (FileSystem.exists(trueMusicPath + "Inst-" + trackSuffix + ".ogg"))
-						tracks[0][0] += "-" + trackSuffix;
-
-					if (FileSystem.exists(trueMusicPath + "Voices-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + trackSuffix, 1]);
-					else if (FileSystem.exists(trueMusicPath + "Voices.ogg"))
-						tracks.push(["Voices", 1]);
-
-					if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old.split("-")[0] + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p1Old.split("-")[0] + "-" + trackSuffix, 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p1Old + "-" + trackSuffix, 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old.split("-")[0] + ".ogg"))
-						tracks.push(["Voices-" + p1Old.split("-")[0], 2]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p1Old + ".ogg"))
-						tracks.push(["Voices-" + p1Old, 2]);
-
-					if (FileSystem.exists(trueMusicPath + "Voices-" + p2.split("-")[0] + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p2.split("-")[0] + "-" + trackSuffix, 3]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p2 + "-" + trackSuffix + ".ogg"))
-						tracks.push(["Voices-" + p2 + "-" + trackSuffix, 3]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p2.split("-")[0] + ".ogg"))
-						tracks.push(["Voices-" + p2.split("-")[0], 3]);
-					else if (FileSystem.exists(trueMusicPath + "Voices-" + p2 + ".ogg"))
-						tracks.push(["Voices-" + p2, 3]);
-
-					var file3:FileBrowser = new FileBrowser();
-					file3.saveCallback = function(savePath:String) {
-						var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
-						savePathArray.pop();
-						var trueSavePath:String = savePathArray.join("/") + "/";
-
-						var offset:Float = 0;
-						if (metadata.offsets != null)
-							offset = metadata.offsets.instrumental;
-
-						var bpmMap:Array<Array<Float>> = [];
-						var timeChanges:Array<Dynamic> = cast metadata.timeChanges;
-						var sortedTimeChanges:Array<Array<Float>> = [];
-						for (t in timeChanges)
-							sortedTimeChanges.push([Math.max(0, t.t), t.bpm]);
-						ArraySort.sort(sortedTimeChanges, function(a:Array<Float>, b:Array<Float>) {
-							if (a[0] < b[0])
-								return -1;
-							if (a[0] > b[0])
-								return 1;
-							return 0;
-						});
-
-						var totalBeats:Float = 0;
-						var lastTime:Float = 0;
-						var lastBPM:Float = sortedTimeChanges[0][1];
-						for (t in sortedTimeChanges)
-						{
-							totalBeats += ((t[0] - lastTime) / 1000) * (lastBPM / 60);
-							bpmMap.push([totalBeats, t[1]]);
-							lastTime = t[0];
-							lastBPM = t[1];
-						}
-
-						var timingStruct:TimingStruct = new TimingStruct();
-						timingStruct.recalculateTimings(bpmMap);
-
-						var metaFile:String = "_meta";
-						if (trackSuffix != "")
-							metaFile += "_" + trackSuffix;
-
-						var eventFile:String = "_events";
-						if (trackSuffix != "")
-							eventFile += "_" + trackSuffix;
-
-						var convertedEvents:Array<Dynamic> = cast chart.events;
-						var camEvents:Array<Array<Dynamic>> = [];
-						for (e in convertedEvents)
-						{
-							if (e.e == "FocusCamera")
-							{
-								if (Reflect.hasField(e.v, "char"))
-									camEvents.push([e.t, e.v.char]);
-								else
-									camEvents.push([e.t, e.v]);
-							}
-						}
-						if (camEvents[0][0] > 0)
-							camEvents.unshift([0, camEvents[0][1]]);
-						ArraySort.sort(camEvents, function(a:Array<Dynamic>, b:Array<Dynamic>) {
-							if (a[0] < b[0])
-								return -1;
-							if (a[0] > b[0])
-								return 1;
-							return 0;
-						});
-
-						var chartMeta:SongData = {
-							song: metadata.songName,
-							artist: metadata.artist,
-							charter: "",
-							preview: [0, 32],
-							tracks: tracks,
-							offset: offset,
-							characters: [p1, p2, gf],
-							stage: metadata.playData.stage,
-							eventFile: eventFile
-						};
-
-						if (bpmMap.length > 1)
-							chartMeta.bpmMap = bpmMap;
-						else
-							chartMeta.bpm = bpmMap[0][1];
-
-						if (baseStages.exists(chartMeta.stage))
-							chartMeta.stage = baseStages[chartMeta.stage];
-
-						if (metadata.charter != null)
-							chartMeta.charter = metadata.charter;
-
-						var difficulties:Array<String> = cast metadata.playData.difficulties;
-						for (d in difficulties)
-						{
-							var speed:Float = Reflect.field(chart.scrollSpeed, "default");
-							if (Reflect.hasField(chart.scrollSpeed, d))
-								speed = Reflect.field(chart.scrollSpeed, d);
-
-							var newChart:SongData = {
-								song: metadata.songName,
-								artist: metadata.artist,
-								charter: "",
-								preview: [0, 32],
-								ratings: [0, 0],
-								tracks: tracks,
-								offset: offset,
-								player1: p1,
-								player2: p2,
-								player3: gf,
-								stage: metadata.playData.stage,
-								bpmMap: bpmMap,
-								speed: speed,
-								notes: [],
-								metaFile: metaFile,
-								eventFile: eventFile
-							};
-
-							if (baseStages.exists(newChart.stage))
-								newChart.stage = baseStages[newChart.stage];
-
-							if (metadata.charter != null)
-								newChart.charter = metadata.charter;
-
-							if (metadata.playData.ratings != null && Reflect.hasField(metadata.playData.ratings, d))
-								newChart.ratings = [Reflect.field(metadata.playData.ratings, d), 0];
-
-							if (noteStyle != "funkin")
-							{
-								newChart.noteType = [noteStyle];
-								newChart.uiSkin = noteStyle;
-							}
-
-							var track:FlxSound = new FlxSound().loadEmbedded(flash.media.Sound.fromFile(trueMusicPath + tracks[0][0] + ".ogg"));
-							for (i in 0...camEvents.length)
-							{
-								var newSection:SectionData = {sectionNotes: [], lengthInSteps: 64, camOn: 0};
-								if (i < camEvents.length - 1)
-									newSection.lengthInSteps = Std.int(Math.round(timingStruct.stepFromTime(camEvents[i + 1][0])) - Math.round(timingStruct.stepFromTime(camEvents[i][0])));
-								else
-									newSection.lengthInSteps = Std.int(Math.ceil(timingStruct.stepFromTime(track.length)) - Math.round(timingStruct.stepFromTime(camEvents[i][0])));
-
-								if (camEvents[i][1] == "1" || camEvents[i][1] == 1)
-									newSection.camOn = 1;
-
-								newChart.notes.push(newSection);
-							}
-
-							if (newChart.notes.length <= 0)
-							{
-								var totalSections:Int = Std.int(Math.ceil(timingStruct.beatFromTime(track.length) / 4));
-								for (i in 0...totalSections)
-									newChart.notes.push({sectionNotes: [], lengthInSteps: 16, camOn: 0});
-							}
-
-							var newNotes:Array<Dynamic> = cast Reflect.field(chart.notes, d);
-							var firstNote:Float = -1;
-
-							for (n in newNotes)
-							{
-								var column:Int = Std.int(n.d) - 4;
-								if (column < 0)
-									column += 8;
-
-								var len:Float = 0;
-								if (n.l != null)
-									len = n.l;
-
-								var kind:String = "";
-								if (Reflect.hasField(n, "k"))
-									kind = n.k;
-								if (kind == "normal")
-									kind = "";
-
-								if (firstNote == -1 || n.t < firstNote)
-									firstNote = n.t;
-								newChart.notes[0].sectionNotes.push([n.t, column, len, kind]);
-							}
-
-							var firstBeat:Float = Math.max(0, Math.floor(timingStruct.beatFromTime(firstNote)));
-							newChart.preview = [firstBeat, firstBeat + 32];
-							chartMeta.preview = [firstBeat, firstBeat + 32];
-
-							var parsedData:SongData = Song.parseSongData(newChart, false, false);
-							parsedData.useBeats = true;
-							File.saveContent(trueSavePath + convertedSongId + "-" + d + ".json", Json.stringify({song: prepareChartSave(parsedData)}));
-						}
-
-						File.saveContent(trueSavePath + metaFile + ".json", Json.stringify(chartMeta));
-
-						ArraySort.sort(convertedEvents, function(a:Dynamic, b:Dynamic) {
-							if (a.t < b.t)
-								return -1;
-							if (a.t > b.t)
-								return 1;
-							return 0;
-						});
-						var newEvents:Array<EventData> = convertEventsFromBase(convertedSongId, convertedEvents, timingStruct);
-						if (newEvents.length > 0)
-							File.saveContent(trueSavePath + eventFile + ".json", prepareEventsSave(newEvents));
-
-						autosavePaused = false;
-					}
-					file3.failureCallback = function() { autosavePaused = false; };
-					file3.savePath("*.*");
-				}
-				file2.failureCallback = function() { autosavePaused = false; };
-				file2.load("ogg");
-			}
-		}
-		file.failureCallback = function() { autosavePaused = false; };
-		file.load("json");
-	}
-
-	function convertEventsFromBase(convertedSongId:String, events:Array<Dynamic>, timingStruct:TimingStruct):Array<EventData>
-	{
-		var ret:Array<EventData> = [];
-
-		var eventConverters:Array<HscriptHandlerSimple> = [];
-		for (c in Paths.listFiles('data/baseEvents/', '.hscript'))
-			eventConverters.push(new HscriptHandlerSimple('data/baseEvents/' + c));
-
-		for (c in eventConverters)
-			c.setVar("songId", convertedSongId);
-
-		var unmatchedEvents:Array<String> = [];
-
-		for (event in events)
-		{
-			var eventValue:Dynamic = null;
-			for (c in eventConverters)
-			{
-				var returnValue:Dynamic = c.execFuncReturn("convertEvent", [event, timingStruct]);
-				if (eventValue == null && returnValue != null)
-					eventValue = returnValue;
-			}
-
-			if (eventValue != null)
-			{
-				if (Std.isOfType(eventValue, Array))
-				{
-					var eventValueArray:Array<EventData> = cast eventValue;
-					for (a in eventValueArray)
-					{
-						var newEvent:EventData = {time: event.t, beat: timingStruct.beatFromTime(event.t), type: a.type, parameters: a.parameters};
-						if (a.beat != null)
-						{
-							newEvent.beat = a.beat;
-							newEvent.time = timingStruct.timeFromBeat(a.beat);
-						}
-						checkConvertedEventParameters(newEvent);
-						ret.push(newEvent);
-					}
-				}
-				else
-				{
-					var newEvent:EventData = {time: event.t, beat: timingStruct.beatFromTime(event.t), type: eventValue.type, parameters: eventValue.parameters};
-					if (eventValue.beat != null)
-					{
-						newEvent.beat = eventValue.beat;
-						newEvent.time = timingStruct.timeFromBeat(eventValue.beat);
-					}
-					checkConvertedEventParameters(newEvent);
-					ret.push(newEvent);
-				}
-			}
-			else
-			{
-				if (!unmatchedEvents.contains(event.e))
-					unmatchedEvents.push(event.e);
-			}
-		}
-
-		if (unmatchedEvents.length > 0)
-		{
-			var notifyString:String = "The following events have no equivalent:\n\n";
-			for (e in unmatchedEvents)
-				notifyString += e + "\n";
-
-			new Notify(notifyString);
-		}
-
-		return ret;
+		BaseGameConverter.convertChart(function() { autosavePaused = false; });
 	}
 }

@@ -26,9 +26,10 @@ import flixel.util.FlxAxes;
 import flixel.ui.FlxBar;
 import flixel.effects.particles.FlxEmitter;
 import flixel.effects.particles.FlxParticle;
-import flixel.addons.effects.FlxTrail;
 import flixel.addons.display.FlxBackdrop;
 import flixel.addons.display.FlxRuntimeShader;
+import flixel.addons.effects.FlxSkewedSprite;
+import flixel.addons.effects.FlxTrail;
 import flixel.input.keyboard.FlxKey;
 import haxe.Json;
 import openfl.display.BlendMode;
@@ -367,6 +368,15 @@ class HscriptMouseCursor
 	public static var __WAIT_ARROW = "waitarrow";
 }
 
+class HscriptTweenType
+{
+	public static var PERSIST = FlxTweenType.PERSIST;
+	public static var LOOPING = FlxTweenType.LOOPING;
+	public static var PINGPONG = FlxTweenType.PINGPONG;
+	public static var ONESHOT = FlxTweenType.ONESHOT;
+	public static var BACKWARD = FlxTweenType.BACKWARD;
+}
+
 
 
 class HscriptHandler
@@ -551,6 +561,7 @@ class HscriptHandler
 		interp.variables.set("FlxTypeText", FlxTypeText);
 		interp.variables.set("FlxColor", HscriptColor);
 		interp.variables.set("FlxTween", FlxTween);
+		interp.variables.set("FlxTweenType", HscriptTweenType);
 		interp.variables.set("FlxEase", FlxEase);
 		interp.variables.set("FlxTimer", FlxTimer);
 		interp.variables.set("FlxAxes", FlxAxes);
@@ -568,6 +579,7 @@ class HscriptHandler
 		interp.variables.set("BOTTOM_TO_TOP", FlxBarFillDirection.BOTTOM_TO_TOP);
 		interp.variables.set("FlxEmitter", FlxEmitter);
 		interp.variables.set("FlxParticle", FlxParticle);
+		interp.variables.set("FlxSkewedSprite", FlxSkewedSprite);
 		interp.variables.set("FlxTrail", FlxTrail);
 		interp.variables.set("FlxBackdrop", FlxBackdrop);
 		interp.variables.set("FlxAnimate", FlxAnimate);

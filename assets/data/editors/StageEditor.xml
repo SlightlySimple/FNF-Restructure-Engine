@@ -97,6 +97,17 @@
 											<checkbox id="pieceTileX" text="Tile X" checked="true" infoText="Whether the piece should repeat infinitely left and right."/>
 											<checkbox id="pieceTileY" text="Tile Y" checked="true" infoText="Whether the piece should repeat infinitely up and down."/>
 										</hbox>
+										<label text="Spacing:"/>
+										<hbox>
+											<stepper id="pieceTileSpacingX" text="X:" default="0" step="5" infoText="The horizontal space between individual tiles in the piece."/>
+											<stepper id="pieceTileSpacingY" text="Y:" default="0" step="5" infoText="The vertical space between individual tiles in the piece."/>
+										</hbox>
+										<label text="Starting Velocity:"/>
+										<hbox>
+											<stepper id="pieceVelocityX" text="X:" default="0" step="5" infoText="The piece's constant movement speed to the right, in pixels per second. A negative value makes it move to the left."/>
+											<stepper id="pieceVelocityY" text="Y:" default="0" step="5" infoText="The piece's constant movement speed downward, in pixels per second. A negative value makes it move upward."/>
+										</hbox>
+										<checkbox id="pieceVelocityMultByScroll" text="Multiply by Scroll Factor" infoText="Whether to multiply the piece's provided velocity values by the scroll factor."/>
 									</vbox>
 								</vbox>
 								<vbox id="piecePropertiesAnimatedTiledSlot">

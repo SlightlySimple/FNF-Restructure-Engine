@@ -225,7 +225,7 @@ function create(data)
 		}
 
 		graphSongNameX += 30;
-		graphSongNameW -= 60;
+		graphSongNameW -= 100;
 		graphSongName.x = graphSongNameX;
 		graphSongNameBlur.x = graphSongNameX;
 	}

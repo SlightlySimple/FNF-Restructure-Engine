@@ -340,10 +340,15 @@ class FreeplaySandbox extends FlxSpriteGroup
 						txtRight[i].text = "< " + txtRight[i].text + " >";
 
 				default:
-					if (characters[i] == "")
-						txtRight[i].text = Lang.get("#freeplay.sandbox.default");
+					if (options[i].startsWith("character"))
+					{
+						if (characters[i] == "")
+							txtRight[i].text = Lang.get("#freeplay.sandbox.default");
+						else
+							txtRight[i].text = (characterNames.exists(characters[i]) ? characterNames[characters[i]] : characters[i]);
+					}
 					else
-						txtRight[i].text = (characterNames.exists(characters[i]) ? characterNames[characters[i]] : characters[i]);
+						txtRight[i].text = "";
 			}
 		}
 

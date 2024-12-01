@@ -22,12 +22,12 @@ import openfl.ui.Mouse;
 import openfl.ui.MouseCursor;
 import data.ObjectData;
 import data.Options;
+import data.converters.BaseGameConverter;
 import data.Song;
 import objects.AnimatedSprite;
 import objects.Character;
 import objects.Stage;
 import haxe.Json;
-import haxe.ds.ArraySort;
 import sys.io.File;
 import menus.EditorMenuState;
 import shaders.ColorFade;
@@ -944,6 +944,58 @@ class StageEditorState extends BaseEditorState
 			assignPieceParams(curStagePiece);
 		}
 
+		var pieceTileSpacingX:Stepper = cast element("pieceTileSpacingX");
+		pieceTileSpacingX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tileSpace[0];
+			return pieceTileSpacingX.value;
+		}
+		pieceTileSpacingX.onChanged = function() {
+			stageData.pieces[curStagePiece].tileSpace[0] = pieceTileSpacingX.valueInt;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceTileSpacingY:Stepper = cast element("pieceTileSpacingY");
+		pieceTileSpacingY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].tileSpace[1];
+			return pieceTileSpacingY.value;
+		}
+		pieceTileSpacingY.onChanged = function() {
+			stageData.pieces[curStagePiece].tileSpace[1] = pieceTileSpacingY.valueInt;
+			assignPieceParams(curStagePiece);
+		}
+
+		var pieceVelocityX:Stepper = cast element("pieceVelocityX");
+		pieceVelocityX.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].velocity[0];
+			return pieceVelocityX.value;
+		}
+		pieceVelocityX.onChanged = function() {
+			stageData.pieces[curStagePiece].velocity[0] = pieceVelocityX.valueInt;
+		}
+
+		var pieceVelocityY:Stepper = cast element("pieceVelocityY");
+		pieceVelocityY.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].velocity[1];
+			return pieceVelocityY.value;
+		}
+		pieceVelocityY.onChanged = function() {
+			stageData.pieces[curStagePiece].velocity[1] = pieceVelocityY.valueInt;
+		}
+
+		var pieceVelocityMultByScroll:Checkbox = cast element("pieceVelocityMultByScroll");
+		pieceVelocityMultByScroll.condition = function() {
+			if (curStagePiece > -1)
+				return stageData.pieces[curStagePiece].velocityMultipliedByScroll;
+			return pieceVelocityMultByScroll.checked;
+		}
+		pieceVelocityMultByScroll.onClicked = function() {
+			stageData.pieces[curStagePiece].velocityMultipliedByScroll = pieceVelocityMultByScroll.checked;
+		}
+
 		var pieceTileCountX:Stepper = cast element("pieceTileCountX");
 		pieceTileCountX.condition = function() {
 			if (curStagePiece > -1)
@@ -1314,7 +1366,7 @@ class StageEditorState extends BaseEditorState
 					},
 					{
 						label: "Convert from Base Game",
-						action: convertFromBase
+						action: BaseGameConverter.convertStage
 					},
 					null,
 					{
@@ -1942,6 +1994,8 @@ class StageEditorState extends BaseEditorState
 					type: (typesList[1][typeDropdown.valueInt] == "basetype" ? typeDropdown.value : typesList[1][typeDropdown.valueInt]),
 					asset: imageDropdown.value,
 					position: [0, 0],
+					velocity: [0, 0],
+					velocityMultipliedByScroll: false,
 					antialias: true,
 					layer: stageData.characters.length,
 					align: "topleft",
@@ -1954,6 +2008,7 @@ class StageEditorState extends BaseEditorState
 					alpha: 1,
 					blend: "normal",
 					tile: [true, true],
+					tileSpace: [0, 0],
 					tileCount: [1, 1]
 				};
 
@@ -1963,6 +2018,8 @@ class StageEditorState extends BaseEditorState
 				if (curStagePiece > -1 && stageData.pieces.length > 0 && curStagePiece < stageData.pieces.length)
 				{
 					newPiece.position = stageData.pieces[curStagePiece].position.copy();
+					newPiece.velocity = stageData.pieces[curStagePiece].velocity.copy();
+					newPiece.velocityMultipliedByScroll = stageData.pieces[curStagePiece].velocityMultipliedByScroll;
 					newPiece.antialias = stageData.pieces[curStagePiece].antialias;
 					newPiece.visible = stageData.pieces[curStagePiece].visible;
 					newPiece.scale = stageData.pieces[curStagePiece].scale.copy();
@@ -1974,6 +2031,7 @@ class StageEditorState extends BaseEditorState
 					newPiece.alpha = stageData.pieces[curStagePiece].alpha;
 					newPiece.blend = stageData.pieces[curStagePiece].blend;
 					newPiece.tile = stageData.pieces[curStagePiece].tile.copy();
+					newPiece.tileSpace = stageData.pieces[curStagePiece].tileSpace.copy();
 					newPiece.tileCount = stageData.pieces[curStagePiece].tileCount.copy();
 				}
 
@@ -2627,7 +2685,9 @@ class StageEditorState extends BaseEditorState
 			case "tiled":
 				if (stagePiece.tile == null || stagePiece.tile.length != 2)
 					stagePiece.tile = [true, true];
-				piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1]);
+				if (stagePiece.tileSpace == null || stagePiece.tileSpace.length != 2)
+					stagePiece.tileSpace = [0, 0];
+				piece = new FlxBackdrop(image(stagePiece.asset), 1, 1, stagePiece.tile[0], stagePiece.tile[1], stagePiece.tileSpace[0], stagePiece.tileSpace[1]);
 
 			case "solid":
 				piece = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
@@ -2697,6 +2757,17 @@ class StageEditorState extends BaseEditorState
 
 		if (stagePiece.type == "animated" && !sparrowExists(stagePiece.asset))
 			piece.frames = tiles(stagePiece.asset, stagePiece.tileCount[0], stagePiece.tileCount[1]);
+
+		@:privateAccess
+		if (stagePiece.type == "tiled")
+		{
+			var tPiece:FlxBackdrop = cast piece;
+			tPiece._repeatX = stagePiece.tile[0];
+			tPiece._repeatY = stagePiece.tile[1];
+			tPiece._spaceX = stagePiece.tileSpace[0];
+			tPiece._spaceY = stagePiece.tileSpace[1];
+			tPiece.loadFrame(tPiece._tileFrame);
+		}
 
 		alignPiece(pieceId);
 	}
@@ -3265,7 +3336,12 @@ class StageEditorState extends BaseEditorState
 				Reflect.deleteField(p, "blend");
 
 			if (p.type != "tiled")
+			{
 				Reflect.deleteField(p, "tile");
+				Reflect.deleteField(p, "tileSpace");
+				Reflect.deleteField(p, "velocity");
+				Reflect.deleteField(p, "velocityMultipliedByScroll");
+			}
 
 			if (p.type != "animated" || sparrowExists(p.asset))
 				Reflect.deleteField(p, "tileCount");
@@ -3290,184 +3366,5 @@ class StageEditorState extends BaseEditorState
 				refreshFilename();
 			}
 		}
-	}
-
-
-
-	function convertFromBase()
-	{
-		var file:FileBrowser = new FileBrowser();
-		file.label = "Choose a stage json file that you want to convert";
-		file.loadCallback = function(fullPath:String)
-		{
-			if (fullPath.indexOf("stages") > -1)
-			{
-				var pathArray:Array<String> = fullPath.replace('\\','/').split('/');
-				var convertedStageId:String = pathArray[pathArray.length - 1];
-
-				var stage:Dynamic = Json.parse(File.getContent(fullPath));
-
-				var file2:FileBrowser = new FileBrowser();
-				file2.saveCallback = function(savePath:String)
-				{
-					var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
-					savePathArray.pop();
-					var trueSavePath:String = savePathArray.join("/") + "/";
-
-					var finalStage:StageData = {
-						searchDirs: ["stages/" + convertedStageId.split(".json")[0] + "/"],
-						fixes: 1,
-						characters: [],
-						camZoom: stage.cameraZoom,
-						camFollow: [640, 360],
-						bgColor: [0, 0, 0],
-						pixelPerfect: false,
-						pieces: []
-					};
-
-					var charZ:Map<String, Float> = new Map<String, Float>();
-					var charList:Array<String> = ["bf", "gf", "dad"];
-					charZ["bf"] = stage.characters.bf.zIndex;
-					charZ["gf"] = stage.characters.gf.zIndex;
-					charZ["dad"] = stage.characters.dad.zIndex;
-					ArraySort.sort(charList, function(a:String, b:String) {
-						if (charZ[a] < charZ[b])
-							return -1;
-						if (charZ[a] > charZ[b])
-							return 1;
-						return 0;
-					});
-
-					for (c in ["bf", "dad", "gf"])
-					{
-						var oldChar = Reflect.field(stage.characters, c);
-						var oldPos:Array<Float> = cast oldChar.position;
-
-						var stageChar:StageCharacter = {
-							layer: charList.indexOf(c),
-							position: [Std.int(Math.round((oldPos[0] - 210) / 5) * 5), Std.int(Math.round((oldPos[1] - 765) / 5) * 5)],
-							flip: (c == "bf")
-						};
-
-						if (oldChar.cameraOffsets != null)
-						{
-							var oldCamPos:Array<Float> = cast oldChar.cameraOffsets;
-							stageChar.camPosition = [Std.int(oldCamPos[0]), Std.int(oldCamPos[1])];
-							if (c == "bf")
-							{
-								stageChar.camPosition[0] += 150;
-								stageChar.camPosition[1] += 100;
-							}
-							else if (c == "dad")
-							{
-								stageChar.camPosition[0] -= 150;
-								stageChar.camPosition[1] += 100;
-							}
-						}
-
-						finalStage.characters.push(stageChar);
-					}
-
-					var oldPieces:Array<Dynamic> = cast stage.props;
-					ArraySort.sort(oldPieces, function(a:Dynamic, b:Dynamic) {
-						if (a.zIndex < b.zIndex)
-							return -1;
-						if (a.zIndex > b.zIndex)
-							return 1;
-						return 0;
-					});
-
-					for (p in oldPieces)
-					{
-						var stagePiece:StagePiece = {
-							id: p.name,
-							type: "static",
-							asset: p.assetPath,
-							position: p.position,
-							layer: 0,
-							antialias: !p.isPixel
-						};
-
-						for (c in charList)
-						{
-							if (p.zIndex > charZ[c])
-								stagePiece.layer++;
-						}
-
-						if (p.scale != null)
-						{
-							stagePiece.scale = p.scale;
-							stagePiece.updateHitbox = true;
-						}
-
-						if (p.scroll != null)
-							stagePiece.scrollFactor = p.scroll;
-
-						if (p.alpha != null)
-							stagePiece.alpha = p.alpha;
-
-						if (p.blend != null)
-							stagePiece.blend = p.blend;
-
-						if (p.color != null)
-						{
-							var pieceColor:FlxColor = FlxColor.fromString(p.color);
-							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
-						}
-
-						if (stagePiece.asset.charAt(0) == "#")
-						{
-							var pieceColor:FlxColor = FlxColor.fromString(stagePiece.asset);
-							stagePiece.type = "solid";
-							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
-						}
-						else if (p.animations != null)
-						{
-							var pAnims:Array<Dynamic> = cast p.animations;
-							if (pAnims.length > 0)
-							{
-								stagePiece.type = "animated";
-								stagePiece.animations = [];
-								var animNames:Array<String> = [];
-								for (a in pAnims)
-								{
-									var stagePieceAnim:StageAnimation = {
-										name: a.name,
-										prefix: a.prefix,
-										fps: a.frameRate,
-										loop: a.looped
-									};
-									if (a.frameRate == null)
-										stagePieceAnim.fps = 24;
-									if (a.looped == null)
-										stagePieceAnim.loop = false;
-									if (a.frameIndices != null)
-										stagePieceAnim.indices = a.frameIndices;
-
-									stagePiece.animations.push(stagePieceAnim);
-									animNames.push(stagePieceAnim.name);
-								}
-								if (p.startingAnimation != null)
-									stagePiece.firstAnimation = p.startingAnimation;
-								if (p.danceEvery != null && p.danceEvery > 0)
-								{
-									if (animNames.contains("idle"))
-										stagePiece.idles = ["idle"];
-									else if (animNames.contains("danceLeft") && animNames.contains("danceRight"))
-										stagePiece.idles = ["danceLeft", "danceRight"];
-									stagePiece.beatAnimationSpeed = p.danceEvery;
-								}
-							}
-						}
-
-						finalStage.pieces.push(stagePiece);
-					}
-
-					File.saveContent(trueSavePath + convertedStageId, Json.stringify(finalStage));
-				}
-				file2.savePath("*.*");
-			}
-		}
-		file.load("json");
 	}
 }

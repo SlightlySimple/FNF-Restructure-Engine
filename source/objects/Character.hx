@@ -102,7 +102,7 @@ class Character extends FlxSprite
 				idles: ["idle"],
 				danceSpeed: 2,
 				flip: data.flip_x,
-				facing: "right",
+				facing: (data.flip_x ? "left" : "right"),
 				icon: data.healthicon,
 				healthbarColor: data.healthbar_colors
 			}
@@ -151,6 +151,12 @@ class Character extends FlxSprite
 
 				if (oldCharData.asset != null && oldCharData.asset != "")
 					cData.asset = oldCharData.asset;
+
+				if (oldCharData.position != null && oldCharData.position.length >= 2)
+					cData.position = oldCharData.position;
+
+				if (oldCharData.scale != null && oldCharData.scale.length >= 2)
+					cData.scale = oldCharData.scale;
 
 				if (oldCharData.camPosition != null && oldCharData.camPosition.length >= 2)
 					cData.camPosition = oldCharData.camPosition;

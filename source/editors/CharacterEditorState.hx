@@ -15,13 +15,11 @@ import helpers.DeepEquals;
 import helpers.Cloner;
 import data.ObjectData;
 import data.Options;
+import data.converters.BaseGameConverter;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Stage;
 import haxe.Json;
-import haxe.xml.Access;
-import sys.FileSystem;
-import sys.io.File;
 import openfl.ui.Mouse;
 import openfl.ui.MouseCursor;
 import menus.EditorMenuState;
@@ -1577,7 +1575,7 @@ class CharacterEditorState extends BaseEditorState
 					},
 					{
 						label: "Convert from Base Game",
-						action: convertFromBase
+						action: BaseGameConverter.convertCharacter
 					},
 					null,
 					{
@@ -2817,179 +2815,5 @@ class CharacterEditorState extends BaseEditorState
 			id = finalJsonName;
 			reloadIcon();
 		}
-	}
-
-
-
-	function convertFromBase()
-	{
-		var file:FileBrowser = new FileBrowser();
-		file.label = "Choose a character json file that you want to convert";
-		file.loadCallback = function(fullPath:String)
-		{
-			if (fullPath.indexOf("characters") > -1)
-			{
-				var pathArray:Array<String> = fullPath.replace('\\','/').split('/');
-				var convertedCharacterId:String = pathArray[pathArray.length - 1];
-
-				var character:Dynamic = Json.parse(File.getContent(fullPath));
-
-				var file2:FileBrowser = new FileBrowser();
-				file2.label = "Choose a png file in the folder for this character's sprite sheets";
-				file2.loadCallback = function(imagePath:String)
-				{
-					var imagePathArray:Array<String> = imagePath.replace('\\','/').split('/');
-					if (imagePathArray.contains("images"))
-					{
-						while (imagePathArray[imagePathArray.length - 1] != "images")
-							imagePathArray.pop();
-						var trueImagePath:String = imagePathArray.join("/");
-						if (FileSystem.exists(trueImagePath + "/" + character.assetPath + ".xml") || FileSystem.exists(trueImagePath + "/" + character.assetPath + ".txt"))
-						{
-							var frames:Array<Dynamic> = [];
-
-							if (FileSystem.exists(trueImagePath + "/" + character.assetPath + ".txt"))
-							{
-								var txtRaw:String = File.getContent(trueImagePath + "/" + character.assetPath + ".txt");
-								var txtSplit:Array<String> = txtRaw.replace("\r","").replace("\t","").split("\n");
-								for (f in txtSplit)
-								{
-									var fSplit:Array<String> = f.split(" = ");
-									frames.push({name: fSplit[0], w: fSplit[1].split(" ")[2], h: fSplit[1].split(" ")[3]});
-								}
-							}
-							else
-							{
-								var xmlRaw:String = File.getContent(trueImagePath + "/" + character.assetPath + ".xml");
-								var data:Access = new Access(Xml.parse(xmlRaw).firstElement());
-								for (texture in data.nodes.SubTexture)
-								{
-									var frame = {name: texture.att.name, w: texture.att.width, h: texture.att.height};
-									if (texture.has.frameWidth)
-									{
-										frame.w = texture.att.frameWidth;
-										frame.h = texture.att.frameHeight;
-									}
-									frames.push(frame);
-								}
-							}
-
-							var file3:FileBrowser = new FileBrowser();
-							file3.saveCallback = function(savePath:String)
-							{
-								var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
-								savePathArray.pop();
-								var trueSavePath:String = savePathArray.join("/") + "/";
-
-								var finalChar:CharacterData = {
-									fixes: 1,
-									asset: character.assetPath,
-									position: [210, 765],
-									camPosition: [150, -100],
-									scale: [1, 1],
-									antialias: true,
-									animations: [],
-									firstAnimation: "idle",
-									idles: ["idle"],
-									flip: false,
-									facing: "right",
-									icon: ""
-								};
-
-								if (character.offsets != null)
-								{
-									finalChar.position[0] += Std.int(character.offsets[0]);
-									finalChar.position[1] += Std.int(character.offsets[1]);
-								}
-
-								if (character.cameraOffsets != null)
-								{
-									finalChar.camPosition[0] += Std.int(character.cameraOffsets[0]);
-									finalChar.camPosition[1] += Std.int(character.cameraOffsets[1]);
-								}
-
-								if (character.scale != null)
-									finalChar.scale = [character.scale, character.scale];
-
-								if (character.isPixel != null)
-									finalChar.antialias = !character.isPixel;
-
-								if (character.startingAnimation != null)
-									finalChar.firstAnimation = character.startingAnimation;
-
-								if (character.flipX != null)
-									finalChar.flip = character.flipX;
-
-								if (character.danceEvery != null)
-									finalChar.danceSpeed = character.danceEvery;
-
-								if (character.healthIcon != null)
-									finalChar.icon = character.healthIcon.id;
-
-								var oldAnims:Array<Dynamic> = cast character.animations;
-								var animNames:Array<String> = [];
-								for (a in oldAnims)
-								{
-									var anim:CharacterAnimation = {name: a.name};
-									if (anim.name.endsWith("-hold"))
-										anim.name = anim.name.replace("-hold", "-loop");
-									if (a.assetPath != null)
-										anim.asset = a.assetPath;
-									if (a.prefix != null)
-										anim.prefix = a.prefix;
-									if (a.offsets != null)
-										anim.offsets = a.offsets;
-									if (a.looped != null)
-										anim.loop = a.looped;
-									if (a.flipX != null)
-										anim.flipX = a.flipX;
-									if (a.flipY != null)
-										anim.flipY = a.flipY;
-									if (a.frameRate != null)
-										anim.fps = a.frameRate;
-									if (a.frameIndices != null)
-										anim.indices = a.frameIndices;
-
-									finalChar.animations.push(anim);
-									animNames.push(anim.name);
-								}
-								if (animNames.contains("danceLeft") && animNames.contains("danceRight"))
-									finalChar.idles = ["danceLeft", "danceRight"];
-
-								var idlePrefix:String = frames[0].name;
-								for (a in finalChar.animations)
-								{
-									if (a.name == finalChar.idles[0])
-									{
-										idlePrefix = a.prefix;
-										break;
-									}
-								}
-
-								var idleFrame:Array<Float> = [0, 0];
-								for (f in frames)
-								{
-									if (StringTools.startsWith(f.name, idlePrefix))
-									{
-										idleFrame = [Std.parseFloat(f.w), Std.parseFloat(f.h)];
-										break;
-									}
-								}
-
-								finalChar.position[0] -= Std.int((idleFrame[0] / 2) * finalChar.scale[0]);
-								finalChar.position[1] -= Std.int(idleFrame[1] * finalChar.scale[1]);
-								finalChar.position[0] = Std.int(Math.round(finalChar.position[0] / 5) * 5);
-								finalChar.position[1] = Std.int(Math.round(finalChar.position[1] / 5) * 5);
-
-								File.saveContent(trueSavePath + convertedCharacterId, Json.stringify(finalChar));
-							}
-							file3.savePath("*.*");
-						}
-					}
-				}
-				file2.load("png");
-			}
-		}
-		file.load("json");
 	}
 }

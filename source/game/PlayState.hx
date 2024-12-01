@@ -707,7 +707,7 @@ class PlayState extends MusicBeatState
 		msText.borderColor = FlxColor.BLACK;
 		msText.borderStyle = OUTLINE;
 		msText.cameras = [camHUD];
-		msText.alpha = 0;
+		msText.alpha = 0.001;
 		add(msText);
 
 		missLimitText = new FlxText(0, 125, 0, Lang.get("#game.missLimit", ["0", Std.string(missLimit)]));
@@ -961,8 +961,12 @@ class PlayState extends MusicBeatState
 		if (getSongProgressText() != songProgressText.text)
 			songProgressText.text = getSongProgressText();
 
-		if (msText.alpha > 0)
+		if (msText.alpha > 0.001)
+		{
 			msText.alpha -= elapsed / Conductor.beatSeconds;
+			if (msText.alpha < 0.001)
+				msText.alpha = 0.001;
+		}
 
 		if (countdownStarted)
 		{
@@ -1135,7 +1139,7 @@ class PlayState extends MusicBeatState
 						{
 							note.isBeingHit = false;
 							note.hitTimer += elapsed * 1000;
-							if (note.hitTimer >= note.hitLimit && !note.missed)
+							if (note.hitTimer >= note.hitLimit && (note.canBeHit || note.parent.missed) && !note.missed)
 								sustainMissed(note);
 
 							if (note.strumTime + note.sustainLength - songProgress <= -note.hitLimit)
@@ -2698,6 +2702,9 @@ class PlayState extends MusicBeatState
 
 	function noteMissed(note:Note)
 	{
+		hscriptExec("noteMissedPre", [note]);
+		luaExec("noteMissedPre", [notes.members.indexOf(note)]);
+
 		health += note.typeData.healthValues.miss;
 		if (note.typeData.healthValues.miss < 0)
 		{
@@ -2729,6 +2736,9 @@ class PlayState extends MusicBeatState
 
 	function sustainMissed(note:SustainNote)
 	{
+		hscriptExec("sustainMissedPre", [note]);
+		luaExec("sustainMissedPre", [sustainNotes.members.indexOf(note)]);
+
 		health += note.typeData.healthValues.miss;
 		if (note.typeData.healthValues.miss < 0)
 		{
@@ -2774,6 +2784,9 @@ class PlayState extends MusicBeatState
 
 	function onNoteHit(note:Note)
 	{
+		hscriptExec("noteHitPre", [note]);
+		luaExec("noteHitPre", [notes.members.indexOf(note)]);
+
 		for (s in note.singers)
 		{
 			s.holdTimer = Conductor.beatLength;
@@ -2800,6 +2813,9 @@ class PlayState extends MusicBeatState
 
 	function onSustainHit(note:SustainNote)
 	{
+		hscriptExec("sustainHitPre", [note]);
+		luaExec("sustainHitPre", [sustainNotes.members.indexOf(note)]);
+
 		strumNotes.members[note.column].playAnim("confirm", true, note.noteColor);
 		for (s in note.singers)
 		{

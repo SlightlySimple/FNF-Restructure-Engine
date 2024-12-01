@@ -23,7 +23,7 @@ function registerCharacter(c)
 		if (!Character.parsedCharacters.exists(c))
 			Character.parsedCharacters[c] = Character.parseCharacter(c);
 		var curC = Character.parsedCharacters[c];
-		var asset:String = curC.asset;
+		var asset = curC.asset;
 		if (Paths.imageExists(asset))
 			Paths.cacheGraphic(asset);
 
