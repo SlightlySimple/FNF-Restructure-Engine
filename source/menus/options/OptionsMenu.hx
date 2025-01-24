@@ -493,7 +493,7 @@ class OptionsCategory extends FlxGroup
 					changeCurrentOption(1);
 				holdTick = opt.scrollSpeed;
 			}
-			if (FlxG.keys.justReleased.LEFT || FlxG.keys.justReleased.RIGHT)
+			if (Options.keyJustReleased("ui_left") || Options.keyJustReleased("ui_right"))
 				holding = false;
 		}
 

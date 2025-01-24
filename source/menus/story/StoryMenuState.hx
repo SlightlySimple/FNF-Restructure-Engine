@@ -103,7 +103,11 @@ class StoryMenuState extends MusicBeatState
 			}
 
 			if (data.difficulties != null && data.difficulties != "")
+			{
 				wData.difficulties = data.difficulties.toLowerCase().split(",");
+				for (d in wData.difficulties)
+					d = d.trim();
+			}
 
 			if (data.hideStoryMode)
 				wData.condition = "freeplayonly";

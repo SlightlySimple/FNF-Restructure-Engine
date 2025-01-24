@@ -3041,25 +3041,36 @@ class ChartEditorState extends MusicBeatState
 		mousePos.y = FlxG.mouse.y + camFollow.y - (FlxG.height / 2);
 		if (FlxG.mouse.justMoved)
 		{
+			hoverText = "";
 			curStrum = -1;
 			if (allowEditingStrumline || FlxG.keys.pressed.ALT)
 			{
-				strums.forEachAlive(function(note:FlxSprite)
+				strums.forEachAlive(function(note:FlxSprite) {
+					if (FlxG.mouse.overlaps(note))
 					{
-						if (FlxG.mouse.overlaps(note))
+						curStrum = strums.members.indexOf(note);
+						note.alpha = 1;
+						UIControl.cursor = MouseCursor.BUTTON;
+
+						if (allowEditingStrumline && curStrum < strums.members.length - 1)
 						{
-							curStrum = strums.members.indexOf(note);
-							note.alpha = 1;
-							UIControl.cursor = MouseCursor.BUTTON;
+							var columnData:SongColumnData = songData.columns[curStrum];
+							var charName:String = Reflect.field(songData, "player" + Std.string(columnData.singer + 1));
+							if (characterNames.exists(charName))
+								charName = characterNames[charName];
+
+							hoverText = "Side: " + Lang.get(songData.columnDivisionNames[columnData.division]);
+							hoverText += "\nSinger: Character " + Std.string(columnData.singer + 1) + " (" + charName + ")";
+							hoverText += "\nHit Animation: " + columnData.anim;
+							hoverText += "\nMiss Animation: " + columnData.missAnim;
 						}
-						else
-							note.alpha = 0.5;
 					}
-				);
+					else
+						note.alpha = 0.5;
+				});
 			}
 
 			var foundNote:Bool = false;
-			hoverText = "";
 			if (curStrum < 0)
 			{
 				if (noteData.length > 0)
@@ -3642,12 +3653,10 @@ class ChartEditorState extends MusicBeatState
 			else
 			{
 				var myEvent:Int = -1;
-				eventIcons.forEachAlive(function(event:FlxSprite)
-					{
-						if (event.overlaps(mousePos))
-							myEvent = eventIcons.members.indexOf(event);
-					}
-				);
+				eventIcons.forEachAlive(function(event:FlxSprite) {
+					if (event.overlaps(mousePos))
+						myEvent = eventIcons.members.indexOf(event);
+				});
 				if (myEvent > -1)
 				{
 					var dropdown:TopMenuDropdown = new TopMenuDropdown(FlxG.mouse.x, FlxG.mouse.y, [

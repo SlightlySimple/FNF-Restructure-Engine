@@ -377,6 +377,12 @@ class HscriptTweenType
 	public static var BACKWARD = FlxTweenType.BACKWARD;
 }
 
+class HscriptEmitterMode
+{
+	public static var SQUARE = FlxEmitterMode.SQUARE;
+	public static var CIRCLE = FlxEmitterMode.CIRCLE;
+}
+
 
 
 class HscriptHandler
@@ -578,6 +584,7 @@ class HscriptHandler
 		interp.variables.set("TOP_TO_BOTTOM", FlxBarFillDirection.TOP_TO_BOTTOM);
 		interp.variables.set("BOTTOM_TO_TOP", FlxBarFillDirection.BOTTOM_TO_TOP);
 		interp.variables.set("FlxEmitter", FlxEmitter);
+		interp.variables.set("FlxEmitterMode", HscriptEmitterMode);
 		interp.variables.set("FlxParticle", FlxParticle);
 		interp.variables.set("FlxSkewedSprite", FlxSkewedSprite);
 		interp.variables.set("FlxTrail", FlxTrail);

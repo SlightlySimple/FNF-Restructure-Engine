@@ -19,7 +19,7 @@ function update(elapsed)
 
 function noteHit(note)
 {
-	if (note.noteType == "hehPrettyGood")
+	if (note.noteType == noteType)
 	{
 		tracking = note.singers;
 		trackingTime = note.strumTime;

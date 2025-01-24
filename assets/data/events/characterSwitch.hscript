@@ -11,7 +11,7 @@ function create()
 
 	for (e in game.songData.events)
 	{
-		if (e.type == "characterSwitch" && !characterIds.contains(e.parameters.character) && allowedSlots.contains(getSlot(e.parameters.id.toLowerCase())))
+		if (e.type == eventType && !characterIds.contains(e.parameters.character) && allowedSlots.contains(getSlot(e.parameters.id.toLowerCase())))
 			registerCharacter(e.parameters.character);
 	}
 }

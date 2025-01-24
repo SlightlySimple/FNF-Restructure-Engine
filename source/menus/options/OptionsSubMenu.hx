@@ -302,10 +302,14 @@ class OptionsSubMenuNoteColors extends OptionsSubMenu
 			}
 			else
 			{
+				var num:String = Std.string(Math.round(col[i] * 100));
+				if (i > 1)
+					num = Std.string(Math.round(col[i] * 100) + 100) + "%";
+
 				if (noteColorState == 1 && i == noteColorSelection)
-					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " < " + Std.string(Math.round(col[i] * 100)) + " >";
+					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " < " + num + " >";
 				else
-					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " " + Std.string(Math.round(col[i] * 100));
+					colorOptions.members[i].text = Lang.get(colorOptionText[i]) + " " + num;
 			}
 			colorOptions.members[i].screenCenter(X);
 			colorOptions.members[i].alpha = 0.5;

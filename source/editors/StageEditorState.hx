@@ -2589,6 +2589,8 @@ class StageEditorState extends BaseEditorState
 			case 0: def = TitleState.defaultVariables.player1;
 			case 2: def = TitleState.defaultVariables.gf;
 		}
+		if (c.character != null && c.character != "")
+			def = c.character;
 		var newC:Character = new Character(c.position[0], c.position[1], def, c.flip);
 		newC.scaleCharacter(c.scale[0], c.scale[1]);
 		newC.scrollFactor.set(c.scrollFactor[0], c.scrollFactor[1]);
@@ -3293,6 +3295,8 @@ class StageEditorState extends BaseEditorState
 
 		for (c in saveData.characters)
 		{
+			c.character = allCharacters[saveData.characters.indexOf(c)].curCharacter;
+
 			if (c.camPosition[0] == 0 && c.camPosition[1] == 0)
 				Reflect.deleteField(c, "camPosition");
 

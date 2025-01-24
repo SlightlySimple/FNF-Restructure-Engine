@@ -1,6 +1,6 @@
 function onSustainSpawned(note)
 {
-	if (note.noteType == "roll")
+	if (note.noteType == noteType)
 	{
 		note.hitLimit *= 1.5;
 		note.data["rollTimer"] = 0;
@@ -10,7 +10,7 @@ function onSustainSpawned(note)
 function update(elapsed)
 {
 	game.sustainNotes.forEachAlive(function(note) {
-		if (note.noteType == "roll" && !PlayState.botplay)
+		if (note.noteType == noteType && !PlayState.botplay)
 		{
 			if (note.isBeingHit && !note.passedHitLimit)
 			{

@@ -753,62 +753,69 @@ class PlayState extends MusicBeatState
 
 		myScripts = new Map<String, HscriptHandler>();
 		myLuaScripts = new Map<String, LuaModule>();
-		var autorunScripts:Array<String> = Paths.listFiles('data/autorun/', '.hscript');
+		var autorunScripts:Array<String> = Paths.listFiles("data/autorun/", ".hscript");
 		if (autorunScripts.length > 0)
 		{
 			for (a in autorunScripts)
-				hscriptAdd('AUTORUN_' + a, 'data/autorun/' + a);
+				hscriptAdd("AUTORUN_" + a, "data/autorun/" + a);
 		}
 		if (isSM)
 		{
 			var pathArray:Array<String> = songId.replace("\\","/").split("/");
 			pathArray.pop();
-			var songScripts:Array<String> = Paths.listFiles('sm/' + pathArray.join("/") + '/', '.hscript');
+			var songScripts:Array<String> = Paths.listFiles("sm/" + pathArray.join("/") + "/", ".hscript");
 			if (songScripts.length > 0)
 			{
 				for (s in songScripts)
-					hscriptAdd('SONG_' + s, 'sm/' + pathArray.join("/") + '/' + s);
+					hscriptAdd("SONG_" + s, "sm/" + pathArray.join("/") + "/" + s);
 			}
 		}
 		else
 		{
-			var songScripts:Array<String> = Paths.listFiles('data/songs/' + songId + '/', '.hscript');
+			var songScripts:Array<String> = Paths.listFiles("data/songs/" + songId + "/", ".hscript");
 			if (songScripts.length > 0)
 			{
 				for (s in songScripts)
-					hscriptAdd('SONG_' + s, 'data/songs/' + songId + '/' + s);
+					hscriptAdd("SONG_" + s, "data/songs/" + songId + "/" + s);
 			}
 			if (songId.indexOf("/") != -1)
 			{
 				var songIdStart:String = songId.substring(0, songId.indexOf("/"));
-				var weekScripts:Array<String> = Paths.listFiles('data/songs/' + songIdStart + '/', '.hscript');
+				var weekScripts:Array<String> = Paths.listFiles("data/songs/" + songIdStart + "/", ".hscript");
 				if (weekScripts.length > 0)
 				{
 					for (s in weekScripts)
-						hscriptAdd('WEEK_' + s, 'data/songs/' + songIdStart + '/' + s);
+						hscriptAdd("WEEK_" + s, "data/songs/" + songIdStart + "/" + s);
 				}
 			}
 		}
-		hscriptAdd('player1', 'data/' + player1.characterData.script, false, player1);
-		hscriptAdd('player2', 'data/' + player2.characterData.script, false, player2);
+		hscriptAdd("player1", "data/" + player1.characterData.script, false, player1);
+		hscriptAdd("player2", "data/" + player2.characterData.script, false, player2);
 		if (gf != null)
-			hscriptAdd('gf', 'data/' + gf.characterData.script, false, gf);
-		hscriptAdd('stage', 'data/' + stage.stageData.script);
-		hscriptIdSet('stage', 'stage', stage);
-		hscriptAdd('NOTESKIN', 'images/noteskins/' + Noteskins.noteskinName);
+			hscriptAdd("gf", "data/" + gf.characterData.script, false, gf);
+		hscriptAdd("stage", "data/" + stage.stageData.script);
+		hscriptIdSet("stage", "stage", stage);
+		hscriptAdd("NOTESKIN", "images/noteskins/" + Noteskins.noteskinName);
 		for (i in 0...noteTypes.length)
 		{
 			if (noteTypes[i] != "")
-				hscriptAdd('NOTETYPE_' + noteTypes[i].replace("/","_"), 'data/notetypes/' + noteTypes[i]);
+			{
+				hscriptAdd("NOTETYPE_" + noteTypes[i].replace("/","_"), "data/notetypes/" + noteTypes[i]);
+				hscriptIdSet("NOTETYPE_" + noteTypes[i].replace("/","_"), "noteType", noteTypes[i]);
+			}
 		}
 		if (songData.events.length > 0)
 		{
 			for (event in songData.events)
 			{
-				if (event.type.startsWith(songIdShort) && Paths.hscriptExists('data/songs/' + songId + '/events/' + event.typeShort))
-					hscriptAdd('EVENT_' + event.type.replace("/","_"), 'data/songs/' + songId + '/events/' + event.typeShort);
-				else
-					hscriptAdd('EVENT_' + event.type.replace("/","_"), 'data/events/' + event.type);
+				if (!myScripts.exists("EVENT_" + event.type.replace("/","_")))
+				{
+					if (event.type.startsWith(songIdShort) && Paths.hscriptExists("data/songs/" + songId + "/events/" + event.typeShort))
+						hscriptAdd("EVENT_" + event.type.replace("/","_"), "data/songs/" + songId + "/events/" + event.typeShort);
+					else
+						hscriptAdd("EVENT_" + event.type.replace("/","_"), "data/events/" + event.type);
+					hscriptIdSet("EVENT_" + event.type.replace("/","_"), "eventType", event.type);
+				}
 			}
 		}
 
@@ -817,8 +824,8 @@ class PlayState extends MusicBeatState
 		{
 			for (i in 3...allCharacters.length)
 			{
-				hscriptAdd('player' + Std.string(i+1), 'data/' + allCharacters[i].characterData.script, false, allCharacters[i]);
-				hscriptIdExec('player' + Std.string(i+1), "create");
+				hscriptAdd("player" + Std.string(i+1), "data/" + allCharacters[i].characterData.script, false, allCharacters[i]);
+				hscriptIdExec("player" + Std.string(i+1), "create");
 			}
 		}
 		updateScoreText();

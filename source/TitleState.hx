@@ -42,12 +42,6 @@ typedef TitleSequence =
 	var text:String;
 }
 
-typedef TitleScreenData =
-{
-	var sequence:Array<Dynamic>;
-	var pieces:Array<StagePiece>;
-}
-
 class TitleState extends MusicBeatState
 {
 	public static var defaultVariables:DefaultVariables;

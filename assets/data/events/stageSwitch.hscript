@@ -10,7 +10,7 @@ function create()
 
 		for (e in game.songData.events)
 		{
-			if (e.type == "stageSwitch" && !stageIds.contains(e.parameters.stage))
+			if (e.type == eventType && !stageIds.contains(e.parameters.stage))
 				registerStage(e.parameters.stage);
 		}
 	}

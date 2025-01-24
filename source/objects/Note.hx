@@ -8,6 +8,7 @@ import flixel.math.FlxRect;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import helpers.Cloner;
 import data.Noteskins;
 import data.ObjectData;
 import data.Options;
@@ -185,9 +186,9 @@ class Note extends FlxSprite
 			noteTypes = new Map<String, NoteTypeData>();
 
 		if (noteTypes.exists(noteType))
-			typeData = Reflect.copy(noteTypes[noteType]);
+			typeData = Cloner.clone(noteTypes[noteType]);
 		else
-			typeData = Reflect.copy(defaultTypeData);
+			typeData = Cloner.clone(defaultTypeData);
 
 		noteskinOverride = typeData.noteskinOverride;
 		animationSuffix = typeData.animationSuffix;

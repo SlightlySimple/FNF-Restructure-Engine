@@ -97,6 +97,7 @@ typedef StageData =
 
 typedef StageCharacter =
 {
+	var ?character:String;
 	var position:Array<Int>;
 	var ?layer:Null<Int>;
 	var ?camPosition:Array<Int>;

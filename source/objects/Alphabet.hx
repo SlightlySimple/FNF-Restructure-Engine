@@ -34,8 +34,7 @@ class Alphabet extends FlxSpriteGroup
 
 	function rebuildText()
 	{
-		forEachAlive(function(letter:FlxSprite)
-		{
+		forEachAlive(function(letter:FlxSprite) {
 			letter.visible = false;
 			letter.active = false;
 			letter.setPosition(x, y);

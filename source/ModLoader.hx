@@ -158,6 +158,9 @@ class ModLoader
 				modMenus[mod[0]] = {story: mod[0] + "-story", freeplay: mod[0] + "-freeplay"};
 		}
 
+		if (packageData != null && FileSystem.isDirectory("packages/" + packagePath + "/content"))
+			loadedMods.push("../packages/" + packagePath + "/content");
+
 		modMetaListLoaded = Polymod.init({
 			modRoot: "mods",
 			dirs: loadedMods

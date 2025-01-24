@@ -1,5 +1,6 @@
 package objects;
 
+import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import objects.Note;
 
@@ -27,8 +28,16 @@ class Strumline extends FlxSpriteGroup
 		sustainSplashes = new FlxSpriteGroup();
 		add(sustainSplashes);
 
+		var sustainSplash:FlxSprite = new FlxSprite();
+		sustainSplashes.add(sustainSplash);
+		sustainSplash.kill();
+
 		noteSplashes = new FlxSpriteGroup();
 		add(noteSplashes);
+
+		var noteSplash:FlxSprite = new FlxSprite();
+		noteSplashes.add(noteSplash);
+		noteSplash.kill();
 	}
 
 	public function refreshPosition()

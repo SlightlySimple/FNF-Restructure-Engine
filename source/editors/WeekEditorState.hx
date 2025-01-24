@@ -677,11 +677,9 @@ class WeekEditorState extends BaseEditorState
 			{
 				var _auto:WeekSongData = {
 					songId: weekData.songs[curSong].songId,
-					iconNew: weekData.songs[curSong].iconNew
+					iconNew: weekData.songs[curSong].iconNew,
+					difficulties: weekData.songs[curSong].difficulties
 				}
-
-				if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, ["normal", "hard", "easy"]))
-					_auto.difficulties = weekData.songs[curSong].difficulties;
 
 				if (weekData.songs[curSong].title != null && weekData.songs[curSong].title.trim() != "")
 					_auto.title = weekData.songs[curSong].title;

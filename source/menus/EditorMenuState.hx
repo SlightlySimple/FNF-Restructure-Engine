@@ -355,8 +355,8 @@ class EditorMenuState extends MusicBeatState
 		var packageAllowModTools:Checkbox = new Checkbox(0, 0, "Allow Access to Editors Menu", false);
 		vbox.add(packageAllowModTools);
 
-		var packageCreateMenuMod:Checkbox = new Checkbox(0, 0, "Create Menu Mod", false);
-		vbox.add(packageCreateMenuMod);
+		var packageCreateContentFolder:Checkbox = new Checkbox(0, 0, "Create \"content\" Folder", false);
+		vbox.add(packageCreateContentFolder);
 
 		var buttons:HBox = new HBox();
 
@@ -395,26 +395,18 @@ class EditorMenuState extends MusicBeatState
 					if (packageAllowModTools.checked)
 						packageData.allowModTools = true;
 
-					if (packageCreateMenuMod.checked)
+					if (packageCreateContentFolder.checked)
 					{
-						if (FileSystem.exists("mods/" + packageFolderName + "Menu"))
-							Application.current.window.alert("Failed to create menu mod. The name for it is already taken.", "Alert");
-						else
-						{
-							FileSystem.createDirectory("mods/" + packageFolderName + "Menu");
-							var modMeta:Dynamic = {
-								title: "",
-								description: "",
-								api_version: "0.1.0",
-								mod_version: "1.0.0",
-								license: "CC BY 4.0,MIT",
-								start_disabled: true,
-								hidden: true
-							};
-							var modMetaString:String = Json.stringify(modMeta, null, "\t");
-							File.saveContent("mods/" + packageFolderName + "Menu/_polymod_meta.json", modMetaString);
-							packageData.mods.push(packageFolderName + "Menu");
-						}
+						FileSystem.createDirectory("packages/" + packageFolderName + "/content");
+						var modMeta:Dynamic = {
+							title: "",
+							description: "",
+							api_version: "0.1.0",
+							mod_version: "1.0.0",
+							license: "CC BY 4.0,MIT"
+						};
+						var modMetaString:String = Json.stringify(modMeta, null, "\t");
+						File.saveContent("packages/" + packageFolderName + "/content/_polymod_meta.json", modMetaString);
 					}
 
 					var packageDataString:String = Json.stringify(packageData, null, "\t");

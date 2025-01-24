@@ -22,6 +22,8 @@ using StringTools;
 class Paths
 {
 	static var assets:Array<String> = [];
+	static var censorCheck:Array<String> = [];
+	static var sparrowCheck:Map<String, String> = new Map<String, String>();
 	static var DEFAULT_IMAGE:String = "assets/images/logo/default.png";
 
 	public static function file(path:String, ext:String, ?allowCensor:Bool = true):String
@@ -30,12 +32,12 @@ class Paths
 		{
 			if (Options.options.language != "")
 			{
-				if (allowCensor && !Options.options.naughtiness && exists("languages/" + Options.options.language + "/" + path + "Censor" + ext))
+				if (allowCensor && !Options.options.naughtiness && exists("languages/" + Options.options.language + "/" + path + "Censor" + ext, true))
 					return "assets/languages/" + Options.options.language + "/" + path + "Censor" + ext;
-				if (exists("languages/" + Options.options.language + "/" + path + ext))
+				if (exists("languages/" + Options.options.language + "/" + path + ext, true))
 					return "assets/languages/" + Options.options.language + "/" + path + ext;
 			}
-			if (allowCensor && !Options.options.naughtiness && exists(path + "Censor" + ext))
+			if (allowCensor && !Options.options.naughtiness && exists(path + "Censor" + ext, true))
 				return "assets/" + path + "Censor" + ext;
 		}
 		return "assets/" + path + ext;
@@ -191,10 +193,21 @@ class Paths
 
 	public static function sparrow(path:String):FlxFramesCollection
 	{
+		if (sparrowCheck.exists(path))
+		{
+			if (sparrowCheck[path] == "txt")
+				return FlxAtlasFrames.fromSpriteSheetPacker(image(path), textImages(path));
+			return FlxAtlasFrames.fromSparrow(image(path), file("images/" + path, ".xml"));
+		}
+
 		if (sparrowExists(path))
 		{
 			if (exists("images/" + path + ".txt") && !exists("images/" + path + ".xml"))
+			{
+				sparrowCheck[path] = "txt";
 				return FlxAtlasFrames.fromSpriteSheetPacker(image(path), textImages(path));
+			}
+			sparrowCheck[path] = "xml";
 			return FlxAtlasFrames.fromSparrow(image(path), file("images/" + path, ".xml"));
 		}
 		Application.current.window.alert("File \"images/" + path + ".xml\" does not exist", "Alert");
@@ -353,8 +366,11 @@ class Paths
 		return raw("shaders/" + path + (isVert ? ".vert" : ".frag"));
 	}
 
-	public static function exists(path:String):Bool
+	public static function exists(path:String, ?isCensorCheck:Bool = false):Bool
 	{
+		if (isCensorCheck && censorCheck.contains("assets/" + path))
+			return false;
+
 		if (assets.contains("assets/" + path))
 			return true;
 		if (Assets.exists("assets/" + path))
@@ -362,6 +378,9 @@ class Paths
 			assets.push("assets/" + path);
 			return true;
 		}
+		if (isCensorCheck)
+			censorCheck.push("assets/" + path);
+
 		return false;
 	}
 
@@ -419,6 +438,8 @@ class Paths
 
 	public static function sparrowExists(path:String):Bool
 	{
+		if (sparrowCheck.exists(path))
+			return true;
 		return exists("images/" + path + ".xml") || exists("images/" + path + ".txt");
 	}
 
