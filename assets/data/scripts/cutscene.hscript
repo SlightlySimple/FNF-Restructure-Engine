@@ -321,7 +321,18 @@ function update(elapsed)
 
 					case "cameraShake": FlxG.camera.shake(e.intensity, e.length);
 
-					case "cameraFade": FlxG.camera.fade(FlxColor.fromString(e.color), e.length, e.fadeIn, null, true);
+					case "cameraFade":
+						var cam = FlxG.camera;
+						if (e.camera != null)
+						{
+							switch (e.camera)
+							{
+								case "camBehindHUD": cam = game.camBehindHUD;
+								case "camHUD": cam = game.camHUD;
+								case "camOther": cam = game.camOther;
+							}
+						}
+						cam.fade(FlxColor.fromString(e.color), e.length, e.fadeIn, null, true);
 
 					case "cutsceneEvent": game.hscriptExec("cutsceneEvent", [e.parameters]);
 
@@ -366,8 +377,13 @@ function update(elapsed)
 		{
 			if (s[0].playing)
 			{
-				if (Math.abs(((cutsceneProgress - s[1]) * 1000) - s[0].time) > 100)
-					s[0].time = ((cutsceneProgress - s[1]) * 1000);
+				if (Math.abs(((cutsceneProgress - s[1]) * 1000) - s[0].time) > 200)
+				{
+					if (syncedSounds.indexOf(s) == 0)
+						cutsceneProgress = s[1] + (s[0].time / 1000.0);
+					else
+						s[0].time = ((cutsceneProgress - s[1]) * 1000);
+				}
 			}
 			else
 				poppers.push(s);

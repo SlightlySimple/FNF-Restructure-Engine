@@ -91,6 +91,9 @@ class CharacterEditorState extends BaseEditorState
 	var cameraBox:Draggable;
 	var camPosText:FlxText;
 
+	var charPosBox:Draggable;
+	var charPosText:FlxText;
+
 	var showAnimGhost:Checkbox;
 	var charPosDropdown:DropdownMenu = null;
 	var charPosStepper:Stepper;
@@ -151,6 +154,7 @@ class CharacterEditorState extends BaseEditorState
 				danceSpeed: 1,
 				flip: false,
 				facing: "right",
+				flipOverride: "",
 				icon: "",
 				healthbarColor: [255, 255, 255],
 				gameOverCharacter: "",
@@ -349,6 +353,21 @@ class CharacterEditorState extends BaseEditorState
 		hbox.add(camPosText);
 
 		cameraBox.add(hbox);
+
+
+
+		charPosBox = new Draggable(760, 615, "cameraBox");
+		charPosBox.cameras = [camHUD];
+		add(charPosBox);
+
+		hbox = new HBox(5, 5);
+
+		charPosText = new FlxText(0, 0, 0, "");
+		charPosText.setFormat("FNF Dialogue", 17, FlxColor.WHITE, LEFT, OUTLINE, 0xFF254949);
+		charPosText.borderSize = 2;
+		hbox.add(charPosText);
+
+		charPosBox.add(hbox);
 
 
 
@@ -743,7 +762,7 @@ class CharacterEditorState extends BaseEditorState
 				_remove.onClicked = function() {
 					characterData.idles.splice(i, 1);
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
 				}
 				animHbox.add(_remove);
 				scroll.add(animHbox);
@@ -759,7 +778,7 @@ class CharacterEditorState extends BaseEditorState
 				else
 					characterData.idles.push(charAnimList[0]);
 				window.close();
-				new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+				new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
 			}
 			vbox.add(_add);
 
@@ -824,6 +843,20 @@ class CharacterEditorState extends BaseEditorState
 			characterData.camPositionGameOver = [Std.int(camFollow.x - character.getGraphicMidpoint().x), Std.int(camFollow.y - character.getGraphicMidpoint().y)];
 			characterData.camPositionGameOver[0] = Std.int(Math.round(characterData.camPositionGameOver[0] / 5) * 5);
 			characterData.camPositionGameOver[1] = Std.int(Math.round(characterData.camPositionGameOver[1] / 5) * 5);
+		};
+
+		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
+		characterList.remove("none");
+		characterList.unshift("");
+		var flipOverrideDropdown:DropdownMenu = cast element("flipOverrideDropdown");
+		var characterNames:Map<String, String> = Util.getCharacterNames(characterList);
+		for (k in characterNames.keys())
+			flipOverrideDropdown.valueText[k] = characterNames[k];
+		flipOverrideDropdown.valueList = characterList;
+		flipOverrideDropdown.value = characterData.flipOverride;
+		flipOverrideDropdown.condition = function() { return characterData.flipOverride; }
+		flipOverrideDropdown.onChanged = function() {
+			characterData.flipOverride = flipOverrideDropdown.value;
 		};
 
 		var characterList:Array<String> = Paths.listFilesSub("data/characters/", ".json");
@@ -1669,6 +1702,17 @@ class CharacterEditorState extends BaseEditorState
 						icon: "bullet"
 					},
 					{
+						label: "Character Position Panel",
+						condition: function() { return members.contains(charPosBox); },
+						action: function() {
+							if (members.contains(charPosBox))
+								remove(charPosBox, true);
+							else
+								insert(members.indexOf(topmenu), charPosBox);
+						},
+						icon: "bullet"
+					},
+					{
 						label: "Icon & Health Bar",
 						condition: function() { return displayIcon.visible; },
 						action: function() {
@@ -1758,6 +1802,10 @@ class CharacterEditorState extends BaseEditorState
 		if (camPosText.text != camPosString)
 			camPosText.text = camPosString;
 
+		var charPosString:String = "X: " + Std.string(character.x) + "\nY: " + Std.string(character.y) + "\nWidth: " + Std.string(character.width) + "\nHeight: " + Std.string(character.height);
+		if (charPosText.text != charPosString)
+			charPosText.text = charPosString;
+
 		if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 		{
 			cameraZoom = Math.max(0.05, cameraZoom + (FlxG.mouse.wheel * 0.05));
@@ -1803,7 +1851,7 @@ class CharacterEditorState extends BaseEditorState
 		{
 			if (Options.mouseJustPressed())
 			{
-				if (!posLocked && UIControl.cursor == MouseCursor.HAND && !FlxG.mouse.overlaps(tabMenu, camHUD) && (!members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox, camHUD)) && (!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, camHUD)))
+				if (!posLocked && UIControl.cursor == MouseCursor.HAND && !FlxG.mouse.overlaps(tabMenu, camHUD) && (!members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox, camHUD)) && (!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(charPosBox) || !FlxG.mouse.overlaps(charPosBox, camHUD)) && (!members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, camHUD)))
 				{
 					movingAnimOffset = FlxG.keys.pressed.SHIFT;
 					if (characterData.animations.length <= 0)
@@ -1820,7 +1868,7 @@ class CharacterEditorState extends BaseEditorState
 			}
 			else if (Options.mouseJustPressed(true) && !FlxG.mouse.overlaps(tabMenu, camHUD))
 			{
-				if ((!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, camHUD)))
+				if ((!members.contains(cameraBox) || !FlxG.mouse.overlaps(cameraBox, camHUD)) && (!members.contains(charPosBox) || !FlxG.mouse.overlaps(charPosBox, camHUD)) && (!members.contains(charAnims) || !FlxG.mouse.overlaps(charAnims, camHUD)))
 				{
 					dragStart = [Std.int(camFollow.x), Std.int(camFollow.y)];
 					dragOffset = [0, 0];
@@ -2767,6 +2815,9 @@ class CharacterEditorState extends BaseEditorState
 
 		if (saveData.icon.trim() == "" || saveData.icon == id)
 			Reflect.deleteField(saveData, "icon");
+
+		if (saveData.flipOverride == "")
+			Reflect.deleteField(saveData, "flipOverride");
 
 		if (saveData.gameOverCharacter == "")
 			Reflect.deleteField(saveData, "gameOverCharacter");

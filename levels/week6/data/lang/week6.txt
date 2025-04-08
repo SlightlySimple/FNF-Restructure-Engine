@@ -6,8 +6,10 @@
 // Song names
 "song.week6.senpai"			"Senpai"
 "song.erect.week6.senpai"	"Senpai Erect"
+"song.week6.senpai.pico"	"Senpai (Pico Mix)"
 "song.week6.roses"			"Roses"
 "song.erect.week6.roses"	"Roses Erect"
+"song.week6.roses.pico"		"Roses (Pico Mix)"
 "song.week6.thorns"			"Thorns"
 "song.erect.week6.thorns"	"Thorns Erect"
 
@@ -21,4 +23,6 @@
 
 // Stage names
 "stage.school"			"School (Date)"
+"stage.schoolErect"		"School (Date) [Erect]"
 "stage.schoolEvil"		"School (Hate)"
+"stage.schoolEvilErect"	"School (Hate) [Erect]"

@@ -351,7 +351,7 @@ class StoryCharacterEditorState extends BaseEditorState
 				_remove.onClicked = function() {
 					characterData.idles.splice(i, 1);
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
 				}
 				animHbox.add(_remove);
 				scroll.add(animHbox);
@@ -367,7 +367,7 @@ class StoryCharacterEditorState extends BaseEditorState
 				else
 					characterData.idles.push(charAnimList[0]);
 				window.close();
-				new FlxTimer().start(0.01, function(tmr:FlxTimer) { idles.onClicked(); });
+				new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
 			}
 			vbox.add(_add);
 

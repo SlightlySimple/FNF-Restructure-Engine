@@ -461,27 +461,44 @@ function spawnCharacters()
 
 	for (s in rankCharacters)
 	{
-		switch (s.renderType)
-		{
-			case "sparrow":
-				var spr = CreateSprite("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath, s.offsets[0], s.offsets[1]);
-				spr.addAnim("go", "", 24, false);
-				if (s.scale != null)
-					spr.scale.set(s.scale, s.scale);
-				spr.alpha = 0.001;
-				add(spr);
-				charSprites.push({sprite: spr, type: s.renderType, delay: s.delay, loopFrame: s.loopFrame, loopFrameLabel: s.loopFrameLabel});
+		var filter = "";
+		if (s.filter != null)
+			filter = s.filter;
 
-			case "animateatlas":
-				var spr = new FlxAnimate(s.offsets[0], s.offsets[1], Paths.atlas("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath));
-				spr.anim.addByFrameName("go", "", 24);
-				if (s.loopFrameLabel != null)
-					spr.anim.addByFrameName("loop", s.loopFrameLabel, 24);
-				if (s.scale != null)
-					spr.scale.set(s.scale, s.scale);
-				spr.alpha = 0.001;
-				add(spr);
-				charSprites.push({sprite: spr, type: s.renderType, delay: s.delay, loopFrame: s.loopFrame, loopFrameLabel: s.loopFrameLabel});
+		var beenFiltered = false;
+		if ((filter == "naughty" && !Options.options.naughtiness) || (filter == "safe" && Options.options.naughtiness))
+			beenFiltered = true;
+
+		if (!beenFiltered)
+		{
+			var spr;
+			switch (s.renderType)
+			{
+				case "sparrow":
+					spr = CreateSprite("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath, s.offsets[0], s.offsets[1]);
+					spr.addAnim("go", "", 24, false);
+					if (s.scale != null)
+						spr.scale.set(s.scale, s.scale);
+					spr.alpha = 0.001;
+					add(spr);
+
+				case "animateatlas":
+					spr = new FlxAnimate(s.offsets[0], s.offsets[1], Paths.atlas("ui/results/ranks/" + PlayState.variant + "/" + s.assetPath));
+					if (s.startFrameLabel != null)
+						spr.anim.addByFrameName("go", s.startFrameLabel, 24);
+					else
+						spr.anim.addByFrameName("go", "", 24);
+					if (s.loopFrameLabel != null)
+						spr.anim.addByFrameName("loop", s.loopFrameLabel, 24);
+					if (s.scale != null)
+						spr.scale.set(s.scale, s.scale);
+					spr.alpha = 0.001;
+					add(spr);
+			}
+
+			charSprites.push({sprite: spr, type: s.renderType, delay: s.delay, startFrameLabel: s.startFrameLabel, loopFrame: s.loopFrame, loopFrameLabel: s.loopFrameLabel, sound: s.sound});
+			if (s.sound != null)
+				FlxG.sound.cache(Paths.sound("results/" + s.sound));
 		}
 	}
 }
@@ -520,6 +537,9 @@ function rankSequenceAction(s)
 			else if (s.loopFrame != null)
 				s.sprite.onComplete = function() { s.sprite.isPlaying = true; s.sprite.anim.curFrame = s.loopFrame; }
 	}
+
+	if (s.sound != null)
+		PlaySound("results/" + s.sound);
 }
 
 function update(elapsed)

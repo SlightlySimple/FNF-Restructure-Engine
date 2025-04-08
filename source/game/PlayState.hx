@@ -32,6 +32,7 @@ import editors.ChartEditorState;
 import game.results.ResultsState;
 import objects.AnimatedSprite;
 import objects.Character;
+import objects.EventManager;
 import objects.FunkBar;
 import objects.HealthIcon;
 import objects.Note;
@@ -79,6 +80,7 @@ class PlayState extends MusicBeatState
 	public var uniqueDivisions:Array<Int> = [];
 	public var strumColumns:Array<Int> = [];
 	public var notesSpawn:Array<NoteData> = [];
+	public var eventManagers:Map<String, EventManager> = new Map<String, EventManager>();
 
 	public var notes:FlxTypedGroup<Note>;
 	public var sustainNotes:FlxTypedGroup<SustainNote>;
@@ -91,6 +93,7 @@ class PlayState extends MusicBeatState
 	public var noteType:Array<String> = [];
 	public var uiSkin:UISkin;
 	public var missSounds:Array<String> = ["missnote1", "missnote2", "missnote3"];
+	public var cacheGroup:FlxSpriteGroup;
 
 	public var noteModFunctions:Array<(Note,Float)->Void> = [];
 	public var sustainModFunctions:Array<(SustainNote,Float)->Void> = [];
@@ -160,6 +163,7 @@ class PlayState extends MusicBeatState
 	public var gf:Character = null;
 
 	public var myScripts:Map<String, HscriptHandler>;
+	public var myScriptIDs:Array<String> = [];
 	public var myLuaScripts:Map<String, LuaModule>;
 
 	public var numKeys:Int = 4;
@@ -238,6 +242,26 @@ class PlayState extends MusicBeatState
 			botplay = Options.options.botplay;
 		SustainNote.noteGraphics.clear();
 
+		camFollow = new FlxObject();
+		camFollowPos = new FlxObject();
+
+		camBehindHUD = new FlxCamera();
+		camBehindHUD.bgColor = FlxColor.TRANSPARENT;
+		FlxG.cameras.add(camBehindHUD, false);
+
+		camHUD = new FlxCamera();
+		camHUD.bgColor = FlxColor.TRANSPARENT;
+		FlxG.cameras.add(camHUD, false);
+
+		camOther = new FlxCamera();
+		camOther.bgColor = FlxColor.TRANSPARENT;
+		FlxG.cameras.add(camOther, false);
+
+		cacheGroup = new FlxSpriteGroup();
+		cacheGroup.alpha = 0.001;
+		cacheGroup.cameras = [camOther];
+		add(cacheGroup);
+
 		if (inStoryMode)
 			songId = storyWeek[storyProgress];
 		else if (!testingChart)
@@ -281,6 +305,15 @@ class PlayState extends MusicBeatState
 				else
 					Paths.cacheGraphic("noteskins/" + asset[0]);
 			}
+
+			if (skindef.splashes != null)
+			{
+				for (asset in skindef.splashes.assets)
+				{
+					Paths.cacheGraphic("ui/note_splashes/" + asset[0]);
+					makeCacheSprite("ui/note_splashes/" + asset[0]);
+				}
+			}
 		}
 
 		for (s in uiSkin.countdown)
@@ -289,6 +322,7 @@ class PlayState extends MusicBeatState
 			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
 				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				makeCacheSprite("ui/skins/" + songData.uiSkin + "/" + s.asset);
 			}
 		}
 
@@ -298,6 +332,7 @@ class PlayState extends MusicBeatState
 			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
 				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				makeCacheSprite("ui/skins/" + songData.uiSkin + "/" + s.asset);
 			}
 		}
 
@@ -305,6 +340,7 @@ class PlayState extends MusicBeatState
 		{
 			Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset);
 			RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset);
+			makeCacheSprite("ui/skins/" + songData.uiSkin + "/" + uiSkin.combo.asset);
 		}
 
 		for (s in uiSkin.numbers)
@@ -313,6 +349,7 @@ class PlayState extends MusicBeatState
 			{
 				Paths.cacheGraphic("ui/skins/" + songData.uiSkin + "/" + s.asset);
 				RatingPopup.sparrows["ui/skins/" + songData.uiSkin + "/" + s.asset] = Paths.sparrowExists("ui/skins/" + songData.uiSkin + "/" + s.asset);
+				makeCacheSprite("ui/skins/" + songData.uiSkin + "/" + s.asset);
 			}
 		}
 
@@ -365,21 +402,6 @@ class PlayState extends MusicBeatState
 		if (songData.music.results != null && songData.music.results != "")
 			ResultsState.music = songData.music.results;
 
-		camFollow = new FlxObject();
-		camFollowPos = new FlxObject();
-
-		camBehindHUD = new FlxCamera();
-		camBehindHUD.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camBehindHUD, false);
-
-		camHUD = new FlxCamera();
-		camHUD.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camHUD, false);
-
-		camOther = new FlxCamera();
-		camOther.bgColor = FlxColor.TRANSPARENT;
-		FlxG.cameras.add(camOther, false);
-
 		super.create();
 
 		var curStage:String = TitleState.defaultVariables.stage;
@@ -411,6 +433,7 @@ class PlayState extends MusicBeatState
 			gf = allCharacters[2];
 			allReactors.push(gf);
 		}
+		stage.applyShaders(allCharacters);
 
 		for (s in songData.notetypeSingers)
 		{
@@ -540,16 +563,6 @@ class PlayState extends MusicBeatState
 			}
 			laneBGs.push([start, songData.columns.length - 1]);
 			spawnLaneBackgrounds(laneBGs);
-		}
-
-		for (n in noteType)
-		{
-			var skindef:NoteskinTypedef = Noteskins.getData(Noteskins.noteskinName, n);
-			if (skindef.splashes != null)
-			{
-				for (asset in skindef.splashes.assets)
-					Paths.cacheGraphic("ui/note_splashes/" + asset[0]);
-			}
 		}
 
 		keysArray = [Options.options.keys.note_left, Options.options.keys.note_down, Options.options.keys.note_up, Options.options.keys.note_right];
@@ -807,16 +820,7 @@ class PlayState extends MusicBeatState
 		if (songData.events.length > 0)
 		{
 			for (event in songData.events)
-			{
-				if (!myScripts.exists("EVENT_" + event.type.replace("/","_")))
-				{
-					if (event.type.startsWith(songIdShort) && Paths.hscriptExists("data/songs/" + songId + "/events/" + event.typeShort))
-						hscriptAdd("EVENT_" + event.type.replace("/","_"), "data/songs/" + songId + "/events/" + event.typeShort);
-					else
-						hscriptAdd("EVENT_" + event.type.replace("/","_"), "data/events/" + event.type);
-					hscriptIdSet("EVENT_" + event.type.replace("/","_"), "eventType", event.type);
-				}
-			}
+				registerEvent(event.type, event.typeShort);
 		}
 
 		hscriptExec("create");
@@ -859,6 +863,13 @@ class PlayState extends MusicBeatState
 		if (strumlineIndexFromColumn(column) < noteType.length)
 			return noteType[strumlineIndexFromColumn(column)];
 		return noteType[0];
+	}
+
+	function makeCacheSprite(asset:String)
+	{
+		var cacheSprite:FlxSprite = Util.CreateSprite(asset);
+		cacheSprite.active = false;
+		cacheGroup.add(cacheSprite);
 	}
 
 	override public function update(elapsed:Float)
@@ -1640,10 +1651,12 @@ class PlayState extends MusicBeatState
 			fullFile = id;
 		if (!Paths.hscriptExists(fullFile) && Paths.hscriptExists("data/scripts/" + fullFile))
 			fullFile = "data/scripts/" + fullFile;
-		if (Paths.hscriptExists(fullFile) && (!myScripts.exists(id) || forced))
+		if (Paths.hscriptExists(fullFile) && (!myScriptIDs.contains(id) || forced))
 		{
 			var newScript = new HscriptHandler(fullFile);
 			myScripts[id] = newScript;
+			if (!myScriptIDs.contains(id))
+				myScriptIDs.push(id);
 			newScript.setVar("game", instance);
 			newScript.setVar("scriptId", id);
 			if (thisChar != null)
@@ -1653,36 +1666,48 @@ class PlayState extends MusicBeatState
 			}
 			newScript.setVar("playingChar", strumNotes.members[playerColumns[0]].singers[0]);
 		}
-		else if (myScripts.exists(id) && forced)
+		else if (myScriptIDs.contains(id) && forced)
+		{
 			myScripts.remove(id);
+			myScriptIDs.remove(id);
+		}
 	}
 
 	public function hscriptRemove(id:String)
 	{
-		if (myScripts.exists(id))
+		if (myScriptIDs.contains(id))
+		{
 			myScripts.remove(id);
+			myScriptIDs.remove(id);
+		}
 	}
 
 	public function hscriptExists(id:String):Bool
 	{
-		return myScripts.exists(id);
+		return myScriptIDs.contains(id);
 	}
 
 	public function hscriptExec(func:String, ?args:Array<Dynamic> = null)
 	{
-		for (sc in myScripts.iterator())
-			sc.execFunc(func, (args == null ? [] : args));
+		for (k in myScriptIDs.copy())
+		{
+			if (hscriptExists(k))		// This prevents a crash caused by a script running 'hscriptRemove' on another script
+				myScripts[k].execFunc(func, (args == null ? [] : args));
+		}
 	}
 
 	public function hscriptExecReturn(func:String, ?args:Array<Dynamic> = null):Dynamic
 	{
 		var ret:Dynamic = null;
 
-		for (sc in myScripts.iterator())
+		for (k in myScriptIDs.copy())
 		{
-			var thisRet:Dynamic = sc.execFuncReturn(func, (args == null ? [] : args));
-			if (ret == null && thisRet != null)
-				ret = thisRet;
+			if (hscriptExists(k))		// See above
+			{
+				var thisRet:Dynamic = myScripts[k].execFuncReturn(func, (args == null ? [] : args));
+				if (ret == null && thisRet != null)
+					ret = thisRet;
+			}
 		}
 
 		return ret;
@@ -1690,32 +1715,33 @@ class PlayState extends MusicBeatState
 
 	public function hscriptSet(vari:String, val:Dynamic)
 	{
-		for (sc in myScripts.iterator())
-			sc.variables[vari] = val;
+		for (k in myScriptIDs)
+			myScripts[k].variables[vari] = val;
 	}
 
 	public function hscriptIdExec(id:String, func:String, ?args:Array<Dynamic> = null)
 	{
-		if (myScripts.exists(id))
-			myScripts.get(id).execFunc(func, (args == null ? [] : args));
+		if (myScriptIDs.contains(id))
+			myScripts[id].execFunc(func, (args == null ? [] : args));
 	}
 
 	public function hscriptIdExecReturn(id:String, func:String, ?args:Array<Dynamic> = null):Dynamic
 	{
-		if (myScripts.exists(id))
-			return myScripts.get(id).execFuncReturn(func, (args == null ? [] : args));
+		if (myScriptIDs.contains(id))
+			return myScripts[id].execFuncReturn(func, (args == null ? [] : args));
+
 		return null;
 	}
 
 	public function hscriptIdSet(id:String, vari:String, val:Dynamic)
 	{
-		if (myScripts.exists(id))
+		if (myScriptIDs.contains(id))
 			myScripts[id].variables[vari] = val;
 	}
 
 	public function hscriptIdGet(id:String, vari:String):Dynamic
 	{
-		if (myScripts.exists(id))
+		if (myScriptIDs.contains(id))
 			return myScripts[id].variables[vari];
 		return null;
 	}
@@ -1919,19 +1945,21 @@ class PlayState extends MusicBeatState
 		}
 	}
 
+	public function registerEvent(type:String, typeShort:String)
+	{
+		if (!eventManagers.exists(type))
+		{
+			var manager:EventManager = new EventManager(type, typeShort);
+			eventManagers[type] = manager;
+		}
+	}
+
 	public function doEvent(event:EventData)
 	{
-		var eventScript:String = 'EVENT_' + event.type.replace("/","_");
-		if (!myScripts.exists(eventScript))
-		{
-			if (event.type.startsWith(songId) && Paths.hscriptExists('data/songs/' + songId + '/events/' + event.typeShort))
-				hscriptAdd(eventScript, 'data/songs/' + songId + '/events/' + event.typeShort);
-			else
-				hscriptAdd(eventScript, 'data/events/' + event.type);
-			hscriptIdExec(eventScript, "create", []);
-		}
+		if (!eventManagers.exists(event.type))
+			registerEvent(event.type, event.typeShort);
 
-		hscriptIdExec(eventScript, "onEvent", [event]);
+		eventManagers[event.type].doEvent(event);
 		hscriptExec("onAnyEvent", [event]);
 		luaExec("onAnyEvent", [event.time, event.beat, event.type, event.parameters]);
 	}
@@ -2658,10 +2686,11 @@ class PlayState extends MusicBeatState
 		if ((Options.options.splashes || note.typeData.alwaysSplash) && note.noteskinData.allowSplashes && rating <= note.typeData.splashMin)
 		{
 			var newSplash:FlxSprite = strumlineFromColumn(note.column).noteSplashes.recycle(FlxSprite);
-			newSplash.setPosition(strumNotes.members[note.column].x + (strumNotes.members[note.column].myW / 2) - strumlineFromColumn(note.column).x, strumNotes.members[note.column].y + (strumNotes.members[note.column].myH / 2));
-			newSplash.shader = note.shader;
+			newSplash.setPosition(strumNotes.members[note.column].x + (strumNotes.members[note.column].myW / 2) - strumlineFromColumn(note.column).x,
+				strumNotes.members[note.column].y + (strumNotes.members[note.column].myH / 2) - strumlineFromColumn(note.column).y);
 			if (Noteskins.doSplash(newSplash, note.noteskinData, note.noteColor))
 			{
+				newSplash.shader = note.shader;
 				noteSplashes.add(newSplash);
 				strumlineFromColumn(note.column).noteSplashes.add(newSplash);
 				hscriptExec("noteSplash", [note, newSplash]);
@@ -2877,10 +2906,10 @@ class PlayState extends MusicBeatState
 				var newSplash:FlxSprite = strumlineFromColumn(note.column).noteSplashes.recycle(FlxSprite);
 				if (Noteskins.doSplash(newSplash, note.noteskinData, note.noteColor, true))
 				{
-					newSplash.setPosition(strumNotes.members[note.column].x + (strumNotes.members[note.column].myW / 2) - strumlineFromColumn(note.column).x, strumNotes.members[note.column].y + (strumNotes.members[note.column].myH / 2));
 					newSplash.shader = note.shader;
 					noteSplashes.add(newSplash);
 					strumlineFromColumn(note.column).noteSplashes.add(newSplash);
+					newSplash.setPosition(strumNotes.members[note.column].x + (strumNotes.members[note.column].myW / 2), strumNotes.members[note.column].y + (strumNotes.members[note.column].myH / 2));
 					hscriptExec("sustainEndSplash", [note, newSplash]);
 				}
 				else if (strumlineFromColumn(note.column).noteSplashes.members.contains(newSplash))
@@ -2919,6 +2948,7 @@ class PlayState extends MusicBeatState
 	{
 		if (replacing)
 		{
+			stage.removeShaders(allCharacters);
 			for (piece in stage.stageData.pieces)
 				remove(stage.pieces[piece.id], true);
 		}
@@ -2939,6 +2969,7 @@ class PlayState extends MusicBeatState
 
 		for (c in allCharacters)
 			postSpawnCharacter(c);
+		stage.applyShaders(allCharacters);
 
 		for (piece in stage.stageData.pieces)
 		{

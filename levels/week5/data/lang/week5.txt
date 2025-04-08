@@ -6,6 +6,7 @@
 // Song names
 "song.week5.cocoa"				"Cocoa"
 "song.erect.week5.cocoa"		"Cocoa Erect"
+"song.week5.cocoa.pico"			"Cocoa (Pico Mix)"
 "song.week5.eggnog"				"Eggnog"
 "song.erect.week5.eggnog"		"Eggnog Erect"
 "song.week5.eggnog.pico"		"Eggnog (Pico Mix)"

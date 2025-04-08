@@ -21,5 +21,6 @@ function update(elapsed)
 	abot.visible = this.visible;
 	abot.repositionCharacter(this.charX, this.charY);
 	abot.color = this.color;
-	abot.shader = this.shader;
+	if (game.stage.curStage != "tankErect")
+		abot.shader = this.shader;
 }

@@ -89,8 +89,10 @@
 			</vbox>
 		</tab>
 		<tab name="Adv. Properties">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<stepper id="charDanceSpeed" text="Dance Speed:" step="0.25" min="0" decimals="2" infoText="How often the character's idle animations are played. (1 means every beat, 2 means every other beat, etc.)"/>
+				<label text="Flip Override:"/>
+				<dropdown id="flipOverrideDropdown" blank="None" allowSearch="true" infoText="If this character is in a slot that flips it (for example, if the character is facing &quot;Right&quot; and is put in the player's slot) the &quot;Flip Override&quot; character will be used instead."/>
 				<label text="Game Over Camera Position:"/>
 				<hbox>
 					<stepper id="camPosDeadX" text="X:" step="5" infoText="The horizontal offset of the camera when it's looking at this character in the game over screen."/>
@@ -108,7 +110,7 @@
 				<input id="deathCounterInput" infoText="The text that's used for the game over counter in the pause menu when playing as this character."/>
 				<label text="Script:"/>
 				<dropdown id="scriptDropdown" blank="Default" allowSearch="true" infoText="The script this character runs when they appear in-game."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Animations">
 			<vboxscroll y="10">

@@ -1,0 +1,7 @@
+import transitions.StickerSubState;
+
+function create()
+{
+	if (PlayState.variant == "pico")
+		StickerSubState.stickerSet = "stickers-set-2";
+}

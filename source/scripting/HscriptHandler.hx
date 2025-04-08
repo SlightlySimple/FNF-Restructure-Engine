@@ -66,6 +66,7 @@ import shaders.ColorFade;
 import shaders.ColorInvert;
 import shaders.ColorSwap;
 import shaders.ColorSwapRGBA;
+import shaders.DropShadowShader;
 import shaders.RuntimeScreenspaceShader;
 
 import hscript.Parser as HSParser;
@@ -596,6 +597,8 @@ class HscriptHandler
 		interp.variables.set("ColorSwapRGBA", ColorSwapRGBA);
 		interp.variables.set("ColorFade", ColorFade);
 		interp.variables.set("ColorInvert", ColorInvert);
+		interp.variables.set("DropShadowShader", DropShadowShader);
+		interp.variables.set("DropShadowScreenspace", DropShadowScreenspace);
 		interp.variables.set("FlxRuntimeShader", FlxRuntimeShader);
 		interp.variables.set("RuntimeScreenspaceShader", RuntimeScreenspaceShader);
 		interp.variables.set("ShaderFilter", ShaderFilter);

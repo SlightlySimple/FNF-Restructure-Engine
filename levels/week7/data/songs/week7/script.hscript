@@ -7,11 +7,25 @@ function create()
 
 function startCountdown()
 {
-	if (!game.canStartCountdown)
+	if (!game.canStartCountdown && PlayState.variant != "pico")
 	{
 		game.hscriptIdExec("cutscene", "initCutscene", ["cutscene"]);
 
 		new FlxTimer().start(0.001, function(tmr) {
+			if (game.stage.curStage == "tankErect")
+			{
+				var cutsceneData = game.hscriptIdGet("cutscene", "cutsceneData");
+				for (o in cutsceneData.objects)
+				{
+					if (o.type == "atlas" && o.relativeTo == "player2")
+					{
+						var obj = game.hscriptIdGet("cutscene", "cutsceneObjects")[o.asset];
+						obj.shader = null;
+						obj.cameras = [game.hscriptIdGet("stage", "rimlightCamera")];
+					}
+				}
+			}
+
 			game.hscriptIdExec("cutscene", "startCutscene", []);
 		});
 	}

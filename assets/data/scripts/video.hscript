@@ -38,7 +38,7 @@ function update(elapsed)
 
 			if (subtitleTick < allSubtitles.length && (MP4Handler.vlcBitmap.time / 1000.0) >= allSubtitles[subtitleTick][0])
 			{
-				game.subtitles = allSubtitles[subtitleTick][1];
+				game.subtitles = StringTools.replace(allSubtitles[subtitleTick][1], "\\n", "\n");
 				subtitleTick++;
 			}
 		}

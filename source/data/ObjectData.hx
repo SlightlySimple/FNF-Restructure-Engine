@@ -27,6 +27,7 @@ typedef CharacterData =
 	var ?deathCounterText:String;
 	var flip:Null<Bool>;
 	var facing:String;
+	var ?flipOverride:String;
 	var icon:String;
 }
 
@@ -93,6 +94,8 @@ typedef StageData =
 	var bgColor:Array<Int>;
 	var pixelPerfect:Null<Bool>;
 	var pieces:Array<StagePiece>;
+	var ?shaders:Array<StageShaderData>;
+	var ?defaultCharacterShader:Null<Int>;
 }
 
 typedef StageCharacter =
@@ -105,6 +108,7 @@ typedef StageCharacter =
 	var flip:Bool;
 	var ?scale:Array<Float>;
 	var ?scrollFactor:Array<Float>;
+	var ?shader:Null<Int>;
 }
 
 typedef StagePiece =
@@ -121,6 +125,7 @@ typedef StagePiece =
 	var ?scale:Array<Float>;
 	var ?align:String;
 	var ?scrollFactor:Array<Float>;
+	var ?shader:Null<Int>;
 	var ?flip:Array<Bool>;
 	var ?tile:Array<Bool>;
 	var ?tileSpace:Array<Int>;
@@ -145,6 +150,12 @@ typedef StageAnimation =
 	var loop:Bool;
 	var ?indices:Array<Int>;
 	var ?offsets:Array<Int>;
+}
+
+typedef StageShaderData =
+{
+	var id:String;
+	var parameters:Dynamic;
 }
 
 // Notes

@@ -17,11 +17,12 @@ class Character extends FlxSprite
 
 	public var characterData:CharacterData = null;
 	public var curCharacter:String = TitleState.defaultVariables.player1;
+	var flipOverride:String = "";
 	public var camPosition:CharacterCamPosition = {x: 0, y: 0, abs: false};
 	var assets:Map<String, FlxFramesCollection> = new Map<String, FlxFramesCollection>();
 	var currentAsset:String = "";
-	var animChain:Map<String, String>;
-	var animData:Map<String, CharacterAnimation>;
+	var animChain:Map<String, String> = new Map<String, String>();
+	var animData:Map<String, CharacterAnimation> = new Map<String, CharacterAnimation>();
 	public var icon:HealthIcon = null;
 
 	var myCharType:String = "sparrow";
@@ -146,6 +147,9 @@ class Character extends FlxSprite
 			{
 				cData = cast Paths.json("characters/" + cData.parent);
 
+				if (oldCharData.flipOverride != null && oldCharData.flipOverride != "")
+					cData.flipOverride = oldCharData.flipOverride;
+
 				if (oldCharData.script != null && oldCharData.script != "")
 					cData.script = oldCharData.script;
 
@@ -194,6 +198,9 @@ class Character extends FlxSprite
 
 		if (cData.fixes == null)
 			cData.fixes = 0;
+
+		if (cData.flipOverride == null)
+			cData.flipOverride = "";
 
 		if (cData.camPositionGameOver == null || cData.camPositionGameOver.length < 2)
 			cData.camPositionGameOver = [cData.camPosition[0], cData.camPosition[1]];
@@ -352,12 +359,12 @@ class Character extends FlxSprite
 	{
 		super(x, y);
 
+		wasFlipped = shouldFlip;
+
 		if (char == null)
 			changeCharacter(TitleState.defaultVariables.player1);
 		else
 			changeCharacter(char);
-		if (shouldFlip)
-			flip();
 	}
 
 	override public function update(elapsed:Float)
@@ -446,8 +453,8 @@ class Character extends FlxSprite
 			}
 		}
 
-		animChain = new Map<String, String>();
-		animData = new Map<String, CharacterAnimation>();
+		animChain.clear();
+		animData.clear();
 		assets.clear();
 
 		if (parsedCharacters.exists(char) || Paths.jsonExists("characters/" + char))
@@ -459,6 +466,9 @@ class Character extends FlxSprite
 			parsedCharacters[curCharacter] = parseCharacter(curCharacter);
 		characterData = parsedCharacters[curCharacter];
 
+		if (flipOverride == "" && characterData.flipOverride != null && characterData.flipOverride != "" && characterData.flipOverride != curCharacter)
+			flipOverride = characterData.flipOverride;
+
 		if (characterData.gameOverCharacter == null || characterData.gameOverCharacter == "")
 		{
 			if (parsedCharacters.exists(curCharacter + "-dead") || Paths.jsonExists("characters/" + curCharacter + "-dead"))
@@ -468,7 +478,11 @@ class Character extends FlxSprite
 					parsedCharacters[curCharacter + "-dead"] = parseCharacter(curCharacter + "-dead");
 			}
 			else
+			{
 				characterData.gameOverCharacter = TitleState.defaultVariables.dead;
+				if (!parsedCharacters.exists(TitleState.defaultVariables.dead))
+					parsedCharacters[TitleState.defaultVariables.dead] = parseCharacter(TitleState.defaultVariables.dead);
+			}
 		}
 		else if (characterData.gameOverCharacter == "_self")
 			characterData.gameOverCharacter = curCharacter;
@@ -678,6 +692,13 @@ class Character extends FlxSprite
 	public function flip()
 	{
 		wasFlipped = !wasFlipped;
+
+		if (flipOverride != "")
+		{
+			var oldCurCharacter:String = curCharacter;
+			changeCharacter(flipOverride);
+			flipOverride = oldCurCharacter;
+		}
 
 		switch (characterData.facing)
 		{

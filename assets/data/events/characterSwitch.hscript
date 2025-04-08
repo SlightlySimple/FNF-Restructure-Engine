@@ -25,7 +25,10 @@ function registerCharacter(c)
 		var curC = Character.parsedCharacters[c];
 		var asset = curC.asset;
 		if (Paths.imageExists(asset))
+		{
 			Paths.cacheGraphic(asset);
+			game.makeCacheSprite(asset);
+		}
 
 		var cIcon = curC.icon;
 		if (cIcon == null || cIcon == "")
@@ -36,7 +39,13 @@ function registerCharacter(c)
 		}
 
 		if (Paths.iconExists(cIcon, false))
+		{
 			Paths.cacheGraphicDirect(Paths.icon(cIcon));
+
+			var cacheSprite = new FlxSprite(0, 0, Paths.icon(cIcon));
+			cacheSprite.active = false;
+			game.cacheGroup.add(cacheSprite);
+		}
 
 		characterIds.push(c);
 	}

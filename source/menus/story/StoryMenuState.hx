@@ -301,7 +301,7 @@ class StoryMenuState extends MusicBeatState
 		weekList = new Map<String, WeekData>();
 		for (file in Paths.listFilesAndModsSub("data/weeks/", ".json"))
 		{
-			var rawData:String = Paths.rawFromMod("data/weeks/"+file[0]+".json", file[1]);
+			var rawData:String = Paths.rawFromMod("data/weeks/" + file[0] + ".json", file[1]);
 			var newWeek:WeekData = parseWeek(file[0], true, Json.parse(rawData));
 
 			if (newWeek.startsLocked && !FlxG.save.data.unlockedWeeks.contains(file[0]) && ScoreSystems.weekBeaten(newWeek.weekToUnlock))
@@ -318,7 +318,7 @@ class StoryMenuState extends MusicBeatState
 				}
 				weekList.set(file[0], newWeek);
 
-				hscriptAdd(file[0], 'data/weeks/' + file[0], false);
+				hscriptAdd(file[0], "data/weeks/" + file[0], false);
 			}
 		}
 
@@ -787,6 +787,16 @@ class StoryMenuState extends MusicBeatState
 			tracks.scale.x = (tracks.width + (tracks.x * 2)) / tracks.width;
 		else
 			tracks.scale.x = 1;
+		if (tracks.y + tracks.height > FlxG.height)
+		{
+			tracks.scale.y = (FlxG.height - tracks.y) / tracks.height;
+			tracks.offset.y = -((tracks.height * tracks.scale.y) - tracks.height) / 2;
+		}
+		else
+		{
+			tracks.scale.y = 1;
+			tracks.offset.y = 0;
+		}
 
 		hscriptExec("listSongNames", []);
 	}

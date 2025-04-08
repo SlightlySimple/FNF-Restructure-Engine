@@ -1,12 +1,20 @@
 function create()
 {
+	cars = stage.pieces["phillyCars"];
+	cars2 = stage.pieces["phillyCars2"];
+	traffic = stage.pieces["phillyTraffic"];
+
 	resetCar(true, true);
-	resetStageValues();
+
+	lastChange = 0;
+	changeInterval = 8;
+	traffic.playAnim("togreen");
+	lightsStop = false;
 }
 
 function update(elapsed)
 {
-	stage.pieces['phillySkybox'].x -= FlxG.elapsed * 22;
+	stage.pieces["phillySkybox"].x -= elapsed * 22;
 }
 
 function resetCar(left, right)
@@ -15,36 +23,20 @@ function resetCar(left, right)
 	{
 		carWaiting = false;
 		carInterruptable = true;
-		var cars = stage.pieces['phillyCars'];
-		if (cars != null)
-		{
-			FlxTween.cancelTweensOf(cars);
-			cars.setPosition(1200, 818);
-			cars.angle = 0;
-		}
+
+		FlxTween.cancelTweensOf(cars);
+		cars.setPosition(1200, 818);
+		cars.angle = 0;
 	}
 
 	if (right)
 	{
 		car2Interruptable = true;
-		var cars2 = stage.pieces['phillyCars2'];
-		if (cars2 != null)
-		{
-			FlxTween.cancelTweensOf(cars2);
-			cars2.setPosition(1200, 818);
-			cars2.angle = 0;
-		}
-	}
-}
 
-function resetStageValues()
-{
-	lastChange = 0;
-	changeInterval = 8;
-	var traffic = stage.pieces['phillyTraffic'];
-	if (traffic != null)
-		traffic.animation.play('togreen');
-	lightsStop = false;
+		FlxTween.cancelTweensOf(cars2);
+		cars2.setPosition(1200, 818);
+		cars2.angle = 0;
+	}
 }
 
 function beatHit()
@@ -52,13 +44,13 @@ function beatHit()
 	if (FlxG.random.bool(10) && game.curBeat != (lastChange + changeInterval) && carInterruptable == true)
 	{
 		if (lightsStop)
-			driveCarLights(stage.pieces['phillyCars']);
+			driveCarLights(cars);
 		else
-			driveCar(stage.pieces['phillyCars']);
+			driveCar(cars);
 	}
 
 	if (FlxG.random.bool(10) && game.curBeat != (lastChange + changeInterval) && car2Interruptable == true && lightsStop == false)
-		driveCarBack(stage.pieces['phillyCars2']);
+		driveCarBack(cars2);
 
 	if (game.curBeat == (lastChange + changeInterval))
 		changeLights(game.curBeat);
@@ -69,7 +61,7 @@ function driveCar(sprite)
 	carInterruptable = false;
 	FlxTween.cancelTweensOf(sprite);
 	var variant = FlxG.random.int(1, 4);
-	sprite.animation.play('car' + variant);
+	sprite.animation.play("car" + variant);
 
 	var duration = 2;
 
@@ -90,9 +82,8 @@ function driveCar(sprite)
 		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
 	];
 
-	FlxTween.angle(sprite, rotations[0], rotations[1], duration, null );
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration);
 	FlxTween.quadPath(sprite, path, duration, true, {
-		ease: null,
 		onComplete: function(_) { carInterruptable = true; }
 	});
 }
@@ -102,7 +93,7 @@ function driveCarBack(sprite)
 	car2Interruptable = false;
 	FlxTween.cancelTweensOf(sprite);
 	var variant = FlxG.random.int(1,4);
-	sprite.animation.play('car' + variant);
+	sprite.animation.play("car" + variant);
 
 	var duration = 2;
 
@@ -118,15 +109,14 @@ function driveCarBack(sprite)
 
 	var rotations = [18, -8];
 
-	var path:Array<FlxPoint> = [
+	var path = [
 		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 60),
 		FlxPoint.get(2400 - offset[0], 980 - offset[1] - 30),
 		FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 10)
 	];
 
-	FlxTween.angle(sprite, rotations[0], rotations[1], duration, null );
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration);
 	FlxTween.quadPath(sprite, path, duration, true, {
-		ease: null,
 		onComplete: function(_) { car2Interruptable = true; }
 	});
 }
@@ -136,7 +126,7 @@ function driveCarLights(sprite)
 	carInterruptable = false;
 	FlxTween.cancelTweensOf(sprite);
 	var variant = FlxG.random.int(1, 4);
-	sprite.animation.play('car' + variant);
+	sprite.animation.play("car" + variant);
 	var duration = 2;
 
 	switch (variant)
@@ -155,12 +145,12 @@ function driveCarLights(sprite)
 		FlxPoint.get(1950 - offset[0] - 80, 980 - offset[1] + 15)
 	];
 
-	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.cubeOut} );
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.cubeOut});
 	FlxTween.quadPath(sprite, path, duration, true, {
 		ease: FlxEase.cubeOut,
 		onComplete: function(_) {
 			carWaiting = true;
-			if (lightsStop == false) finishCarLights(stage.pieces['phillyCars']);
+			if (lightsStop == false) finishCarLights(cars);
 		}
 	});
 }
@@ -172,16 +162,16 @@ function changeLights(beat)
 
 	if (lightsStop)
 	{
-		stage.pieces['phillyTraffic'].animation.play('tored');
+		traffic.playAnim("tored");
 		changeInterval = 20;
 	}
 	else
 	{
-		stage.pieces['phillyTraffic'].animation.play('togreen');
+		traffic.playAnim("togreen");
 		changeInterval = 30;
 
 		if (carWaiting == true)
-			finishCarLights(stage.pieces['phillyCars']);
+			finishCarLights(cars);
 	}
 }
 
@@ -193,13 +183,13 @@ function finishCarLights(sprite)
 	var offset = [306.6, 168.3];
 	var startdelay = FlxG.random.float(0.2, 1.2);
 
-	var path:Array<FlxPoint> = [
+	var path = [
 		FlxPoint.get(1950 - offset[0] - 80, 980 - offset[1] + 15),
 		FlxPoint.get(2400 - offset[0], 980 - offset[1] - 50),
 		FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
 	];
 
-	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.sineIn, startDelay: startdelay} );
+	FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.sineIn, startDelay: startdelay});
 	FlxTween.quadPath(sprite, path, duration, true, {
 		ease: FlxEase.sineIn,
 		startDelay: startdelay,

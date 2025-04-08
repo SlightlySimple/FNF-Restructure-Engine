@@ -6,6 +6,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import flixel.tweens.FlxTween;
 import flixel.system.FlxSound;
+import openfl.display.BlendMode;
 import lime.app.Application;
 import lime.media.AudioBuffer;
 import sys.io.File;
@@ -204,6 +205,29 @@ class Util
 			ret -= (max - min) + 1;
 
 		return ret;
+	}
+
+	public static function getBlend(blend:String):BlendMode
+	{
+		switch (blend.toLowerCase())
+		{
+			case "add": return BlendMode.ADD;
+			case "alpha": return BlendMode.ALPHA;
+			case "darken": return BlendMode.DARKEN;
+			case "difference": return BlendMode.DIFFERENCE;
+			case "erase": return BlendMode.ERASE;
+			case "hardlight": return BlendMode.HARDLIGHT;
+			case "invert": return BlendMode.INVERT;
+			case "layer": return BlendMode.LAYER;
+			case "lighten": return BlendMode.LIGHTEN;
+			case "multiply": return BlendMode.MULTIPLY;
+			case "overlay": return BlendMode.OVERLAY;
+			case "screen": return BlendMode.SCREEN;
+			case "shader": return BlendMode.SHADER;
+			case "subtract": return BlendMode.SUBTRACT;
+		}
+
+		return BlendMode.NORMAL;
 	}
 
 	public static function colorFromArray(rgb:Array<Int>):FlxColor

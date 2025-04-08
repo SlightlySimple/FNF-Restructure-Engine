@@ -1,5 +1,8 @@
 function create()
 {
 	game.hscriptAdd("runningTankmen");
-	game.hscriptIdExec("runningTankmen", "create");
+	if (game.stage.curStage == "tankErect")
+		game.hscriptIdExec("runningTankmen", "create", [{scale: 1.1, minY: 350, maxY: 350, rim: true}]);
+	else
+		game.hscriptIdExec("runningTankmen", "create");
 }

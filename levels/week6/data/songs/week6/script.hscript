@@ -1,6 +1,6 @@
 function create()
 {
-	if (PlayState.inStoryMode && PlayState.firstPlay)
+	if ((PlayState.inStoryMode || PlayState.variant != "bf") && PlayState.firstPlay)
 	{
 		game.canStartCountdown = false;
 		game.camHUD.visible = false;

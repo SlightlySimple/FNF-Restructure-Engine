@@ -1,0 +1,6 @@
+import transitions.StickerSubState;
+
+function create()
+{
+	StickerSubState.stickerPack = "tutorial";
+}

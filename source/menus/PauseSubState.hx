@@ -35,13 +35,13 @@ class PauseSubState extends FlxSubState
 	public static var deathCounterText:String = "";
 
 	var menu:Array<Array<Dynamic>> = [];
-	var menuButtons:FlxTypedSpriteGroup<Alphabet>;
+	var menuButtons:UIMenu;
 	var menuButtonsXOffset:Float = 0;
 	public var menuButtonPosition:Void->Void;
 	var curOption:Int = 0;
 
 	var difficultyMenu:Array<Array<Dynamic>> = [];
-	var difficultyMenuButtons:FlxTypedSpriteGroup<Alphabet>;
+	var difficultyMenuButtons:UIMenu;
 	var difficultyMenuButtonsXOffset:Float = FlxG.width;
 	public var difficultyMenuButtonPosition:Void->Void;
 	var curDifficulty:Int = 0;
@@ -99,10 +99,14 @@ class PauseSubState extends FlxSubState
 			bg.alpha = 0.5;
 		add(bg);
 
-		menuButtons = new FlxTypedSpriteGroup<Alphabet>();
+		menuButtons = new UIMenu();
+		menuButtons.onIdle = function(s:FlxSprite) { s.alpha = 0.6; };
+		menuButtons.onHover = function(s:FlxSprite) { s.alpha = 1; };
 		add(menuButtons);
 
-		difficultyMenuButtons = new FlxTypedSpriteGroup<Alphabet>(difficultyMenuButtonsXOffset);
+		difficultyMenuButtons = new UIMenu(difficultyMenuButtonsXOffset);
+		difficultyMenuButtons.onIdle = function(s:FlxSprite) { s.alpha = 0.6; };
+		difficultyMenuButtons.onHover = function(s:FlxSprite) { s.alpha = 1; };
 		add(difficultyMenuButtons);
 
 
@@ -352,36 +356,14 @@ class PauseSubState extends FlxSubState
 	function changeSelection(change:Int = 0)
 	{
 		curOption = Util.loop(curOption + change, 0, menu.length - 1);
-
-		var i:Int = 0;
-
-		menuButtons.forEachAlive(function(button:Alphabet)
-		{
-			if (i == curOption)
-				button.alpha = 1;
-			else
-				button.alpha = 0.6;
-			i++;
-		});
-
+		menuButtons.selection = curOption;
 		PlayState.instance.hscriptExec("pauseChangeSelection", []);
 	}
 
 	function changeDifficulty(change:Int = 0)
 	{
 		curDifficulty = Util.loop(curDifficulty + change, 0, difficultyMenu.length - 1);
-
-		var i:Int = 0;
-
-		difficultyMenuButtons.forEachAlive(function(button:Alphabet)
-		{
-			if (i == curDifficulty)
-				button.alpha = 1;
-			else
-				button.alpha = 0.6;
-			i++;
-		});
-
+		difficultyMenuButtons.selection = curDifficulty;
 		PlayState.instance.hscriptExec("pauseChangeDifficultySelection", []);
 	}
 

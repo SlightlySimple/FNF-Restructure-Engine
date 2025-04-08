@@ -1,0 +1,36 @@
+{
+	"parameters": [
+		{
+			"id": "hue",
+			"label": "Hue",
+			"type": "stepper",
+			"defaultValue": 0,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "saturation",
+			"label": "Saturation",
+			"type": "stepper",
+			"defaultValue": 0,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "brightness",
+			"label": "Brightness",
+			"type": "stepper",
+			"defaultValue": 0,
+			"increment": 1,
+			"decimals": 0
+		},
+		{
+			"id": "contrast",
+			"label": "Contrast",
+			"type": "stepper",
+			"defaultValue": 0,
+			"increment": 1,
+			"decimals": 0
+		}
+	]
+}

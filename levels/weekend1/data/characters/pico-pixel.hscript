@@ -1,0 +1,22 @@
+maskPath = "characters/pico/picoPixel_mask";
+
+function gameOverCreate()
+{
+	if (this == GameOverSubState.character)
+	{
+		if (StringTools.startsWith(game.gf.curCharacter, "nene"))
+		{
+			var deadCharacter = GameOverSubState.instance.deadCharacter;
+			var diffX = deadCharacter.charX - game.player1.charX;
+			var diffY = deadCharacter.charY - game.player1.charY;
+
+			deathSpriteNene = CreateSprite("characters/nene/nenePixelKnifeToss", game.gf.x + diffX + 280, game.gf.y + diffY + 170);
+			deathSpriteNene.addAnim("throw", "knifetosscolor0", 24, false);
+			deathSpriteNene.animation.finishCallback = function(name) { deathSpriteNene.visible = false; }
+			deathSpriteNene.playAnim("throw");
+			deathSpriteNene.scale.set(game.gf.scale.x, game.gf.scale.y);
+			deathSpriteNene.antialiasing = game.gf.antialiasing;
+			GameOverSubState.instance.add(deathSpriteNene);
+		}
+	}
+}

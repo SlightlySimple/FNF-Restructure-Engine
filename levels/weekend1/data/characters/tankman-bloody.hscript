@@ -1,0 +1,12 @@
+maskPath = "characters/tankman/tankmanCaptainBloody_mask";
+
+function create()
+{
+	game.hscriptAdd(scriptId + "-shared", "data/characters/tankman", false, this);
+	game.hscriptIdExec(scriptId + "-shared", "create");
+}
+
+function destroy()
+{
+	game.hscriptRemove(scriptId + "-shared");
+}

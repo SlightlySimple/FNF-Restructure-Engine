@@ -136,6 +136,9 @@
 "event.execScriptFunc"		"Execute Script Function"
 "event.uiSkinSwitch"		"UI Skin Switch"
 
+// Miscellaneous
+"freeplay.sandbox.variant.bf"	"Boyfriend"
+
 // Generic strings
 "engineVersion"		"Restructure Engine v%s1"
 "yes"				"Yes"

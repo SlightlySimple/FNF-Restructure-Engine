@@ -37,6 +37,30 @@ function create()
 	insert(game.members.indexOf(this), pupil);
 
 	pupilState = true;
+
+
+
+	if (game.stage.curStage == "tankErect")
+	{
+		adjustColor = new FlxRuntimeShader(Paths.shader("adjustColor"));
+
+		adjustColor.data.hue.value = [-10];
+		adjustColor.data.saturation.value = [-20];
+		adjustColor.data.brightness.value = [-30];
+		adjustColor.data.contrast.value = [-25];
+
+		vizAdjustColor = new FlxRuntimeShader(Paths.shader("adjustColor"));
+
+		vizAdjustColor.data.brightness.value = [-12];
+		vizAdjustColor.data.hue.value = [-30];
+		vizAdjustColor.data.contrast.value = [0];
+		vizAdjustColor.data.saturation.value = [-10];
+
+		pupil.shader = adjustColor;
+		this.shader = adjustColor;
+		for (spr in abotViz.members)
+			spr.shader = vizAdjustColor;
+	}
 }
 
 function update(elapsed)

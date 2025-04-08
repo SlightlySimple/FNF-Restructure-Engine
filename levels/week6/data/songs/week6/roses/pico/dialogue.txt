@@ -1,0 +1,16 @@
+!setting	fadeTimes	2	1
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	senpai
+!setting	mood	angrySenpai
+!setting	flip
+senpai-angry	normal	You disgusting orange boy and your awful way of 'singing'.
+senpai-angry	normal	You'll ruin the neighborhood acting like that.
+senpai-angry	normal	Keep at it and I'll knock your teeth out right after I knock your ugly girlfriend up.
+!setting	flip
+pico-pixel	normal	She's not my girlfriend, do whatever you want with her.
+!setting	flip
+senpai-angry	normal	I'll enjoy watching you both cry like dogs once I tell the authorities you brought a fake gun to school!
+!setting	flip
+nene-pixel	normal	Let's kill this guy.
+pico-pixel	normal	Deal.

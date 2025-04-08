@@ -925,7 +925,7 @@ class ChartEditorState extends MusicBeatState
 					songData.tracks.push([trackList[0], 0, 0]);
 					refreshTracks();
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { tracksButton.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { tracksButton.onClicked(); });
 				}
 				hbox.add(_add);
 
@@ -936,7 +936,7 @@ class ChartEditorState extends MusicBeatState
 						songData.tracks.pop();
 						refreshTracks();
 						window.close();
-						new FlxTimer().start(0.01, function(tmr:FlxTimer) { tracksButton.onClicked(); });
+						new FlxTimer().start(0.02, function(tmr:FlxTimer) { tracksButton.onClicked(); });
 					}
 				}
 				hbox.add(_remove);
@@ -1039,7 +1039,7 @@ class ChartEditorState extends MusicBeatState
 					Reflect.setField(songData, "player" + Std.string(charCount + 1), Reflect.field(songData, "player" + Std.string(charCount)));
 				refreshCharacters();
 				window.close();
-				new FlxTimer().start(0.01, function(tmr:FlxTimer) { charactersButton.onClicked(); });
+				new FlxTimer().start(0.02, function(tmr:FlxTimer) { charactersButton.onClicked(); });
 			}
 			hbox.add(_add);
 
@@ -1051,7 +1051,7 @@ class ChartEditorState extends MusicBeatState
 						Reflect.deleteField(songData, "player" + Std.string(charCount));
 					refreshCharacters();
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { charactersButton.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { charactersButton.onClicked(); });
 				}
 			}
 			hbox.add(_remove);
@@ -1143,7 +1143,7 @@ class ChartEditorState extends MusicBeatState
 					_remove.onClicked = function() {
 						songData.noteType.splice(i, 1);
 						window.close();
-						new FlxTimer().start(0.01, function(tmr:FlxTimer) { noteskinTypeButton.onClicked(); });
+						new FlxTimer().start(0.02, function(tmr:FlxTimer) { noteskinTypeButton.onClicked(); });
 					}
 					typeHbox.add(_remove);
 				}
@@ -1158,7 +1158,7 @@ class ChartEditorState extends MusicBeatState
 				{
 					songData.noteType.push(songData.noteType[songData.noteType.length - 1]);
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { noteskinTypeButton.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { noteskinTypeButton.onClicked(); });
 				}
 			}
 			vbox.add(_add);
@@ -2086,7 +2086,7 @@ class ChartEditorState extends MusicBeatState
 				else
 					noteTickFilter.push("");
 				window.close();
-				new FlxTimer().start(0.01, function(tmr:FlxTimer) { showTickSettingsMenu(); });
+				new FlxTimer().start(0.02, function(tmr:FlxTimer) { showTickSettingsMenu(); });
 			}
 			hbox.add(_add);
 
@@ -2096,7 +2096,7 @@ class ChartEditorState extends MusicBeatState
 				{
 					noteTickFilter.pop();
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { showTickSettingsMenu(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { showTickSettingsMenu(); });
 				}
 			}
 			hbox.add(_remove);
@@ -4740,8 +4740,7 @@ class ChartEditorState extends MusicBeatState
 
 	function repositionSustains()
 	{
-		sustains.forEachAlive(function(note:EditorSustainNote)
-		{
+		sustains.forEachAlive(function(note:EditorSustainNote) {
 			note.strumTime = Conductor.timeFromBeat(note.beat);
 			note.sustainLength = Conductor.timeFromBeat(note.endBeat) - note.strumTime;
 			note.refreshPosition(zoom, downscroll);
@@ -5768,7 +5767,7 @@ class ChartEditorState extends MusicBeatState
 			refreshNotes();
 			refreshSustains();
 		}], ["Replace", function() {
-			new FlxTimer().start(0.01, function(tmr:FlxTimer) { replaceExtraColumns(); });
+			new FlxTimer().start(0.02, function(tmr:FlxTimer) { replaceExtraColumns(); });
 		}]];
 
 		new ChoiceWindow("Some notes in this chart fall outside of valid columns.\nWhat do you want to do with them?", choices);

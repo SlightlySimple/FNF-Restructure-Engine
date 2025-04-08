@@ -5,10 +5,11 @@ import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.system.FlxAssets.FlxShader;
 import flixel.addons.display.FlxBackdrop;
+import flixel.addons.display.FlxRuntimeShader;
 import flixel.util.FlxColor;
 import flixel.util.FlxAxes;
-import openfl.display.BlendMode;
 import haxe.Json;
 import haxe.ds.ArraySort;
 import lime.app.Application;
@@ -27,6 +28,7 @@ class Stage
 	public var stageData:StageData;
 	public var curStage:String = "stage";
 	public var pieces:Map<String, FlxSprite>;
+	var shaders:Array<FlxShader> = [];
 
 	public static function sortStagePieces(a:StagePiece, b:StagePiece):Int
 	{
@@ -97,6 +99,12 @@ class Stage
 
 		if (sData.fixes == null)
 			sData.fixes = 0;
+
+		if (sData.shaders == null)
+			sData.shaders = [];
+
+		if (sData.defaultCharacterShader == null)
+			sData.defaultCharacterShader = 0;
 
 		var i:Int = 0;
 		for (c in sData.characters)
@@ -226,29 +234,6 @@ class Stage
 		return sData;
 	}
 
-	public static function getBlend(blend:String):BlendMode
-	{
-		switch (blend.toLowerCase())
-		{
-			case "add": return BlendMode.ADD;
-			case "alpha": return BlendMode.ALPHA;
-			case "darken": return BlendMode.DARKEN;
-			case "difference": return BlendMode.DIFFERENCE;
-			case "erase": return BlendMode.ERASE;
-			case "hardlight": return BlendMode.HARDLIGHT;
-			case "invert": return BlendMode.INVERT;
-			case "layer": return BlendMode.LAYER;
-			case "lighten": return BlendMode.LIGHTEN;
-			case "multiply": return BlendMode.MULTIPLY;
-			case "overlay": return BlendMode.OVERLAY;
-			case "screen": return BlendMode.SCREEN;
-			case "shader": return BlendMode.SHADER;
-			case "subtract": return BlendMode.SUBTRACT;
-		}
-
-		return BlendMode.NORMAL;
-	}
-
 	public function new(stage:String)
 	{
 		pieces = new Map<String, FlxSprite>();
@@ -259,6 +244,18 @@ class Stage
 			Application.current.window.alert("MISSING STAGE \"" + stage + "\"", "Alert");
 
 		stageData = parseStage(curStage);
+
+		for (s in stageData.shaders)
+		{
+			var shader:FlxRuntimeShader = new FlxRuntimeShader(Paths.shader(s.id));
+			for (f in Reflect.fields(s.parameters))
+			{
+				var val:Dynamic = Reflect.field(s.parameters, f);
+				if (Std.isOfType(val, Float) || Std.isOfType(val, Int))
+					shader.setFloat(f, cast val);
+			}
+			shaders.push(shader);
+		}
 
 		for (i in 0...stageData.pieces.length)
 		{
@@ -408,6 +405,8 @@ class Stage
 				piece.alpha = stagePiece.alpha;
 			if (stagePiece.blend != null && stagePiece.blend != "")
 				piece.blend = stagePiece.blend;
+			if (stagePiece.shader != null && stagePiece.shader > 0)
+				piece.shader = shaders[stagePiece.shader - 1];
 			if (stagePiece.align != null && stagePiece.align != "")
 			{
 				if (stagePiece.align.endsWith("center"))
@@ -421,6 +420,30 @@ class Stage
 					piece.y -= piece.height;
 			}
 			pieces.set(stagePiece.id, piece);
+		}
+	}
+
+	public function applyShaders(characters:Array<Character>)
+	{
+		if (stageData.defaultCharacterShader > 0)
+		{
+			for (c in characters)
+				c.shader = shaders[stageData.defaultCharacterShader - 1];
+		}
+
+		for (i in 0...stageData.characters.length)
+		{
+			if (i < characters.length && stageData.characters[i].shader != null && stageData.characters[i].shader > 0)
+				characters[i].shader = shaders[stageData.characters[i].shader - 1];
+		}
+	}
+
+	public function removeShaders(characters:Array<Character>)
+	{
+		for (c in characters)
+		{
+			if (shaders.contains(c.shader))
+				c.shader = null;
 		}
 	}
 

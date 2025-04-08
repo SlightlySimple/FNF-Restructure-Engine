@@ -1,0 +1,18 @@
+function create()
+{
+	abot = new Character(this.charX, this.charY, "abot");
+	abot.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abot);
+
+	game.hscriptAdd(scriptId + "-abot", "data/" + abot.characterData.script, false, abot);
+	game.hscriptIdExec(scriptId + "-abot", "create");
+}
+
+function update(elapsed)
+{
+	abot.visible = this.visible;
+	abot.repositionCharacter(this.charX, this.charY);
+	abot.color = this.color;
+	if (game.stage.curStage != "tankErect")
+		abot.shader = this.shader;
+}

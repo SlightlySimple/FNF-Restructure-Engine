@@ -249,7 +249,7 @@ class WeekEditorState extends BaseEditorState
 					_remove.onClicked = function() {
 						weekData.difficulties.splice(i, 1);
 						window.close();
-						new FlxTimer().start(0.01, function(tmr:FlxTimer) { difficulties.onClicked(); });
+						new FlxTimer().start(0.02, function(tmr:FlxTimer) { difficulties.onClicked(); });
 					}
 					diffHbox.add(_remove);
 				}
@@ -270,7 +270,7 @@ class WeekEditorState extends BaseEditorState
 			_add.onClicked = function() {
 				weekData.difficulties.push(weekData.difficulties[weekData.difficulties.length-1]);
 				window.close();
-				new FlxTimer().start(0.01, function(tmr:FlxTimer) { difficulties.onClicked(); });
+				new FlxTimer().start(0.02, function(tmr:FlxTimer) { difficulties.onClicked(); });
 			}
 			vbox.add(_add);
 
@@ -492,7 +492,7 @@ class WeekEditorState extends BaseEditorState
 					_remove.onClicked = function() {
 						weekData.songs[curSong].albums.splice(i, 1);
 						window.close();
-						new FlxTimer().start(0.01, function(tmr:FlxTimer) { songAlbums.onClicked(); });
+						new FlxTimer().start(0.02, function(tmr:FlxTimer) { songAlbums.onClicked(); });
 					}
 					albumHbox.add(_remove);
 					scroll.add(albumHbox);
@@ -515,7 +515,7 @@ class WeekEditorState extends BaseEditorState
 					else
 						weekData.songs[curSong].albums.push(["",""]);
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songAlbums.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songAlbums.onClicked(); });
 				}
 				vbox.add(_add);
 
@@ -553,7 +553,7 @@ class WeekEditorState extends BaseEditorState
 						_remove.onClicked = function() {
 							weekData.songs[curSong].difficulties.splice(i, 1);
 							window.close();
-							new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+							new FlxTimer().start(0.02, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
 						}
 						diffHbox.add(_remove);
 					}
@@ -566,7 +566,7 @@ class WeekEditorState extends BaseEditorState
 				sameAsWeek.onClicked = function() {
 					weekData.songs[curSong].difficulties = weekData.difficulties.copy();
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
 				}
 				vbox.add(sameAsWeek);
 
@@ -574,7 +574,7 @@ class WeekEditorState extends BaseEditorState
 				_add.onClicked = function() {
 					weekData.songs[curSong].difficulties.push(weekData.songs[curSong].difficulties[weekData.songs[curSong].difficulties.length-1]);
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songDifficulties.onClicked(); });
 				}
 				vbox.add(_add);
 
@@ -625,7 +625,7 @@ class WeekEditorState extends BaseEditorState
 							weekData.songs[curSong].characterLabels.splice(i, 1);
 							weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
 							window.close();
-							new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+							new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 						}
 						charHbox.add(_remove);
 					}
@@ -639,7 +639,7 @@ class WeekEditorState extends BaseEditorState
 					weekData.songs[curSong].characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 				}
 				vbox.add(_default);
 
@@ -648,7 +648,7 @@ class WeekEditorState extends BaseEditorState
 					weekData.songs[curSong].characterLabels.push(weekData.songs[curSong].characterLabels[weekData.songs[curSong].characterLabels.length-1]);
 					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
 					window.close();
-					new FlxTimer().start(0.01, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
+					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 				}
 				vbox.add(_add);
 

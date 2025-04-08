@@ -167,7 +167,10 @@ class ModLoader
 		});
 		modListLoaded = [];
 		for (mod in modMetaListLoaded)
-			modListLoaded.push(mod.id);
+		{
+			if (mod.id != null && mod.id.indexOf("../packages") <= -1)
+				modListLoaded.push(mod.id);
+		}
 	}
 
 	public static function getModMetaData(modID:String):polymod.ModMetadata

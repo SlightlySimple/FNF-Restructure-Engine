@@ -1,0 +1,116 @@
+{
+	"objects": [
+		{
+			"type": "atlas",
+			"asset": "week7/pico/tankmanEnding",
+			"relativeTo": "player2",
+			"x": 723,
+			"y": 197,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "tankman stress ending",
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		}
+	],
+	"events": [
+		{
+			"time": 0,
+			"type": "hide",
+			"object": "player2"
+		},
+		{
+			"time": 0,
+			"type": "cameraPosition",
+			"x": 320,
+			"y": -70,
+			"relativeTo": "player2",
+			"relativeToCamera": true,
+			"movementType": "tween",
+			"tweenTime": 2.8,
+			"ease": "expoOut"
+		},
+		{
+			"time": 0,
+			"type": "cameraZoom",
+			"zoom": 0.65,
+			"relativeTo": "absolute",
+			"tweenTime": 2,
+			"ease": "expoOut"
+		},
+		{
+			"time": 0,
+			"type": "playAnim",
+			"object": "week7/pico/tankmanEnding",
+			"animation": "go"
+		},
+		{
+			"time": 0.01,
+			"type": "playSound",
+			"sound": "week7/pico/endCutscene",
+			"volume": 1
+		},
+		{
+			"time": 7.333,
+			"type": "playAnim",
+			"object": "player1",
+			"animation": "laughEnd"
+		},
+		{
+			"time": 11.25,
+			"type": "cameraPosition",
+			"x": 320,
+			"y": -370,
+			"relativeTo": "player2",
+			"relativeToCamera": true,
+			"movementType": "tween",
+			"tweenTime": 2,
+			"ease": "quadInOut"
+		},
+		{
+			"time": 11.25,
+			"type": "cameraFade",
+			"camera": "camOther",
+			"length": 2,
+			"color": "black",
+			"fadeIn": false
+		},
+		{
+			"time": 13.333,
+			"type": "endCutscene"
+		},
+		{
+			"time": 0.607,
+			"type": "subtitle",
+			"text": "#subtitles.stress.pico.cutscene.1"
+		},
+		{
+			"time": 3.58,
+			"type": "subtitle",
+			"text": "#subtitles.stress.pico.cutscene.2"
+		},
+		{
+			"time": 5.549,
+			"type": "subtitle",
+			"text": "#subtitles.stress.pico.cutscene.3"
+		},
+		{
+			"time": 7.308,
+			"type": "subtitle",
+			"text": "#subtitles.stress.pico.cutscene.4"
+		},
+		{
+			"time": 10.504,
+			"type": "subtitle",
+			"text": "#subtitles.stress.pico.cutscene.5"
+		},
+		{
+			"time": 11.799,
+			"type": "subtitle",
+			"text": ""
+		}
+	]
+}

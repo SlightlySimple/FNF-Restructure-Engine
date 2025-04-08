@@ -51,6 +51,7 @@ typedef NoteskinSplashColor =
 {
 	var color:String;
 	var alpha:Float;
+	var ?blend:String;
 	var anims:Array<String>;
 	var holdAnim:String;
 	var holdEndAnims:Array<String>;
@@ -84,6 +85,7 @@ typedef NoteskinSplashes =
 	var antialias:Null<Bool>;
 	var scale:Null<Float>;
 	var sustainScale:Null<Float>;
+	var sustainEndScale:Null<Float>;
 	var animations:Array<NoteskinAnimation>;
 	var colors:Array<NoteskinSplashColor>;
 }
@@ -168,8 +170,11 @@ class Noteskins
 					if (typeDef.splashes.scale == null)
 						typeDef.splashes.scale = typeDef.scale;
 
+					if (typeDef.splashes.sustainEndScale == null)
+						typeDef.splashes.sustainEndScale = typeDef.splashes.scale;
+
 					if (typeDef.splashes.sustainScale == null)
-						typeDef.splashes.sustainScale = typeDef.splashes.scale;
+						typeDef.splashes.sustainScale = typeDef.splashes.sustainEndScale;
 
 					for (i in 0...typeDef.splashes.animations.length)
 					{
@@ -384,7 +389,14 @@ class Noteskins
 		}
 
 		splash.alpha = skindef.splashes.colors[colorAnim].alpha;
-		splash.scale.set(skindef.splashes.scale * StrumNote.noteScale, skindef.splashes.scale * StrumNote.noteScale);
+		if (skindef.splashes.colors[colorAnim].blend != null)
+			splash.blend = skindef.splashes.colors[colorAnim].blend;
+		else
+			splash.blend = "normal";
+		if (isSustain)
+			splash.scale.set(skindef.splashes.sustainEndScale * StrumNote.noteScale, skindef.splashes.sustainEndScale * StrumNote.noteScale);
+		else
+			splash.scale.set(skindef.splashes.scale * StrumNote.noteScale, skindef.splashes.scale * StrumNote.noteScale);
 		var animArray:Array<String> = (isSustain ? skindef.splashes.colors[colorAnim].holdEndAnims : skindef.splashes.colors[colorAnim].anims);
 		if (animArray != null && animArray.length > 0)
 		{
@@ -434,7 +446,7 @@ class Noteskins
 				colorAnim = i;
 		}
 
-		splash.scale.set(skindef.splashes.sustainScale * StrumNote.noteScale, skindef.splashes.scale * StrumNote.noteScale);
+		splash.scale.set(skindef.splashes.sustainScale * StrumNote.noteScale, skindef.splashes.sustainEndScale * StrumNote.noteScale);
 		var whichAnim:String = skindef.splashes.colors[colorAnim].holdAnim;
 
 		if (whichAnim != null)

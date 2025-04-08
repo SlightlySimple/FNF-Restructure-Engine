@@ -152,9 +152,9 @@ class UIMenu extends FlxSpriteGroup
 	public var onSelected:FlxSprite->Void = null;
 	public var onNotSelected:FlxSprite->Void = null;
 
-	override public function new()
+	override public function new(?x:Float = 0, ?y:Float = 0)
 	{
-		super();
+		super(x, y);
 
 		onIdle = function(s:FlxSprite) { s.animation.play("idle"); };
 		onHover = function(s:FlxSprite) { s.animation.play("hover"); };
@@ -178,7 +178,8 @@ class UIMenu extends FlxSpriteGroup
 		{
 			if (s != selection)
 			{
-				onIdle(members[selection]);
+				if (selection < members.length)
+					onIdle(members[selection]);
 				onHover(members[s]);
 			}
 			selection = s;

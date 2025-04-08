@@ -1,8 +1,24 @@
 inactiveTankmen = [];
 
-function create()
+settings = {
+	scale: 1.0,
+	minY: 250,
+	maxY: 300,
+	rim: false
+}
+
+function create(?_settings)
 {
-	var chart = new BackgroundChart([game.gf], PlayState.songId, 'picospeaker');
+	if (!game.stage.pieces.exists("tankmenGroup"))
+	{
+		game.hscriptIdRemove(scriptId);
+		return;
+	}
+
+	if (_settings != null)
+		settings = _settings;
+
+	var chart = new BackgroundChart([game.gf], PlayState.songId, 'picospeaker', true, PlayState.variant);
 	for (note in chart.notes)
 	{
 		if (Options.options.distractions)
@@ -26,6 +42,7 @@ function create()
 	{
 		deadMan.setVar("strumTime", 10);
 		deadMan.execFunc("reset", [20, 600, true]);
+		deadMan.alpha = 0.001;
 		tankmenGroup.add(deadMan);
 	}
 }
@@ -37,13 +54,17 @@ function update(elapsed)
 		var poppers = [];
 		for (note in inactiveTankmen)
 		{
-			if (Conductor.songPosition >= note.strumTime - 1000)
+			if (Conductor.songPosition >= note.strumTime - 3000)
 			{
 				if (FlxG.random.bool(16))
 				{
 					var deadMan = tankmenGroup.recycle(HscriptAnimatedSprite, function() { return Type.createInstance(HscriptAnimatedSprite, ["RunningTankman", [0, 0]]); });
+					deadMan.alpha = 1;
+					deadMan.scale.set(settings.scale, settings.scale);
 					deadMan.setVar("strumTime", note.strumTime);
-					deadMan.execFunc("reset", [500, 200 + FlxG.random.int(50, 100), (note.column < 2)]);
+					if (settings.rim)
+						deadMan.execFunc("addRimlight");
+					deadMan.execFunc("reset", [500, FlxG.random.int(settings.minY, settings.maxY), (note.column < 2)]);
 					tankmenGroup.add(deadMan);
 				}
 				poppers.push(note);

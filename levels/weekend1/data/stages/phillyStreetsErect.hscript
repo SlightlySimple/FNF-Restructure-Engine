@@ -3,22 +3,6 @@ function create()
 	game.hscriptAdd(scriptId + "-base", "data/stages/phillyStreets");
 	game.hscriptIdSet(scriptId + "-base", "stage", stage);
 	game.hscriptIdExec(scriptId + "-base", "create");
-
-	var shader = new FlxRuntimeShader(Paths.shader("adjustColor"));
-	shader.setFloat("hue", -5);
-	shader.setFloat("saturation", -40);
-	shader.setFloat("brightness", -20);
-	shader.setFloat("contrast", -25);
-
-	for (c in game.allCharacters)
-		c.shader = shader;
-
-	stage.pieces["mist0"].velocity.x = 172;
-	stage.pieces["mist1"].velocity.x = 150;
-	stage.pieces["mist2"].velocity.x = -80;
-	stage.pieces["mist3"].velocity.x = -50;
-	stage.pieces["mist4"].velocity.x = 40;
-	stage.pieces["mist5"].velocity.x = 20;
 }
 
 _timer = 0;

@@ -1,6 +1,7 @@
 tankSpeed = 0.7;
 goingRight = false;
 strumTime = 0;
+rim = false;
 
 function new(x, y)
 {
@@ -12,6 +13,21 @@ function new(x, y)
 	this.addAnim("shot", "John Shot " + FlxG.random.int(1, 2), 24, false);
 	this.playAnim("run");
 	this.animation.curAnim.curFrame = FlxG.random.int(0, this.animation.curAnim.frames.length - 1);
+}
+
+function addRimlight()
+{
+	if (!rim)
+	{
+		rim = true;
+
+		var shader = new DropShadowShader();
+		shader.setAdjustColor(-46, -38, -25, -20);
+		shader.color = 0xFFDFEF3C;
+		shader.angle = 135;
+		shader.threshold = 0.4;
+		shader.attachedSprite = this;
+	}
 }
 
 function revive()
@@ -28,8 +44,7 @@ function reset(xx, yy, r)
 	endingOffset = FlxG.random.float(50, 200);
 	tankSpeed = FlxG.random.float(0.6, 1);
 	this.flipX = goingRight;
-	if (goingRight)
-		this.addOffsets("shot", [300, 200]);
+	this.addOffsets("shot", [300, 200]);
 }
 
 function update(elapsed)

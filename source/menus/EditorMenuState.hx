@@ -17,7 +17,7 @@ import lime.app.Application;
 import data.Options;
 import editors.CharacterEditorState;
 import editors.ChartEditorState;
-import editors.StageEditorState;
+import editors.stage.StageEditorState;
 import editors.StoryCharacterEditorState;
 import editors.WeekEditorState;
 import menus.UINavigation;

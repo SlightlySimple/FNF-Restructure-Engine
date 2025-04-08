@@ -1,7 +1,7 @@
 <root>
 	<tabmenu id="tabMenu">
 		<tab name="Properties">
-			<vbox y="10">
+			<vboxscroll y="10" id="generalProperties">
 				<label text="Camera Starting Position:"/>
 				<hbox>
 					<stepper id="camFollowXStepper" text="X:" step="5" infoText=""/>
@@ -19,7 +19,15 @@
 				<checkbox id="pixelPerfectCheckbox" text="Pixel Perfect" infoText="If this is checked, all characters and pieces will be aligned based on their scale. It is highly recommended to check this if making a pixel art stage."/>
 				<label text="Script:"/>
 				<dropdown id="scriptDropdown" blank="Default" allowSearch="true" infoText="The script this stage runs when it's used in-game."/>
-			</vbox>
+				<label text="Shaders:"/>
+				<vbox id="stageShadersSlot">
+				</vbox>
+				<label text="Shader Type:"/>
+				<dropdown id="stageShaderType" infoText="Which type of shader any newly created shaders will be."/>
+				<textbutton id="stageShadersAdd" text="Add Shader" image="LONG" infoText="Add a new stage shader to the list."/>
+				<label text="Character Shader:"/>
+				<dropdown id="defaultCharacterShader" blank="None" infoText="Which of the stage's shaders, if any, should be applied to any character by default."/>
+			</vboxscroll>
 		</tab>
 		<tab name="Pieces">
 			<vbox y="10">
@@ -128,6 +136,8 @@
 								<stepper id="pieceAlpha" text="Alpha:" default="1" step="0.05" min="0" max="1" decimals="3" infoText="The transparency of the piece, or in other words, how see through it is."/>
 								<label text="Blend Mode:"/>
 								<dropdown id="pieceBlend" infoText="How the piece affects the look of everything it's on top of. Note that not all blend modes work."/>
+								<label text="Shader:"/>
+								<dropdown id="pieceShader" blank="None" infoText="Which of the stage's shaders, if any, this piece should use."/>
 							</vbox>
 						</vbox>
 					</vbox>
@@ -166,6 +176,8 @@
 							<textbutton id="camTestCharButton" text="Test" infoText="Teleport the camera to the position it will be in when looking at this character."/>
 							<textbutton id="camSetCharButton" text="Set" infoText="Set the above offsets based on the camera's current position."/>
 						</hbox>
+						<label text="Shader:"/>
+						<dropdown id="charShader" blank="None" infoText="Which of the stage's shaders, if any, this character should use."/>
 					</vbox>
 				</vbox>
 			</vboxscroll>

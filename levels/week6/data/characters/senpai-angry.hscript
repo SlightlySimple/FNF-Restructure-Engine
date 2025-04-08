@@ -1,3 +1,5 @@
+maskPath = "characters/senpai/senpai_mask";
+
 function create()
 {
 	for (k in game.stage.pieces.keys())

@@ -53,22 +53,22 @@
 		},
 		{
 			"time": 0,
+			"type": "playAnim",
+			"object": "week7/tankTalk",
+			"animation": "p1"
+		},
+		{
+			"time": 0.01,
 			"type": "playSound",
 			"sound": "week7/DISTORTO",
 			"volume": 0
 		},
 		{
-			"time": 0,
+			"time": 0.01,
 			"type": "fadeSound",
 			"sound": "week7/DISTORTO",
 			"volume": 0.5,
 			"tweenTime": 5
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "week7/tankTalk",
-			"animation": "p1"
 		},
 		{
 			"time": 0.01,

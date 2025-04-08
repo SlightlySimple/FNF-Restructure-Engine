@@ -17,12 +17,12 @@ class BackgroundChart extends FlxBasic
 	public var noteHit:BackgroundChartNote->Void = null;
 	public var sustainHit:BackgroundChartNote->Void = null;
 
-	override public function new(singers:Array<Character>, id:String, difficulty:String, ?ignoreMustHit:Bool = true)
+	override public function new(singers:Array<Character>, id:String, difficulty:String, ?ignoreMustHit:Bool = true, ?variant:String = "bf")
 	{
 		super();
 		this.singers = singers;
 
-		var song:SongData = Song.loadSong(id, difficulty, false);
+		var song:SongData = Song.loadSong(id, difficulty, variant, false);
 		var sections:Array<SectionData> = song.notes;
 		for (section in sections)
 		{

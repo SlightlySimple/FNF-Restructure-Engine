@@ -1,4 +1,7 @@
 function create()
 {
-	new FlxTimer().start(0.001, function(tmr) {game.hscriptIdExec("WEEK_shader", "setRainIntensity", [0.1, 0.2]); });
+	if (game.stage.curStage == "phillyStreetsErect")
+		new FlxTimer().start(0.001, function(tmr) {game.hscriptIdExec("WEEK_shader", "setRainIntensity", [0.01, 0.02]); });
+	else
+		new FlxTimer().start(0.001, function(tmr) {game.hscriptIdExec("WEEK_shader", "setRainIntensity", [0.1, 0.2]); });
 }

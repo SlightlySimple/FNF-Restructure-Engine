@@ -20,12 +20,14 @@ typedef Sticker =
 typedef StickerData =
 {
 	var stickers:Dynamic;
+	var stickerPacks:Dynamic;
 	var sounds:Array<String>;
 }
 
 class StickerSubState extends FlxSubState
 {
 	public static var stickerSet:String = "stickers-set-1";
+	public static var stickerPack:String = "all";
 	public static var stickers:Array<Sticker> = [];
 
 	public static function switchState(newState:FlxState)
@@ -57,7 +59,7 @@ class StickerSubState extends FlxSubState
 
 		if (next != null)
 		{
-			var stickerTypes:Array<String> = Reflect.fields(stickerData.stickers);
+			var stickerTypes:Array<String> = Reflect.field(stickerData.stickerPacks, stickerPack);
 
 			var stickerGraphics:Map<String, FlxSprite> = new Map<String, FlxSprite>();
 
@@ -135,6 +137,7 @@ class StickerSubState extends FlxSubState
 			new FlxTimer().start(0.9, function(tmr:FlxTimer) {
 				stickers = [];
 				stickerSet = "stickers-set-1";
+				stickerPack = "all";
 				close();
 			});
 		}

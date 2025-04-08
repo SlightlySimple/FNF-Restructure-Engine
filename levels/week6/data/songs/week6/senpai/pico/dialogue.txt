@@ -1,0 +1,34 @@
+!setting	fadeTimes	2	1
+!setting	music	week6/Lunchbox	1	2
+!setting	bgColor	179	223	216
+!setting	bgAlpha	0.75
+!setting	box	senpai
+!setting	flip
+senpai	normal	Ah, another lovely fair maiden has graced m-
+!setting	music	none	1	0
+senpai-bwuh	normal	wait
+senpai-bwuh	normal	Ew.
+senpai-bwuh	normal	Who are you two?
+!setting	flip
+nene-pixel	normal	I'm Nene.
+nene-pixel	normal	He's Pico.
+pico-pixel	normal	Hey.
+!setting	music	week6/Lunchbox	1	2
+!setting	flip
+senpai	normal	My my, such odd clothing...
+senpai	normal	 How queer...	append
+!setting	flip
+nene-pixel	normal	Look who's talking.
+!setting	flip
+senpai	normal	And bringing a gun to school?
+senpai	normal	 How uncouth!	append
+senpai	normal	You've scared away all the lovely roses who enjoy my performances so...
+senpai	normal	Even if it IS fake, you know that's at least 3 days suspension!
+!setting	flip
+nene-pixel	normal	No that's real it-
+!setting	flip
+senpai	normal	I'll enjoy informing the principal, right after I teach you what's stronger than bad manners...
+senpai	normal	The beauty of SONG!
+!setting	flip
+nene-pixel-peeved	normal	...
+pico-pixel-peeved	normal	...

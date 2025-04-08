@@ -5,7 +5,7 @@ function create()
 
 function onNoteSpawned(note)
 {
-	if (Options.options.mirrorMode && note.singers.contains(thisChar) && note.animationSuffix == "-alt")
+	if (Options.options.mirrorMode && note.singers.contains(this) && note.animationSuffix == "-alt")
 	{
 		switch (note.hitAnim)
 		{
@@ -17,11 +17,21 @@ function onNoteSpawned(note)
 
 function gameOver(char)
 {
-	if (thisChar != char)
+	if (this != char)
 	{
-		game.hscriptIdSet("gameOverVoicelines", "voicelineSource", "week7/jeffGameover/jeffGameover-");
-		game.hscriptIdSet("gameOverVoicelines", "voicelineSubs", "#subtitles.gameOver.tankman.");
-		game.hscriptIdSet("gameOverVoicelines", "voicelineCount", 25);
-		game.hscriptIdSet("gameOverVoicelines", "voicelineCensor", [1, 3, 8, 13, 17, 21]);
+		if (char.curCharacter.indexOf("pico") > -1)
+		{
+			game.hscriptIdSet("gameOverVoicelines", "voicelineSource", "week7/jeffGameover-pico/jeffGameover-");
+			game.hscriptIdSet("gameOverVoicelines", "voicelineSubs", "#subtitles.gameOver.tankman.pico.");
+			game.hscriptIdSet("gameOverVoicelines", "voicelineCount", 10);
+			game.hscriptIdSet("gameOverVoicelines", "voicelineCensor", [1, 4, 7, 8, 9]);
+		}
+		else
+		{
+			game.hscriptIdSet("gameOverVoicelines", "voicelineSource", "week7/jeffGameover/jeffGameover-");
+			game.hscriptIdSet("gameOverVoicelines", "voicelineSubs", "#subtitles.gameOver.tankman.");
+			game.hscriptIdSet("gameOverVoicelines", "voicelineCount", 25);
+			game.hscriptIdSet("gameOverVoicelines", "voicelineCensor", [1, 3, 8, 13, 17, 21]);
+		}
 	}
 }

@@ -1,0 +1,1 @@
+{"asset":"characters/abot/aBotPixelBody","offsetAlign":["bottom","center"],"fixes":1,"firstAnimation":"idle","danceSpeed":1,"camPosition":[0,0],"position":[10,448],"scale":[6,6],"facing":"center","healthbarColor":[255,255,255],"flip":false,"antialias":false,"camPositionGameOver":[0,0],"animations":[{"offsets":[0,0],"prefix":"danceLeft","name":"idle"}],"idles":["idle","idle"]}

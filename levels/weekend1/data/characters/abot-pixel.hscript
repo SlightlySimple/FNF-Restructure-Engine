@@ -1,0 +1,145 @@
+vizSegments = [[0, 0], [7, -2], [15, -3], [24, -3], [34, -3], [41, -2], [48, 0]];
+
+function create()
+{
+	audioData = Util.audioData(game.tracks[0]);
+
+	abotHead = CreateSprite("characters/abot/abotHead");
+	abotHead.scale.set(this.scale.x, this.scale.y);
+	abotHead.antialiasing = false;
+	abotHead.pixelPerfect = this.pixelPerfect;
+	abotHead.addAnim('toleft', 'toleft0', 24, false);
+	abotHead.addAnim('toright', 'toright0', 24, false);
+	insert(game.members.indexOf(this), abotHead);
+
+	pupilState = true;
+
+	abotSpeaker = CreateSprite("characters/abot/aBotPixelSpeaker");
+	abotSpeaker.scale.set(this.scale.x, this.scale.y);
+	abotSpeaker.origin.x = Math.round(abotSpeaker.origin.x);
+	abotSpeaker.origin.y = Math.round(abotSpeaker.origin.y);
+	abotSpeaker.antialiasing = false;
+	abotSpeaker.pixelPerfect = this.pixelPerfect;
+	abotSpeaker.addAnim('idle', 'danceLeft', 24, false);
+	insert(game.members.indexOf(this), abotSpeaker);
+
+	abotBack = CreateSprite("characters/abot/aBotPixelBack");
+	abotBack.scale.set(this.scale.x, this.scale.y);
+	abotBack.antialiasing = false;
+	abotSpeaker.pixelPerfect = this.pixelPerfect;
+	insert(game.members.indexOf(this), abotBack);
+
+	abotViz = new FlxSpriteGroup();
+	abotViz.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abotViz);
+	if (game.hscriptIdGet("EVENT_blammedLights", "exceptions") != null)
+		game.hscriptIdGet("EVENT_blammedLights", "exceptions").push(abotViz);
+
+	viz = [];
+	for (i in 0...vizSegments.length)
+	{
+		var abotVizSegment = CreateSprite('characters/abot/aBotVizPixel', vizSegments[i][0] * 6, vizSegments[i][1] * 6);
+		for (j in 0...6)
+			abotVizSegment.addAnim(Std.string(j), "viz" + Std.string(i + 1) + "000" + Std.string(j), 24);
+		abotVizSegment.playAnim("5");
+		abotVizSegment.scale.set(this.scale.x, this.scale.y);
+		abotVizSegment.antialiasing = false;
+		abotVizSegment.pixelPerfect = this.pixelPerfect;
+		abotViz.add(abotVizSegment);
+		viz.push(0);
+	}
+
+
+
+	xOff = this.offset.x;
+	yOff = this.offset.y;
+
+
+
+	if (game.stage.curStage == "schoolErect")
+	{
+		var abotSpeakerShader = new DropShadowShader();
+		abotSpeakerShader.setAdjustColor(-66, -10, 24, -23);
+		abotSpeakerShader.angle = 90;
+		abotSpeakerShader.color = 0xFF52351d;
+		abotSpeakerShader.distance = 5;
+		abotSpeakerShader.antialiasAmt = 0;
+		abotSpeakerShader.threshold = 1;
+
+		abotSpeakerShader.attachedSprite = abotSpeaker;
+
+		abotSpeakerShader.altMaskImage = Paths.shaderImage("characters/abot/aBotPixelSpeaker_mask");
+		abotSpeakerShader.maskThreshold = 0;
+		abotSpeakerShader.useAltMask = true;
+
+
+
+		var noRimShader = new FlxRuntimeShader(Paths.shader("adjustColor"));
+		noRimShader.data.hue.value = [-10];
+		noRimShader.data.saturation.value = [-23];
+		noRimShader.data.brightness.value = [-66];
+		noRimShader.data.contrast.value = [24];
+
+		this.shader = noRimShader;
+		abotBack.shader = noRimShader;
+		abotHead.shader = noRimShader;
+		abotViz.shader = noRimShader;
+	}
+}
+
+function update(elapsed)
+{
+	var _x = this.x - xOff;
+	var _y = this.y - yOff;
+
+	abotViz.visible = this.visible;
+	abotViz.setPosition(_x - 160, _y + 13);
+
+	abotBack.visible = this.visible;
+	abotBack.setPosition(_x - 55, _y);
+
+	abotSpeaker.visible = this.visible;
+	abotSpeaker.setPosition(_x - 78, _y + 9);
+
+	abotHead.visible = this.visible;
+	abotHead.setPosition(_x - 325, _y + 72);
+
+	if (game.tracks[0].playing)
+	{
+		for (i in 0...7)
+		{
+			var ind = Std.int(Conductor.songPosition - game.totalOffset + i);
+			if (ind >= 0 && ind < audioData[0].length)
+			{
+				var yy = (-audioData[0][ind][0] + audioData[0][ind][1]) / 65536;
+				yy = Math.min(5, 5 - (yy * 10));
+				if (yy < viz[i])
+					viz[i] = yy;
+				else
+					viz[i] = FlxMath.lerp(viz[i], yy, elapsed * 5);
+
+				abotViz.members[i].playAnim(Std.string(Math.round(viz[i])));
+			}
+		}
+	}
+}
+
+function beatHit()
+{
+	var mustHitSection = (game.camFocus == game.player1);
+
+	if (pupilState != mustHitSection)
+	{
+		if (mustHitSection)
+			abotHead.playAnim("toright", true);
+		else
+			abotHead.playAnim("toleft", true);
+	}
+	pupilState = mustHitSection;
+}
+
+function stepHit()
+{
+	if (this.danceSpeed > 0 && this.holdTimer <= 0 && game.curStep % Std.int(Math.round(this.danceSpeed * 4)) == 0)
+		abotSpeaker.playAnim("idle", true);
+}

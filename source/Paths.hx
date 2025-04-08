@@ -3,6 +3,7 @@ package;
 import flixel.FlxG;
 import openfl.utils.Assets;
 import openfl.system.System;
+import openfl.display.BitmapData;
 import sys.FileSystem;
 import sys.io.File;
 import lime.app.Application;
@@ -366,6 +367,13 @@ class Paths
 		return raw("shaders/" + path + (isVert ? ".vert" : ".frag"));
 	}
 
+	public static function shaderImage(path:String, ?absolute:Bool = false):BitmapData
+	{
+		if (absolute)
+			return BitmapData.fromFile(modFile(path, ".png"));
+		return BitmapData.fromFile(modFile("images/" + path, ".png"));
+	}
+
 	public static function exists(path:String, ?isCensorCheck:Bool = false):Bool
 	{
 		if (isCensorCheck && censorCheck.contains("assets/" + path))
@@ -561,6 +569,18 @@ class Paths
 		returnArray = returnArray.concat(baseArray);
 
 		#if ALLOW_MODS
+		if (ModLoader.packageData != null && FileSystem.isDirectory("packages/" + ModLoader.packagePath + "/content/" + path))
+		{
+			var packageArray:Array<String> = [];
+			for (file in FileSystem.readDirectory("packages/" + ModLoader.packagePath + "/content/" + path))
+			{
+				if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("packages/" + ModLoader.packagePath + "/content/" + path + "/" + file))) && !returnArray.contains(file.substr(0, file.length - ext.length)))
+					packageArray.push(file.substr(0, file.length - ext.length));
+			}
+			packageArray.sort(listFilesSort);
+			returnArray = returnArray.concat(packageArray);
+		}
+
 		for (mod in ModLoader.modListLoaded)
 		{
 			var modArray:Array<String> = [];
