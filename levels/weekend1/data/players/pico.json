@@ -171,7 +171,8 @@
 					350,
 					25
 				],
-				"loopFrame": 41
+				"startFrameLabel": "intro",
+				"loopFrameLabel": "loop"
 			}
 		],
 		"loss": [

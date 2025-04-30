@@ -345,8 +345,6 @@ class StoryMenuState extends MusicBeatState
 				reloadMenuStuff();
 			}
 		}, function() { FlxG.switchState(new MainMenuState()); }, changeCategory);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
 		add(nav);
 
 		nav2 = new UINumeralNavigation(changeDifficulty, changeSelection, function() {

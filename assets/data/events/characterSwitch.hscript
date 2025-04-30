@@ -27,6 +27,8 @@ function registerCharacter(c)
 		if (Paths.imageExists(asset))
 		{
 			Paths.cacheGraphic(asset);
+			if (Paths.sparrowExists(asset))
+				Paths.sparrow(asset);
 			game.makeCacheSprite(asset);
 		}
 

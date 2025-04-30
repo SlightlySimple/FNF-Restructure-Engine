@@ -112,22 +112,35 @@
 			<vboxscroll y="10" id="eventsTab">
 				<label text="Selected Event:"/>
 				<label id="curEventText" text="None"/>
-				<hbox>
-					<button id="prevEventButton" image="tabLeft" infoText="Select the previous event in the song."/>
-					<button id="nextEventButton" image="tabRight" infoText="Select the next event in the song."/>
-				</hbox>
-				<hbox>
-					<textbutton id="selectEventButton" text="Select" infoText="Select an event in the song from a list."/>
-					<textbutton id="jumpToEventButton" text="Jump To" infoText="Teleport the strumline to the currently selected event's position in the song."/>
-				</hbox>
-				<hbox>
-					<textbutton id="moveEventButton" text="Move" infoText="Move the selected event's position to the current position of the strumline."/>
-					<textbutton id="deleteEventButton" text="Delete" infoText="Delete the selected event."/>
-				</hbox>
-				<label text="Type:"/>
-				<dropdown id="eventTypeDropdown" allowSearch="true" infoText="The type of the new event to create, or the currently selected event."/>
-				<textbutton id="addEventButton" text="Add Event" image="LONG" infoText="Create a new event with the currently selected type and the properties below."/>
-				<label id="eventPropertiesText" text="Properties:"/>
+				<vbox id="eventsSlot">
+					<vbox id="eventsSingleGroup">
+						<hbox>
+							<button id="prevEventButton" image="tabLeft" infoText="Select the previous event in the song."/>
+							<button id="nextEventButton" image="tabRight" infoText="Select the next event in the song."/>
+						</hbox>
+						<hbox>
+							<textbutton id="selectEventButton" text="Select" infoText="Select an event in the song from a list."/>
+							<textbutton id="jumpToEventButton" text="Jump To" infoText="Teleport the strumline to the currently selected event's position in the song."/>
+						</hbox>
+						<hbox>
+							<textbutton id="moveEventButton" text="Move" infoText="Move the selected event's position to the current position of the strumline."/>
+							<textbutton id="deleteEventButton" text="Delete" infoText="Delete the selected event."/>
+						</hbox>
+						<label text="Type:"/>
+						<dropdown id="eventTypeDropdown" allowSearch="true" infoText="The type of the new event to create, or the currently selected event."/>
+						<textbutton id="addEventButton" text="Add Event" image="LONG" infoText="Create a new event with the currently selected type and the properties below."/>
+						<label id="eventPropertiesText" text="Properties:"/>
+					</vbox>
+					<vbox id="eventsMultiGroup">
+						<textbutton id="jumpToMultiEventButton" text="Jump To Start" image="LONG" infoText="Teleport the strumline to the earliest selected event's position in the song."/>
+						<textbutton id="jumpToEndMultiEventButton" text="Jump To End" image="LONG" infoText="Teleport the strumline to the latest selected event's position in the song."/>
+						<textbutton id="duplicateMultiEventButton" text="Duplicate" image="LONG" infoText="Duplicate every selected event. The earliest new event will be at the current position of the strumline."/>
+						<hbox>
+							<textbutton id="moveMultiEventButton" text="Move" infoText="Move every selected event's position such that the earliest event is at the current position of the strumline."/>
+							<textbutton id="deleteMultiEventButton" text="Delete" infoText="Delete every selected event."/>
+						</hbox>
+					</vbox>
+				</vbox>
 			</vboxscroll>
 		</tab>
 		<tab name="Tools">

@@ -9,7 +9,7 @@ import sys.FileSystem;
 import sys.io.File;
 import data.ObjectData;
 import data.Song;
-import editors.ChartEditorState;
+import editors.chart.ChartEditorState;
 import scripting.HscriptHandler;
 
 import newui.PopupWindow;

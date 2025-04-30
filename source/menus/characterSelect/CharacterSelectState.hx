@@ -274,7 +274,6 @@ class CharacterSelectState extends MusicBeatState
 				bf.playAnim("cannot select Label");
 			}
 		});
-		nav.leftClick = nav.accept;
 		nav.uiSounds = [false, false, false];
 		nav.locked = true;
 		add(nav);

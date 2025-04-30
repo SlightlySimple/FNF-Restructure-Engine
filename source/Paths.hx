@@ -4,6 +4,7 @@ import flixel.FlxG;
 import openfl.utils.Assets;
 import openfl.system.System;
 import openfl.display.BitmapData;
+import flash.geom.Rectangle;
 import sys.FileSystem;
 import sys.io.File;
 import lime.app.Application;
@@ -11,10 +12,12 @@ import haxe.Json;
 import haxe.xml.Access;
 import flixel.system.FlxAssets;
 import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxTileFrames;
+import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import data.Options;
 import game.PlayState;
 
@@ -23,6 +26,7 @@ using StringTools;
 class Paths
 {
 	static var assets:Array<String> = [];
+	static var cachedTextAssets:Map<String, String> = new Map<String, String>();
 	static var censorCheck:Array<String> = [];
 	static var sparrowCheck:Map<String, String> = new Map<String, String>();
 	static var DEFAULT_IMAGE:String = "assets/images/logo/default.png";
@@ -71,7 +75,11 @@ class Paths
 
 	public static function raw(path:String, ?includeAssets:Bool = true):String
 	{
-		var rawFileData:String = Assets.getText((includeAssets ? "assets/" : "") + path);
+		var finalPath:String = (includeAssets ? "assets/" : "") + path;
+		if (cachedTextAssets.exists(finalPath))
+			return cachedTextAssets[finalPath];
+		var rawFileData:String = Assets.getText(finalPath);
+		cachedTextAssets[finalPath] = rawFileData;
 		return rawFileData;
 	}
 
@@ -192,13 +200,66 @@ class Paths
 		return FlxTileFrames.fromGraphic(graphic, FlxPoint.get(w, h));
 	}
 
+	static function fromSparrow(Source:FlxGraphicAsset, Description:String):FlxAtlasFrames		// This is an exact copy of the function from FlxAtlasFrames without the Assets check
+	{
+		var graphic:FlxGraphic = FlxG.bitmap.add(Source);
+		if (graphic == null)
+			return null;
+
+		// No need to parse data again
+		var frames:FlxAtlasFrames = FlxAtlasFrames.findFrame(graphic);
+		if (frames != null)
+			return frames;
+
+		if (graphic == null || Description == null)
+			return null;
+
+		frames = new FlxAtlasFrames(graphic);
+
+		var data:Access = new Access(Xml.parse(Description).firstElement());
+
+		for (texture in data.nodes.SubTexture)
+		{
+			var name = texture.att.name;
+			var trimmed = texture.has.frameX;
+			var rotated = (texture.has.rotated && texture.att.rotated == "true");
+			var flipX = (texture.has.flipX && texture.att.flipX == "true");
+			var flipY = (texture.has.flipY && texture.att.flipY == "true");
+
+			var rect = FlxRect.get(Std.parseFloat(texture.att.x), Std.parseFloat(texture.att.y), Std.parseFloat(texture.att.width),
+				Std.parseFloat(texture.att.height));
+
+			var size = if (trimmed)
+			{
+				new Rectangle(Std.parseInt(texture.att.frameX), Std.parseInt(texture.att.frameY), Std.parseInt(texture.att.frameWidth),
+					Std.parseInt(texture.att.frameHeight));
+			}
+			else
+			{
+				new Rectangle(0, 0, rect.width, rect.height);
+			}
+
+			var angle = rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0;
+
+			var offset = FlxPoint.get(-size.left, -size.top);
+			var sourceSize = FlxPoint.get(size.width, size.height);
+
+			if (rotated && !trimmed)
+				sourceSize.set(size.height, size.width);
+
+			frames.addAtlasFrame(rect, sourceSize, offset, name, angle, flipX, flipY);
+		}
+
+		return frames;
+	}
+
 	public static function sparrow(path:String):FlxFramesCollection
 	{
 		if (sparrowCheck.exists(path))
 		{
 			if (sparrowCheck[path] == "txt")
 				return FlxAtlasFrames.fromSpriteSheetPacker(image(path), textImages(path));
-			return FlxAtlasFrames.fromSparrow(image(path), file("images/" + path, ".xml"));
+			return fromSparrow(image(path), raw(file("images/" + path, ".xml"), false));
 		}
 
 		if (sparrowExists(path))
@@ -209,7 +270,7 @@ class Paths
 				return FlxAtlasFrames.fromSpriteSheetPacker(image(path), textImages(path));
 			}
 			sparrowCheck[path] = "xml";
-			return FlxAtlasFrames.fromSparrow(image(path), file("images/" + path, ".xml"));
+			return fromSparrow(image(path), raw(file("images/" + path, ".xml"), false));
 		}
 		Application.current.window.alert("File \"images/" + path + ".xml\" does not exist", "Alert");
 		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(DEFAULT_IMAGE);
@@ -223,7 +284,7 @@ class Paths
 		{
 			if (exists(basePath + ".txt") && !exists(basePath + ".xml"))
 				return FlxAtlasFrames.fromSpriteSheetPacker(imageSong(path), raw(basePath + ".txt"));
-			return FlxAtlasFrames.fromSparrow(imageSong(path), file(basePath, ".xml"));
+			return fromSparrow(imageSong(path), raw(file(basePath, ".xml"), false));
 		}
 		Application.current.window.alert("File \"data/songs/" + PlayState.songId + "/images/" + path + ".xml\" does not exist", "Alert");
 		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(DEFAULT_IMAGE);
@@ -507,6 +568,7 @@ class Paths
 
 	public static function clearCache()
 	{
+		cachedTextAssets.clear();
 		FlxG.bitmap.dumpCache();
 		Assets.cache.clear();
 		System.gc();

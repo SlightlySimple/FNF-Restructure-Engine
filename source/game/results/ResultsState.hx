@@ -94,6 +94,7 @@ class ResultsState extends MusicBeatState
 class ResultsSubState extends MusicBeatSubState
 {
 	var myScript:HscriptHandler;
+	var charScript:HscriptHandler = null;
 
 	var menuMusic:FlxSound = null;
 	var nums:Array<Float> = [];
@@ -168,6 +169,19 @@ class ResultsSubState extends MusicBeatSubState
 		myScript.setVar("ResultsScore", ResultsScore);
 		myScript.setVar("ResultsClearPercentage", ResultsClearPercentage);
 		myScript.execFunc("create", [data]);
+
+		if (Paths.hscriptExists("data/players/" + PlayState.variant + "-results"))
+		{
+			charScript = new HscriptHandler("data/players/" + PlayState.variant + "-results");
+			charScript.setVar("this", this);
+			charScript.setVar("HitGraph", HitGraph);
+			charScript.setVar("HealthGraph", HealthGraph);
+			charScript.setVar("ResultsNumber", ResultsNumber);
+			charScript.setVar("ResultsPercentage", ResultsPercentage);
+			charScript.setVar("ResultsScore", ResultsScore);
+			charScript.setVar("ResultsClearPercentage", ResultsClearPercentage);
+			charScript.execFunc("create", [data]);
+		}
 	}
 
 	override public function update(elapsed:Float)
@@ -175,6 +189,8 @@ class ResultsSubState extends MusicBeatSubState
 		super.update(elapsed);
 
 		myScript.execFunc("update", [elapsed]);
+		if (charScript != null)
+			charScript.execFunc("update", [elapsed]);
 
 		if (Options.keyJustPressed("ui_accept") && !transitioning)
 		{

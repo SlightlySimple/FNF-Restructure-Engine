@@ -469,8 +469,6 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				reloadMenuStuff();
 			}
 		}, function() { doOutro(); }, changeCategory);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
 		add(nav);
 
 		nav2 = new UINumeralNavigation(changeDifficulty, changeSelection, function() {

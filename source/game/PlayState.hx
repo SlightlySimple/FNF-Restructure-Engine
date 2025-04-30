@@ -28,7 +28,7 @@ import data.ScoreSystems;
 import data.Song;
 import data.SMFile;
 import data.TimingStruct;
-import editors.ChartEditorState;
+import editors.chart.ChartEditorState;
 import game.results.ResultsState;
 import objects.AnimatedSprite;
 import objects.Character;

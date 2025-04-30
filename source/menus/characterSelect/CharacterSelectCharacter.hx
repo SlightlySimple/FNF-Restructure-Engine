@@ -77,7 +77,7 @@ class CharacterSelectCharacter extends FlxSprite
 	public function playAnim(anim:String)
 	{
 		if (usingAtlas)
-			atlas.playAnim(anim);
+			atlas.playAnim(anim, true);
 		else
 		{
 			animation.play(anim, true);

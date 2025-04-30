@@ -22,12 +22,14 @@ class ModMenuState extends MusicBeatState
 	var goalY:Float = 15;
 
 	var modName:FlxText;
-	var modContributors:FlxText;
+	var modContributors:FlxTypedSpriteGroup<FlxText>;
 	var modDescription:FlxText;
 	var modVersion:FlxText;
 
+	var modBG:FlxSprite;
 	var modMenuButtons:FlxTypedSpriteGroup<ModMenuButton>;
 	var modToggleButton:ModMenuButton;
+	var modContributorsButton:ModMenuButton;
 	var cursorL:ModMenuCurcor;
 	var cursorR:ModMenuCurcor;
 
@@ -69,19 +71,20 @@ class ModMenuState extends MusicBeatState
 			}
 		}
 
-		var modBG:FlxSprite = new FlxSprite(modObjects.x + modObjects.width + 15, 85);
+		modBG = new FlxSprite(modObjects.x + modObjects.width + 15, 85);
 		modBG.makeGraphic(Std.int(FlxG.width - modBG.x - 15), Std.int(FlxG.height - 100), FlxColor.BLACK);
 		modBG.alpha = 0.5;
 		add(modBG);
 
-		modName = new FlxText(modBG.x + 25, modBG.y + 25, modBG.width - 50, "").setFormat("FNF Dialogue", 48, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		modName = new FlxText(modBG.x + 25, modBG.y + 15, modBG.width - 50, "").setFormat("FNF Dialogue", 48, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		modName.borderSize = 2;
 		add(modName);
 
-		modContributors = new FlxText(modName.x, modName.y + 65, modBG.width - 50, "").setFormat("FNF Dialogue", 32, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		modContributors = new FlxTypedSpriteGroup<FlxText>(modName.x, modName.y + 135);
+		modContributors.visible = false;
 		add(modContributors);
 
-		modDescription = new FlxText(modName.x, modName.y + 65, modBG.width - 50, "").setFormat("FNF Dialogue", 32, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		modDescription = new FlxText(modName.x, modName.y + 135, modBG.width - 50, "").setFormat("FNF Dialogue", 28, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 		add(modDescription);
 
 		modVersion = new FlxText(modBG.x + 25, modBG.y + modBG.height - 90, modBG.width - 50, "1.0.0").setFormat("FNF Dialogue", 48, FlxColor.WHITE, RIGHT, OUTLINE, FlxColor.BLACK);
@@ -159,7 +162,7 @@ class ModMenuState extends MusicBeatState
 		enableAllModsButton.back.color = FlxColor.BLACK;
 		modMenuButtons.add(enableAllModsButton);
 
-		var disableAllModsButton:ModMenuButton = new ModMenuButton(enableAllModsButton.x + 270, 15, "Disable All");
+		var disableAllModsButton:ModMenuButton = new ModMenuButton(enableAllModsButton.x + 275, 15, "Disable All");
 		disableAllModsButton.accept = function() {
 			for (m in ModLoader.modList)
 			{
@@ -170,12 +173,29 @@ class ModMenuState extends MusicBeatState
 		disableAllModsButton.back.color = FlxColor.BLACK;
 		modMenuButtons.add(disableAllModsButton);
 
-		var openModsFolderButton:ModMenuButton = new ModMenuButton(disableAllModsButton.x + 270, 15, "Open Mods Folder");
+		var openModsFolderButton:ModMenuButton = new ModMenuButton(disableAllModsButton.x + 275, 15, "Open Mods Folder");
 		openModsFolderButton.accept = function() {
 			System.openFile("mods");
 		}
 		openModsFolderButton.back.color = FlxColor.BLACK;
 		modMenuButtons.add(openModsFolderButton);
+
+		var modDescriptionButton:ModMenuButton = new ModMenuButton(modBG.x + 100, modBG.y + 75, "Description");
+		modDescriptionButton.accept = function() {
+			modDescription.visible = true;
+			modContributors.visible = false;
+		}
+		modDescriptionButton.back.color = FlxColor.BLACK;
+		modMenuButtons.add(modDescriptionButton);
+
+		modContributorsButton = new ModMenuButton(modBG.x + modBG.width - 100, modBG.y + 75, "Contributors");
+		modContributorsButton.x -= modContributorsButton.width;
+		modContributorsButton.accept = function() {
+			modDescription.visible = false;
+			modContributors.visible = true;
+		}
+		modContributorsButton.back.color = FlxColor.BLACK;
+		modMenuButtons.add(modContributorsButton);
 
 		cursorL = new ModMenuCurcor(">", 40, 1);
 		add(cursorL);
@@ -183,12 +203,17 @@ class ModMenuState extends MusicBeatState
 		cursorR = new ModMenuCurcor("<", 40, 0);
 		add(cursorR);
 
-		nav = new UINumeralNavigation(changeButton, changeSelection, function() { modMenuButtons.members[curButton].accept(); }, function() {
+		nav = new UINumeralNavigation(changeButton, changeSelection, function() {
+			if (modMenuButtons.members[curButton].enabled)
+			{
+				FlxG.sound.play(Paths.sound(nav.uiSoundFiles[1]));
+				modMenuButtons.members[curButton].accept();
+			}
+		}, function() {
 			ModLoader.saveModlist();
 			FlxG.switchState(new MainMenuState());
 		}, changeSelection);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
+		nav.uiSounds[1] = false;
 		add(nav);
 
 		changeSelection();
@@ -248,22 +273,36 @@ class ModMenuState extends MusicBeatState
 		modName.text = modObjects.members[curSelected].mod.title;
 		if (modObjects.members[curSelected].mod.contributors == null)
 		{
-			modDescription.y = modName.y + modName.height + 15;
-			modContributors.text = "";
+			modContributorsButton.enabled = false;
+			modDescription.visible = true;
+			modContributors.visible = false;
 		}
 		else
 		{
-			modContributors.y = modName.y + modName.height + 15;
-			modContributors.text = "Contributors: ";
+			modContributorsButton.enabled = true;
+
+			modContributors.forEachAlive(function(txt:FlxText) {
+				txt.kill();
+				txt.destroy();
+			});
+			modContributors.clear();
+
+			var yy:Float = 0;
 			for (c in modObjects.members[curSelected].mod.contributors)
 			{
-				modContributors.text += c.name;
-				if (c.role != null && c.role != "")
-					modContributors.text += " (" + c.role + ")";
-				if (modObjects.members[curSelected].mod.contributors.indexOf(c) < modObjects.members[curSelected].mod.contributors.length - 1)
-					modContributors.text += ", ";
+				var contName:FlxText = new FlxText(0, yy, 0, c.name).setFormat("FNF Dialogue", 28, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+				contName.visible = modContributors.visible;
+				if (contName.width > (modBG.width - 50) / 2)
+					contName.fieldWidth = (modBG.width - 50) / 2;
+				modContributors.add(contName);
+
+				var contRole:FlxText = new FlxText(modBG.width - 50, yy, modBG.width - contName.width - 75, c.role).setFormat("FNF Dialogue", 28, FlxColor.WHITE, RIGHT, OUTLINE, FlxColor.BLACK);
+				contRole.x -= contRole.width;
+				contRole.visible = modContributors.visible;
+				modContributors.add(contRole);
+
+				yy += Math.max(contName.height, contRole.height) + 10;
 			}
-			modDescription.y = modContributors.y + modContributors.height + 15;
 		}
 		modDescription.text = modObjects.members[curSelected].mod.description;
 		modVersion.text = modObjects.members[curSelected].mod.modVersion;
@@ -385,6 +424,7 @@ class ModMenuButton extends FlxSpriteGroup
 	public var back:FlxSprite;
 	public var text:FlxText;
 	public var accept:Void->Void;
+	public var enabled(default, set):Bool = true;
 
 	override public function new(x:Float, y:Float, txt:String)
 	{
@@ -394,9 +434,16 @@ class ModMenuButton extends FlxSpriteGroup
 		back.alpha = 0.5;
 		add(back);
 
-		text = new FlxText(0, 0, 230, txt).setFormat("FNF Dialogue", 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		text = new FlxText(0, 0, 230, txt).setFormat("FNF Dialogue", 24, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		text.y += Std.int((back.height - text.height) / 2);
 		add(text);
+	}
+
+	public function set_enabled(val:Bool):Bool
+	{
+		back.alpha = (val ? 0.5 : 0.2);
+		text.alpha = (val ? 1 : 0.6);
+		return enabled = val;
 	}
 }
 

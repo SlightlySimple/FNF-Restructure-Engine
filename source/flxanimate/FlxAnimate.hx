@@ -137,8 +137,11 @@ class FlxAnimate extends FlxSprite
 		if ([null, ""].indexOf(Name) == -1)
 		{
 			var curThing = anim.animsMap.get(Name);
-			if (curThing != null && anim.name != Name)
+			if (curThing != null && (anim.name != Name || ForceRestart || anim.curFrame >= anim.frameLength - 1))
+			{
+				anim.name = Name;
 				anim.curFrame = 0;
+			}
 			anim.x = x;
 			anim.y = y;
 			timeline = (curThing != null || curThing.timeline != null) ? curThing.timeline : anim.coolParse.AN.TL;

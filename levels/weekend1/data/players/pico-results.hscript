@@ -1,0 +1,20 @@
+charSprite = null;
+
+function create(data)
+{
+	if (ResultsState.ranks[data.score.rank] == "GOOD" && this.myScript.getVar("charSprites") != null)
+	{
+		charSprite = this.myScript.getVar("charSprites")[0];
+
+		if (FlxG.random.bool(5))
+			charSprite.sprite.anim.addByFrameName("go", "intro fat gf", 24);
+		else if (FlxG.random.bool(20))
+			charSprite.sprite.anim.addByFrameName("go", "intro cass", 24);
+	}
+}
+
+function update(elapsed)
+{
+	if (charSprite != null && charSprite.sprite.anim.name == "loop")
+		charSprite.sprite.offset.set(-100, -75);
+}

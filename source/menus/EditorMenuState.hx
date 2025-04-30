@@ -16,7 +16,7 @@ import lime.app.Application;
 
 import data.Options;
 import editors.CharacterEditorState;
-import editors.ChartEditorState;
+import editors.chart.ChartEditorState;
 import editors.stage.StageEditorState;
 import editors.StoryCharacterEditorState;
 import editors.WeekEditorState;
@@ -103,8 +103,6 @@ class EditorMenuState extends MusicBeatState
 			FlxG.sound.music.fadeOut(0.5, 0, function(twn) { FlxG.sound.music.stop(); });
 			FlxG.switchState(new MainMenuState());
 		}, scrollCurButton);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
 		nav.uiSounds = [false, false, false];
 		add(nav);
 
@@ -197,6 +195,9 @@ class EditorMenuState extends MusicBeatState
 		vbox.add(new Label("Asset Subfolder:"));
 		vbox.add(subDirInput);
 
+		var sampleContributor:Checkbox = new Checkbox(0, 0, "Include Sample Contributor", false);
+		vbox.add(sampleContributor);
+
 		var buttons:HBox = new HBox();
 
 		var newModButton:TextButton = new TextButton(0, 0, "Create");
@@ -274,11 +275,12 @@ class EditorMenuState extends MusicBeatState
 					var modMeta:Dynamic = {
 						title: modNameInput.text,
 						description: modDescInput.text,
-						contributors: [{name: "", role: ""}],
 						api_version: "0.1.0",
 						mod_version: "1.0.0",
 						license: "CC BY 4.0,MIT"
 					};
+					if (sampleContributor.checked)
+						modMeta.contributors = [{name: "", role: ""}];
 					var modMetaString:String = Json.stringify(modMeta, null, "\t");
 					File.saveContent("mods/" + modFolderName + "/_polymod_meta.json", modMetaString);
 

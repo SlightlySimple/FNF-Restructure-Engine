@@ -1,5 +1,14 @@
+trackedTweens = new StringMap();
+
 function onEvent(event)
 {
+	var trackedTween = event.parameters.id + "__" + event.parameters.variable;
+	if (trackedTweens.exists(trackedTween))
+	{
+		trackedTweens[trackedTween].cancel();
+		trackedTweens.remove(trackedTween);
+	}
+
 	var val = analyzeValue(event.parameters.value);
 	if (event.parameters.variable.indexOf(".") > 0)
 	{
@@ -27,12 +36,12 @@ function onEvent(event)
 		}
 
 		var prev = Reflect.getProperty(affect, varSplit[varSplit.length - 1]);
-		applyProperty(function(v) { Reflect.setProperty(affect, varSplit[varSplit.length - 1], v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(trackedTween, function(v) { Reflect.setProperty(affect, varSplit[varSplit.length - 1], v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 	}
 	else
 	{
 		var prev = game.hscriptIdGet(event.parameters.id, event.parameters.variable);
-		applyProperty(function(v) { game.hscriptIdSet(event.parameters.id, event.parameters.variable, v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
+		applyProperty(trackedTween, function(v) { game.hscriptIdSet(event.parameters.id, event.parameters.variable, v); }, prev, val, event.parameters.operation, getTime(event.parameters.time, event.parameters.timeUnit), Reflect.field(FlxEase, event.parameters.ease));
 	}
 }
 
@@ -61,7 +70,7 @@ function analyzeArrayValue(val)
 	return val;
 }
 
-function applyProperty(func, oldValue, newValue, operation, time, ease)
+function applyProperty(tweenId, func, oldValue, newValue, operation, time, ease)
 {
 	var prev = oldValue;
 	var final = newValue;
@@ -71,7 +80,7 @@ function applyProperty(func, oldValue, newValue, operation, time, ease)
 		case "multiply": final = prev * value;
 		case "divide": final = prev / value;
 	}
-	FlxTween.num(prev, final, time, {ease: ease}, func);
+	trackedTweens[tweenId] = FlxTween.num(prev, final, time, {ease: ease, onComplete: function(twn) { trackedTweens.remove(tweenId); }}, func);
 }
 
 function getTime(time, unit)

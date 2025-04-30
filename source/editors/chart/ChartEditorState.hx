@@ -1,4 +1,4 @@
-package editors;
+package editors.chart;
 
 import flixel.FlxG;
 import flixel.FlxSubState;
@@ -421,7 +421,7 @@ class ChartEditorState extends MusicBeatState
 	var curStrum:Int = -1;
 	var uniqueDivisions:Array<Int> = [];
 	var strumColumns:Array<Int> = [];
-	var curEvent(default, set):Int = -1;
+	var selectedEvents:Array<Int> = [];
 
 	var makingNotes:Array<Float> = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 	var makingNoteMouse:Array<Float> = [-1, -1];
@@ -488,9 +488,11 @@ class ChartEditorState extends MusicBeatState
 	var eventTypeParams:Map<String, EventTypeData> = new Map<String, EventTypeData>();
 
 	var eventsTab:VBoxScrollable;
+	var eventsSlot:VBox;
+	var eventsSingleGroup:VBox;
+	var eventsMultiGroup:VBox;
 	var curEventText:Label;
 	var eventTypeDropdown:DropdownMenu;
-	var addEventButton:TextButton;
 	var eventPropertiesText:Label;
 	public var eventParamList:Dynamic;
 	var eventParams:Array<FlxSprite> = [];
@@ -1867,6 +1869,9 @@ class ChartEditorState extends MusicBeatState
 
 
 		eventsTab = cast ui.element("eventsTab");
+		eventsSlot = cast ui.element("eventsSlot");
+		eventsSingleGroup = cast ui.element("eventsSingleGroup");
+		eventsMultiGroup = cast ui.element("eventsMultiGroup");
 
 		curEventText = cast ui.element("curEventText");
 		curEventText.size -= 4;
@@ -1884,7 +1889,8 @@ class ChartEditorState extends MusicBeatState
 			var noEventButton:TextButton = new TextButton(0, 0, "None", Button.LONG);
 			noEventButton.onClicked = function() {
 				window.close();
-				curEvent = -1;
+				selectedEvents = [];
+				updateSelectedEvents();
 			}
 			scroll.add(noEventButton);
 
@@ -1896,7 +1902,8 @@ class ChartEditorState extends MusicBeatState
 				var eventButton:TextButton = new TextButton(0, 0, Std.string(songData.events[i].beat) + " | " + typeName, Button.LONG);
 				eventButton.onClicked = function() {
 					window.close();
-					curEvent = i;
+					selectedEvents = [i];
+					updateSelectedEvents();
 				}
 				scroll.add(eventButton);
 			}
@@ -1908,42 +1915,50 @@ class ChartEditorState extends MusicBeatState
 
 		var prevEventButton:Button = cast ui.element("prevEventButton");
 		prevEventButton.onClicked = function() {
-			if (curEvent > -1)
-				curEvent--;
+			if (selectedEvents.length == 1)
+			{
+				if (selectedEvents[0] > 0)
+					selectedEvents[0]--;
+				else
+					selectedEvents = [];
+			}
+			updateSelectedEvents();
 		}
 
 		var nextEventButton:Button = cast ui.element("nextEventButton");
 		nextEventButton.onClicked = function() {
-			if (curEvent < songData.events.length - 1)
-				curEvent++;
+			if (selectedEvents.length == 1)
+			{
+				if (selectedEvents[0] < songData.events.length - 1)
+					selectedEvents[0]++;
+			}
+			updateSelectedEvents();
 		}
 
 		var jumpToEventButton:TextButton = cast ui.element("jumpToEventButton");
 		jumpToEventButton.onClicked = function() {
-			if (curEvent > -1)
-				songProgress = songData.events[curEvent].beat * 4;
+			if (selectedEvents.length == 1)
+				songProgress = songData.events[selectedEvents[0]].beat * 4;
 		}
 
 		var moveEventButton:TextButton = cast ui.element("moveEventButton");
 		moveEventButton.onClicked = function() {
-			if (curEvent >= 0)
+			if (selectedEvents.length == 1)
 			{
-				songData.events[curEvent].time = Conductor.timeFromStep(songProgress);
-				songData.events[curEvent].beat = songProgress / 4;
+				songData.events[selectedEvents[0]].time = Conductor.timeFromStep(songProgress);
+				songData.events[selectedEvents[0]].beat = songProgress / 4;
 				updateEventList();
 				refreshEventLines();
-				curEvent = curEvent;
 			}
 		}
 
 		var deleteEventButton:TextButton = cast ui.element("deleteEventButton");
 		deleteEventButton.onClicked = function() {
-			if (curEvent >= 0)
+			if (selectedEvents.length == 1)
 			{
-				songData.events.splice(curEvent, 1);
+				songData.events.splice(selectedEvents[0], 1);
 				updateEventList();
 				refreshEventLines();
-				curEvent = curEvent;
 			}
 		}
 
@@ -1952,12 +1967,12 @@ class ChartEditorState extends MusicBeatState
 		eventTypeDropdown.valueList = eventTypeList;
 		eventTypeDropdown.value = eventTypeList[0];
 		eventTypeDropdown.onChanged = function() {
-			if (curEvent > -1)
-				curEvent = -1;
+			selectedEvents = [];
+			updateSelectedEvents();
 			updateEventParams();
 		};
 
-		addEventButton = cast ui.element("addEventButton");
+		var addEventButton:TextButton = cast ui.element("addEventButton");
 		addEventButton.onClicked = function() {
 			var eventParamListCopy:Dynamic = Reflect.copy(eventParamList);
 			songData.events.push({time: Conductor.timeFromStep(songProgress), beat: songProgress / 4, type: eventTypeDropdown.value, parameters: eventParamListCopy});
@@ -1968,6 +1983,105 @@ class ChartEditorState extends MusicBeatState
 		eventPropertiesText = cast ui.element("eventPropertiesText");
 
 		updateEventParams();
+
+		var jumpToMultiEventButton:TextButton = cast ui.element("jumpToMultiEventButton");
+		jumpToMultiEventButton.onClicked = function() {
+			if (selectedEvents.length > 0)
+			{
+				var firstBeat:Float = -1;
+				for (e in selectedEvents)
+				{
+					if (firstBeat == -1 || songData.events[e].beat < firstBeat)
+						firstBeat = songData.events[e].beat;
+				}
+				songProgress = firstBeat * 4;
+			}
+		}
+
+		var jumpToEndMultiEventButton:TextButton = cast ui.element("jumpToEndMultiEventButton");
+		jumpToEndMultiEventButton.onClicked = function() {
+			if (selectedEvents.length > 0)
+			{
+				var lastBeat:Float = -1;
+				for (e in selectedEvents)
+				{
+					if (lastBeat == -1 || songData.events[e].beat > lastBeat)
+						lastBeat = songData.events[e].beat;
+				}
+				songProgress = lastBeat * 4;
+			}
+		}
+
+		var duplicateMultiEventButton:TextButton = cast ui.element("duplicateMultiEventButton");
+		duplicateMultiEventButton.onClicked = function() {
+			if (selectedEvents.length > 0)
+			{
+				var prevSelectedEvents:Array<EventData> = [];
+				var firstBeat:Float = -1;
+				for (e in selectedEvents)
+				{
+					prevSelectedEvents.push(songData.events[e]);
+					if (firstBeat == -1 || songData.events[e].beat < firstBeat)
+						firstBeat = songData.events[e].beat;
+				}
+
+				var beatDiff:Float = (songProgress / 4) - firstBeat;
+
+				for (e in prevSelectedEvents)
+				{
+					var newEvent:EventData = Cloner.clone(e);
+					newEvent.beat += beatDiff;
+					newEvent.time = Conductor.timeFromBeat(newEvent.beat);
+					songData.events.push(newEvent);
+				}
+
+				selectedEvents = [];
+				updateEventList();
+				refreshEventLines();
+
+				for (e in prevSelectedEvents)
+					selectedEvents.push(songData.events.indexOf(e));
+				updateSelectedEvents();
+			}
+		}
+
+		var moveMultiEventButton:TextButton = cast ui.element("moveMultiEventButton");
+		moveMultiEventButton.onClicked = function() {
+			if (selectedEvents.length > 0)
+			{
+				var firstBeat:Float = -1;
+				for (e in selectedEvents)
+				{
+					if (firstBeat == -1 || songData.events[e].beat < firstBeat)
+						firstBeat = songData.events[e].beat;
+				}
+
+				var beatDiff:Float = (songProgress / 4) - firstBeat;
+
+				for (e in selectedEvents)
+				{
+					songData.events[e].beat += beatDiff;
+					songData.events[e].time = Conductor.timeFromBeat(songData.events[e].beat);
+				}
+				updateEventList();
+				refreshEventLines();
+			}
+		}
+
+		var deleteMultiEventButton:TextButton = cast ui.element("deleteMultiEventButton");
+		deleteMultiEventButton.onClicked = function() {
+			if (selectedEvents.length > 0)
+			{
+				var poppers:Array<EventData> = [];
+				for (e in selectedEvents)
+					poppers.push(songData.events[e]);
+				for (p in poppers)
+					songData.events.remove(p);
+				selectedEvents = [];
+				updateEventList();
+				refreshEventLines();
+			}
+		}
 
 
 
@@ -3113,7 +3227,7 @@ class ChartEditorState extends MusicBeatState
 				eventIcons.forEachAlive(function(event:FlxSprite) {
 					if (event.overlaps(mousePos))
 					{
-						if (eventIcons.members.indexOf(event) != curEvent)
+						if (!selectedEvents.contains(eventIcons.members.indexOf(event)))
 							event.animation.play("hovered");
 						UIControl.cursor = MouseCursor.BUTTON;
 						var eventData:EventData = songData.events[eventIcons.members.indexOf(event)];
@@ -3134,7 +3248,7 @@ class ChartEditorState extends MusicBeatState
 							}
 						}
 					}
-					else if (eventIcons.members.indexOf(event) != curEvent)
+					else if (!selectedEvents.contains(eventIcons.members.indexOf(event)))
 						event.animation.play("idle");
 				});
 			}
@@ -3306,6 +3420,15 @@ class ChartEditorState extends MusicBeatState
 				selecting = false;
 				selectionBox.visible = false;
 				refreshSelectedNotes();
+
+				if (selectedNotes.length <= 0)
+				{
+					eventIcons.forEachAlive(function(event:FlxSprite) {
+						if (event.overlaps(selectionBox) && !selectedEvents.contains(eventIcons.members.indexOf(event)))
+							selectedEvents.push(eventIcons.members.indexOf(event));
+					});
+					updateSelectedEvents();
+				}
 			}
 		}
 		else if (sustainWidgetAdjusting)
@@ -3347,7 +3470,7 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !TopMenu.busy && !FlxG.mouse.overlaps(tabMenu) && !FlxG.mouse.overlaps(topmenu) && !FlxG.mouse.overlaps(infoBox) && !FlxG.mouse.overlaps(timeBox) && !noteMinimap.hovered)
+		if (Options.mouseJustPressed() && !DropdownMenu.isOneActive && !TopMenu.busy && !FlxG.mouse.overlaps(tabMenu) && !FlxG.mouse.overlaps(topmenu) && (!members.contains(infoBox) || !FlxG.mouse.overlaps(infoBox)) && (!members.contains(timeBox) || !FlxG.mouse.overlaps(timeBox)) && !noteMinimap.hovered)
 		{
 			var myNote:Note = null;
 			notes.forEachAlive(function(note:Note) {
@@ -3372,21 +3495,29 @@ class ChartEditorState extends MusicBeatState
 			else
 			{
 				var myEvent:Int = -1;
-				eventIcons.forEachAlive(function(event:FlxSprite)
-					{
-						if (event.overlaps(mousePos))
-							myEvent = eventIcons.members.indexOf(event);
-					}
-				);
+				eventIcons.forEachAlive(function(event:FlxSprite) {
+					if (event.overlaps(mousePos))
+						myEvent = eventIcons.members.indexOf(event);
+				});
 				if (myEvent > -1)
 				{
 					tabMenu.selectTabByName("Events");
-					curEvent = myEvent;
+					if (FlxG.keys.pressed.SHIFT)
+					{
+						if (selectedEvents.contains(myEvent))
+							selectedEvents.remove(myEvent);
+						else
+							selectedEvents.push(myEvent);
+					}
+					else
+						selectedEvents = [myEvent];
+					updateSelectedEvents();
 				}
 				else
 				{
-					if (curEvent > -1)
-						curEvent = -1;
+					if (!FlxG.keys.pressed.SHIFT)
+						selectedEvents = [];
+					updateSelectedEvents();
 
 					if (curStrum > -1)
 					{
@@ -3672,7 +3803,6 @@ class ChartEditorState extends MusicBeatState
 								songData.events.splice(myEvent, 1);
 								updateEventList();
 								refreshEventLines();
-								curEvent = curEvent;
 							}
 						}
 					]);
@@ -4377,8 +4507,7 @@ class ChartEditorState extends MusicBeatState
 		});
 		eventLines.clear();
 
-		eventIcons.forEachAlive(function(event:FlxSprite)
-		{
+		eventIcons.forEachAlive(function(event:FlxSprite) {
 			event.kill();
 			event.destroy();
 		});
@@ -4408,7 +4537,7 @@ class ChartEditorState extends MusicBeatState
 			event.animation.add("selected", [2]);
 			event.updateHitbox();
 			event.y -= Std.int(event.height / 2);
-			if (i == curEvent)
+			if (selectedEvents.contains(i))
 				event.animation.play("selected");
 			if (doneBeats.contains(songData.events[i].beat))
 			{
@@ -5242,19 +5371,33 @@ class ChartEditorState extends MusicBeatState
 		}
 	}
 
-	function set_curEvent(val:Int):Int
+	function updateSelectedEvents()
 	{
-		curEvent = val;
+		var i = 0;
+		eventIcons.forEachAlive(function(event:FlxSprite) {
+			if (selectedEvents.contains(i))
+				event.animation.play("selected");
+			else
+				event.animation.play("idle");
+			i++;
+		});
 
-		if (curEvent >= 0)
+		switch (selectedEvents.length)
 		{
-			eventTypeDropdown.value = songData.events[curEvent].type;
-			var typeName:String = songData.events[curEvent].type;
-			if (eventTypeNames.exists(typeName))
-				typeName = eventTypeNames[typeName];
-			curEventText.text = Std.string(songData.events[curEvent].beat) + " | " + typeName;
+			case 0: curEventText.text = "None";
+			case 1:
+				var typeName:String = songData.events[selectedEvents[0]].type;
+				if (eventTypeNames.exists(typeName))
+					typeName = eventTypeNames[typeName];
+				curEventText.text = Std.string(songData.events[selectedEvents[0]].beat) + " | " + typeName;
+			default:  curEventText.text = "Multiple Events Selected";
+		}
 
-			var thisEventParams:Array<EventParams> = getEventParams(songData.events[curEvent].type);
+		if (selectedEvents.length == 1)
+		{
+			eventTypeDropdown.value = songData.events[selectedEvents[0]].type;
+
+			var thisEventParams:Array<EventParams> = getEventParams(songData.events[selectedEvents[0]].type);
 			var time:String = "";
 			var timeVal:Float = 0;
 			for (p in thisEventParams)
@@ -5262,17 +5405,17 @@ class ChartEditorState extends MusicBeatState
 				if (p.time != null && p.time != "")
 				{
 					time = p.time;
-					timeVal = Reflect.field(songData.events[curEvent].parameters, p.id);
+					timeVal = Reflect.field(songData.events[selectedEvents[0]].parameters, p.id);
 				}
 			}
 
-			if (time.startsWith("_") && Reflect.hasField(songData.events[curEvent].parameters, time.substr(1)))
-				time = Reflect.field(songData.events[curEvent].parameters, time.substr(1));
+			if (time.startsWith("_") && Reflect.hasField(songData.events[selectedEvents[0]].parameters, time.substr(1)))
+				time = Reflect.field(songData.events[selectedEvents[0]].parameters, time.substr(1));
 
 			if (time != "")
 			{
 				eventTimeLine.visible = true;
-				var beat:Float = songData.events[curEvent].beat;
+				var beat:Float = songData.events[selectedEvents[0]].beat;
 				switch (time)
 				{
 					case "seconds":
@@ -5288,26 +5431,32 @@ class ChartEditorState extends MusicBeatState
 				if (downscroll)
 					eventTimeLine.y = -eventTimeLine.y;
 			}
-			else
-				eventTimeLine.visible = false;
 
-			updateEventParams(curEvent);
+			updateEventParams(selectedEvents[0]);
+		}
+		else
+			eventTimeLine.visible = false;
+
+		if (selectedEvents.length > 1)
+		{
+			if (eventsSlot.members.contains(eventsSingleGroup))
+				eventsSlot.remove(eventsSingleGroup, true);
+			if (!eventsSlot.members.contains(eventsMultiGroup))
+				eventsSlot.add(eventsMultiGroup);
+
+			eventsMultiGroup.repositionAll();
 		}
 		else
 		{
-			eventTimeLine.visible = false;
-			curEventText.text = "None";
-		}
-		eventIcons.forEachAlive(function(event:FlxSprite)
-			{
-				if (eventIcons.members.indexOf(event) == curEvent)
-					event.animation.play("selected");
-				else
-					event.animation.play("idle");
-			}
-		);
+			if (eventsSlot.members.contains(eventsMultiGroup))
+				eventsSlot.remove(eventsMultiGroup, true);
+			if (!eventsSlot.members.contains(eventsSingleGroup))
+				eventsSlot.add(eventsSingleGroup);
 
-		return val;
+			eventsSingleGroup.repositionAll();
+		}
+		eventsSlot.repositionAll();
+		eventsTab.repositionAll();
 	}
 
 	function updateEventList()
@@ -5317,8 +5466,16 @@ class ChartEditorState extends MusicBeatState
 		var eventList:Array<String> = [""];
 		for (ev in songData.events)
 			eventList.push(Std.string(ev.beat) + " | " + ev.type);
-		if (curEvent >= songData.events.length)
-			curEvent = songData.events.length - 1;
+
+		var poppers:Array<Int> = [];
+		for (e in selectedEvents)
+		{
+			if (e >= songData.events.length)
+				poppers.push(e);
+		}
+		for (p in poppers)
+			selectedEvents.remove(p);
+		updateSelectedEvents();
 	}
 
 	function getEventParams(eventId:String):Array<EventParams>
@@ -5334,7 +5491,7 @@ class ChartEditorState extends MusicBeatState
 	{
 		for (e in eventParams)
 		{
-			eventsTab.vbox.remove(e, true);
+			eventsSingleGroup.remove(e, true);
 			e.kill();
 			e.destroy();
 		}
@@ -5479,7 +5636,8 @@ class ChartEditorState extends MusicBeatState
 		}
 
 		for (e in eventParams)
-			eventsTab.vbox.add(e);
+			eventsSingleGroup.add(e);
+		eventsTab.repositionAll();
 	}
 
 	function editEventParams(eventValues:Int)
@@ -5749,7 +5907,7 @@ class ChartEditorState extends MusicBeatState
 		refreshEventLines();
 		refreshGhostNotes();
 		refreshSelectedNotes();
-		updateEventParams(curEvent);
+		updateSelectedEvents();
 	}
 
 	function handleExtraColumns()

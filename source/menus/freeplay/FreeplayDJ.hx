@@ -111,7 +111,7 @@ class FreeplayDJ extends FlxAnimate
 			FlxG.openURL("https://www.newgrounds.com/portal/view/" + cartoon);
 	}
 
-	override public function playAnim(?Name:String, ForceRestart:Bool = false, Looped:Bool = false, Reverse:Bool = false, flipX:Bool = false, flipY:Bool = false)
+	override public function playAnim(?Name:String, ForceRestart:Bool = true, Looped:Bool = false, Reverse:Bool = false, flipX:Bool = false, flipY:Bool = false)
 	{
 		animName = Name;
 		super.playAnim(Name, ForceRestart, Looped, Reverse, flipX, flipY);

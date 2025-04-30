@@ -204,8 +204,6 @@ class FreeplaySandbox extends FlxSpriteGroup
 			state.remove(nav);
 			exitFunc();
 		}, changeSelection);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
 		state.add(nav);
 
 		changeSelection();
@@ -417,8 +415,6 @@ class FreeplaySandboxMenu extends FlxSpriteGroup
 			exitFunc();
 			this.destroy();
 		}, changeSelection);
-		nav.leftClick = nav.accept;
-		nav.rightClick = nav.back;
 		state.add(nav);
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);

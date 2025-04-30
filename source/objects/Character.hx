@@ -377,6 +377,7 @@ class Character extends FlxSprite
 			if (myCharType == "atlas")
 			{
 				atlas.update(elapsed);
+				curAnimName = atlas.anim.name;
 				curAnimFrame = atlas.anim.curFrame;
 				curAnimFinished = (atlas.anim.curFrame >= atlas.anim.frameLength - 1);
 			}
@@ -824,7 +825,6 @@ class Character extends FlxSprite
 				@:privateAccess
 				if (forced || inLoop || trueAnim != curAnimName || atlas.anim.curFrame >= atlas.anim.frameLength - 1)
 					atlas.playAnim(trueAnim, true, curAnim.loop);
-				curAnimName = trueAnim;
 			}
 			else if (characterData.asset != "")
 			{

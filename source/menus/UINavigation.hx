@@ -17,6 +17,8 @@ class UINavigation extends FlxBasic
 	public var scroll:Int->Void = null;
 	public var leftClick:Void->Void = null;
 	public var rightClick:Void->Void = null;
+	public var leftClickIsAccept:Bool = true;
+	public var rightClickIsBack:Bool = true;
 
 	public var uiSounds:Array<Bool> = [true, true, true];
 	public var uiSoundFiles:Array<String> = ["ui/scrollMenu", "ui/confirmMenu", "ui/cancelMenu"];
@@ -99,18 +101,24 @@ class UINavigation extends FlxBasic
 			scroll(-FlxG.mouse.wheel);
 		}
 
-		if (leftClick != null && Options.mouseJustPressed())
+		if ((leftClick != null || (leftClickIsAccept && accept != null)) && Options.mouseJustPressed())
 		{
 			if (uiSounds[1])
 				FlxG.sound.play(Paths.sound(uiSoundFiles[1]));
-			leftClick();
+			if (leftClick != null)
+				leftClick();
+			else if (leftClickIsAccept && accept != null)
+				accept();
 		}
 
-		if (rightClick != null && Options.mouseJustPressed(true))
+		if ((rightClick != null || (rightClickIsBack && back != null)) &&Options.mouseJustPressed(true))
 		{
 			if (uiSounds[2])
 				FlxG.sound.play(Paths.sound(uiSoundFiles[2]));
-			rightClick();
+			if (rightClick != null)
+				rightClick();
+			else if (rightClickIsBack && back != null)
+				back();
 		}
 	}
 

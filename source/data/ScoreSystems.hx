@@ -196,7 +196,7 @@ class ScoreSystems
 		for (note in notes)
 		{
 			if (note < -judgeMS[4])
-				fScore -= 10;
+				fScore -= 100;
 			else
 			{
 				var absTiming:Float = Math.abs(note);
@@ -238,7 +238,7 @@ class ScoreSystems
 
 	public static function clearFromJudgements(j:Array<Int>):Float
 	{
-		return (j[0] + j[1] + j[2]) / (j[0] + j[1] + j[2] + j[3] + j[4] + j[5]);
+		return Math.max(0, j[0] + j[1] + j[2] - j[5]) / (j[0] + j[1] + j[2] + j[3] + j[4] + j[5]);
 	}
 
 	public static function rankFromJudgements(j:Array<Int>):Int

@@ -2,7 +2,8 @@
 1-8: Add/Delete Note
 Hold while scrolling to create a hold note
 Left Click: Add/Select Note/Event
-Left Click + Drag: Add Hold Note/Select Multiple Notes
+Shift + Left Click: Select Multiple Notes/Events/Deselect Events
+Left Click + Drag: Add Hold Note/Select Multiple Notes/Events
 Right Click: Delete Note
 Ctrl: Allow Hold Note Adjustment
 Left Click & drag selected notes to move them

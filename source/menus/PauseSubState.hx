@@ -13,7 +13,7 @@ import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
 import data.Options;
 import data.Song;
-import editors.ChartEditorState;
+import editors.chart.ChartEditorState;
 import game.PlayState;
 import menus.UINavigation;
 import objects.Alphabet;
@@ -243,7 +243,6 @@ class PauseSubState extends FlxSubState
 			menu[curOption][1]();
 			PlayState.instance.hscriptExec("pauseAccept", []);
 		}, null, changeSelection);
-		nav.leftClick = nav.accept;
 		add(nav);
 
 
