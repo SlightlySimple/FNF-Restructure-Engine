@@ -1,0 +1,45 @@
+function update(elapsed)
+{
+	if (game.health > 25)
+	{
+		if ((this.curAnimName == "raiseKnife" || this.curAnimName == "hairFallKnife") && this.curAnimFinished)
+		{
+			this.canDance = true;
+			this.playAnim("lowerKnife", true, true);
+			this.lastIdle = 0;
+		}
+	}
+}
+
+function beatHit()
+{
+	if (game.health <= 25)
+	{
+		if (StringTools.startsWith(this.curAnimName, "dance"))
+		{
+			this.canDance = false;
+			this.playAnim("raiseKnife");
+		}
+	}
+}
+
+function hairBlow()
+{
+	if (this.curAnimName == "raiseKnife" || this.curAnimName == "idleKnife" || this.curAnimName == "lowerKnife" || this.curAnimName == "hairBlowKnife")
+		this.playAnim("hairBlowKnife");
+	else
+		this.playAnim("hairBlowNormal");
+	this.canDance = false;
+}
+
+function hairFall()
+{
+	if (this.curAnimName == "hairBlowKnife")
+		this.playAnim("hairFallKnife", true, true);
+	else
+	{
+		this.playAnim("hairFallNormal", true, true);
+		this.canDance = true;
+		this.lastIdle = 1;
+	}
+}

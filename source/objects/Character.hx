@@ -7,6 +7,7 @@ import flxanimate.FlxAnimate;
 import data.ObjectData;
 import data.Options;
 import game.PlayState;
+import scripting.HscriptHandler;
 import lime.app.Application;
 
 using StringTools;
@@ -14,6 +15,7 @@ using StringTools;
 class Character extends FlxSprite
 {
 	public var data:Map<String, Dynamic> = new Map<String, Dynamic>();
+	public var script:HscriptHandler;
 
 	public var characterData:CharacterData = null;
 	public var curCharacter:String = TitleState.defaultVariables.player1;
@@ -847,6 +849,9 @@ class Character extends FlxSprite
 			updateOffsets();
 		}
 		inLoop = false;
+
+		if (script != null)
+			script.execFunc("playAnim", [anim, forced, important, canSwitchLeftRight]);
 	}
 
 	function updateOffsets()

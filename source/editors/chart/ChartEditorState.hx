@@ -34,6 +34,7 @@ import data.Song;
 import data.TimingStruct;
 import data.Noteskins;
 import data.converters.BaseGameConverter;
+import data.converters.CodenameConverter;
 import game.PlayState;
 import objects.AnimatedSprite;
 import objects.Character;
@@ -1316,6 +1317,24 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
+		var mergeSectionButton:TextButton = cast ui.element("mergeSectionButton");
+		mergeSectionButton.onClicked = function () {
+			var sec:SectionData = songData.notes[curSection];
+			if (songData.notes.length > curSection + 1)
+			{
+				var sec2:SectionData = songData.notes[curSection + 1];
+				if (sec.camOn == sec2.camOn && DeepEquals.deepEquals(sec.defaultNotetypes, sec2.defaultNotetypes))
+				{
+					sec.lengthInSteps += sec2.lengthInSteps;
+					songData.notes.remove(sec2);
+
+					songData = Song.timeSections(songData);
+					refreshSectionLines();
+					refreshSectionIcons();
+				}
+			}
+		}
+
 		copyLastStepper = cast ui.element("copyLastStepper");
 		copyLastStepper.onChanged = refreshGhostNotes;
 
@@ -2286,8 +2305,17 @@ class ChartEditorState extends MusicBeatState
 						icon: "save"
 					},
 					{
-						label: "Convert from Base Game",
-						action: convertFromBase
+						label: "Convert from...",
+						options: [
+							{
+								label: "Base Game",
+								action: convertFromBase
+							},
+							{
+								label: "Codename Engine",
+								action: convertFromCodename
+							}
+						]
 					},
 					null,
 					{
@@ -6926,5 +6954,12 @@ class ChartEditorState extends MusicBeatState
 		autosavePaused = true;
 
 		BaseGameConverter.convertChart(function() { autosavePaused = false; });
+	}
+
+	function convertFromCodename()
+	{
+		autosavePaused = true;
+
+		CodenameConverter.convertChart(function() { autosavePaused = false; });
 	}
 }

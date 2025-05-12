@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="gunshot.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="gunshot0000" x="0" y="0" width="166" height="155" frameX="-581" frameY="0" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0001" x="168" y="0" width="301" height="242" frameX="-378" frameY="-95" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0002" x="0" y="244" width="726" height="179" frameX="0" frameY="-171" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0003" x="0" y="425" width="398" height="88" frameX="-343" frameY="-166" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0004" x="400" y="425" width="415" height="109" frameX="-332" frameY="-172" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0005" x="400" y="425" width="415" height="109" frameX="-332" frameY="-172" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0006" x="0" y="536" width="441" height="120" frameX="-313" frameY="-184" frameWidth="754" frameHeight="350"/>
+	<SubTexture name="gunshot0007" x="0" y="536" width="441" height="120" frameX="-313" frameY="-184" frameWidth="754" frameHeight="350"/>
+</TextureAtlas>

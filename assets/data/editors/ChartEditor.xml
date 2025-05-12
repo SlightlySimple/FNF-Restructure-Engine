@@ -88,6 +88,7 @@
 				</hbox>
 				<stepper id="sectionLengthStepper" text="Section Length:" default="16" min="1" infoText="How long (in steps) this section should be."/>
 				<textbutton id="splitSectionButton" text="Split Section" image="LONG" infoText="Split the current section at the position of the strumline, creating two new identical but shorter sections."/>
+				<textbutton id="mergeSectionButton" text="Merge Section" image="LONG" infoText="Merge the current section with the next one. Only works if the two sections have the same camera character and default note types."/>
 				<stepper id="copyLastStepper" text="Copy Last:" infoText="How many sections earlier to copy notes from. A negative value will mean that notes from later sections are copied."/>
 				<hbox>
 					<textbutton id="copyLastButton0" text="Left" image="SHORT" infoText="Copy every note on the left side of another section into this section."/>

@@ -1,0 +1,32 @@
+function create()
+{
+	if (PlayState.variant == "pico" && PlayState.firstPlay)
+		game.canStartCountdown = false;
+	game.hscriptAdd("video");
+}
+
+function startCountdown()
+{
+	if (!game.canStartCountdown && PlayState.variant == "pico")
+	{
+		game.hscriptIdExec("cutscene", "initCutscene", ["cutscene-pico"]);
+
+		new FlxTimer().start(0.001, function(tmr) {
+			if (game.stage.curStage == "tankErect")
+			{
+				var cutsceneData = game.hscriptIdGet("cutscene", "cutsceneData");
+				for (o in cutsceneData.objects)
+				{
+					var obj = game.hscriptIdGet("cutscene", "cutsceneObjects")[o.asset];
+					obj.shader = null;
+					if (o.type == "atlas" || StringTools.startsWith(o.asset, "characters"))
+						obj.cameras = [game.hscriptIdGet("stage", "rimlightCamera")];
+					else
+						obj.cameras = [game.hscriptIdGet("stage", "aboveRimlightCamera")];
+				}
+			}
+
+			game.hscriptIdExec("cutscene", "startCutscene", []);
+		});
+	}
+}

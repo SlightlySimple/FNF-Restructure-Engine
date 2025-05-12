@@ -56,7 +56,7 @@ class SMFile
 		var stopList:String = fileData.split("#STOPS:")[1].split(";")[0];
 		stopList = stopList.replace("\r","").replace("\n","").replace("\t","").replace(" ","");
 		var stopArray:Array<String> = stopList.split(",");
-		if (fileData.indexOf("#STOPS:;") > -1)
+		if (fileData.indexOf("#STOPS:;") > -1 || fileData.indexOf("#STOPS:") <= -1)
 			stopArray = [];
 		var stopMap:Array<Array<Float>> = [];
 		var timeOfAllStops:Float = 0;
@@ -82,6 +82,8 @@ class SMFile
 		newSM.bpmMap = bpmMap;
 
 		var offset:Float = Std.parseFloat(fileData.split("#OFFSET:")[1].split(";")[0]) * 1000;
+		if (fileData.indexOf("#OFFSET:") <= -1)
+			offset = 0;
 
 		var scrollSpeeds:Array<Array<Float>> = [[0, 1]];
 

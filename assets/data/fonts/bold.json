@@ -1,0 +1,22 @@
+{
+	"asset": "ui/fonts/bold",
+	"lowercaseOffset": 0,
+	"offsets": [
+		["-", 20],
+		[".", 40],
+		[",", 40],
+		["_", 40]
+	],
+	"animPrefixes": [
+		["'", "-apostraphie-"],
+		["\\", "-back slash-"],
+		[",", "-comma-"],
+		["-", "-dash-"],
+		["!", "-exclamation point-"],
+		["/", "-forward slash-"],
+		[".", "-period-"],
+		["?", "-question mark-"],
+		["\"", "-start quote-"]
+	],
+	"allowCase": "upperOnly"
+}

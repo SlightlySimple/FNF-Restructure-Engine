@@ -1,0 +1,784 @@
+{
+	"objects": [
+		{
+			"type": "atlas",
+			"asset": "week7/pico/tankmanStart",
+			"relativeTo": "player2",
+			"x": 804,
+			"y": 204,
+			"animations": [
+				{
+					"name": "p1",
+					"indices": [-1, 0, 189],
+					"fps": 24,
+					"offsets": [0, 0]
+				},
+				{
+					"name": "p2",
+					"indices": [-1, 311, 399],
+					"fps": 24,
+					"offsets": [0, 0]
+				},
+				{
+					"name": "p3",
+					"indices": [-1, 191, 309],
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		},
+		{
+			"type": "sparrow",
+			"asset": "week7/pico/gunshot",
+			"relativeTo": "player2",
+			"x": -234,
+			"y": 219,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "gunshot",
+					"fps": 24,
+					"loop": false
+				}
+			]
+		},
+		{
+			"type": "atlas",
+			"asset": "week7/pico/otisSwoopIn",
+			"relativeTo": "gf",
+			"x": 690,
+			"y": 518,
+			"animations": [
+				{
+					"name": "go",
+					"indices": [-1, 8, 783],
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		},
+		{
+			"type": "atlas",
+			"asset": "week7/pico/picoCatchNene",
+			"relativeTo": "player1",
+			"x": 187,
+			"y": 214,
+			"animations": [
+				{
+					"name": "go",
+					"prefix": "pico catch nene full",
+					"fps": 24,
+					"offsets": [0, 0]
+				}
+			]
+		},
+		{
+			"type": "sparrow",
+			"asset": "characters/pico/Pico_Basic",
+			"relativeTo": "player1",
+			"x": 0,
+			"y": 38,
+			"animations": [
+				{
+					"name": "idle",
+					"prefix": "Pico Idle Dance",
+					"fps": 24,
+					"loop": true
+				}
+			]
+		}
+	],
+	"layers": [
+		{
+			"id": "misc",
+			"events": [
+				{
+					"time": 0.01,
+					"type": "playSound",
+					"sound": "week7/pico/startCutscene",
+					"volume": 1
+				},
+				{
+					"time": 33.901,
+					"type": "endCutscene"
+				}
+			]
+		},
+		{
+			"id": "sprites",
+			"events": [
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player1"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player2"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "gf"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "!gf:abot"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "week7/pico/picoCatchNene"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "week7/pico/gunshot"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "characters/pico/Pico_Basic",
+					"animation": "idle"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "week7/pico/otisSwoopIn",
+					"animation": "go"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "week7/pico/tankmanStart",
+					"animation": "p1"
+				},
+				{
+					"time": 13.7083,
+					"type": "hide",
+					"object": "characters/pico/Pico_Basic"
+				},
+				{
+					"time": 13.7083,
+					"type": "show",
+					"object": "week7/pico/picoCatchNene"
+				},
+				{
+					"time": 13.7083,
+					"type": "playAnim",
+					"object": "week7/pico/picoCatchNene",
+					"animation": "go"
+				},
+				{
+					"time": 24.4167,
+					"type": "playAnim",
+					"object": "week7/pico/tankmanStart",
+					"animation": "p2"
+				},
+				{
+					"time": 27.8333,
+					"type": "show",
+					"object": "week7/pico/gunshot"
+				},
+				{
+					"time": 27.8333,
+					"type": "playAnim",
+					"object": "week7/pico/gunshot",
+					"animation": "go"
+				},
+				{
+					"time": 27.875,
+					"type": "playAnim",
+					"object": "week7/pico/tankmanStart",
+					"animation": "p3"
+				},
+				{
+					"time": 28.1666,
+					"type": "hide",
+					"object": "week7/pico/gunshot"
+				}
+			]
+		},
+		{
+			"id": "camera",
+			"events": [
+				{
+					"time": 0,
+					"type": "cameraPosition",
+					"x": 49,
+					"y": 157,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 0,
+					"type": "cameraZoom",
+					"zoom": 0.682,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 0,
+					"type": "cameraZoom",
+					"zoom": 0.692,
+					"relativeTo": "absolute",
+					"tweenTime": 6.2083,
+					"ease": "linear"
+				},
+				{
+					"time": 6.25,
+					"type": "cameraPosition",
+					"x": 65,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 1.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 6.25,
+					"type": "cameraZoom",
+					"zoom": 1.0843,
+					"relativeTo": "absolute",
+					"tweenTime": 1.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 8.5,
+					"type": "cameraPosition",
+					"x": 63,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 8.5416,
+					"type": "cameraPosition",
+					"x": 49,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 8.625,
+					"type": "cameraPosition",
+					"x": 45,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 8.75,
+					"type": "cameraPosition",
+					"x": 41,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 8.875,
+					"type": "cameraPosition",
+					"x": 39,
+					"y": 13,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 11.2083,
+					"type": "cameraPosition",
+					"x": 18,
+					"y": -138,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.625,
+					"ease": "quadIn"
+				},
+				{
+					"time": 11.2083,
+					"type": "cameraZoom",
+					"zoom": 0.977,
+					"relativeTo": "absolute",
+					"tweenTime": 0.625,
+					"ease": "quadIn"
+				},
+				{
+					"time": 11.833,
+					"type": "cameraPosition",
+					"x": 1,
+					"y": -438,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.5,
+					"ease": "quadOut"
+				},
+				{
+					"time": 11.833,
+					"type": "cameraZoom",
+					"zoom": 0.786,
+					"relativeTo": "absolute",
+					"tweenTime": 0.5,
+					"ease": "quadOut"
+				},
+				{
+					"time": 12.5,
+					"type": "cameraPosition",
+					"x": 47,
+					"y": -378,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 1,
+					"ease": "linear"
+				},
+				{
+					"time": 12.5,
+					"type": "cameraZoom",
+					"zoom": 0.78,
+					"relativeTo": "absolute",
+					"tweenTime": 1,
+					"ease": "linear"
+				},
+				{
+					"time": 13.5416,
+					"type": "cameraPosition",
+					"x": 51,
+					"y": -336,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.5416,
+					"type": "cameraZoom",
+					"zoom": 0.798,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.5833,
+					"type": "cameraPosition",
+					"x": 69,
+					"y": -272,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.5833,
+					"type": "cameraZoom",
+					"zoom": 0.8145,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.625,
+					"type": "cameraPosition",
+					"x": 103,
+					"y": -124,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.625,
+					"type": "cameraZoom",
+					"zoom": 0.895,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.6666,
+					"type": "cameraPosition",
+					"x": 145,
+					"y": -31,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.6666,
+					"type": "cameraZoom",
+					"zoom": 0.9057,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.7083,
+					"type": "cameraPosition",
+					"x": 358,
+					"y": 96,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.7083,
+					"type": "cameraZoom",
+					"zoom": 0.8977,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.7916,
+					"type": "cameraPosition",
+					"x": 458,
+					"y": 176,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.7916,
+					"type": "cameraZoom",
+					"zoom": 0.9835,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.875,
+					"type": "cameraPosition",
+					"x": 509,
+					"y": 212,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.875,
+					"type": "cameraZoom",
+					"zoom": 1.0168,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.9583,
+					"type": "cameraPosition",
+					"x": 527,
+					"y": 234,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 13.9583,
+					"type": "cameraZoom",
+					"zoom": 1.0284,
+					"relativeTo": "absolute",
+					"tweenTime": 0,
+					"ease": "linear"
+				},
+				{
+					"time": 13.9583,
+					"type": "cameraPosition",
+					"x": 555,
+					"y": 250,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 1.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 13.9583,
+					"type": "cameraZoom",
+					"zoom": 1.0316,
+					"relativeTo": "absolute",
+					"tweenTime": 1.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 24.0833,
+					"type": "cameraPosition",
+					"x": 445,
+					"y": 241,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.25,
+					"ease": "quadIn"
+				},
+				{
+					"time": 24.0833,
+					"type": "cameraZoom",
+					"zoom": 1.012,
+					"relativeTo": "absolute",
+					"tweenTime": 0.25,
+					"ease": "quadIn"
+				},
+				{
+					"time": 24.3333,
+					"type": "cameraPosition",
+					"x": 152,
+					"y": 223,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.1666,
+					"ease": "linear"
+				},
+				{
+					"time": 24.3333,
+					"type": "cameraZoom",
+					"zoom": 0.972,
+					"relativeTo": "absolute",
+					"tweenTime": 0.1666,
+					"ease": "linear"
+				},
+				{
+					"time": 24.5,
+					"type": "cameraPosition",
+					"x": -117,
+					"y": 180,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 24.5,
+					"type": "cameraZoom",
+					"zoom": 0.881,
+					"relativeTo": "absolute",
+					"tweenTime": 0.2916,
+					"ease": "quadOut"
+				},
+				{
+					"time": 24.7916,
+					"type": "cameraPosition",
+					"x": -129,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.1666,
+					"ease": "linear"
+				},
+				{
+					"time": 24.7916,
+					"type": "cameraZoom",
+					"zoom": 0.877,
+					"relativeTo": "absolute",
+					"tweenTime": 0.1666,
+					"ease": "linear"
+				},
+				{
+					"time": 24.9583,
+					"type": "cameraPosition",
+					"x": -135,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.2083,
+					"ease": "linear"
+				},
+				{
+					"time": 24.9583,
+					"type": "cameraZoom",
+					"zoom": 0.876,
+					"relativeTo": "absolute",
+					"tweenTime": 0.2083,
+					"ease": "linear"
+				},
+				{
+					"time": 27.8333,
+					"type": "cameraPosition",
+					"x": -145,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 27.875,
+					"type": "cameraPosition",
+					"x": -175,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 27.9583,
+					"type": "cameraPosition",
+					"x": -165,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 28.0416,
+					"type": "cameraPosition",
+					"x": -164,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 28.1666,
+					"type": "cameraPosition",
+					"x": -163,
+					"y": 178,
+					"relativeTo": "gf",
+					"movementType": "instant"
+				},
+				{
+					"time": 30.5,
+					"type": "cameraPosition",
+					"x": -152,
+					"y": 176,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.5,
+					"ease": "quadIn"
+				},
+				{
+					"time": 30.5,
+					"type": "cameraZoom",
+					"zoom": 0.873,
+					"relativeTo": "absolute",
+					"tweenTime": 0.5,
+					"ease": "quadIn"
+				},
+				{
+					"time": 31,
+					"type": "cameraPosition",
+					"x": -54,
+					"y": 167,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.75,
+					"ease": "linear"
+				},
+				{
+					"time": 31,
+					"type": "cameraZoom",
+					"zoom": 0.843,
+					"relativeTo": "absolute",
+					"tweenTime": 0.75,
+					"ease": "linear"
+				},
+				{
+					"time": 31.75,
+					"type": "cameraPosition",
+					"x": 50,
+					"y": 157,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.875,
+					"ease": "linear"
+				},
+				{
+					"time": 31.75,
+					"type": "cameraZoom",
+					"zoom": 0.814,
+					"relativeTo": "absolute",
+					"tweenTime": 0.875,
+					"ease": "linear"
+				},
+				{
+					"time": 32.625,
+					"type": "cameraPosition",
+					"x": 55,
+					"y": 156,
+					"relativeTo": "gf",
+					"movementType": "tween",
+					"tweenTime": 0.375,
+					"ease": "linear"
+				},
+				{
+					"time": 32.625,
+					"type": "cameraZoom",
+					"zoom": 0.813,
+					"relativeTo": "absolute",
+					"tweenTime": 0.375,
+					"ease": "linear"
+				}
+			]
+		},
+		{
+			"id": "subtitles",
+			"events": [
+				{
+					"time": 0.285,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.1"
+				},
+				{
+					"time": 2.673,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.2"
+				},
+				{
+					"time": 4.756,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.3"
+				},
+				{
+					"time": 5.589,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.4"
+				},
+				{
+					"time": 5.899,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.5"
+				},
+				{
+					"time": 6.516,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 8.589,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.6"
+				},
+				{
+					"time": 8.984,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.7"
+				},
+				{
+					"time": 9.575,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.8"
+				},
+				{
+					"time": 10.858,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 13.776,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.9"
+				},
+				{
+					"time": 14.713,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 24.772,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.10"
+				},
+				{
+					"time": 27.910,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.11"
+				},
+				{
+					"time": 29.659,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.12"
+				},
+				{
+					"time": 30.685,
+					"type": "subtitle",
+					"text": "#subtitles.stress.pico.cutscene.13"
+				},
+				{
+					"time": 32.564,
+					"type": "subtitle",
+					"text": ""
+				}
+			]
+		}
+	]
+}

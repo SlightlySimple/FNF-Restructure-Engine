@@ -1663,6 +1663,7 @@ class PlayState extends MusicBeatState
 			{
 				newScript.setVar("thisChar", thisChar);
 				newScript.setVar("this", thisChar);
+				thisChar.script = newScript;
 			}
 			newScript.setVar("playingChar", strumNotes.members[playerColumns[0]].singers[0]);
 		}
@@ -1670,6 +1671,8 @@ class PlayState extends MusicBeatState
 		{
 			myScripts.remove(id);
 			myScriptIDs.remove(id);
+			if (thisChar != null)
+				thisChar.script = null;
 		}
 	}
 

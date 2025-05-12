@@ -1,0 +1,39 @@
+function create()
+{
+	if (PlayState.variant != "pico")
+	{
+		game.hscriptRemove(scriptId);
+		return;
+	}
+
+	game.canEndSong = false;
+	game.hscriptAdd("cutscene");
+}
+
+function endSong()
+{
+	if (!game.canEndSong)
+	{
+		game.hscriptIdExec("cutscene", "initCutscene", ["cutsceneEnd-pico"]);
+		game.camHUD.alpha = 1;
+		FlxTween.tween(game.camHUD, {alpha: 0}, 1);
+
+		new FlxTimer().start(0.001, function(tmr) {
+			if (game.stage.curStage == "tankErect")
+			{
+				var cutsceneData = game.hscriptIdGet("cutscene", "cutsceneData");
+				for (o in cutsceneData.objects)
+				{
+					if (o.type == "atlas" && o.relativeTo == "player2")
+					{
+						var obj = game.hscriptIdGet("cutscene", "cutsceneObjects")[o.asset];
+						obj.shader = null;
+						obj.cameras = [game.hscriptIdGet("stage", "rimlightCamera")];
+					}
+				}
+			}
+
+			game.hscriptIdExec("cutscene", "startCutscene", []);
+		});
+	}
+}

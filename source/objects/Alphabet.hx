@@ -11,18 +11,62 @@ import data.Options;
 
 using StringTools;
 
+typedef AlphabetFontData =
+{
+	var asset:String;
+	var ?spaceSize:Null<Float>;
+	var ?lineBreakSize:Null<Float>;
+	var lowercaseOffset:Float;
+	var offsets:Array<Array<Dynamic>>;
+	var animPrefixes:Array<Array<String>>;
+	var allowCase:String;
+}
+
+class AlphabetFont
+{
+	public static var fonts:Map<String, AlphabetFont> = new Map<String, AlphabetFont>();
+	var name:String;
+	public var data:AlphabetFontData;
+	public var offsets:Map<String, Float> = new Map<String, Float>();
+	public var animPrefixes:Map<String, String> = new Map<String, String>();
+
+	public function new(name:String)
+	{
+		this.name = name;
+		this.data = cast Paths.json("fonts/" + name);
+
+		for (o in data.offsets)
+			offsets[o[0]] = o[1];
+
+		for (p in data.animPrefixes)
+			animPrefixes[p[0]] = p[1];
+	}
+
+	public static function parseFont(font:String)
+	{
+		var fontData:AlphabetFont = new AlphabetFont(font);
+		fonts[font] = fontData;
+	}
+}
+
 class Alphabet extends FlxSpriteGroup
 {
 	public var text(default, set):String = "";
-	public var font:String = "bold";
+	public var font(default, set):String = "bold";
 	public var maxWidth:Int = 0;
 	public var wordWrap:Bool = false;
 	public var align(default, set):String = "left";
 	public var textScale:Float = 1;
 
+	public var spaceSize:Float = 40;
+	public var lineBreakSize:Float = 60;
+
 	override public function new(x:Int, y:Int, text:String, ?font:String = "bold", ?maxWidth:Int = 0, ?wordWrap:Bool = false, ?textScale:Float = 1.0)
 	{
 		super(x, y);
+
+		if (!AlphabetFont.fonts.exists(font))
+			AlphabetFont.parseFont(font);
 
 		this.font = font;
 		this.maxWidth = maxWidth;
@@ -49,7 +93,7 @@ class Alphabet extends FlxSpriteGroup
 			if (maxWidth > 0 && predictedWidth > maxWidth && !wordWrap)
 				xs = maxWidth / predictedWidth;
 
-			var fontFrames:FlxFramesCollection = Paths.sparrow("ui/fonts/" + font);
+			var fontFrames:FlxFramesCollection = Paths.sparrow(AlphabetFont.fonts[font].data.asset);
 			var xx:Int = 0;
 			var yy:Int = 0;
 			var lines:Array<Array<FlxSprite>> = [[]];
@@ -72,7 +116,7 @@ class Alphabet extends FlxSpriteGroup
 						for (j in i...text.length)
 						{
 							if (text.charAt(j) == " ")
-								xx2 += Std.int(40 * xs);
+								xx2 += Std.int(spaceSize * xs);
 							else
 							{
 								var letterFrame:FlxFrame = fontFrames.framesHash.get(getAnimPrefix(text.charAt(j)) + "0000");
@@ -85,20 +129,20 @@ class Alphabet extends FlxSpriteGroup
 						if (xx2 >= maxWidth)
 						{
 							xx = 0;
-							yy += 60;
+							yy += Std.int(lineBreakSize);
 							lines.push([]);
 						}
 						else
-							xx += Std.int(40 * xs);
+							xx += Std.int(spaceSize * xs);
 					}
 					else
-						xx += Std.int(40 * xs);
+						xx += Std.int(spaceSize * xs);
 				}
 				else if (char == "\n")
 				{
 					letter.visible = letter.active = false;
 					xx = 0;
-					yy += 60;
+					yy += Std.int(lineBreakSize);
 					lines.push([]);
 				}
 				else
@@ -109,12 +153,10 @@ class Alphabet extends FlxSpriteGroup
 					letter.animation.play("me");
 					letter.scale.set(xs, textScale);
 					letter.updateHitbox();
-					if (char == "-")
-						letter.y += 20 * textScale;
-					else if (char == "." || char == "," || char == "_")
-						letter.y += 40 * textScale;
-					else if (char != char.toUpperCase() && font != "bold")
-						letter.y += (60 * textScale) - letter.height;
+					if (AlphabetFont.fonts[font].offsets.exists(char))
+						letter.y += AlphabetFont.fonts[font].offsets[char] * textScale;
+					else if (getAnimPrefix(char) != char.toUpperCase() && AlphabetFont.fonts[font].data.allowCase != "upperOnly")
+						letter.y += (AlphabetFont.fonts[font].data.lowercaseOffset * textScale) - letter.height;
 					xx += Std.int(letter.width);
 
 					lines[lines.length-1].push(letter);
@@ -149,12 +191,26 @@ class Alphabet extends FlxSpriteGroup
 		}
 	}
 
+	public function set_font(val:String):String
+	{
+		if (AlphabetFont.fonts[val].data.spaceSize != null)
+			spaceSize = AlphabetFont.fonts[val].data.spaceSize;
+
+		if (AlphabetFont.fonts[val].data.lineBreakSize != null)
+			lineBreakSize = AlphabetFont.fonts[val].data.lineBreakSize;
+
+		return font = val;
+	}
+
 	public function setFont(font:String)
 	{
 		if (this.font != font)
 		{
+			if (!AlphabetFont.fonts.exists(font))
+				AlphabetFont.parseFont(font);
+
 			this.font = font;
-			var fontFrames:FlxFramesCollection = Paths.sparrow("ui/fonts/" + font);
+			var fontFrames:FlxFramesCollection = Paths.sparrow(AlphabetFont.fonts[font].data.asset);
 
 			forEachAlive(function(letter:FlxSprite) { letter.frames = fontFrames; });
 
@@ -164,21 +220,15 @@ class Alphabet extends FlxSpriteGroup
 
 	function getAnimPrefix(char:String):String
 	{
-		switch (char)
+		if (AlphabetFont.fonts[font].animPrefixes.exists(char))
+			return AlphabetFont.fonts[font].animPrefixes[char];
+
+		switch (AlphabetFont.fonts[font].data.allowCase)
 		{
-			case "'": return "-apostraphie-";
-			case "\\": return "-back slash-";
-			case ",": return "-comma-";
-			case "-": return "-dash-";
-			case "!": return "-exclamation point-";
-			case "/": return "-forward slash-";
-			case ".": return "-period-";
-			case "?": return "-question mark-";
-			case "\"": return "-start quote-";
+			case "upperOnly": return char.toUpperCase();
+			case "lowerOnly": return char.toLowerCase();
 		}
 
-		if (font == "bold")
-			return char.toUpperCase();
 		return char;
 	}
 

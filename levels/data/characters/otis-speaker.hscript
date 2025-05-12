@@ -1,0 +1,55 @@
+muzzleOffsets = new StringMap();
+muzzleOffsets["shoot1"] = [590, -130];
+muzzleOffsets["shoot2"] = [620, -170];
+muzzleOffsets["shoot3"] = [-560, -190];
+muzzleOffsets["shoot4"] = [-520, -230];
+
+function create()
+{
+	abot = new Character(this.charX, this.charY, "abot");
+	abot.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+	insert(game.members.indexOf(this), abot);
+
+	game.hscriptAdd(scriptId + "-abot", "data/" + abot.characterData.script, false, abot);
+	game.hscriptIdExec(scriptId + "-abot", "create");
+
+	muzzleFlash = CreateSprite("characters/otis/otis_flashes");
+	muzzleFlash.addAnim('shoot1', 'shoot back0', 24, false);
+	muzzleFlash.addAnim('shoot2', 'shoot back low0', 24, false);
+	muzzleFlash.addAnim('shoot3', 'shoot forward0', 24, false);
+	muzzleFlash.addAnim('shoot4', 'shoot forward low0', 24, false);
+	insert(game.members.indexOf(this) + 1, muzzleFlash);
+	muzzleFlash.visible = false;
+
+	muzzleFlash.animation.callback = function(name, number, frameIndex) {
+		if (number > 1)
+			muzzleFlash.blend = null;
+		else
+			muzzleFlash.blend = BlendMode.ADD;
+	}
+
+	muzzleFlash.animation.finishCallback = function(name) {
+		muzzleFlash.visible = false;
+	}
+}
+
+function update(elapsed)
+{
+	abot.visible = this.visible;
+	abot.repositionCharacter(this.charX, this.charY);
+	abot.color = this.color;
+	if (game.stage.curStage != "tankErect")
+		abot.shader = this.shader;
+}
+
+function playAnim(anim, forced, important, canSwitchLeftRight)
+{
+	if (muzzleOffsets.exists(anim))
+	{
+		muzzleFlash.playAnim(anim, true);
+		muzzleFlash.setPosition(this.x + muzzleOffsets[anim][0] + 40, this.y + muzzleOffsets[anim][1] + 135);
+		muzzleFlash.visible = true;
+	}
+	else
+		muzzleFlash.visible = false;
+}

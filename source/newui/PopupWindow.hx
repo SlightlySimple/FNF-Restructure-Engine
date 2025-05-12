@@ -1,6 +1,7 @@
 package newui;
 
 import flixel.FlxG;
+import flixel.FlxBasic;
 import flixel.FlxState;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -68,6 +69,8 @@ class PopupWindow extends FlxSubState
 		closeCallback = function() { FlxG.sound.play(Paths.sound("ui/editors/exitWindow"), 0.5); }
 
 		camera = FlxG.cameras.list[FlxG.cameras.list.length - 1];
+		for (m in members)
+			m.camera = camera;
 	}
 
 	override public function update(elapsed:Float)

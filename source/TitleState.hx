@@ -40,6 +40,7 @@ typedef TitleSequence =
 	var action:String;
 	var value:Int;
 	var text:String;
+	var ?font:String;
 }
 
 class TitleState extends MusicBeatState
@@ -273,17 +274,17 @@ class TitleState extends MusicBeatState
 			{
 				for (i in introBeat...curBeat)
 				{
-					if (i+1 < titleScreenSequence.length)
+					if (i + 1 < titleScreenSequence.length)
 					{
-						if (Std.isOfType(titleScreenSequence[i+1], Array))
+						if (Std.isOfType(titleScreenSequence[i + 1], Array))
 						{
-							var seqArray:Array<TitleSequence> = cast titleScreenSequence[i+1];
+							var seqArray:Array<TitleSequence> = cast titleScreenSequence[i + 1];
 							for (seq in seqArray)
 								titleScreenAction(seq);
 						}
 						else
 						{
-							var seq:TitleSequence = cast titleScreenSequence[i+1];
+							var seq:TitleSequence = cast titleScreenSequence[i + 1];
 							titleScreenAction(seq);
 						}
 					}
@@ -339,13 +340,15 @@ class TitleState extends MusicBeatState
 				var alphaText:String = seq.text;
 				if (seq.action == "addIntroText")
 					alphaText = specialIntroText[seq.value];
-				var text:Alphabet = new Alphabet(0, yy, Lang.get(alphaText));
+				var textFont:String = "bold";
+				if (seq.font != null)
+					textFont = seq.font;
+				var text:Alphabet = new Alphabet(0, yy, Lang.get(alphaText), textFont);
 				text.screenCenter(X);
 				introText.add(text);
 
 			case "wipeText":
-				introText.forEachAlive(function(text:Alphabet)
-				{
+				introText.forEachAlive(function(text:Alphabet) {
 					text.kill();
 					text.destroy();
 				});

@@ -175,7 +175,6 @@ class FunkinTransition extends FlxSprite
 			pixels = FlxGradient.createGradientBitmapData(Std.int(FlxG.width), Std.int(FlxG.height * 2), [FlxColor.BLACK, FlxColor.BLACK, FlxColor.TRANSPARENT]);
 		else
 			pixels = FlxGradient.createGradientBitmapData(Std.int(FlxG.width), Std.int(FlxG.height * 2), [FlxColor.TRANSPARENT, FlxColor.BLACK, FlxColor.BLACK]);
-		scrollFactor.set();
 		if (out)
 			y = -height;
 		else

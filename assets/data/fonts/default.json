@@ -1,0 +1,22 @@
+{
+	"asset": "ui/fonts/default",
+	"lowercaseOffset": 60,
+	"offsets": [
+		["-", 20],
+		[".", 40],
+		[",", 40],
+		["_", 40]
+	],
+	"animPrefixes": [
+		["'", "-apostraphie-"],
+		["\\", "-back slash-"],
+		[",", "-comma-"],
+		["-", "-dash-"],
+		["!", "-exclamation point-"],
+		["/", "-forward slash-"],
+		[".", "-period-"],
+		["?", "-question mark-"],
+		["\"", "-start quote-"]
+	],
+	"allowCase": "all"
+}

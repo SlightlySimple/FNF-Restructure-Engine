@@ -59,7 +59,9 @@ function initCutscene(data)
 				cutsceneAtlasLoops[objId] = [];
 				for (anim in object.animations)
 				{
-					if (anim.frameName)
+					if (anim.indices != null)
+						obj.anim.addByAnimIndices(anim.name, Character.uncompactIndices(anim.indices), anim.fps);
+					else if (anim.frameName)
 						obj.anim.addByFrameName(anim.name, anim.prefix, anim.fps);
 					else
 						obj.anim.addBySymbol(anim.name, anim.prefix, anim.offsets[0], anim.offsets[1], anim.fps);
@@ -91,6 +93,17 @@ function initCutscene(data)
 
 		cutsceneObjects[objId] = obj;
 	}
+
+	if (cutsceneData.layers != null)
+	{
+		cutsceneData.events = [];
+		for (l in cutsceneData.layers)
+		{
+			for (e in l.events)
+				cutsceneData.events.push(e);
+		}
+	}
+
 	for (event in cutsceneData.events)
 	{
 		if (event.type == "playSound" && !cutsceneSounds.exists(event.sound))
@@ -228,20 +241,26 @@ function update(elapsed)
 				{
 					case "show":
 						var obj = getObject(e.object);
-						if (cutsceneHiddenObjects.contains(obj))
+						if (obj != null)
 						{
-							cutsceneHiddenObjects.remove(obj);
-							obj.alpha = 1;
+							if (cutsceneHiddenObjects.contains(obj))
+							{
+								cutsceneHiddenObjects.remove(obj);
+								obj.alpha = 1;
+							}
 						}
 
 					case "hide":
 						var obj = getObject(e.object);
-						if (obj.shader != null)
-							obj.alpha = 0;
-						else
-							obj.alpha = 0.001;
-						if (!cutsceneHiddenObjects.contains(obj))
-							cutsceneHiddenObjects.push(obj);
+						if (obj != null)
+						{
+							if (obj.shader != null)
+								obj.alpha = 0;
+							else
+								obj.alpha = 0.001;
+							if (!cutsceneHiddenObjects.contains(obj))
+								cutsceneHiddenObjects.push(obj);
+						}
 
 					case "makePersistent":
 						var obj = getObject(e.object);
@@ -379,7 +398,7 @@ function update(elapsed)
 			{
 				if (Math.abs(((cutsceneProgress - s[1]) * 1000) - s[0].time) > 200)
 				{
-					if (syncedSounds.indexOf(s) == 0)
+					if (syncedSounds.indexOf(s) == 0 && cutsceneProgress < s[1] + (s[0].time / 1000.0))
 						cutsceneProgress = s[1] + (s[0].time / 1000.0);
 					else
 						s[0].time = ((cutsceneProgress - s[1]) * 1000);
@@ -407,6 +426,13 @@ function getObject(obj)
 
 	if (cutsceneObjects.exists(obj))
 		return cutsceneObjects[obj];
+
+	if (StringTools.startsWith(obj, "!"))
+	{
+		var objList = obj.split("!")[1].split(":");
+		if (game.hscriptExists(objList[0]))
+			return game.hscriptIdGet(objList[0], objList[1]);
+	}
 
 	return null;
 }
