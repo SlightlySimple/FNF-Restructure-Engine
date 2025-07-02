@@ -1,9 +1,0 @@
-function create()
-{
-	if (PlayState.variant != "pico" && game.songVariant == "pico")
-	{
-		game.totalOffset -= Conductor.beatLength * 8;
-		for (i in 1...game.tracks.length)
-			game.songData.tracks[i][2] += Conductor.beatLength * 8;
-	}
-}

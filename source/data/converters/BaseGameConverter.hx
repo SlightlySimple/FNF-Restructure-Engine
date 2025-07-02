@@ -281,7 +281,8 @@ class BaseGameConverter
 							asset: p.assetPath,
 							position: p.position,
 							layer: 0,
-							antialias: !p.isPixel
+							antialias: !p.isPixel,
+							flip: [false, false]
 						};
 
 						for (c in charList)
@@ -298,6 +299,11 @@ class BaseGameConverter
 
 						if (p.scroll != null)
 							stagePiece.scrollFactor = p.scroll;
+
+						if (p.flipX != null)
+							stagePiece.flip[0] = p.flipX;
+						if (p.flipY != null)
+							stagePiece.flip[0] = p.flipY;
 
 						if (p.alpha != null)
 							stagePiece.alpha = p.alpha;
@@ -545,9 +551,7 @@ class BaseGameConverter
 								ratings: [0, 0],
 								tracks: tracks,
 								offset: offset,
-								player1: p1,
-								player2: p2,
-								player3: gf,
+								characters: [p1, p2, gf],
 								stage: metadata.playData.stage,
 								bpmMap: bpmMap,
 								speed: speed,

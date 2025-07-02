@@ -139,7 +139,7 @@ class FlxTimer implements IFlxDestroyable
 
 		if (FlxG.state is PlayState)
 		{
-			if (PlayState.instance.tracks.length > 0 && PlayState.instance.tracks[0].playing)
+			if (PlayState.instance.tracks.length > 0 && PlayState.instance.tracks[0].playing && !PlayState.instance.restarting && !PlayState.instance.endingSong)
 			{
 				_syncWithSong = true;
 				_startTime = Conductor.songPosition;
@@ -185,7 +185,7 @@ class FlxTimer implements IFlxDestroyable
 	 */
 	public function update(elapsed:Float):Void
 	{
-		if (_syncWithSong && !PlayState.instance.paused)
+		if (_syncWithSong && !PlayState.instance.paused && !PlayState.instance.restarting && !PlayState.instance.endingSong)
 			_timeCounter = (Conductor.songPosition - _startTime) / 1000.0;
 		else
 			_timeCounter += elapsed;

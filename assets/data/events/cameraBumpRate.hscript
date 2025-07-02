@@ -1,8 +1,17 @@
 function onEvent(event)
 {
+	if (event.parameters.restart)
+	{
+		game.camBumpSequenceProgress = 1;
+		game.camBumpLast = game.curStep;
+	}
+
 	game.camBumpRate = event.parameters.rate;
 	if (event.parameters.intensityMain > 0)
 		game.bumpMultiplierMain = event.parameters.intensityMain;
 	if (event.parameters.intensityHUD > 0)
 		game.bumpMultiplierHUD = event.parameters.intensityHUD;
+
+	if (event.parameters.restart && game.camBumpSequence.length > 0)
+		game.bumpCamera(game.bumpIntensityMain * game.bumpMultiplierMain * game.camBumpSequence[0], game.bumpIntensityHUD * game.bumpMultiplierHUD * game.camBumpSequence[0]);
 }

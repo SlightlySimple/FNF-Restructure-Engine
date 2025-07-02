@@ -27,7 +27,8 @@
 			"label": "Time Unit",
 			"infoText": "The unit of measurement that should be used for the Time parameter.",
 			"type": "dropdown",
-			"defaultValue": "seconds",
+			"defaultValue": "beats",
+			"compatibilityValue": "seconds",
 			"options": ["seconds", "beats", "steps"]
 		},
 		{
@@ -35,7 +36,8 @@
 			"label": "Mode",
 			"infoText": "Whether the value should be the exact zoom, the zoom relative to the stage's default, the zoom multiplied by the stage's default, or the zoom compared to the current zoom when the event occurs.",
 			"type": "dropdown",
-			"defaultValue": "absolute",
+			"defaultValue": "fromStageMultiplied",
+			"compatibilityValue": "absolute",
 			"options": ["absolute", "fromStage", "fromCurrent", "fromStageMultiplied"]
 		},
 		{

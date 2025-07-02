@@ -236,6 +236,7 @@ typedef WeekSongData =
 
 	var ?allowVariantOnBase:Bool;
 	var ?lockedOnBase:Bool;
+	var ?offsetOnBase:Null<Int>;
 }
 
 typedef WeekCharacterData =

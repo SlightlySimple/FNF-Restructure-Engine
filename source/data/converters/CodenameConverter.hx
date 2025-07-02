@@ -78,8 +78,7 @@ class CodenameConverter
 							ratings: [0, 0],
 							tracks: tracks,
 							offset: 0,
-							player1: "none",
-							player2: "none",
+							characters: ["none", "none"],
 							stage: chart.stage,
 							bpmMap: [[0, metadata.bpm]],
 							speed: chart.scrollSpeed,
@@ -90,10 +89,9 @@ class CodenameConverter
 
 						if (strumLines.length > 1)
 						{
-							newChart.player1 = strumLines[1].characters[0];
-							newChart.player2 = strumLines[0].characters[0];
+							newChart.characters = [strumLines[1].characters[0], strumLines[0].characters[0]];
 							if (strumLines.length > 2)
-								newChart.player3 = strumLines[2].characters[0];
+								newChart.characters.push(strumLines[2].characters[0]);
 						}
 
 						var timingStruct:TimingStruct = new TimingStruct();

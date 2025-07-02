@@ -12,12 +12,19 @@ import game.PlayState;
 
 class SongArtist extends FlxSpriteGroup
 {
-	override public function new(song:String, artist:String)
+	override public function new(song:String, artist:String, charter:String)
 	{
 		super(0, 150);
 
-		var text:FlxText = new FlxText(10, 10, 0, Lang.get("#game.artist", [song, artist]));
-		text.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		var text:FlxText = new FlxText(10, 10, 0, song + "\n\n").setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		if (artist != "")
+			text.text += Lang.get("#game.artist", [artist]);
+		if (charter != "")
+		{
+			if (artist != "")
+				text.text += "\n";
+			text.text += Lang.get("#game.charter", [charter]);
+		}
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(Std.int(text.width + 20), Std.int(text.height + 20), FlxColor.WHITE);
 		bg.alpha = 0.5;

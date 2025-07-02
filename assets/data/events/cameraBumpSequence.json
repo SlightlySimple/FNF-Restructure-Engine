@@ -15,6 +15,14 @@
 			"infoText": "If this is checked, the ones and zeroes above represent steps in the song. Otherwise, they represent beats in the song.",
 			"type": "checkbox",
 			"defaultValue": false
+		},
+		{
+			"id": "restart",
+			"label": "Restart Sequence",
+			"infoText": "If checked, this event's location marks the first beat in the camera bump sequence. Otherwise, the first beat will depend on the previous sequence.",
+			"type": "checkbox",
+			"defaultValue": true,
+			"compatibilityValue": false
 		}
 	]
 }

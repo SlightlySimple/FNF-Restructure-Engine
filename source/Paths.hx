@@ -696,26 +696,55 @@ class Paths
 		#if ALLOW_MODS
 		if (!baseOnly)
 		{
-			for (mod in ModLoader.modListLoaded)
+			if (curMod == "")
+			{
+				for (mod in ModLoader.modListLoaded)
+				{
+					var modArray:Array<String> = [];
+					if (FileSystem.isDirectory("mods/" + mod + "/" + path))
+					{
+						var dirs:Array<String> = [];
+						for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+						{
+							for (ext in exts)
+							{
+								if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file)))
+								&& !modArray.contains(file.substr(0, file.length - ext.length)) && !returnArray.contains(file.substr(0, file.length - ext.length)))
+									modArray.push(chain + file.substr(0, file.length - ext.length));
+							}
+
+							if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file))
+								dirs.push(file);
+						}
+
+						for (dir in dirs)
+							modArray = modArray.concat(listFilesExtSub(path + "/" + dir, exts, chain + dir + "/", mod));
+					}
+					modArray.sort(listFilesSort);
+					returnArray = returnArray.concat(modArray);
+				}
+			}
+			else
 			{
 				var modArray:Array<String> = [];
-				if (FileSystem.isDirectory("mods/" + mod + "/" + path) && (curMod == "" || curMod == mod))
+				if (FileSystem.isDirectory("mods/" + curMod + "/" + path))
 				{
-					for (file in FileSystem.readDirectory("mods/" + mod + "/" + path))
+					var dirs:Array<String> = [];
+					for (file in FileSystem.readDirectory("mods/" + curMod + "/" + path))
 					{
 						for (ext in exts)
 						{
-							if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + file)))
+							if (((ext != "" && file.toLowerCase().endsWith(ext.toLowerCase())) || (ext == "" && FileSystem.isDirectory("mods/" + curMod + "/" + path + "/" + file)))
 							&& !modArray.contains(file.substr(0, file.length - ext.length)) && !returnArray.contains(file.substr(0, file.length - ext.length)))
 								modArray.push(chain + file.substr(0, file.length - ext.length));
 						}
+
+						if (FileSystem.isDirectory("mods/" + curMod + "/" + path + "/" + file))
+							dirs.push(file);
 					}
 
-					for (dir in FileSystem.readDirectory("mods/" + mod + "/" + path))
-					{
-						if (FileSystem.isDirectory("mods/" + mod + "/" + path + "/" + dir))
-							modArray = modArray.concat(listFilesExtSub(path + "/" + dir, exts, chain + dir + "/", mod));
-					}
+					for (dir in dirs)
+						modArray = modArray.concat(listFilesExtSub(path + "/" + dir, exts, chain + dir + "/", curMod));
 				}
 				modArray.sort(listFilesSort);
 				returnArray = returnArray.concat(modArray);

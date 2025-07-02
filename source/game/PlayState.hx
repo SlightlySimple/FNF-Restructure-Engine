@@ -134,6 +134,7 @@ class PlayState extends MusicBeatState
 	var missLimitText:FlxText;
 
 	public var songVariant:String = "";
+	public var songVariantOffset:Float = 0;
 	public var tracks:Array<FlxSound> = [];
 	var trackTypes:Array<Int> = [];
 	var songProgress:Float;
@@ -380,6 +381,15 @@ class PlayState extends MusicBeatState
 				songData.stage = FreeplaySandbox.stage;
 			chartSide = FreeplaySandbox.chartSide;
 			songVariant = FreeplaySandbox.songVariant;
+			if (songVariant != "" && Paths.jsonExists("songs/" + songId + "/_variant_" + songVariant))
+			{
+				var songVariantData:WeekSongData = cast Paths.json("songs/" + songId + "/_variant_" + songVariant);
+				if (songVariantData.offsetOnBase != null)
+				{
+					songVariantOffset = Conductor.beatLength * songVariantData.offsetOnBase;
+					totalOffset -= songVariantOffset;
+				}
+			}
 		}
 		playerColumns = [];
 		for (i in 0...songData.columns.length)
@@ -410,18 +420,18 @@ class PlayState extends MusicBeatState
 
 		changeStage(curStage, false);
 
-		var i:Int = 1;
-		while (Reflect.hasField(songData, "player" + Std.string(i)))
+		var i:Int = 0;
+		for (c in songData.characters)
 		{
-			spawnCharacter(Reflect.field(songData, "player" + Std.string(i)));
+			spawnCharacter(c);
 			i++;
 		}
 
-		if (FreeplaySandbox.character(i - 1, "") != "")
+		if (FreeplaySandbox.character(i, "") != "")
 		{
-			while (FreeplaySandbox.character(i - 1, "") != "")
+			while (FreeplaySandbox.character(i, "") != "")
 			{
-				spawnCharacter(Reflect.field(songData, "player" + Std.string(i)));
+				spawnCharacter("none");
 				i++;
 			}
 		}
@@ -886,7 +896,7 @@ class PlayState extends MusicBeatState
 						for (i in 1...tracks.length)
 						{
 							if (tracks[0].time < tracks[i].length)
-								tracks[i].time = tracks[0].time - songData.tracks[i][2];
+								tracks[i].time = tracks[0].time - songData.tracks[i][2] - songVariantOffset;
 						}
 					}
 				}
@@ -901,7 +911,7 @@ class PlayState extends MusicBeatState
 							for (i in 1...tracks.length)
 							{
 								if (tracks[0].time < tracks[i].length)
-									tracks[i].time = tracks[0].time - songData.tracks[i][2];
+									tracks[i].time = tracks[0].time - songData.tracks[i][2] - songVariantOffset;
 							}
 						}
 						songProgress = tracks[0].time + totalOffset;
@@ -919,10 +929,10 @@ class PlayState extends MusicBeatState
 				{
 					for (i in 1...tracks.length)
 					{
-						if (tracks[0].time < songData.tracks[i][2])
+						if (tracks[0].time < songData.tracks[i][2] - songVariantOffset)
 							tracks[i].time = 0;
-						else if (tracks[0].time - songData.tracks[i][2] < tracks[i].length && Math.abs((tracks[0].time - songData.tracks[i][2]) - tracks[i].time) > (50 * Math.min(1, playbackRate)))
-							tracks[i].time = tracks[0].time - songData.tracks[i][2];
+						else if (tracks[0].time - songData.tracks[i][2] - songVariantOffset < tracks[i].length && Math.abs((tracks[0].time - songData.tracks[i][2] - songVariantOffset) - tracks[i].time) > (50 * Math.min(1, playbackRate)))
+							tracks[i].time = tracks[0].time - songData.tracks[i][2] - songVariantOffset;
 					}
 				}
 				songProgress = tracks[0].time + totalOffset;
@@ -2253,7 +2263,8 @@ class PlayState extends MusicBeatState
 		{
 			t.pitch = playbackRate;
 			t.play();
-			t.time -= songData.tracks[tracks.indexOf(t)][2];
+			if (tracks.indexOf(t) > 0)
+				t.time -= songData.tracks[tracks.indexOf(t)][2] - songVariantOffset;
 		}
 		tracks[0].onComplete = songFinished;
 		songProgress = totalOffset;
@@ -2263,8 +2274,8 @@ class PlayState extends MusicBeatState
 		if (canSkipStart)
 			FlxTween.tween(skipStartText, {alpha: 1}, 0.2);
 
-		if (songData.artist != "")
-			songArtist = new SongArtist(songName, songData.artist);
+		if (songData.artist != "" || songData.charter != "")
+			songArtist = new SongArtist(songName, songData.artist, songData.charter);
 
 		scriptExec("playSong");
 	}

@@ -116,9 +116,7 @@ class SMFile
 				speed: scrollSpeeds[0][1],
 				scrollSpeeds: scrollSpeeds,
 				altSpeedCalc: true,
-				player1: TitleState.defaultVariables.player1,
-				player2: "none",
-				player3: TitleState.defaultVariables.gf,
+				characters: [TitleState.defaultVariables.player1, "none", TitleState.defaultVariables.gf],
 				stage: TitleState.defaultVariables.stage,
 				needsVoices: false,
 				tracks: [[newSM.ogg, 0]],
@@ -149,7 +147,7 @@ class SMFile
 				diff = editDiff;
 			if (chartType == "dance-double")
 			{
-				thisSongData.player2 = TitleState.defaultVariables.player2;
+				thisSongData.characters[1] = TitleState.defaultVariables.player2;
 				diff += "-double";
 			}
 			else
@@ -266,14 +264,8 @@ class SMFile
 				if (baseData.scrollSpeeds != null)
 					thisSongData.scrollSpeeds = baseData.scrollSpeeds;
 
-				if (baseData.player1 != null)
-					thisSongData.player1 = baseData.player1;
-
-				if (baseData.player2 != null)
-					thisSongData.player2 = baseData.player2;
-
-				if (baseData.player3 != null)
-					thisSongData.player3 = baseData.player3;
+				if (baseData.characters != null)
+					thisSongData.characters = baseData.characters;
 
 				if (baseData.stage != null)
 					thisSongData.stage = baseData.stage;
@@ -415,7 +407,7 @@ class SMFile
 					if (chartTypes.length >= chartDiv.length && chartTypes[chartDiv.length-1] != "")
 					{
 						fileData += "//--------------- "+chartTypes[chartDiv.length-1]+" (Player "+Std.string(d+1)+") ----------------\n";
-						fileData += "#NOTES:\n     "+chartTypes[chartDiv.length-1]+":\n     :\n     "+diffs[diffIndex]+":\n     1:\n     0,0,0,0,0:\n";
+						fileData += "#NOTES:\n     "+chartTypes[chartDiv.length-1]+":\n     :\n     "+diffs[diffIndex]+":\n     "+Std.string(data.ratings[d])+":\n     0,0,0,0,0:\n";
 						fileData += createSMSection(chartDiv, allSections);
 						diffIndex--;
 					}
@@ -430,7 +422,7 @@ class SMFile
 		if (chartTypes.length >= chartDiv.length && chartTypes[chartDiv.length-1] != "")
 		{
 			fileData += "//--------------- "+chartTypes[chartDiv.length-1]+" ----------------\n";
-			fileData += "#NOTES:\n     "+chartTypes[chartDiv.length-1]+":\n     :\n     "+diffs[diffs.length-1]+":\n     1:\n     0,0,0,0,0:\n";
+			fileData += "#NOTES:\n     "+chartTypes[chartDiv.length-1]+":\n     :\n     "+diffs[diffs.length-1]+":\n     "+Std.string(data.ratings[0])+":\n     0,0,0,0,0:\n";
 			fileData += createSMSection(chartDiv, allSections);
 		}
 

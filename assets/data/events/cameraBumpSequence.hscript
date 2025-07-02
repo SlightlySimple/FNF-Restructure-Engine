@@ -1,5 +1,11 @@
 function onEvent(event)
 {
+	if (event.parameters.restart)
+	{
+		game.camBumpSequenceProgress = 1;
+		game.camBumpLast = game.curStep;
+	}
+
 	game.camBumpSequence = [];
 	for (v in event.parameters.sequence.split(","))
 	{
@@ -10,4 +16,7 @@ function onEvent(event)
 				game.camBumpSequence.push(0);
 		}
 	}
+
+	if (event.parameters.restart && game.camBumpSequence.length > 0)
+		game.bumpCamera(game.bumpIntensityMain * game.bumpMultiplierMain * game.camBumpSequence[0], game.bumpIntensityHUD * game.bumpMultiplierHUD * game.camBumpSequence[0]);
 }

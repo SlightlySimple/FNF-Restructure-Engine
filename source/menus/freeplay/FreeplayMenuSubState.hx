@@ -810,7 +810,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 
 					for (cat in cats)
 					{
-						var song:WeekSongData = {songId: "", iconNew: TitleState.defaultVariables.noicon, difficulties: [""], characters: 3};
+						var song:WeekSongData = {songId: "", iconNew: TitleState.defaultVariables.noicon, difficulties: [""]};
 						var capsule:FreeplayCapsule = makeCapsule("", cat, "none", false, song);
 						capsule.updateFavorited(false);
 
@@ -1012,8 +1012,6 @@ class FreeplayMenuSubState extends MusicBeatSubState
 									var difficulties:Array<String> = song.difficulties;
 									if (difficulties == null || difficulties.length == 0)
 										difficulties = ["normal", "hard", "easy"];
-									if (song.characters == null)
-										song.characters = 3;
 									if (song.characterLabels == null || song.characterLabels.length < 3)
 										song.characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 
@@ -1038,7 +1036,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 
 						for (fl in smFolders)
 						{
-							var song:WeekSongData = {songId: "", iconNew: TitleState.defaultVariables.noicon, difficulties: [""], characters: 3};
+							var song:WeekSongData = {songId: "", iconNew: TitleState.defaultVariables.noicon, difficulties: [""]};
 
 							var capsule:FreeplayCapsule = makeCapsule("", fl, "none", false, song);
 							capsule.updateFavorited(false);
@@ -1051,7 +1049,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 
 								if (Assets.exists(Paths.smSong(fl + "/" + f + "/" + thisSM, thisSMFile.ogg)))
 								{
-									song = {songId: fl + "/" + f + "/" + thisSM, iconNew: TitleState.defaultVariables.noicon, difficulties: thisSMFile.difficulties, characters: 3};
+									song = {songId: fl + "/" + f + "/" + thisSM, iconNew: TitleState.defaultVariables.noicon, difficulties: thisSMFile.difficulties};
 									var capsule:FreeplayCapsule = makeCapsule(song.songId, thisSMFile.title, "none", true, song, thisSMFile.artist);
 									capsule.tracks[""] = {name: Paths.smSong(song.songId, thisSMFile.ogg), timings: thisSMFile.bpmMap, start: thisSMFile.previewStart * 1000, end: (thisSMFile.previewStart + thisSMFile.previewLength) * 1000};
 									capsule.quickInfo = thisSMFile.quickInfo;
@@ -1433,7 +1431,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				onChangeDifficulty();
 			}
 
-			FreeplaySandbox.setCharacterCount(capsule.songInfo.characters, capsule.songInfo.characterLabels);
+			FreeplaySandbox.setCharacterLabels(capsule.songInfo.characterLabels);
 		}
 
 		if (!capsule.songAlbums.exists(""))

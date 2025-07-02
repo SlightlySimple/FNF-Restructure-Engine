@@ -121,6 +121,7 @@ typedef EventParams =
 	var type:String;
 	var ?time:String;
 	var defaultValue:Dynamic;
+	var compatibilityValue:Dynamic;
 	var options:Array<String>;
 	var min:Float;
 	var max:Float;
@@ -208,7 +209,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -238,7 +243,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -255,7 +264,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -278,7 +291,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -288,7 +305,7 @@ class Song
 				track = data.tracks[0][0];
 		}
 
-		for (file in Paths.listFilesSub("data/songs/" + id + "/", ".json"))
+		for (file in Paths.listFiles("data/songs/" + id + "/", ".json"))
 		{
 			if (file.startsWith("_variant_"))
 			{
@@ -318,7 +335,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -372,7 +393,11 @@ class Song
 		var data:SongData = null;
 		if (Paths.jsonExists(filename))
 		{
-			data = cast Paths.json(filename).song;
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				data = cast songData;
+			else
+				data = cast songData.song;
 			data = applyDataAndMeta(data, filename);
 		}
 
@@ -434,15 +459,19 @@ class Song
 			eventFile: "_events",
 			bpmMap: [[0, 120]],
 			scrollSpeeds: [[0, 1]],
-			player1: TitleState.defaultVariables.player1,
-			player2: TitleState.defaultVariables.player2,
-			player3: TitleState.defaultVariables.gf,
+			characters: [TitleState.defaultVariables.player1, TitleState.defaultVariables.player2, TitleState.defaultVariables.gf],
 			stage: TitleState.defaultVariables.stage,
 			tracks: [["Inst", 0, 0], ["Voices", 1, 0]],
 			notes: [{mustHitSection: false, lengthInSteps: 16, sectionNotes: []}]
 		}
 		if (Paths.jsonExists(filename))
-			retSong = cast Paths.json(filename).song;
+		{	
+			var songData:Dynamic = Paths.json(filename);
+			if (Std.isOfType(songData.song, String))
+				retSong = cast songData;
+			else
+				retSong = cast songData.song;
+		}
 
 		// Load in external song data if it exists
 		retSong = applyDataAndMeta(retSong, filename);
@@ -540,21 +569,46 @@ class Song
 		if (retSong.offset == null)
 			retSong.offset = baseData.offset;
 
-		if (retSong.player1 == null || retSong.player1 == "")
-			retSong.player1 = baseData.player1;
-
-		if (retSong.player2 == null || retSong.player2 == "")
-			retSong.player2 = baseData.player2;
-
-		if ((retSong.player3 == null || retSong.player3 == "") && (baseData.player3 != null && baseData.player3 != ""))
-			retSong.player3 = baseData.player3;
-
-		var i:Int = 4;
-		while (Reflect.hasField(retSong, "player" + Std.string(i)) || Reflect.hasField(baseData, "player" + Std.string(i)))
+		if (retSong.characters == null)
 		{
-			if (Reflect.hasField(baseData, "player" + Std.string(i)) && !Reflect.hasField(retSong, "player" + Std.string(i)))
-				Reflect.setField(retSong, "player" + Std.string(i), Reflect.field(baseData, "player" + Std.string(i)));
-			i++;
+			retSong.characters = [];
+			if (retSong.player1 == null || retSong.player1 == "")
+				retSong.characters.push(TitleState.defaultVariables.player1);
+			else
+				retSong.characters.push(retSong.player1);
+
+			if (retSong.player2 == null || retSong.player2 == "")
+				retSong.characters.push(TitleState.defaultVariables.player2);
+			else
+				retSong.characters.push(retSong.player2);
+
+			if (retSong.player3 != null && retSong.player3 != "")
+				retSong.characters.push(retSong.player3);
+			else if (retSong.gfVersion != null && retSong.gfVersion != "")		// Compatibility with other chart formats
+				retSong.characters.push(retSong.gfVersion);
+			else if (retSong.gf != null && retSong.gf != "")
+				retSong.characters.push(retSong.gf);
+
+			var charCount:Int = 3;
+			while (Reflect.hasField(retSong, "player" + Std.string(charCount + 1)))
+			{
+				retSong.characters.push(Reflect.field(retSong, "player" + Std.string(charCount + 1)));
+				charCount++;
+			}
+		}
+
+		if (baseData.characters != null)
+		{
+			for (i in 0...baseData.characters.length)
+			{
+				if (baseData.characters[i] != null && baseData.characters[i] != "" && retSong.characters.length == i)
+					retSong.characters.push(baseData.characters[i]);
+			}
+		}
+		else if (baseData.player3 != null && baseData.player3 != "")
+		{
+			if (retSong.characters.length == 2)
+				retSong.characters.push(baseData.player3);
 		}
 
 		if (retSong.characterPrefix == null || retSong.characterPrefix == "")
@@ -628,32 +682,7 @@ class Song
 			retSong.offset = baseData.offset;
 
 		if (baseData.characters != null)
-		{
-			for (i in 0...baseData.characters.length)
-			{
-				if (baseData.characters[i] != null && baseData.characters[i] != "")
-					Reflect.setField(retSong, "player" + Std.string(i + 1), baseData.characters[i]);
-			}
-		}
-		else
-		{
-			if (baseData.player1 != null && baseData.player1 != "")
-				retSong.player1 = baseData.player1;
-
-			if (baseData.player2 != null && baseData.player2 != "")
-				retSong.player2 = baseData.player2;
-
-			if (baseData.player3 != null && baseData.player3 != "")
-				retSong.player3 = baseData.player3;
-
-			var i:Int = 4;
-			while (Reflect.hasField(retSong, "player" + Std.string(i)) || Reflect.hasField(baseData, "player" + Std.string(i)))
-			{
-				if (Reflect.hasField(baseData, "player" + Std.string(i)))
-					Reflect.setField(retSong, "player" + Std.string(i), Reflect.field(baseData, "player" + Std.string(i)));
-				i++;
-			}
-		}
+			retSong.characters = baseData.characters;
 
 		if (baseData.characterPrefix != null)
 			retSong.characterPrefix = baseData.characterPrefix;
@@ -726,19 +755,39 @@ class Song
 		if (retSong.offset == null)
 			retSong.offset = 0;
 
-		if (retSong.player1 == null || retSong.player1 == "")
-			retSong.player1 = TitleState.defaultVariables.player1;
-
-		if (retSong.player2 == null || retSong.player2 == "")
-			retSong.player2 = TitleState.defaultVariables.player2;
-
-		if (retSong.player3 == null || retSong.player3 == "")		// Compatibility with other chart formats
+		if (retSong.characters == null)
 		{
-			if (retSong.gfVersion != null && retSong.gfVersion != "")
-				retSong.player3 = retSong.gfVersion;
+			retSong.characters = [];
+			if (retSong.player1 == null || retSong.player1 == "")
+				retSong.characters.push(TitleState.defaultVariables.player1);
+			else
+				retSong.characters.push(retSong.player1);
+
+			if (retSong.player2 == null || retSong.player2 == "")
+				retSong.characters.push(TitleState.defaultVariables.player2);
+			else
+				retSong.characters.push(retSong.player2);
+
+			if (retSong.player3 != null && retSong.player3 != "")
+				retSong.characters.push(retSong.player3);
+			else if (retSong.gfVersion != null && retSong.gfVersion != "")		// Compatibility with other chart formats
+				retSong.characters.push(retSong.gfVersion);
 			else if (retSong.gf != null && retSong.gf != "")
-				retSong.player3 = retSong.gf;
+				retSong.characters.push(retSong.gf);
+
+			var charCount:Int = 3;
+			while (Reflect.hasField(retSong, "player" + Std.string(charCount + 1)))
+			{
+				retSong.characters.push(Reflect.field(retSong, "player" + Std.string(charCount + 1)));
+				charCount++;
+			}
 		}
+
+		if (retSong.characters.length < 1)
+			retSong.characters.push(TitleState.defaultVariables.player1);
+
+		if (retSong.characters.length < 2)
+			retSong.characters.push(TitleState.defaultVariables.player2);
 
 		if (retSong.characterPrefix == null)
 			retSong.characterPrefix = "";
@@ -749,14 +798,10 @@ class Song
 		if (retSong.stage == null || retSong.stage == "")
 			retSong.stage = TitleState.defaultVariables.stage;
 
-		var charCount:Int = 3;
-		while (Reflect.hasField(retSong, "player" + Std.string(charCount + 1)))
-			charCount++;
-
 		if (retSong.notetypeSingers == null)
 			retSong.notetypeSingers = [];
 
-		while (retSong.notetypeSingers.length < charCount)
+		while (retSong.notetypeSingers.length < retSong.characters.length)
 			retSong.notetypeSingers.push([]);
 
 		if (retSong.notetypeOverridesCam == null)
@@ -767,11 +812,11 @@ class Song
 
 		if (retSong.characterPrefix != "" || retSong.characterSuffix != "")
 		{
-			for (i in 0...charCount)
+			for (i in 0...retSong.characters.length)
 			{
-				var p:String = Reflect.field(retSong, "player" + Std.string(i + 1));
+				var p:String = retSong.characters[i];
 				if (!((p.startsWith(retSong.characterPrefix) || retSong.characterPrefix == "") && (p.endsWith(retSong.characterSuffix) || retSong.characterSuffix == "")) && Paths.jsonExists("characters/" + retSong.characterPrefix + p + retSong.characterSuffix))
-					Reflect.setField(retSong, "player" + Std.string(i + 1), retSong.characterPrefix + p + retSong.characterSuffix);
+					retSong.characters[i] = retSong.characterPrefix + p + retSong.characterSuffix;
 			}
 		}
 
@@ -1178,7 +1223,12 @@ class Song
 					for (p in eventParams)
 					{
 						if (!Reflect.hasField(retEvents[i].parameters, p.id))
-							Reflect.setField(retEvents[i].parameters, p.id, p.defaultValue);
+						{
+							if (p.compatibilityValue != null)
+								Reflect.setField(retEvents[i].parameters, p.id, p.compatibilityValue);
+							else
+								Reflect.setField(retEvents[i].parameters, p.id, p.defaultValue);
+						}
 					}
 				}
 			}

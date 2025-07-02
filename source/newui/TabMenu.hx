@@ -121,7 +121,7 @@ class TabMenu extends FlxSpriteGroup
 			if (Options.mouseJustPressed())
 				dragging = true;
 
-			if (Options.mouseJustPressed(true))
+			if (Options.mouseJustPressed(true) && !DropdownMenu.isOneActive)
 				new TabMenuSubState(this);
 		}
 	}

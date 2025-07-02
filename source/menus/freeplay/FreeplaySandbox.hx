@@ -24,7 +24,6 @@ class FreeplaySandbox extends FlxSpriteGroup
 	public static var playbackRate:Float = 1;
 	public static var missLimit:Int = -1;
 
-	public static var characterCount:Int = 3;
 	public static var characterLabels:Array<String> = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 	public static var characterList:Array<String> = [];
 	public static var characterNames:Map<String, String>;
@@ -98,19 +97,20 @@ class FreeplaySandbox extends FlxSpriteGroup
 
 	public static function resetCharacterCount()
 	{
-		characterCount = 3;
 		characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 	}
 
-	public static function setCharacterCount(?c:Int = null, ?l:Array<String> = null)
+	public static function setCharacterCount(?c:Int = null, ?l:Array<String> = null)	// backwards compatibility
 	{
-		if (c == null || l == null)
+		setCharacterLabels(l);
+	}
+
+	public static function setCharacterLabels(?l:Array<String> = null)
+	{
+		if (l == null)
 			resetCharacterCount();
 		else
-		{
-			characterCount = c;
 			characterLabels = l.copy();
-		}
 	}
 
 
@@ -136,9 +136,9 @@ class FreeplaySandbox extends FlxSpriteGroup
 		this.reloadFunc = reloadFunc;
 		this.exitFunc = exitFunc;
 
-		if (characterCount > characters.length)
+		if (characterLabels.length > characters.length)
 		{
-			while (characterCount > characters.length)
+			while (characterLabels.length > characters.length)
 				characters.push("");
 		}
 
@@ -155,7 +155,7 @@ class FreeplaySandbox extends FlxSpriteGroup
 				variantListLang.push(Lang.get("#freeplay.sandbox.variant." + v));
 		}
 
-		for (i in 0...characterCount)
+		for (i in 0...characterLabels.length)
 			options.push("character" + Std.string(i + 1));
 		options.push("stage");
 		if (sideList.length > 1)

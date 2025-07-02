@@ -2,6 +2,8 @@
 	"asset": "ui/fonts/default",
 	"lowercaseOffset": 60,
 	"offsets": [
+		["'", 0],
+		["\"", 0],
 		["-", 20],
 		[".", 40],
 		[",", 40],

@@ -169,9 +169,6 @@ class StoryMenuState extends MusicBeatState
 						s.iconNew = "none";
 				}
 
-				if (s.characters == null)
-					s.characters = 3;
-
 				if (s.characterLabels == null || s.characterLabels.length < 3)
 					s.characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
 			}

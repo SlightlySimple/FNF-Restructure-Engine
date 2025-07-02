@@ -83,7 +83,8 @@
 "pause.menu.exitToChartEditor"			"Exit to Chart Editor"
 
 // In-Game
-"game.artist"		"%s1\n\nBy %s2"
+"game.artist"		"By %s1"
+"game.charter"		"Charter: %s1"
 "game.score"		"Score: %s1"
 "game.nps.combined"	"NPS: %s1 (Max %s2)"
 "game.nps.nps"		"NPS: %s1"

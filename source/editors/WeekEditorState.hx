@@ -310,9 +310,9 @@ class WeekEditorState extends BaseEditorState
 		var addSong:TextButton = cast element("addSong");
 		addSong.onClicked = function() {
 			if (weekData.songs.length > 0)
-				weekData.songs.push({songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
+				weekData.songs.push({songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			else
-				weekData.songs.push({songId: "test", iconNew: "none", difficulties: weekData.difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
+				weekData.songs.push({songId: "test", iconNew: "none", difficulties: weekData.difficulties.copy(), title: "", characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]});
 			curSong = weekData.songs.length - 1;
 			refreshSongs();
 		}
@@ -321,7 +321,7 @@ class WeekEditorState extends BaseEditorState
 		insertSong.onClicked = function() {
 			if (weekData.songs.length > 0)
 			{
-				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characters: 3, characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]};
+				var newSong:WeekSongData = {songId: weekData.songs[curSong].songId, iconNew: weekData.songs[curSong].iconNew, difficulties: weekData.songs[curSong].difficulties.copy(), title: "", characterLabels: ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]};
 				weekData.songs.insert(curSong, newSong);
 				refreshSongs();
 			}
@@ -591,20 +591,6 @@ class WeekEditorState extends BaseEditorState
 		{
 			if (weekData.songs.length > 0)
 			{
-				if (weekData.songs[curSong].characterLabels.length > weekData.songs[curSong].characters)
-					weekData.songs[curSong].characterLabels.resize(weekData.songs[curSong].characters);
-
-				if (weekData.songs[curSong].characterLabels.length < weekData.songs[curSong].characters)
-				{
-					while (weekData.songs[curSong].characterLabels.length < weekData.songs[curSong].characters)
-					{
-						if (weekData.songs[curSong].characterLabels.length < 3)
-							weekData.songs[curSong].characterLabels.push("#freeplay.sandbox.character" + Std.string(weekData.songs[curSong].characterLabels.length));
-						else
-							weekData.songs[curSong].characterLabels.push("Singer " + Std.string(weekData.songs[curSong].characterLabels.length + 1) + ":");
-					}
-				}
-
 				var window:PopupWindow = null;
 				var vbox:VBox = new VBox(35, 35);
 
@@ -623,7 +609,6 @@ class WeekEditorState extends BaseEditorState
 						var _remove:Button = new Button(0, 0, "buttonTrash");
 						_remove.onClicked = function() {
 							weekData.songs[curSong].characterLabels.splice(i, 1);
-							weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
 							window.close();
 							new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 						}
@@ -637,7 +622,6 @@ class WeekEditorState extends BaseEditorState
 				var _default:TextButton = new TextButton(0, 0, "Default", Button.LONG);
 				_default.onClicked = function() {
 					weekData.songs[curSong].characterLabels = ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"];
-					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
 					window.close();
 					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 				}
@@ -645,8 +629,7 @@ class WeekEditorState extends BaseEditorState
 
 				var _add:TextButton = new TextButton(0, 0, "Add");
 				_add.onClicked = function() {
-					weekData.songs[curSong].characterLabels.push(weekData.songs[curSong].characterLabels[weekData.songs[curSong].characterLabels.length-1]);
-					weekData.songs[curSong].characters = weekData.songs[curSong].characterLabels.length;
+					weekData.songs[curSong].characterLabels.push(weekData.songs[curSong].characterLabels[weekData.songs[curSong].characterLabels.length - 1]);
 					window.close();
 					new FlxTimer().start(0.02, function(tmr:FlxTimer) { songCharLabels.onClicked(); });
 				}
@@ -685,10 +668,7 @@ class WeekEditorState extends BaseEditorState
 					_auto.title = weekData.songs[curSong].title;
 
 				if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
-				{
-					_auto.characters = weekData.songs[curSong].characters;
 					_auto.characterLabels = weekData.songs[curSong].characterLabels;
-				}
 
 				Reflect.deleteField(_auto, "songId");
 				var data:String = Json.stringify(_auto);
@@ -710,6 +690,9 @@ class WeekEditorState extends BaseEditorState
 				var lockedOnBase:Checkbox = new Checkbox(0, 0, "Lock the variant's instrumental from the base song until the variant is beaten", true);
 				vbox.add(lockedOnBase);
 
+				var offsetOnBase:Stepper = new Stepper(0, 0, "Offset from the base song (in beats)", 0);
+				vbox.add(offsetOnBase);
+
 				var create:TextButton = new TextButton(0, 0, "Create", function() {
 					window.close();
 
@@ -719,6 +702,9 @@ class WeekEditorState extends BaseEditorState
 						allowVariantOnBase: allowVariantOnBase.checked,
 						lockedOnBase: lockedOnBase.checked
 					}
+
+					if (offsetOnBase.value != 0)
+						_variant.offsetOnBase = offsetOnBase.valueInt;
 
 					if (!DeepEquals.deepEquals(weekData.songs[curSong].difficulties, weekData.difficulties))
 						_variant.difficulties = weekData.songs[curSong].difficulties;
@@ -730,10 +716,7 @@ class WeekEditorState extends BaseEditorState
 						_variant.title = weekData.songs[curSong].title;
 
 					if (!DeepEquals.deepEquals(weekData.songs[curSong].characterLabels, ["#freeplay.sandbox.character.0", "#freeplay.sandbox.character.1", "#freeplay.sandbox.character.2"]))
-					{
-						_variant.characters = weekData.songs[curSong].characters;
 						_variant.characterLabels = weekData.songs[curSong].characterLabels;
-					}
 
 					Reflect.deleteField(_variant, "songId");
 					var data:String = Json.stringify(_variant);
@@ -1174,7 +1157,7 @@ class WeekEditorState extends BaseEditorState
 			if (s.hscript != null && s.hscript.trim() == "")
 				Reflect.deleteField(s, "hscript");
 
-			if (s.characters == 3)
+			if (s.characters != null)
 				Reflect.deleteField(s, "characters");
 
 			if (s.characterLabels.length <= 0)

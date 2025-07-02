@@ -60,7 +60,7 @@ function convertEvent(event, timing)
 			var intensity = 1;
 			if (event.v.intensity != null)
 				intensity = event.v.intensity;
-			return {type: "cameraBumpRate", beat: Math.round(timing.beatFromTime(event.t)), parameters: {rate: event.v.rate, intensityMain: intensity, intensityHUD: intensity}};
+			return {type: "cameraBumpRate", beat: Math.round(timing.beatFromTime(event.t)), parameters: {rate: event.v.rate, intensityMain: intensity, intensityHUD: intensity, restart: false}};
 
 		case "PlayAnimation": return { type: "characterPlayAnim", parameters: {id: getCharacterID(event.v.target), anim: event.v.anim, rate: 1} };
 	}

@@ -548,9 +548,7 @@ class ChartEditorState extends MusicBeatState
 				bpmMap: [[0, 150]],
 				scrollSpeeds: [[0, 1]],
 				altSpeedCalc: true,
-				player1: TitleState.defaultVariables.player1,
-				player2: TitleState.defaultVariables.player2,
-				player3: TitleState.defaultVariables.gf,
+				characters: [TitleState.defaultVariables.player1, TitleState.defaultVariables.player2, TitleState.defaultVariables.gf],
 				stage: TitleState.defaultVariables.stage,
 				tracks: [["Inst", 0, 0]],
 				notes: [{camOn: 1, lengthInSteps: 16, defaultNotetypes: ["", ""], sectionNotes: []}],
@@ -561,8 +559,8 @@ class ChartEditorState extends MusicBeatState
 			}
 			if (Paths.songExists(songId, "Voices"))
 				songData.tracks.push(["Voices", 1, 0]);
-			else if (Paths.songExists(songId, "Voices-" + songData.player1))
-				songData.tracks.push(["Voices-" + songData.player1, 2, 0]);
+			else if (Paths.songExists(songId, "Voices-" + songData.characters[0]))
+				songData.tracks.push(["Voices-" + songData.characters[0], 2, 0]);
 			songData = Song.parseSongData(songData);
 			songFileShortened = songId;
 		}
@@ -863,13 +861,10 @@ class ChartEditorState extends MusicBeatState
 			var tracksButton:TextButton = cast ui.element("tracksButton");
 			tracksButton.onClicked = function() {
 				var typeList:Array<String> = ["None (Instrumental)", "All"];
-				var charCount:Int = 2;
-				while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-					charCount++;
 
-				for (i in 0...charCount)
+				for (i in 0...songData.characters.length)
 				{
-					var charName:String = Reflect.field(songData, "player" + Std.string(i + 1));
+					var charName:String = songData.characters[i];
 					if (characterNames.exists(charName))
 						charName = characterNames[charName];
 					typeList.push("Character " + Std.string(i + 1) + " (" + charName + ")");
@@ -984,19 +979,15 @@ class ChartEditorState extends MusicBeatState
 
 		var charactersButton:TextButton = cast ui.element("charactersButton");
 		charactersButton.onClicked = function() {
-			var charCount:Int = 2;
-			while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-				charCount++;
-
 			var window:PopupWindow = null;
 			var vbox:VBox = new VBox(35, 35);
 
 			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
 			var scroll:VBox = menu.vbox;
 
-			for (i in 0...charCount)
+			for (i in 0...songData.characters.length)
 			{
-				var char:String = Reflect.field(songData, "player" + Std.string(i + 1));
+				var char:String = songData.characters[i];
 				var characterHbox:HBox = new HBox();
 				characterHbox.add(new Label("Character " + Std.string(i + 1) + ":"));
 				var charDropdown:DropdownMenu = new DropdownMenu(0, 0, "", [""], true);
@@ -1004,7 +995,7 @@ class ChartEditorState extends MusicBeatState
 				charDropdown.valueList = characterFileList;
 				charDropdown.value = char;
 				charDropdown.onChanged = function() {
-					Reflect.setField(songData, "player" + Std.string(i+1), charDropdown.value);
+					songData.characters[i] = charDropdown.value;
 				};
 				characterHbox.add(charDropdown);
 				scroll.add(characterHbox);
@@ -1038,8 +1029,7 @@ class ChartEditorState extends MusicBeatState
 
 			var _add:TextButton = new TextButton(0, 0, "Add");
 			_add.onClicked = function() {
-				if (!Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-					Reflect.setField(songData, "player" + Std.string(charCount + 1), Reflect.field(songData, "player" + Std.string(charCount)));
+				songData.characters.push(songData.characters[songData.characters.length - 1]);
 				refreshCharacters();
 				window.close();
 				new FlxTimer().start(0.02, function(tmr:FlxTimer) { charactersButton.onClicked(); });
@@ -1048,10 +1038,9 @@ class ChartEditorState extends MusicBeatState
 
 			var _remove:TextButton = new TextButton(0, 0, "Remove");
 			_remove.onClicked = function() {
-				if (charCount > 2)
+				if (songData.characters.length > 2)
 				{
-					if (Reflect.hasField(songData, "player" + Std.string(charCount)))
-						Reflect.deleteField(songData, "player" + Std.string(charCount));
+					songData.characters.pop();
 					refreshCharacters();
 					window.close();
 					new FlxTimer().start(0.02, function(tmr:FlxTimer) { charactersButton.onClicked(); });
@@ -1203,9 +1192,6 @@ class ChartEditorState extends MusicBeatState
 
 		characterFileList = Paths.listFilesSub("data/characters/", ".json");
 		characterNames = Util.getCharacterNames(characterFileList);
-		var charCount:Int = 2;
-		while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-			charCount++;
 
 
 
@@ -1258,7 +1244,7 @@ class ChartEditorState extends MusicBeatState
 
 		sectionCamOnStepper = cast ui.element("sectionCamOnStepper");
 		sectionCamOnStepper.value = songData.notes[0].camOn + 1;
-		sectionCamOnStepper.maxVal = charCount;
+		sectionCamOnStepper.maxVal = songData.characters.length;
 		sectionCamOnStepper.condition = function() { return songData.notes[curSection].camOn + 1; }
 		sectionCamOnStepper.onChanged = function() {
 			var sec:SectionData = songData.notes[curSection];
@@ -1877,7 +1863,7 @@ class ChartEditorState extends MusicBeatState
 		}
 
 		allCamsOnStepper = cast ui.element("allCamsOnStepper");
-		allCamsOnStepper.maxVal = charCount;
+		allCamsOnStepper.maxVal = songData.characters.length;
 
 		var allCamsOnButton:TextButton = cast ui.element("allCamsOnButton");
 		allCamsOnButton.onClicked = function() { allCamsOn(allCamsOnStepper.valueInt - 1); }
@@ -3197,7 +3183,7 @@ class ChartEditorState extends MusicBeatState
 						if (allowEditingStrumline && curStrum < strums.members.length - 1)
 						{
 							var columnData:SongColumnData = songData.columns[curStrum];
-							var charName:String = Reflect.field(songData, "player" + Std.string(columnData.singer + 1));
+							var charName:String = songData.characters[columnData.singer];
 							if (characterNames.exists(charName))
 								charName = characterNames[charName];
 
@@ -3589,13 +3575,10 @@ class ChartEditorState extends MusicBeatState
 						else
 						{
 							var singerList:Array<String> = [];
-							var charCount:Int = 2;
-							while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-								charCount++;
 
-							for (i in 0...charCount)
+							for (i in 0...songData.characters.length)
 							{
-								var charName:String = Reflect.field(songData, "player" + Std.string(i + 1));
+								var charName:String = songData.characters[i];
 								if (characterNames.exists(charName))
 									charName = characterNames[charName];
 								singerList.push("Character " + Std.string(i + 1) + " (" + charName + ")");
@@ -4069,22 +4052,18 @@ class ChartEditorState extends MusicBeatState
 
 	function refreshCharacters()
 	{
-		var charCount:Int = 2;
-		while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-			charCount++;
-
-		if (songData.notetypeSingers.length > charCount)
-			songData.notetypeSingers.resize(charCount);
-		else if (songData.notetypeSingers.length < charCount)
+		if (songData.notetypeSingers.length > songData.characters.length)
+			songData.notetypeSingers.resize(songData.characters.length);
+		else if (songData.notetypeSingers.length < songData.characters.length)
 		{
-			while (songData.notetypeSingers.length < charCount)
+			while (songData.notetypeSingers.length < songData.characters.length)
 				songData.notetypeSingers.push([]);
 		}
 
 		if (sectionCamOnStepper != null)
-			sectionCamOnStepper.maxVal = charCount;
+			sectionCamOnStepper.maxVal = songData.characters.length;
 		if (allCamsOnStepper != null)
-			allCamsOnStepper.maxVal = charCount;
+			allCamsOnStepper.maxVal = songData.characters.length;
 	}
 
 	function refreshTracks()
@@ -4379,10 +4358,10 @@ class ChartEditorState extends MusicBeatState
 		for (i in 0...songData.notetypeSingers.length)
 		{
 			var iconName:String = TitleState.defaultVariables.icon;
-			if (Paths.jsonExists("characters/" + Reflect.field(songData, "player" + Std.string(i+1))))
-				iconName = Character.parseCharacter(Reflect.field(songData, "player" + Std.string(i+1))).icon;
+			if (Paths.jsonExists("characters/" + songData.characters[i]))
+				iconName = Character.parseCharacter(songData.characters[i]).icon;
 			if (iconName == null || iconName == "")
-				iconName = Reflect.field(songData, "player" + Std.string(i+1));
+				iconName = songData.characters[i];
 			iconNames.push(iconName);
 
 			var iconType:String = "";
@@ -5562,13 +5541,10 @@ class ChartEditorState extends MusicBeatState
 					var options:Array<String> = p.options.copy();
 					if (options.contains("!players"))
 					{
-						var charCount:Int = 2;
-						while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-							charCount++;
-						for (i in 0...charCount)
+						for (i in 0...songData.characters.length)
 						{
 							options.insert(options.indexOf("!players"), i == 2 ? "gf" : "player" + Std.string(i + 1));
-							var charName:String = Reflect.field(songData, "player" + Std.string(i + 1));
+							var charName:String = songData.characters[i];
 							if (characterNames.exists(charName))
 								charName = characterNames[charName];
 							eventParamNames[i == 2 ? "gf" : "player" + Std.string(i + 1)] = "Character " + Std.string(i + 1) + " (" + charName + ")";
@@ -5710,13 +5686,10 @@ class ChartEditorState extends MusicBeatState
 					var options:Array<String> = p.options.copy();
 					if (options.contains("!players"))
 					{
-						var charCount:Int = 2;
-						while (Reflect.hasField(songData, "player" + Std.string(charCount + 1)))
-							charCount++;
-						for (i in 0...charCount)
+						for (i in 0...songData.characters.length)
 						{
-							options.insert(options.indexOf("!players"), i == 2 ? "gf" : "player"+Std.string(i+1));
-							var charName:String = Reflect.field(songData, "player" + Std.string(i + 1));
+							options.insert(options.indexOf("!players"), i == 2 ? "gf" : "player" + Std.string(i + 1));
+							var charName:String = songData.characters[i];
 							if (characterNames.exists(charName))
 								charName = characterNames[charName];
 							eventParamNames[i == 2 ? "gf" : "player" + Std.string(i + 1)] = "Character " + Std.string(i + 1) + " (" + charName + ")";
@@ -6064,21 +6037,17 @@ class ChartEditorState extends MusicBeatState
 			preview: songData.preview,
 			ratings: songData.ratings,
 			offset: songData.offset,
-			player1: songData.player1,
-			player2: songData.player2,
 			stage: songData.stage,
 			needsVoices: (songData.tracks.length > 1),
 			notes: []
 		}
 
-		if (Reflect.hasField(songData, "player3"))
+		if (songData.useBeats)
+			savedData.characters = songData.characters;
+		else
 		{
-			var i:Int = 3;
-			while (Reflect.hasField(songData, "player" + Std.string(i)))
-			{
-				Reflect.setField(savedData, "player" + Std.string(i), Reflect.field(songData, "player" + Std.string(i)));
-				i++;
-			}
+			for (i in 0...songData.characters.length)
+				Reflect.setField(savedData, "player" + Std.string(i + 1), songData.characters[i]);
 		}
 
 		if (songData.music != null)
@@ -6364,16 +6333,8 @@ class ChartEditorState extends MusicBeatState
 			charter: songData.charter,
 			preview: songData.preview,
 			offset: songData.offset,
+			characters: songData.characters,
 			stage: songData.stage
-		}
-
-		savedData.characters = [];
-
-		var i:Int = 1;
-		while (Reflect.hasField(songData, "player" + Std.string(i)))
-		{
-			savedData.characters.push(Reflect.field(songData, "player" + Std.string(i)));
-			i++;
 		}
 
 		if (songData.music != null)
@@ -6888,7 +6849,12 @@ class ChartEditorState extends MusicBeatState
 			for (p in params.parameters)
 			{
 				if (p.id != null && !Reflect.hasField(e.parameters, p.id))
-					Reflect.setField(e.parameters, p.id, p.defaultValue);
+				{
+					if (p.compatibilityValue != null)
+						Reflect.setField(e.parameters, p.id, p.compatibilityValue);
+					else
+						Reflect.setField(e.parameters, p.id, p.defaultValue);
+				}
 			}
 		}
 	}
