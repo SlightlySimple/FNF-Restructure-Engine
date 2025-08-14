@@ -86,6 +86,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 	var difficultySpriteTimer:FlxTimer = new FlxTimer();
 	var diffSelLeft:AnimatedSprite;
 	var diffSelRight:AnimatedSprite;
+	var difficultyDots:FlxTypedSpriteGroup<FreeplayDifficultyDot>;
 
 	var rankCamera:FlxCamera;
 	var rankBg:FlxSprite;
@@ -217,6 +218,46 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		});
 		createCharacterSelectTransition([dj], -175, 0.8);
 
+		difficultySprite = new FlxSprite(200, 117, Paths.image("ui/freeplay/difficulties/normal"));
+		difficultySprite.setPosition(200 - Math.round(difficultySprite.width / 2), 117 - Math.round(difficultySprite.height / 2));
+		add(difficultySprite);
+		songStuff.push(difficultySprite);
+
+		difficultyText = new FlxText(85, 80, 0, "").setFormat("FNF Dialogue", 64, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		difficultyText.borderSize = 4;
+		add(difficultyText);
+		songStuff.push(difficultyText);
+
+		diffSelLeft = new AnimatedSprite(20, 70, Paths.sparrow("ui/freeplay/characters/" + CharacterSelectState.player + "/" + style.selectorAsset));
+		diffSelLeft.addAnim("idle", "", 24, true);
+		diffSelLeft.playAnim("idle");
+		add(diffSelLeft);
+		songStuff.push(diffSelLeft);
+
+		diffSelRight = new AnimatedSprite(325, 70, diffSelLeft.frames);
+		diffSelRight.flipX = true;
+		diffSelRight.addAnim("idle", "", 24, true);
+		diffSelRight.playAnim("idle");
+		add(diffSelRight);
+		songStuff.push(diffSelRight);
+
+		difficultyDots = new FlxTypedSpriteGroup<FreeplayDifficultyDot>();
+		add(difficultyDots);
+		songStuff.push(difficultyDots);
+		toCharacterSelectActions.push(function() {
+			difficultyDots.forEachAlive(function(dot:FreeplayDifficultyDot) {
+				FlxTween.tween(dot, {alpha: 0}, 0.25, {ease: FlxEase.quartOut});
+			});
+		});
+
+		createCharacterSelectTransition([difficultySprite, difficultyText, diffSelLeft, diffSelRight], -270, 0.8);
+
+		if (menuState > 0 && !shouldDoIntro)
+			difficulty = PlayState.difficulty;
+
+		if (difficulty != "normal")
+			onChangeDifficulty();
+
 		bgDad = new FlxSprite(pinkBack.width * 0.75, 0, Paths.image("ui/freeplay/characters/" + CharacterSelectState.player + "/" + style.bgAsset));
 		bgDad.setGraphicSize(0, FlxG.height);
 		bgDad.updateHitbox();
@@ -256,37 +297,6 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				capsule.doAnim("exit");
 			});
 		});
-
-		difficultySprite = new FlxSprite(200, 117, Paths.image("ui/freeplay/difficulties/normal"));
-		difficultySprite.setPosition(200 - Math.round(difficultySprite.width / 2), 117 - Math.round(difficultySprite.height / 2));
-		add(difficultySprite);
-		songStuff.push(difficultySprite);
-
-		difficultyText = new FlxText(85, 80, 0, "").setFormat("FNF Dialogue", 64, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
-		difficultyText.borderSize = 4;
-		add(difficultyText);
-		songStuff.push(difficultyText);
-
-		diffSelLeft = new AnimatedSprite(20, 70, Paths.sparrow("ui/freeplay/characters/" + CharacterSelectState.player + "/" + style.selectorAsset));
-		diffSelLeft.addAnim("idle", "", 24, true);
-		diffSelLeft.playAnim("idle");
-		add(diffSelLeft);
-		songStuff.push(diffSelLeft);
-
-		diffSelRight = new AnimatedSprite(325, 70, diffSelLeft.frames);
-		diffSelRight.flipX = true;
-		diffSelRight.addAnim("idle", "", 24, true);
-		diffSelRight.playAnim("idle");
-		add(diffSelRight);
-		songStuff.push(diffSelRight);
-
-		createCharacterSelectTransition([difficultySprite, difficultyText, diffSelLeft, diffSelRight], -270, 0.8);
-
-		if (menuState > 0 && !shouldDoIntro)
-			difficulty = PlayState.difficulty;
-
-		if (difficulty != "normal")
-			onChangeDifficulty();
 
 		modIcon = new FlxSprite().makeGraphic(1, 1, FlxColor.TRANSPARENT);
 		modIcon.angle = 10;
@@ -1403,6 +1413,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		if (selectedId == "")
 			selectedId = "script!" + capsule.songInfo.hscript;
 
+		refreshDifficultyDots();
 		if (capsule.songId == "" || capsule.songId == "!random")
 		{
 			difficultySprite.visible = false;
@@ -1478,7 +1489,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		{
 			dj.idleTimer = 0;
 			FlxG.sound.play(Paths.sound("ui/scrollMenu"));
-			onChangeDifficulty();
+			onChangeDifficulty(change);
 		}
 
 		if (change < 0)
@@ -1534,7 +1545,7 @@ class FreeplayMenuSubState extends MusicBeatSubState
 		reload();
 	}
 
-	function onChangeDifficulty()
+	function onChangeDifficulty(?change:Int = 0)
 	{
 		var showSprite:Bool = true;
 
@@ -1576,6 +1587,10 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				difficultySprite.alpha = 1;
 				difficultySprite.updateHitbox();
 			});
+
+			FlxTween.cancelTweensOf(difficultySprite, ["x"]);
+			difficultySprite.x += 410 * change;
+			FlxTween.tween(difficultySprite, {x: difficultySprite.x - (410 * change)}, 0.2, {ease: FlxEase.circInOut});
 		}
 		else
 		{
@@ -1588,6 +1603,42 @@ class FreeplayMenuSubState extends MusicBeatSubState
 				difficultyText.alpha = 1;
 				difficultyText.updateHitbox();
 			});
+
+			FlxTween.cancelTweensOf(difficultyText, ["x"]);
+			difficultyText.x += 410 * change;
+			FlxTween.tween(difficultyText, {x: difficultyText.x - (410 * change)}, 0.2, {ease: FlxEase.circInOut});
+		}
+
+		difficultyDots.forEachAlive(function(dot:FreeplayDifficultyDot) {
+			dot.updateSelected(difficulty);
+		});
+	}
+
+	function refreshDifficultyDots()
+	{
+		difficultyDots.forEachAlive(function(dot:FreeplayDifficultyDot) {
+			dot.kill();
+			dot.destroy();
+		});
+		difficultyDots.clear();
+		difficultyDots.setPosition(0, 0);
+
+		var capsule:FreeplayCapsule = currentCapsule();
+		if (capsule.songInfo != null && capsule.songInfo.difficulties != null)
+		{
+			var diffs:Array<String> = capsule.songInfo.difficulties;
+			if (diffs[diffs.length - 1] == "easy")
+			{
+				diffs.remove("easy");
+				diffs.unshift("easy");
+			}
+			for (i in 0...diffs.length)
+			{
+				var dot:FreeplayDifficultyDot = new FreeplayDifficultyDot(capsule.songInfo.difficulties[i], i);
+				dot.updateSelected(difficulty, true);
+				difficultyDots.add(dot);
+			}
+			difficultyDots.setPosition(203 - (difficultyDots.width / 2), 170);
 		}
 	}
 

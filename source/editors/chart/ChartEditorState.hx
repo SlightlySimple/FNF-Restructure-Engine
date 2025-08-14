@@ -6717,6 +6717,8 @@ class ChartEditorState extends MusicBeatState
 
 		if (Reflect.hasField(Paths.json(eventsNameArray.join("/").split('.json')[0]), "song"))
 			loadPsychEvents(Paths.json(eventsNameArray.join("/").split('.json')[0]).song);
+		else if (Reflect.hasField(Paths.json(eventsNameArray.join("/").split('.json')[0]), "format"))
+			loadPsychEvents(Paths.json(eventsNameArray.join("/").split('.json')[0]));
 		else
 		{
 			var eventList:Array<EventData> = Song.loadEvents(eventsNameArray.join("/").split('.json')[0]);

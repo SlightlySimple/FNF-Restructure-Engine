@@ -4,7 +4,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.7.3" company="slightlysimple" />
+	<app title="Friday Night Funkin: Restructure Engine" file="RestructEngine" main="Main" version="1.8.0" company="slightlysimple" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->

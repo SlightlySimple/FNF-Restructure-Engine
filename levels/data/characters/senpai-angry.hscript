@@ -8,10 +8,10 @@ function create()
 		{
 			for (i in 0...game.stage.pieces[k].idles.length)
 			{
-				if (game.stage.pieces[k].animation.exists(game.stage.pieces[k].idles[i] + "-alt"))
-					game.stage.pieces[k].idles[i] += "-alt";
+				if (game.stage.pieces[k].animation.exists(game.stage.pieces[k].idles[i] + "-scared"))
+					game.stage.pieces[k].idles[i] += "-scared";
 			}
-			game.stage.pieces[k].playAnim(game.stage.pieces[k].animation.curAnimName + "-alt");
+			game.stage.pieces[k].playAnim(game.stage.pieces[k].animation.curAnimName + "-scared");
 		}
 	}
 }

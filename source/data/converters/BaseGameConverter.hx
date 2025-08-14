@@ -204,170 +204,239 @@ class BaseGameConverter
 				var stage:Dynamic = Json.parse(File.getContent(fullPath));
 
 				var file2:FileBrowser = new FileBrowser();
-				file2.saveCallback = function(savePath:String)
+				file2.label = "Choose a png file in the folder for this stages's props";
+				file2.loadCallback = function(imagePath:String)
 				{
-					var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
-					savePathArray.pop();
-					var trueSavePath:String = savePathArray.join("/") + "/";
+					pathArray = imagePath.replace('\\','/').split('/');
+					while (pathArray[0] != "images")
+						pathArray.shift();
+					pathArray.shift();
+					pathArray.pop();
+					var finalAssetPath:String = pathArray.join("/");
 
-					var finalStage:StageData = {
-						searchDirs: ["stages/" + convertedStageId.split(".json")[0] + "/"],
-						fixes: 1,
-						characters: [],
-						camZoom: stage.cameraZoom,
-						camFollow: [640, 360],
-						bgColor: [0, 0, 0],
-						pixelPerfect: false,
-						pieces: []
-					};
+					pathArray = imagePath.replace('\\','/').split('/');
+					pathArray.pop();
+					var assetCopyPath1:String = pathArray.join("/");
+					while (pathArray[pathArray.length - 1] != "images")
+						pathArray.pop();
+					var assetCopyPath2:String = pathArray.join("/");
 
-					var charZ:Map<String, Float> = new Map<String, Float>();
-					var charList:Array<String> = ["bf", "gf", "dad"];
-					charZ["bf"] = stage.characters.bf.zIndex;
-					charZ["gf"] = stage.characters.gf.zIndex;
-					charZ["dad"] = stage.characters.dad.zIndex;
-					ArraySort.sort(charList, function(a:String, b:String) {
-						if (charZ[a] < charZ[b])
-							return -1;
-						if (charZ[a] > charZ[b])
-							return 1;
-						return 0;
-					});
-
-					for (c in ["bf", "dad", "gf"])
+					var file3:FileBrowser = new FileBrowser();
+					file3.label = "Save a file in the new folder for this stage's props";
+					file3.saveCallback = function(assetSavePath:String)
 					{
-						var oldChar = Reflect.field(stage.characters, c);
-						var oldPos:Array<Float> = cast oldChar.position;
+						pathArray = assetSavePath.replace('\\','/').split('/');
+						while (pathArray[0] != "images")
+							pathArray.shift();
+						pathArray.shift();
+						pathArray.pop();
+						var finalAssetSavePath:String = pathArray.join("/");
 
-						var stageChar:StageCharacter = {
-							layer: charList.indexOf(c),
-							position: [Std.int(Math.round((oldPos[0] - 210) / 5) * 5), Std.int(Math.round((oldPos[1] - 765) / 5) * 5)],
-							flip: (c == "bf")
-						};
+						pathArray = assetSavePath.replace('\\','/').split('/');
+						pathArray.pop();
+						var assetPastePath:String = pathArray.join("/");
 
-						if (oldChar.cameraOffsets != null)
+						var file4:FileBrowser = new FileBrowser();
+						file4.saveCallback = function(savePath:String)
 						{
-							var oldCamPos:Array<Float> = cast oldChar.cameraOffsets;
-							stageChar.camPosition = [Std.int(oldCamPos[0]), Std.int(oldCamPos[1])];
-							if (c == "bf")
+							var assetList:Array<String> = [];
+
+							var savePathArray:Array<String> = savePath.replace('\\','/').split('/');
+							savePathArray.pop();
+							var trueSavePath:String = savePathArray.join("/") + "/";
+
+							var finalStage:StageData = {
+								searchDirs: [finalAssetSavePath],
+								fixes: 1,
+								characters: [],
+								camZoom: stage.cameraZoom,
+								camFollow: [640, 360],
+								bgColor: [0, 0, 0],
+								pixelPerfect: false,
+								pieces: []
+							};
+
+							var charZ:Map<String, Float> = new Map<String, Float>();
+							var charList:Array<String> = ["bf", "gf", "dad"];
+							charZ["bf"] = stage.characters.bf.zIndex;
+							charZ["gf"] = stage.characters.gf.zIndex;
+							charZ["dad"] = stage.characters.dad.zIndex;
+							ArraySort.sort(charList, function(a:String, b:String) {
+								if (charZ[a] < charZ[b])
+									return -1;
+								if (charZ[a] > charZ[b])
+									return 1;
+								return 0;
+							});
+
+							for (c in ["bf", "dad", "gf"])
 							{
-								stageChar.camPosition[0] += 150;
-								stageChar.camPosition[1] += 100;
-							}
-							else if (c == "dad")
-							{
-								stageChar.camPosition[0] -= 150;
-								stageChar.camPosition[1] += 100;
-							}
-						}
+								var oldChar = Reflect.field(stage.characters, c);
+								var oldPos:Array<Float> = cast oldChar.position;
 
-						finalStage.characters.push(stageChar);
-					}
+								var stageChar:StageCharacter = {
+									layer: charList.indexOf(c),
+									position: [Std.int(Math.round((oldPos[0] - 210) / 5) * 5), Std.int(Math.round((oldPos[1] - 765) / 5) * 5)],
+									flip: (c == "bf")
+								};
 
-					var oldPieces:Array<Dynamic> = cast stage.props;
-					ArraySort.sort(oldPieces, function(a:Dynamic, b:Dynamic) {
-						if (a.zIndex < b.zIndex)
-							return -1;
-						if (a.zIndex > b.zIndex)
-							return 1;
-						return 0;
-					});
-
-					for (p in oldPieces)
-					{
-						var stagePiece:StagePiece = {
-							id: p.name,
-							type: "static",
-							asset: p.assetPath,
-							position: p.position,
-							layer: 0,
-							antialias: !p.isPixel,
-							flip: [false, false]
-						};
-
-						for (c in charList)
-						{
-							if (p.zIndex > charZ[c])
-								stagePiece.layer++;
-						}
-
-						if (p.scale != null)
-						{
-							stagePiece.scale = p.scale;
-							stagePiece.updateHitbox = true;
-						}
-
-						if (p.scroll != null)
-							stagePiece.scrollFactor = p.scroll;
-
-						if (p.flipX != null)
-							stagePiece.flip[0] = p.flipX;
-						if (p.flipY != null)
-							stagePiece.flip[0] = p.flipY;
-
-						if (p.alpha != null)
-							stagePiece.alpha = p.alpha;
-
-						if (p.blend != null)
-							stagePiece.blend = p.blend;
-
-						if (p.color != null)
-						{
-							var pieceColor:FlxColor = FlxColor.fromString(p.color);
-							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
-						}
-
-						if (stagePiece.asset.charAt(0) == "#")
-						{
-							var pieceColor:FlxColor = FlxColor.fromString(stagePiece.asset);
-							stagePiece.type = "solid";
-							stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
-						}
-						else if (p.animations != null)
-						{
-							var pAnims:Array<Dynamic> = cast p.animations;
-							if (pAnims.length > 0)
-							{
-								stagePiece.type = "animated";
-								stagePiece.animations = [];
-								var animNames:Array<String> = [];
-								for (a in pAnims)
+								if (oldChar.cameraOffsets != null)
 								{
-									var stagePieceAnim:StageAnimation = {
-										name: a.name,
-										prefix: a.prefix,
-										fps: a.frameRate,
-										loop: a.looped
-									};
-									if (a.frameRate == null)
-										stagePieceAnim.fps = 24;
-									if (a.looped == null)
-										stagePieceAnim.loop = false;
-									if (a.frameIndices != null)
-										stagePieceAnim.indices = a.frameIndices;
+									var oldCamPos:Array<Float> = cast oldChar.cameraOffsets;
+									stageChar.camPosition = [Std.int(oldCamPos[0]), Std.int(oldCamPos[1])];
+									if (c == "bf")
+									{
+										stageChar.camPosition[0] += 150;
+										stageChar.camPosition[1] += 100;
+									}
+									else if (c == "dad")
+									{
+										stageChar.camPosition[0] -= 150;
+										stageChar.camPosition[1] += 100;
+									}
+								}
 
-									stagePiece.animations.push(stagePieceAnim);
-									animNames.push(stagePieceAnim.name);
-								}
-								if (p.startingAnimation != null)
-									stagePiece.firstAnimation = p.startingAnimation;
-								if (p.danceEvery != null && p.danceEvery > 0)
+								finalStage.characters.push(stageChar);
+							}
+
+							var oldPieces:Array<Dynamic> = cast stage.props;
+							ArraySort.sort(oldPieces, function(a:Dynamic, b:Dynamic) {
+								if (a.zIndex < b.zIndex)
+									return -1;
+								if (a.zIndex > b.zIndex)
+									return 1;
+								return 0;
+							});
+
+							for (p in oldPieces)
+							{
+								var stagePiece:StagePiece = {
+									id: p.name,
+									type: "static",
+									asset: p.assetPath,
+									position: p.position,
+									layer: 0,
+									antialias: !p.isPixel,
+									flip: [false, false]
+								};
+
+								if (stagePiece.asset.replace("\\", "/").startsWith(finalAssetPath))
+									stagePiece.asset = stagePiece.asset.substr(finalAssetPath.length + 1);
+								if (stagePiece.id == stagePiece.asset)
+									Reflect.deleteField(stagePiece, "id");
+
+								for (c in charList)
 								{
-									if (animNames.contains("idle"))
-										stagePiece.idles = ["idle"];
-									else if (animNames.contains("danceLeft") && animNames.contains("danceRight"))
-										stagePiece.idles = ["danceLeft", "danceRight"];
-									stagePiece.beatAnimationSpeed = p.danceEvery;
+									if (p.zIndex > charZ[c])
+										stagePiece.layer++;
 								}
+
+								if (p.scale != null)
+								{
+									stagePiece.scale = p.scale;
+									stagePiece.updateHitbox = true;
+								}
+
+								if (p.scroll != null)
+									stagePiece.scrollFactor = p.scroll;
+
+								if (p.flipX != null)
+									stagePiece.flip[0] = p.flipX;
+								if (p.flipY != null)
+									stagePiece.flip[0] = p.flipY;
+
+								if (p.alpha != null)
+									stagePiece.alpha = p.alpha;
+
+								if (p.blend != null)
+									stagePiece.blend = p.blend;
+
+								if (p.color != null)
+								{
+									var pieceColor:FlxColor = FlxColor.fromString(p.color);
+									stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
+								}
+
+								if (stagePiece.asset.charAt(0) == "#")
+								{
+									var pieceColor:FlxColor = FlxColor.fromString(stagePiece.asset);
+									stagePiece.type = "solid";
+									stagePiece.color = [pieceColor.red, pieceColor.green, pieceColor.blue];
+								}
+								else if (p.animations != null)
+								{
+									var pAnims:Array<Dynamic> = cast p.animations;
+									if (pAnims.length > 0)
+									{
+										stagePiece.type = "animated";
+										stagePiece.animations = [];
+										var animNames:Array<String> = [];
+										for (a in pAnims)
+										{
+											var stagePieceAnim:StageAnimation = {
+												name: a.name,
+												prefix: a.prefix,
+												fps: a.frameRate,
+												loop: a.looped
+											};
+											if (a.frameRate == null)
+												stagePieceAnim.fps = 24;
+											if (a.looped == null)
+												stagePieceAnim.loop = false;
+											if (a.frameIndices != null)
+												stagePieceAnim.indices = a.frameIndices;
+
+											stagePiece.animations.push(stagePieceAnim);
+											animNames.push(stagePieceAnim.name);
+										}
+										if (p.startingAnimation != null)
+											stagePiece.firstAnimation = p.startingAnimation;
+										if (p.danceEvery != null && p.danceEvery > 0)
+										{
+											if (animNames.contains("idle"))
+												stagePiece.idles = ["idle"];
+											else if (animNames.contains("danceLeft") && animNames.contains("danceRight"))
+												stagePiece.idles = ["danceLeft", "danceRight"];
+											stagePiece.beatAnimationSpeed = p.danceEvery;
+										}
+									}
+								}
+
+								if (stagePiece.type == "static" || stagePiece.type == "animated")
+								{
+									if (!assetList.contains(stagePiece.asset + ".png"))
+									assetList.push(stagePiece.asset + ".png");
+									if (stagePiece.type == "animated" && !assetList.contains(stagePiece.asset + ".xml"))
+										assetList.push(stagePiece.asset + ".xml");
+								}
+
+								finalStage.pieces.push(stagePiece);
+							}
+
+							File.saveContent(trueSavePath + convertedStageId, Json.stringify(finalStage));
+
+							for (asset in assetList)
+							{
+								if (asset.indexOf("/") > -1 || asset.indexOf("\\") > -1)
+								{
+									var assetDirSplit:Array<String> = asset.replace("\\", "/").split("/");
+									assetDirSplit.pop();
+									var assetDir:String = assetDirSplit.join("/");
+									if (!FileSystem.isDirectory(assetPastePath + "/" + assetDir))
+										FileSystem.createDirectory(assetPastePath + "/" + assetDir);
+								}
+
+								if (FileSystem.exists(assetCopyPath1 + "/" + asset))
+									File.copy(assetCopyPath1 + "/" + asset, assetPastePath + "/" + asset);
+								else if (FileSystem.exists(assetCopyPath2 + "/" + asset))
+									File.copy(assetCopyPath2 + "/" + asset, assetPastePath + "/" + asset);
 							}
 						}
-
-						finalStage.pieces.push(stagePiece);
+						file4.savePath("*.*");
 					}
-
-					File.saveContent(trueSavePath + convertedStageId, Json.stringify(finalStage));
+					file3.savePath("*.*");
 				}
-				file2.savePath("*.*");
+				file2.load("png");
 			}
 		}
 		file.load("json");

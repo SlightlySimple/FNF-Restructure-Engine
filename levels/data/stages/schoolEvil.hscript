@@ -1,19 +1,33 @@
 function create()
 {
-	wiggle = new FlxRuntimeShader(Paths.shader("wiggle"));
-	wiggle.data.uSpeed.value = [2];
-	wiggle.data.uFrequency.value = [4];
-	wiggle.data.uWaveAmplitude.value = [0.017];
-	wiggle.data.effectType.value = [0];
+	wiggles = [];
 
-	stage.pieces["evilSchoolBG"].shader = wiggle;
-	stage.pieces["evilSchoolFG"].shader = wiggle;
+    wiggleBack = MakeWiggle(2 * 0.8, 4 * 0.4, 0.011, 0);
+    wiggleSchool = MakeWiggle(2, 4, 0.017, 0);
+    wiggleGround = MakeWiggle(2, 4, 0.007, 0);
+    wiggleTrees = MakeWiggle(2, 4, 0.007, 0);
+
+	stage.pieces["backTrees"].shader = wiggleBack;
+	stage.pieces["school"].shader = wiggleSchool;
+	stage.pieces["street"].shader = wiggleGround;
+	stage.pieces["trees"].shader = wiggleTrees;
+}
+
+function MakeWiggle(speed, frequency, amplitude, type)
+{
+	var wiggle = new FlxRuntimeShader(Paths.shader("wiggle"));
+	wiggle.data.uSpeed.value = [speed];
+	wiggle.data.uFrequency.value = [frequency];
+	wiggle.data.uWaveAmplitude.value = [amplitude];
+	wiggle.data.effectType.value = [type];
+	wiggles.push(wiggle);
+	return wiggle;
 }
 
 time = 0;
-
 function update(elapsed)
 {
 	time += elapsed;
-	wiggle.data.uTime.value = [time];
+	for (w in wiggles)
+		w.data.uTime.value = [time];
 }

@@ -16,6 +16,7 @@ import helpers.Cloner;
 import data.ObjectData;
 import data.Options;
 import data.converters.BaseGameConverter;
+import data.converters.PsychConverter;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Stage;
@@ -1607,8 +1608,17 @@ class CharacterEditorState extends BaseEditorState
 						}
 					},
 					{
-						label: "Convert from Base Game",
-						action: BaseGameConverter.convertCharacter
+						label: "Convert from...",
+						options: [
+							{
+								label: "Base Game",
+								action: BaseGameConverter.convertCharacter
+							},
+							{
+								label: "Psych Engine",
+								action: PsychConverter.convertCharacter
+							}
+						]
 					},
 					null,
 					{

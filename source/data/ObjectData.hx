@@ -278,6 +278,7 @@ typedef UISkin =
 typedef UISprite =
 {
 	var asset:String;
+	var position:Array<Float>;
 	var scale:Array<Float>;
 	var ?animation:String;
 	var ?loop:Bool;

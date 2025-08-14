@@ -428,6 +428,7 @@ class FlxSound extends FlxBasic
 
 	function init(Looped:Bool = false, AutoDestroy:Bool = false, ?OnComplete:Void->Void):FlxSound
 	{
+		pitch = 1;
 		looped = Looped;
 		autoDestroy = AutoDestroy;
 		updateTransform();

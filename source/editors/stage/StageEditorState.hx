@@ -23,6 +23,7 @@ import openfl.ui.MouseCursor;
 import data.ObjectData;
 import data.Options;
 import data.converters.BaseGameConverter;
+import data.converters.PsychConverter;
 import data.Song;
 import objects.AnimatedSprite;
 import objects.Character;
@@ -1511,8 +1512,17 @@ class StageEditorState extends BaseEditorState
 						icon: "save"
 					},
 					{
-						label: "Convert from Base Game",
-						action: BaseGameConverter.convertStage
+						label: "Convert from...",
+						options: [
+							{
+								label: "Base Game",
+								action: BaseGameConverter.convertStage
+							},
+							{
+								label: "Psych Engine",
+								action: PsychConverter.convertStage
+							}
+						]
 					},
 					null,
 					{

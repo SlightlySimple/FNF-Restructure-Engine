@@ -45,33 +45,7 @@ class Stage
 			data = Paths.json("stages/" + id);
 		var sData:StageData = cast data;
 
-		if (data.boyfriend != null)			// This is a Psych Engine stage and must be converted to the Restructure Engine format
-		{
-			sData = {
-				fixes: 1,
-				characters: [{position: data.boyfriend, camPosition: [0, 0], flip: true},
-				{position: data.opponent, camPosition: [0, 0], flip: false},
-				{position: data.girlfriend, camPosition: [0, 0], flip: false, scrollFactor: [0.95, 0.95]}],
-				camZoom: data.defaultZoom,
-				camFollow: [Std.int(FlxG.width / 2), Std.int(FlxG.height / 2)],
-				bgColor: [0, 0, 0],
-				pixelPerfect: false,
-				pieces: []
-			}
-
-			if (Reflect.hasField(data, "camera_boyfriend"))
-				sData.characters[0].camPosition = data.camera_boyfriend;
-
-			if (Reflect.hasField(data, "camera_opponent"))
-				sData.characters[1].camPosition = data.camera_opponent;
-
-			sData.characters[2].position[0] += 140;
-			sData.characters[2].position[1] -= 80;
-
-			if (Reflect.hasField(data, "hide_girlfriend") && Reflect.field(data, "hide_girlfriend"))
-				sData.characters.pop();
-		}
-		else if (sData.parent != null)
+		if (sData.parent != null)
 		{
 			var oldStageData:StageData = sData;
 			if (Paths.jsonExists("stages/" + sData.parent))

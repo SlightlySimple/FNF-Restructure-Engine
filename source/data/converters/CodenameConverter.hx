@@ -82,6 +82,7 @@ class CodenameConverter
 							stage: chart.stage,
 							bpmMap: [[0, metadata.bpm]],
 							speed: chart.scrollSpeed,
+							columns: [],
 							notes: [],
 							metaFile: "",
 							eventFile: "_events"
@@ -91,7 +92,10 @@ class CodenameConverter
 						{
 							newChart.characters = [strumLines[1].characters[0], strumLines[0].characters[0]];
 							if (strumLines.length > 2)
-								newChart.characters.push(strumLines[2].characters[0]);
+							{
+								for (i in 2...strumLines.length)
+									newChart.characters.push(strumLines[i].characters[0]);
+							}
 						}
 
 						var timingStruct:TimingStruct = new TimingStruct();
@@ -124,45 +128,49 @@ class CodenameConverter
 								newChart.notes.push({sectionNotes: [], lengthInSteps: 16, camOn: 0});
 						}
 
+						var noteTypes:Array<String> = [];
+						if (chart.noteTypes != null)
+							noteTypes = cast chart.noteTypes;
+						noteTypes.unshift("");
+
 						var firstNote:Float = -1;
-						if (strumLines.length > 1)
+						var firstColumn:Int = 0;
+						for (i in 0...strumLines.length)
 						{
-							var newNotes:Array<Dynamic> = cast strumLines[0].notes;
+							var newNotes:Array<Dynamic> = cast strumLines[i].notes;
 
-							for (n in newNotes)
+							if (newNotes != null && newNotes.length > 0)
 							{
-								var column:Int = Std.int(n.id);
+								for (n in newNotes)
+								{
+									var column:Int = Std.int(n.id) + firstColumn;
 
-								var len:Float = 0;
-								if (n.sLen != null)
-									len = n.sLen;
+									var len:Float = 0;
+									if (n.sLen != null)
+										len = n.sLen;
 
-								var kind:String = "";
-								if (n.type != null)
-									kind = Std.string(n.type);
+									var kind:String = "";
+									if (n.type != null && n.type < noteTypes.length)
+										kind = noteTypes[Std.int(n.type)];
 
-								if (firstNote == -1 || n.time < firstNote)
-									firstNote = n.time;
-								newChart.notes[0].sectionNotes.push([n.time, column, len, kind]);
-							}
+									if (firstNote == -1 || n.time < firstNote)
+										firstNote = n.time;
+									newChart.notes[0].sectionNotes.push([n.time, column, len, kind]);
+								}
 
-							newNotes = cast strumLines[1].notes;
+								var strumCount:Int = 4;
+								if (strumLines[i].keyCount != null)
+									strumCount = strumLines[i].keyCount;
 
-							for (n in newNotes)
-							{
-								var column:Int = Std.int(n.id) + 4;
+								for (j in 0...strumCount)
+								{
+									if (i < 2)
+										newChart.columns.push({division: 1 - i});
+									else
+										newChart.columns.push({division: i});
+								}
 
-								var len:Float = 0;
-								if (n.sLen != null)
-									len = n.sLen;
-
-								var kind:String = "";
-								if (n.type != null)
-									kind = Std.string(n.type);
-
-								if (firstNote == -1 || n.time < firstNote)
-									firstNote = n.time;
-								newChart.notes[0].sectionNotes.push([n.time, column, len, kind]);
+								firstColumn += strumCount;
 							}
 						}
 

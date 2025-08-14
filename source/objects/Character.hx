@@ -86,63 +86,10 @@ class Character extends FlxSprite
 	public static var parsedCharacterTypes:Map<String, String> = new Map<String, String>();
 	public static function parseCharacter(id:String):CharacterData
 	{
-		var tryPsychFix:Bool = false;
-
 		var data:Dynamic = Paths.json("characters/" + id);
 		var cData:CharacterData = cast data;
-		if (data.image != null)			// This is a Psych Engine character and must be converted to the Restructure Engine format
-		{
-			cData = {
-				fixes: 0,
-				asset: data.image,
-				position: data.position,
-				camPosition: [Std.int(data.camera_position[0] + 150), Std.int(data.camera_position[1] - 100)],
-				camPositionGameOver: [0, 0],
-				scale: [data.scale, data.scale],
-				antialias: !data.no_antialiasing,
-				animations: [],
-				firstAnimation: data.animations[0].anim,
-				idles: ["idle"],
-				danceSpeed: 2,
-				flip: data.flip_x,
-				facing: (data.flip_x ? "left" : "right"),
-				icon: data.healthicon,
-				healthbarColor: data.healthbar_colors
-			}
-			if (cData.icon == id)
-				cData.icon = "";
 
-			var dataAnims:Array<Dynamic> = cast data.animations;
-			for (a in dataAnims)
-			{
-				var cAnim:CharacterAnimation = {
-					name: a.anim,
-					prefix: a.name,
-					fps: a.fps,
-					loop: a.loop,
-					flipX: false,
-					flipY: false,
-					offsets: a.offsets
-				}
-				if (a.indices != null && a.indices.length > 0)
-					cAnim.indices = a.indices;
-				cData.animations.push(cAnim);
-				if (cAnim.name == "danceLeft")
-				{
-					cData.idles = ["danceLeft", "danceRight"];
-					cData.danceSpeed = 1;
-					cData.firstAnimation = "danceLeft";
-				}
-				else if (cAnim.name == "idle")
-					cData.firstAnimation = "idle";
-
-				if (cAnim.name == "firstDeath")
-					cData.gameOverCharacter = "_self";
-			}
-
-			tryPsychFix = true;
-		}
-		else if (cData.parent != null)
+		if (cData.parent != null)
 		{
 			var oldCharData:CharacterData = cData;
 			if (Paths.jsonExists("characters/" + cData.parent))
@@ -322,37 +269,6 @@ class Character extends FlxSprite
 
 		if (cData.facing == null || cData.facing == "")
 			cData.facing = "right";
-
-		if (tryPsychFix)
-		{
-			if (Paths.sparrowExists(cData.asset))
-			{
-				var dat = Paths.sparrow(cData.asset);
-				var firstFrame = dat.frames[0];
-				var firstAnimFrame = null;
-				var firstAnimFrameName = cData.animations[allAnims.indexOf(cData.firstAnimation)].prefix;
-				for (f in dat.frames)
-				{
-					if (f.name != null && f.name.startsWith(firstAnimFrameName))
-					{
-						firstAnimFrame = f;
-						break;
-					}
-				}
-				if (firstFrame != firstAnimFrame)
-				{
-					cData.camPosition[0] += Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * cData.scale[0] * 0.5);
-					cData.camPosition[1] += Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * cData.scale[1] * 0.5);
-					if (cData.scale[0] != 1)
-					{
-						cData.position[0] += Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * (1 - cData.scale[0]) * 0.5);
-						cData.position[1] += Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * (1 - cData.scale[1]) * 0.5);
-						cData.camPosition[0] -= Std.int((firstFrame.sourceSize.x - firstAnimFrame.sourceSize.x) * (1 - cData.scale[0]) * 0.5);
-						cData.camPosition[1] -= Std.int((firstFrame.sourceSize.y - firstAnimFrame.sourceSize.y) * (1 - cData.scale[1]) * 0.5);
-					}
-				}
-			}
-		}
 
 		return cData;
 	}

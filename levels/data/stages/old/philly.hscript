@@ -1,0 +1,37 @@
+curLight = -1;
+alphaShit = 1;
+
+function create()
+{
+	lightShader = new FlxRuntimeShader(Paths.shader("building"));
+
+	for (i in 0...5)
+	{
+		stage.pieces["win" + Std.string(i)].visible = false;
+		stage.pieces["win" + Std.string(i)].shader = lightShader;
+	}
+	curLight = FlxG.random.int(0, 4);
+	showWindow();
+}
+
+function update(elapsed)
+{
+	alphaShit += Conductor.beatSeconds * elapsed * 1.5;
+	lightShader.setFloat("alphaShit", alphaShit);
+}
+
+function beatHit()
+{
+	if (game.curBeat % 4 == 0)
+	{
+		stage.pieces["win" + Std.string(curLight)].visible = false;
+		curLight = FlxG.random.int(0, 4, [curLight]);
+		showWindow();
+	}
+}
+
+function showWindow()
+{
+	stage.pieces["win" + Std.string(curLight)].visible = true;
+	alphaShit = 0;
+}

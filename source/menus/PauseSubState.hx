@@ -202,9 +202,6 @@ class PauseSubState extends FlxSubState
 			}]);
 		}
 
-		if (PlayState.instance.isSM)
-			menu.push(["#pause.menu.saveChart", saveChart]);
-
 		var optionsMenuPosition:Int = menu.length;
 		menu.push(["#pause.menu.options", function() {
 			nav.locked = true;
@@ -364,20 +361,5 @@ class PauseSubState extends FlxSubState
 		curDifficulty = Util.loop(curDifficulty + change, 0, difficultyMenu.length - 1);
 		difficultyMenuButtons.selection = curDifficulty;
 		PlayState.instance.hscriptExec("pauseChangeDifficultySelection", []);
-	}
-
-
-
-	function saveChart()
-	{
-		PlayState.instance.songData.useBeats = true;
-		var songData:SongData = ChartEditorState.prepareChartSave(PlayState.instance.songData);
-		var data:String = Json.stringify({song: songData});
-
-		if ((data != null) && (data.length > 0))
-		{
-			var file:FileBrowser = new FileBrowser();
-			file.save(PlayState.songId + ".json", data.trim());
-		}
 	}
 }

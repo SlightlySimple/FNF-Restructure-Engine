@@ -24,6 +24,7 @@ function create()
 	aboveRimlightCamera.bgColor = FlxColor.TRANSPARENT;
 	aboveRimlightCamera.follow(game.camFollowPos, FlxCameraFollowStyle.LOCKON);
 	FlxG.cameras.add(aboveRimlightCamera, false);
+	stage.pieces["bricksGround"].cameras = [aboveRimlightCamera];
 
 	screenspaceRimlight = new DropShadowScreenspace();
 	applySharedShaderValues(screenspaceRimlight);

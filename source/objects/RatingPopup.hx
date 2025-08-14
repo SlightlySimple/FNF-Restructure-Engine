@@ -34,6 +34,7 @@ class RatingPopup extends FlxSprite
 					velocity.set(-FlxG.random.int(0, 10), -FlxG.random.int(140, 175));
 				}
 
+				doPosition(skin.judgements[value]);
 				doScale(skin.judgements[value]);
 				x -= width / 2;
 				y -= height / 2;
@@ -51,6 +52,7 @@ class RatingPopup extends FlxSprite
 					velocity.set(FlxG.random.int(1, 10), -150);
 				}
 
+				doPosition(skin.combo);
 				doScale(skin.combo);
 
 				x += Options.options.comboOffset[0];
@@ -63,6 +65,7 @@ class RatingPopup extends FlxSprite
 				screenCenter(Y);
 				x = (FlxG.width * 0.55) - 90;
 				y += 80;
+				doPosition(skin.numbers[value]);
 
 				if (comboType == 2)
 				{
@@ -114,6 +117,15 @@ class RatingPopup extends FlxSprite
 			antialiasing = _graphic.antialias;
 	}
 
+	function doPosition(_graphic:UISprite)
+	{
+		if (_graphic.position != null && _graphic.position.length >= 2)
+		{
+			x += _graphic.position[0];
+			y += _graphic.position[1];
+		}
+	}
+
 	function doScale(_graphic:UISprite)
 	{
 		if (_graphic.scale != null && _graphic.scale.length >= 2)
@@ -134,6 +146,7 @@ class CountdownPopup extends RatingPopup
 		staticOrAnimatedGraphic(skin.countdown[value]);
 		doScale(skin.countdown[value]);
 		screenCenter();
+		doPosition(skin.countdown[value]);
 
 		FlxTween.tween(this, {y: y + 100, alpha: 0}, Conductor.beatSeconds, { ease: FlxEase.cubeInOut, onComplete: function(twn:FlxTween) { destroy(); } });
 	}
