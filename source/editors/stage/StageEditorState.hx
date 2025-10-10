@@ -24,6 +24,7 @@ import data.ObjectData;
 import data.Options;
 import data.converters.BaseGameConverter;
 import data.converters.PsychConverter;
+import data.converters.CodenameConverter;
 import data.Song;
 import objects.AnimatedSprite;
 import objects.Character;
@@ -1521,6 +1522,10 @@ class StageEditorState extends BaseEditorState
 							{
 								label: "Psych Engine",
 								action: PsychConverter.convertStage
+							},
+							{
+								label: "Codename Engine",
+								action: CodenameConverter.convertStage
 							}
 						]
 					},

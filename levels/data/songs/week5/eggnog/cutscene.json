@@ -31,138 +31,158 @@
 			]
 		}
 	],
-	"events": [
+	"layers": [
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "santa"
+			"id": "misc",
+			"events": [
+				{
+					"time": 0.01,
+					"type": "playSound",
+					"sound": "week5/santa_emotion",
+					"volume": 1
+				},
+				{
+					"time": 11.375,
+					"type": "playSound",
+					"sound": "week5/santa_shot_n_falls",
+					"volume": 1
+				},
+				{
+					"time": 16,
+					"type": "endCutscene"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "player2"
+			"id": "sprites",
+			"events": [
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "santa"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player2"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "week5/santa_speaks_assets",
+					"animation": "go"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "week5/parents_shoot_assets",
+					"animation": "go"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraPosition",
-			"x": 300,
-			"y": 0,
-			"relativeTo": "week5/santa_speaks_assets",
-			"movementType": "tween",
-			"tweenTime": 2.8,
-			"ease": "expoOut"
+			"id": "camera",
+			"events": [
+				{
+					"time": 0,
+					"type": "cameraPosition",
+					"x": 300,
+					"y": 0,
+					"relativeTo": "week5/santa_speaks_assets",
+					"movementType": "tween",
+					"tweenTime": 2.8,
+					"ease": "expoOut"
+				},
+				{
+					"time": 0,
+					"type": "cameraZoom",
+					"zoom": 0.73,
+					"relativeTo": "absolute",
+					"tweenTime": 2,
+					"ease": "quadInOut"
+				},
+				{
+					"time": 2.8,
+					"type": "cameraPosition",
+					"x": 150,
+					"y": 0,
+					"relativeTo": "week5/santa_speaks_assets",
+					"movementType": "tween",
+					"tweenTime": 9,
+					"ease": "quartInOut"
+				},
+				{
+					"time": 2.8,
+					"type": "cameraZoom",
+					"zoom": 0.79,
+					"relativeTo": "absolute",
+					"tweenTime": 9,
+					"ease": "quadInOut"
+				},
+				{
+					"time": 12.83,
+					"type": "cameraPosition",
+					"x": 160,
+					"y": 80,
+					"relativeTo": "week5/santa_speaks_assets",
+					"movementType": "tween",
+					"tweenTime": 5,
+					"ease": "expoOut"
+				},
+				{
+					"time": 12.83,
+					"type": "cameraShake",
+					"length": 0.2,
+					"intensity": 0.005
+				},
+				{
+					"time": 15,
+					"type": "cameraFade",
+					"length": 1,
+					"color": "black",
+					"fadeIn": false
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraZoom",
-			"zoom": 0.73,
-			"relativeTo": "absolute",
-			"tweenTime": 2,
-			"ease": "quadInOut"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "week5/santa_speaks_assets",
-			"animation": "go"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "week5/parents_shoot_assets",
-			"animation": "go"
-		},
-		{
-			"time": 0.01,
-			"type": "playSound",
-			"sound": "week5/santa_emotion",
-			"volume": 1
-		},
-		{
-			"time": 2.8,
-			"type": "cameraPosition",
-			"x": 150,
-			"y": 0,
-			"relativeTo": "week5/santa_speaks_assets",
-			"movementType": "tween",
-			"tweenTime": 9,
-			"ease": "quartInOut"
-		},
-		{
-			"time": 2.8,
-			"type": "cameraZoom",
-			"zoom": 0.79,
-			"relativeTo": "absolute",
-			"tweenTime": 9,
-			"ease": "quadInOut"
-		},
-		{
-			"time": 11.375,
-			"type": "playSound",
-			"sound": "week5/santa_shot_n_falls",
-			"volume": 1
-		},
-		{
-			"time": 12.83,
-			"type": "cameraPosition",
-			"x": 160,
-			"y": 80,
-			"relativeTo": "week5/santa_speaks_assets",
-			"movementType": "tween",
-			"tweenTime": 5,
-			"ease": "expoOut"
-		},
-		{
-			"time": 12.83,
-			"type": "cameraShake",
-			"length": 0.2,
-			"intensity": 0.005
-		},
-		{
-			"time": 15,
-			"type": "cameraFade",
-			"length": 1,
-			"color": "black",
-			"fadeIn": false
-		},
-		{
-			"time": 16,
-			"type": "endCutscene"
-		},
-		{
-			"time": 0.762,
-			"type": "subtitle",
-			"text": "#subtitles.eggnog.erect.cutscene.1"
-		},
-		{
-			"time": 2.198,
-			"type": "subtitle",
-			"text": "#subtitles.eggnog.erect.cutscene.2"
-		},
-		{
-			"time": 5.638,
-			"type": "subtitle",
-			"text": "#subtitles.eggnog.erect.cutscene.3"
-		},
-		{
-			"time": 8.165,
-			"type": "subtitle",
-			"text": "#subtitles.eggnog.erect.cutscene.4"
-		},
-		{
-			"time": 10.55,
-			"type": "subtitle",
-			"text": ""
-		},
-		{
-			"time": 11.375,
-			"type": "subtitle",
-			"text": "#subtitles.eggnog.erect.cutscene.5"
-		},
-		{
-			"time": 12.5,
-			"type": "subtitle",
-			"text": ""
+			"id": "subtitles",
+			"events": [
+				{
+					"time": 0.762,
+					"type": "subtitle",
+					"text": "#subtitles.eggnog.erect.cutscene.1"
+				},
+				{
+					"time": 2.198,
+					"type": "subtitle",
+					"text": "#subtitles.eggnog.erect.cutscene.2"
+				},
+				{
+					"time": 5.638,
+					"type": "subtitle",
+					"text": "#subtitles.eggnog.erect.cutscene.3"
+				},
+				{
+					"time": 8.165,
+					"type": "subtitle",
+					"text": "#subtitles.eggnog.erect.cutscene.4"
+				},
+				{
+					"time": 10.55,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 11.375,
+					"type": "subtitle",
+					"text": "#subtitles.eggnog.erect.cutscene.5"
+				},
+				{
+					"time": 12.5,
+					"type": "subtitle",
+					"text": ""
+				}
+			]
 		}
 	]
 }

@@ -139,6 +139,9 @@ class Character extends FlxSprite
 				cData = cast Paths.json("characters/" + TitleState.defaultVariables.player1);
 		}
 
+		if (cData.asset == null)
+			Application.current.window.alert("Character \"" + id + "\" is in the wrong format", "Alert");
+
 		if (cData.script == null || cData.script == "")
 			cData.script = "characters/" + id;
 

@@ -386,6 +386,8 @@ class ChartEditorState extends MusicBeatState
 	var playbackRate:Float = 1;
 	public var songProgress:Float = 0;
 	var prevSongProgress:Float = 0;
+	var songProgressScrolling:Bool = false;
+	var songProgressScrollValue:Float = 0;
 	var curSection:Int = 0;
 	var prevSection:Int = 0;
 
@@ -1173,6 +1175,13 @@ class ChartEditorState extends MusicBeatState
 		uiSkinDropdown.value = songData.uiSkin;
 		uiSkinDropdown.condition = function() { return songData.uiSkin; }
 		uiSkinDropdown.onChanged = function() { songData.uiSkin = uiSkinDropdown.value; };
+
+		var uiFontList:Array<String> = Paths.listFilesExtSub("fonts/", [".ttf", ".otf"]);
+		var uiFontDropdown:DropdownMenu = cast ui.element("uiFontDropdown");
+		uiFontDropdown.valueList = uiFontList;
+		uiFontDropdown.value = songData.uiFont;
+		uiFontDropdown.condition = function() { return songData.uiFont; }
+		uiFontDropdown.onChanged = function() { songData.uiFont = uiFontDropdown.value; };
 
 		var skipCountdownCheckbox:Checkbox = cast ui.element("skipCountdownCheckbox");
 		skipCountdownCheckbox.checked = songData.skipCountdown;
@@ -3707,7 +3716,7 @@ class ChartEditorState extends MusicBeatState
 			}
 		}
 
-		if (Options.mouseJustPressed(true))
+		if (Options.mouseJustPressed(true) && !TopMenu.busy)
 		{
 			var foundNote:Note = null;
 			notes.forEachAlive(function(note:Note) {
@@ -3717,80 +3726,75 @@ class ChartEditorState extends MusicBeatState
 
 			if (foundNote != null)
 			{
-				if (selectedNotes.contains(foundNote))
+				if (!selectedNotes.contains(foundNote))
 				{
-					var noteTypes:Array<String> = replaceTypeDropdown.valueList.copy();
-					if (!noteTypes.contains(noteTypeInput.text.trim()))
-						noteTypes.push(noteTypeInput.text.trim());
+					if (!FlxG.keys.pressed.SHIFT)
+						selectedNotes = [];
+					selectedNotes.push(foundNote);
+					refreshSelectedNotes();
+				}
 
-					var noteTypeOptions:Array<TopMenuOption> = [];
-					for (t in noteTypes)
-					{
-						noteTypeOptions.push({
-							label: (t.trim() == "" ? "Default" : t.trim()),
-							action: function() {
-								if (selectedNotes.length > 0)
+				var noteTypes:Array<String> = replaceTypeDropdown.valueList.copy();
+				if (!noteTypes.contains(noteTypeInput.text.trim()))
+					noteTypes.push(noteTypeInput.text.trim());
+
+				var noteTypeOptions:Array<TopMenuOption> = [];
+				for (t in noteTypes)
+				{
+					noteTypeOptions.push({
+						label: (t.trim() == "" ? "Default" : t.trim()),
+						action: function() {
+							if (selectedNotes.length > 0)
+							{
+								for (note in selectedNotes)
 								{
-									for (note in selectedNotes)
+									var n = noteData[notes.members.indexOf(note)];
+
+									if (t.trim() != "")
 									{
-										var n = noteData[notes.members.indexOf(note)];
-
-										if (t.trim() != "")
-										{
-											if (n.length > 3)
-												n[3] = t;
-											else
-												n.push(t);
-										}
-										else if (n.length > 3)
-											n.pop();
+										if (n.length > 3)
+											n[3] = t;
+										else
+											n.push(t);
 									}
-
-									updateReplaceTypeList();
-									refreshNotes();
-									refreshSustains();
-									refreshSelectedNotes();
+									else if (n.length > 3)
+										n.pop();
 								}
-							}
-						});
-					}
-
-					var dropdown:TopMenuDropdown = new TopMenuDropdown(FlxG.mouse.x, FlxG.mouse.y, [
-						{
-							label: "Change Type",
-							options: noteTypeOptions
-						},
-						{
-							label: "Delete",
-							action: function() {
-								selNoteBoxes.forEachAlive(function(note:NoteSelection) {
-									removeNote(note.strumTime, note.column);
-								});
-
-								selectedNotes = [];
-								refreshSelectedNotes();
 
 								updateReplaceTypeList();
 								refreshNotes();
 								refreshSustains();
+								refreshSelectedNotes();
 							}
 						}
-					]);
-					dropdown.cameras = [camHUD];
-					add(dropdown);
-					TopMenu.busy = true;
+					});
 				}
-				else
-				{
-					removeNote(foundNote.strumTime, foundNote.column);
 
-					updateReplaceTypeList();
-					refreshNotes();
-					refreshSustains();
-					selectedNotes = [];
-					refreshSelectedNotes();
-					FlxG.sound.play(Paths.sound("ui/editors/charting/noteErase"), 0.5);
-				}
+				var dropdown:TopMenuDropdown = new TopMenuDropdown(FlxG.mouse.x, FlxG.mouse.y, [
+					{
+						label: "Change Type",
+						options: noteTypeOptions
+					},
+					{
+						label: "Delete",
+						action: function() {
+							selNoteBoxes.forEachAlive(function(note:NoteSelection) {
+								removeNote(note.strumTime, note.column);
+							});
+
+							selectedNotes = [];
+							refreshSelectedNotes();
+
+							updateReplaceTypeList();
+							refreshNotes();
+							refreshSustains();
+							FlxG.sound.play(Paths.sound("ui/editors/charting/noteErase"), 0.5);
+						}
+					}
+				]);
+				dropdown.cameras = [camHUD];
+				add(dropdown);
+				TopMenu.busy = true;
 			}
 			else
 			{
@@ -3842,8 +3846,16 @@ class ChartEditorState extends MusicBeatState
 					refreshBPMLines();
 					refreshEventLines();
 				}
+				else
+				{
+					songProgressScrolling = true;
+					songProgressScrollValue = songProgress;
+				}
 			}
 		}
+
+		if (songProgressScrolling && !Options.mousePressed(true))
+			songProgressScrolling = false;
 
 		if (!autosavePaused && !pauseUndo && !isSM)
 		{
@@ -3898,6 +3910,16 @@ class ChartEditorState extends MusicBeatState
 					}
 				}
 			}
+		}
+		else if (songProgressScrolling)
+		{
+			var scroll:Float = FlxG.mouse.deltaY / (NOTE_SIZE * zoom);
+			if (downscroll)
+				scroll = -scroll;
+			songProgressScrollValue -= scroll;
+			songProgress = songProgressScrollValue;
+			songProgress = Math.max(0, Math.min(Conductor.stepFromTime(tracks[0].length + songData.offset), songProgress));
+			snapSongProgress();
 		}
 		else if (FlxG.mouse.wheel != 0 && !DropdownMenu.isOneActive)
 		{
@@ -6133,6 +6155,9 @@ class ChartEditorState extends MusicBeatState
 		if (songData.uiSkin != null && songData.uiSkin != "default")
 			savedData.uiSkin = songData.uiSkin;
 
+		if (songData.uiFont != null && songData.uiFont != "vcr")
+			savedData.uiFont = songData.uiFont;
+
 		if (songData.tracks[0][0].toLowerCase() != "inst" || songData.tracks[0][1] != 0 || (songData.tracks.length > 1 && (songData.tracks[1][0].toLowerCase() != "voices" || songData.tracks[1][1] != 1)) || songData.tracks.length > 2)
 			savedData.tracks = songData.tracks;
 
@@ -6373,6 +6398,9 @@ class ChartEditorState extends MusicBeatState
 
 		if (songData.uiSkin != null && songData.uiSkin != "default")
 			savedData.uiSkin = songData.uiSkin;
+
+		if (songData.uiFont != null && songData.uiFont != "vcr")
+			savedData.uiFont = songData.uiFont;
 
 		if (songData.tracks[0][0].toLowerCase() != "inst" || songData.tracks[0][1] != 0 || (songData.tracks.length > 1 && (songData.tracks[1][0].toLowerCase() != "voices" || songData.tracks[1][1] != 1)) || songData.tracks.length > 2)
 			savedData.tracks = songData.tracks;

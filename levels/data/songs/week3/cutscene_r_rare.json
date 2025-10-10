@@ -59,133 +59,148 @@
 			]
 		}
 	],
-	"events": [
+	"layers": [
 		{
-			"time": 0,
-			"type": "makePersistent",
-			"object": "picoL"
+			"id": "misc",
+			"events": [
+				{
+					"time": 0,
+					"type": "playSound",
+					"sound": "week3/cutscene/cutscene2",
+					"volume": 1
+				},
+				{
+					"time": 0.3,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoGasp",
+					"volume": 1
+				},
+				{
+					"time": 0.3,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoGasp",
+					"volume": 1
+				},
+				{
+					"time": 3.7,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoCigarette2",
+					"volume": 1
+				},
+				{
+					"time": 6.29,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoShoot",
+					"volume": 1
+				},
+				{
+					"time": 8.75,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoExplode",
+					"volume": 1
+				},
+				{
+					"time": 10.33,
+					"type": "playSound",
+					"sound": "week3/cutscene/picoSpin",
+					"volume": 1
+				},
+				{
+					"time": 13,
+					"type": "endCutscene"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "makePersistent",
-			"object": "week3/bloodPool"
+			"id": "sprites",
+			"events": [
+				{
+					"time": 0,
+					"type": "makePersistent",
+					"object": "picoL"
+				},
+				{
+					"time": 0,
+					"type": "makePersistent",
+					"object": "week3/bloodPool"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player1"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player2"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "week3/bloodPool"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "picoR",
+					"animation": "go"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "picoL",
+					"animation": "go"
+				},
+				{
+					"time": 11.2,
+					"type": "playAnim",
+					"object": "picoL",
+					"animation": "loop"
+				},
+				{
+					"time": 11.2,
+					"type": "show",
+					"object": "week3/bloodPool"
+				},
+				{
+					"time": 11.2,
+					"type": "playAnim",
+					"object": "week3/bloodPool",
+					"animation": "go"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "player1"
-		},
-		{
-			"time": 0,
-			"type": "hide",
-			"object": "player2"
-		},
-		{
-			"time": 0,
-			"type": "hide",
-			"object": "week3/bloodPool"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "picoR",
-			"animation": "go"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "picoL",
-			"animation": "go"
-		},
-		{
-			"time": 0,
-			"type": "playSound",
-			"sound": "week3/cutscene/cutscene2",
-			"volume": 1
-		},
-		{
-			"time": 0.3,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoGasp",
-			"volume": 1
-		},
-		{
-			"time": 0.3,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoGasp",
-			"volume": 1
-		},
-		{
-			"time": 3.7,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoCigarette2",
-			"volume": 1
-		},
-		{
-			"time": 4,
-			"type": "cameraPosition",
-			"x": 0,
-			"y": 0,
-			"relativeTo": "player2",
-			"relativeToCamera": true,
-			"movementType": "gradual"
-		},
-		{
-			"time": 6.29,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoShoot",
-			"volume": 1
-		},
-		{
-			"time": 6.3,
-			"type": "cameraPosition",
-			"x": 0,
-			"y": 0,
-			"relativeTo": "player1",
-			"relativeToCamera": true,
-			"movementType": "gradual"
-		},
-		{
-			"time": 8.72,
-			"type": "cameraPosition",
-			"x": 0,
-			"y": 0,
-			"relativeTo": "player2",
-			"relativeToCamera": true,
-			"movementType": "gradual"
-		},
-		{
-			"time": 8.75,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoExplode",
-			"volume": 1
-		},
-		{
-			"time": 10.33,
-			"type": "playSound",
-			"sound": "week3/cutscene/picoSpin",
-			"volume": 1
-		},
-		{
-			"time": 11.2,
-			"type": "playAnim",
-			"object": "picoL",
-			"animation": "loop"
-		},
-		{
-			"time": 11.2,
-			"type": "show",
-			"object": "week3/bloodPool"
-		},
-		{
-			"time": 11.2,
-			"type": "playAnim",
-			"object": "week3/bloodPool",
-			"animation": "go"
-		},
-		{
-			"time": 13,
-			"type": "endCutscene"
+			"id": "camera",
+			"events": [
+				{
+					"time": 4,
+					"type": "cameraPosition",
+					"x": 0,
+					"y": 0,
+					"relativeTo": "player2",
+					"relativeToCamera": true,
+					"movementType": "gradual"
+				},
+				{
+					"time": 6.3,
+					"type": "cameraPosition",
+					"x": 0,
+					"y": 0,
+					"relativeTo": "player1",
+					"relativeToCamera": true,
+					"movementType": "gradual"
+				},
+				{
+					"time": 8.72,
+					"type": "cameraPosition",
+					"x": 0,
+					"y": 0,
+					"relativeTo": "player2",
+					"relativeToCamera": true,
+					"movementType": "gradual"
+				}
+			]
 		}
 	]
 }

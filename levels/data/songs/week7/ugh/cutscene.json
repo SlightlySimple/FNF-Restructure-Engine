@@ -22,151 +22,171 @@
 			]
 		}
 	],
-	"events": [
+	"layers": [
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "player2"
+			"id": "misc",
+			"events": [
+				{
+					"time": 0.01,
+					"type": "playSound",
+					"sound": "week7/DISTORTO",
+					"volume": 0
+				},
+				{
+					"time": 0.01,
+					"type": "fadeSound",
+					"sound": "week7/DISTORTO",
+					"volume": 0.5,
+					"tweenTime": 5
+				},
+				{
+					"time": 0.01,
+					"type": "playSound",
+					"sound": "week7/wellWellWell",
+					"volume": 1
+				},
+				{
+					"time": 4.5,
+					"type": "playSound",
+					"sound": "week7/bfBeep",
+					"volume": 1
+				},
+				{
+					"time": 6,
+					"type": "playSound",
+					"sound": "week7/killYou",
+					"volume": 1
+				},
+				{
+					"time": 12.1,
+					"type": "fadeSound",
+					"sound": "week7/DISTORTO",
+					"volume": 0,
+					"tweenTime": 2
+				},
+				{
+					"time": 12.1,
+					"type": "endCutscene"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraZoom",
-			"zoom": 1.2,
-			"relativeTo": "stage",
-			"tweenTime": 0
+			"id": "sprites",
+			"events": [
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "player2"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "week7/tankTalk",
+					"animation": "p1"
+				},
+				{
+					"time": 4.5,
+					"type": "playAnim",
+					"object": "player1",
+					"animation": "singUP"
+				},
+				{
+					"time": 5,
+					"type": "playAnim",
+					"object": "player1",
+					"animation": "idle"
+				},
+				{
+					"time": 6,
+					"type": "playAnim",
+					"object": "week7/tankTalk",
+					"animation": "p2"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraPosition",
-			"x": 80,
-			"y": -240,
-			"relativeTo": "player2",
-			"movementType": "instant"
+			"id": "camera",
+			"events": [
+				{
+					"time": 0,
+					"type": "cameraZoom",
+					"zoom": 1.2,
+					"relativeTo": "stage",
+					"tweenTime": 0
+				},
+				{
+					"time": 0,
+					"type": "cameraPosition",
+					"x": 80,
+					"y": -240,
+					"relativeTo": "player2",
+					"movementType": "instant"
+				},
+				{
+					"time": 0,
+					"type": "cameraPosition",
+					"x": 80,
+					"y": -140,
+					"relativeTo": "player2",
+					"movementType": "gradual"
+				},
+				{
+					"time": 3,
+					"type": "cameraPosition",
+					"x": 880,
+					"y": -40,
+					"relativeTo": "player2",
+					"movementType": "gradual"
+				},
+				{
+					"time": 6,
+					"type": "cameraPosition",
+					"x": 80,
+					"y": -140,
+					"relativeTo": "player2",
+					"movementType": "gradual"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraPosition",
-			"x": 80,
-			"y": -140,
-			"relativeTo": "player2",
-			"movementType": "gradual"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "week7/tankTalk",
-			"animation": "p1"
-		},
-		{
-			"time": 0.01,
-			"type": "playSound",
-			"sound": "week7/DISTORTO",
-			"volume": 0
-		},
-		{
-			"time": 0.01,
-			"type": "fadeSound",
-			"sound": "week7/DISTORTO",
-			"volume": 0.5,
-			"tweenTime": 5
-		},
-		{
-			"time": 0.01,
-			"type": "playSound",
-			"sound": "week7/wellWellWell",
-			"volume": 1
-		},
-		{
-			"time": 3,
-			"type": "cameraPosition",
-			"x": 880,
-			"y": -40,
-			"relativeTo": "player2",
-			"movementType": "gradual"
-		},
-		{
-			"time": 4.5,
-			"type": "playAnim",
-			"object": "player1",
-			"animation": "singUP"
-		},
-		{
-			"time": 4.5,
-			"type": "playSound",
-			"sound": "week7/bfBeep",
-			"volume": 1
-		},
-		{
-			"time": 5,
-			"type": "playAnim",
-			"object": "player1",
-			"animation": "idle"
-		},
-		{
-			"time": 6,
-			"type": "cameraPosition",
-			"x": 80,
-			"y": -140,
-			"relativeTo": "player2",
-			"movementType": "gradual"
-		},
-		{
-			"time": 6,
-			"type": "playAnim",
-			"object": "week7/tankTalk",
-			"animation": "p2"
-		},
-		{
-			"time": 6,
-			"type": "playSound",
-			"sound": "week7/killYou",
-			"volume": 1
-		},
-		{
-			"time": 12.1,
-			"type": "fadeSound",
-			"sound": "week7/DISTORTO",
-			"volume": 0,
-			"tweenTime": 2
-		},
-		{
-			"time": 12.1,
-			"type": "endCutscene"
-		},
-		{
-			"time": 0,
-			"type": "subtitle",
-			"text": "#subtitles.ugh.cutscene.1"
-		},
-		{
-			"time": 2.75,
-			"type": "subtitle",
-			"text": ""
-		},
-		{
-			"time": 4.5,
-			"type": "subtitle",
-			"text": "#subtitles.ugh.cutscene.2"
-		},
-		{
-			"time": 4.85,
-			"type": "subtitle",
-			"text": ""
-		},
-		{
-			"time": 6,
-			"type": "subtitle",
-			"text": "#subtitles.ugh.cutscene.3"
-		},
-		{
-			"time": 8.145,
-			"type": "subtitle",
-			"text": "#subtitles.ugh.cutscene.4"
-		},
-		{
-			"time": 10.43,
-			"type": "subtitle",
-			"text": "#subtitles.ugh.cutscene.5"
+			"id": "subtitles",
+			"events": [
+				{
+					"time": 0,
+					"type": "subtitle",
+					"text": "#subtitles.ugh.cutscene.1"
+				},
+				{
+					"time": 2.75,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 4.5,
+					"type": "subtitle",
+					"text": "#subtitles.ugh.cutscene.2"
+				},
+				{
+					"time": 4.85,
+					"type": "subtitle",
+					"text": ""
+				},
+				{
+					"time": 6,
+					"type": "subtitle",
+					"text": "#subtitles.ugh.cutscene.3"
+				},
+				{
+					"time": 8.145,
+					"type": "subtitle",
+					"text": "#subtitles.ugh.cutscene.4"
+				},
+				{
+					"time": 10.43,
+					"type": "subtitle",
+					"text": "#subtitles.ugh.cutscene.5"
+				}
+			]
 		}
 	]
 }

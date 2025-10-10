@@ -153,7 +153,7 @@ class PauseSubState extends FlxSubState
 		var showDelay:Float = 0.1;
 		for (meta in songMetadataList)
 		{
-			var metaTxt:FlxText = new FlxText(0, yy, 0, meta).setFormat("VCR OSD Mono", 32, FlxColor.WHITE, LEFT);
+			var metaTxt:FlxText = new FlxText(0, yy, 0, meta).setFormat(PlayState.instance.uiFont, 32);
 			metaTxt.x = FlxG.width - metaTxt.width - 20;
 			songMetadata.add(metaTxt);
 			if (from == 0)

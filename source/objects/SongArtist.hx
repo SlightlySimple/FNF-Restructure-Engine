@@ -16,7 +16,7 @@ class SongArtist extends FlxSpriteGroup
 	{
 		super(0, 150);
 
-		var text:FlxText = new FlxText(10, 10, 0, song + "\n\n").setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		var text:FlxText = new FlxText(10, 10, 0, song + "\n\n").setFormat(PlayState.instance.uiFont, 24, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 		if (artist != "")
 			text.text += Lang.get("#game.artist", [artist]);
 		if (charter != "")

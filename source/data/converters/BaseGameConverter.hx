@@ -405,7 +405,7 @@ class BaseGameConverter
 								if (stagePiece.type == "static" || stagePiece.type == "animated")
 								{
 									if (!assetList.contains(stagePiece.asset + ".png"))
-									assetList.push(stagePiece.asset + ".png");
+										assetList.push(stagePiece.asset + ".png");
 									if (stagePiece.type == "animated" && !assetList.contains(stagePiece.asset + ".xml"))
 										assetList.push(stagePiece.asset + ".xml");
 								}

@@ -18,7 +18,7 @@ import data.Options;
 import data.ObjectData;
 import data.PlayableCharacter;
 import data.Song;
-import menus.freeplay.FreeplayMenuSubState;
+import menus.freeplay.FreeplayMusicManager;
 import objects.AnimatedSprite;
 
 class FreeplayCapsule extends FlxSpriteGroup

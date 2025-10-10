@@ -4,12 +4,13 @@ Hold while scrolling to create a hold note
 Left Click: Add/Select Note/Event
 Shift + Left Click: Select Multiple Notes/Events/Deselect Events
 Left Click + Drag: Add Hold Note/Select Multiple Notes/Events
-Right Click: Delete Note
+Right Click: Select Note & Bring up a menu to change it
+Right Click + Drag: Scroll through the chart
 Ctrl: Allow Hold Note Adjustment
 Left Click & drag selected notes to move them
-Right Click selected notes to bring up a menu to change them
 Hover over a note or event to see it's type
 Right Click an event to edit it
+Left Click on the notemap to the right to scroll to that position in the chart
 Left Click on the plus on the strumline to add a strum note
 Left Click on a strum note to change it's properties
 Alt + Left Click on a strum note to select every note on that column

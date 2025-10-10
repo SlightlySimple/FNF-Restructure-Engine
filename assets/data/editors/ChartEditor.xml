@@ -53,6 +53,8 @@
 				<textbutton id="noteskinTypeButton" text="Noteskin Types" image="buttonPopupMenu" infoText="The types of noteskin that the notes should use, divided by strumline."/>
 				<label text="UI Skin:"/>
 				<dropdown id="uiSkinDropdown" blank="Default" allowSearch="true" infoText="The skin that the countdown and rating/combo popups should use."/>
+				<label text="UI Font:"/>
+				<dropdown id="uiFontDropdown" allowSearch="true" infoText="The font that all text in the song's UI should use (score, judgement counter, etc.)"/>
 			</vbox>
 		</tab>
 		<tab name="Music">

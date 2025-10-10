@@ -92,6 +92,7 @@ class PlayState extends MusicBeatState
 	public var laneBackgrounds:FlxSpriteGroup;
 	public var noteType:Array<String> = [];
 	public var uiSkin:UISkin;
+	public var uiFont:String;
 	public var missSounds:Array<String> = ["missnote1", "missnote2", "missnote3"];
 	public var cacheGroup:FlxSpriteGroup;
 
@@ -353,6 +354,8 @@ class PlayState extends MusicBeatState
 				makeCacheSprite("ui/skins/" + songData.uiSkin + "/" + s.asset);
 			}
 		}
+
+		uiFont = Paths.font(songData.uiFont);
 
 		columnDivisions = [];
 		uniqueDivisions = [];
@@ -663,7 +666,7 @@ class PlayState extends MusicBeatState
 				scoreTxt = new FlxText(0, healthBar.y + 30, FlxG.width, "");
 				scoreTxt.alignment = CENTER;
 		}
-		scoreTxt.setFormat("VCR OSD Mono", 20, FlxColor.WHITE, scoreTxt.alignment, OUTLINE, FlxColor.BLACK);
+		scoreTxt.setFormat(uiFont, 20, FlxColor.WHITE, scoreTxt.alignment, OUTLINE, FlxColor.BLACK);
 		scoreTxt.cameras = [camHUD];
 		add(scoreTxt);
 
@@ -682,7 +685,7 @@ class PlayState extends MusicBeatState
 		songProgressBar.alpha = 0;
 		add(songProgressBar);
 
-		songProgressText = new FlxText(songProgressBar.x, songProgressBar.y + 2, songProgressBar.width, songName).setFormat("VCR OSD Mono", 18, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		songProgressText = new FlxText(songProgressBar.x, songProgressBar.y + 2, songProgressBar.width, songName).setFormat(uiFont, 18, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		songProgressText.cameras = [camHUD];
 		songProgressText.visible = (Options.options.progressBar > 0);
 		songProgressText.alpha = 0;
@@ -714,7 +717,7 @@ class PlayState extends MusicBeatState
 		}
 		else
 			judgementCounter = new FlxText(10, 0, 0, "");
-		judgementCounter.setFormat("VCR OSD Mono", 20, FlxColor.WHITE, judgementCounter.alignment, OUTLINE, FlxColor.BLACK);
+		judgementCounter.setFormat(uiFont, 20, FlxColor.WHITE, judgementCounter.alignment, OUTLINE, FlxColor.BLACK);
 		updateJudgementCounter();
 		judgementCounter.screenCenter(Y);
 		if (Options.options.judgementCounter == Options.options.scorePos)
@@ -734,14 +737,14 @@ class PlayState extends MusicBeatState
 		add(msText);
 
 		missLimitText = new FlxText(0, 125, 0, Lang.get("#game.missLimit", ["0", Std.string(missLimit)]));
-		missLimitText.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		missLimitText.setFormat(uiFont, 24, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		missLimitText.cameras = [camHUD];
 		missLimitText.screenCenter(X);
 		add(missLimitText);
 		missLimitText.visible = (missLimit > -1);
 
 		botplayText = new FlxText(0, 250, 0, Lang.get("#game.botplay"));
-		botplayText.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		botplayText.setFormat(uiFont, 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		botplayText.cameras = [camHUD];
 		botplayText.screenCenter(X);
 		add(botplayText);
@@ -750,7 +753,7 @@ class PlayState extends MusicBeatState
 		if (testingChart)
 		{
 			var playtestText:FlxText = new FlxText(0, 300, 0, Lang.get("#game.playtest"));
-			playtestText.setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+			playtestText.setFormat(uiFont, 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 			playtestText.cameras = [camHUD];
 			playtestText.screenCenter(X);
 			add(playtestText);
@@ -765,10 +768,10 @@ class PlayState extends MusicBeatState
 		subtitleBG.alpha = 0.4;
 		subtitleGroup.add(subtitleBG);
 
-		subtitleText = new FlxText(200, FlxG.height * 0.7, FlxG.width - 400, "").setFormat("VCR OSD Mono", 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
+		subtitleText = new FlxText(200, FlxG.height * 0.7, FlxG.width - 400, "").setFormat(uiFont, 32, FlxColor.WHITE, CENTER, OUTLINE, FlxColor.BLACK);
 		subtitleGroup.add(subtitleText);
 
-		skipStartText = new FlxText(0, FlxG.height * 0.75, 0, Lang.get("#game.skipIntro", [Options.keyString("introSkip")])).setFormat("VCR OSD Mono", 32, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
+		skipStartText = new FlxText(0, FlxG.height * 0.75, 0, Lang.get("#game.skipIntro", [Options.keyString("introSkip")])).setFormat(uiFont, 32, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 		skipStartText.screenCenter(X);
 		skipStartText.cameras = [camOther];
 		skipStartText.alpha = 0;

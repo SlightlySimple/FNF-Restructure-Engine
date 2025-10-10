@@ -6,6 +6,7 @@ import haxe.xml.Access;
 import sys.FileSystem;
 import sys.io.File;
 import data.ObjectData;
+import lime.app.Application;
 
 using StringTools;
 
@@ -151,10 +152,16 @@ class PsychConverter
 							}
 							file3.savePath("*.*");
 						}
+						else
+							Application.current.window.alert("The character's spritesheet could not be located. Ensure that the spritesheet is in the following path: \"images/" + character.image + ".png\"", "Alert");
 					}
+					else
+						Application.current.window.alert("The file path does not contain an \"images\" folder", "Alert");
 				}
 				file2.load("png");
 			}
+			else
+				Application.current.window.alert("The file path does not contain a \"characters\" folder", "Alert");
 		}
 		file.load("json");
 	}

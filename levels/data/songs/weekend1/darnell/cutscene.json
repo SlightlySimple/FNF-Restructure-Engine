@@ -38,243 +38,258 @@
 			]
 		}
 	],
-	"events": [
+	"layers": [
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "weekend1/wked1_cutscene_1_can"
+			"id": "misc",
+			"events": [
+				{
+					"time": 0.7,
+					"type": "playSound",
+					"sound": "weekend1/darnellCanCutscene",
+					"volume": 1
+				},
+				{
+					"time": 1,
+					"type": "cutsceneEvent",
+					"parameters": {
+						"object": "black",
+						"alpha": 0,
+						"tweenTime": 2
+					}
+				},
+				{
+					"time": 5,
+					"type": "playSound",
+					"sound": "weekend1/Darnell_Lighter",
+					"volume": 1
+				},
+				{
+					"time": 6,
+					"type": "playSound",
+					"sound": "weekend1/Gun_Prep",
+					"volume": 1
+				},
+				{
+					"time": 6.4,
+					"type": "playSound",
+					"sound": "weekend1/Kick_Can_UP",
+					"volume": 1
+				},
+				{
+					"time": 6.9,
+					"type": "playSound",
+					"sound": "weekend1/Kick_Can_FORWARD",
+					"volume": 1
+				},
+				{
+					"time": 7.1,
+					"type": "playRandomSound",
+					"sounds": ["weekend1/shot1", "weekend1/shot2", "weekend1/shot3", "weekend1/shot4"],
+					"volume": 1
+				},
+				{
+					"time": 7.142,
+					"type": "cutsceneEvent",
+					"parameters": {
+						"object": "black2",
+						"alpha": 0.93,
+						"tweenTime": 0
+					}
+				},
+				{
+					"time": 7.183,
+					"type": "cutsceneEvent",
+					"parameters": {
+						"object": "black2",
+						"alpha": 0.86,
+						"tweenTime": 0
+					}
+				},
+				{
+					"time": 7.183,
+					"type": "cutsceneEvent",
+					"parameters": {
+						"object": "black2",
+						"alpha": 0,
+						"tweenTime": 1.4
+					}
+				},
+				{
+					"time": 7.9,
+					"type": "playSound",
+					"sound": "weekend1/darnell_laugh",
+					"volume": 0.6
+				},
+				{
+					"time": 8.2,
+					"type": "playSound",
+					"sound": "weekend1/nene_laugh",
+					"volume": 0.6
+				},
+				{
+					"time": 10,
+					"type": "endCutscene"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "hide",
-			"object": "weekend1/spraycanAtlas"
+			"id": "sprites",
+			"events": [
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "weekend1/wked1_cutscene_1_can"
+				},
+				{
+					"time": 0,
+					"type": "hide",
+					"object": "weekend1/spraycanAtlas"
+				},
+				{
+					"time": 0,
+					"type": "playAnim",
+					"object": "player1",
+					"animation": "intro1"
+				},
+				{
+					"time": 5,
+					"type": "playAnim",
+					"object": "player2",
+					"animation": "lightCan"
+				},
+				{
+					"time": 6,
+					"type": "playAnim",
+					"object": "player1",
+					"animation": "cock"
+				},
+				{
+					"time": 6.4,
+					"type": "show",
+					"object": "weekend1/wked1_cutscene_1_can"
+				},
+				{
+					"time": 6.4,
+					"type": "playAnim",
+					"object": "player2",
+					"animation": "kickCan"
+				},
+				{
+					"time": 6.4,
+					"type": "playAnim",
+					"object": "weekend1/wked1_cutscene_1_can",
+					"animation": "up"
+				},
+				{
+					"time": 6.9,
+					"type": "playAnim",
+					"object": "player2",
+					"animation": "kneeCan"
+				},
+				{
+					"time": 6.9,
+					"type": "playAnim",
+					"object": "weekend1/wked1_cutscene_1_can",
+					"animation": "forward"
+				},
+				{
+					"time": 7.1,
+					"type": "hide",
+					"object": "weekend1/wked1_cutscene_1_can"
+				},
+				{
+					"time": 7.1,
+					"type": "playAnim",
+					"object": "player1",
+					"animation": "intro2",
+					"important": true
+				},
+				{
+					"time": 7.1,
+					"type": "show",
+					"object": "weekend1/spraycanAtlas"
+				},
+				{
+					"time": 7.1,
+					"type": "playAnim",
+					"object": "weekend1/spraycanAtlas",
+					"animation": "go"
+				},
+				{
+					"time": 7.9,
+					"type": "playAnim",
+					"object": "player2",
+					"animation": "laughCutscene"
+				},
+				{
+					"time": 8.2,
+					"type": "playAnim",
+					"object": "gf",
+					"animation": "laughCutscene"
+				}
+			]
 		},
 		{
-			"time": 0,
-			"type": "cameraZoom",
-			"zoom": 1.3,
-			"relativeTo": "absolute",
-			"tweenTime": 0
-		},
-		{
-			"time": 0,
-			"type": "cameraPosition",
-			"x": 250,
-			"y": 0,
-			"relativeTo": "player1",
-			"relativeToCamera": true,
-			"movementType": "instant"
-		},
-		{
-			"time": 0,
-			"type": "playAnim",
-			"object": "player1",
-			"animation": "intro1"
-		},
-		{
-			"time": 0.7,
-			"type": "playSound",
-			"sound": "weekend1/darnellCanCutscene",
-			"volume": 1
-		},
-		{
-			"time": 1,
-			"type": "cutsceneEvent",
-			"parameters": {
-				"object": "black",
-				"alpha": 0,
-				"tweenTime": 2
-			}
-		},
-		{
-			"time": 2,
-			"type": "cameraZoom",
-			"zoom": 0.66,
-			"relativeTo": "absolute",
-			"tweenTime": 2.5,
-			"ease": "quadInOut"
-		},
-		{
-			"time": 2,
-			"type": "cameraPosition",
-			"x": 100,
-			"y": 0,
-			"relativeTo": "player2",
-			"relativeToCamera": true,
-			"movementType": "tween",
-			"tweenTime": 2.5,
-			"ease": "quadInOut"
-		},
-		{
-			"time": 5,
-			"type": "playAnim",
-			"object": "player2",
-			"animation": "lightCan"
-		},
-		{
-			"time": 5,
-			"type": "playSound",
-			"sound": "weekend1/Darnell_Lighter",
-			"volume": 1
-		},
-		{
-			"time": 6,
-			"type": "playAnim",
-			"object": "player1",
-			"animation": "cock"
-		},
-		{
-			"time": 6,
-			"type": "playSound",
-			"sound": "weekend1/Gun_Prep",
-			"volume": 1
-		},
-		{
-			"time": 6,
-			"type": "cameraPosition",
-			"x": 180,
-			"y": 0,
-			"relativeTo": "player2",
-			"relativeToCamera": true,
-			"movementType": "tween",
-			"tweenTime": 0.4,
-			"ease": "backOut"
-		},
-		{
-			"time": 6.4,
-			"type": "show",
-			"object": "weekend1/wked1_cutscene_1_can"
-		},
-		{
-			"time": 6.4,
-			"type": "playAnim",
-			"object": "player2",
-			"animation": "kickCan"
-		},
-		{
-			"time": 6.4,
-			"type": "playAnim",
-			"object": "weekend1/wked1_cutscene_1_can",
-			"animation": "up"
-		},
-		{
-			"time": 6.4,
-			"type": "playSound",
-			"sound": "weekend1/Kick_Can_UP",
-			"volume": 1
-		},
-		{
-			"time": 6.9,
-			"type": "playAnim",
-			"object": "player2",
-			"animation": "kneeCan"
-		},
-		{
-			"time": 6.9,
-			"type": "playAnim",
-			"object": "weekend1/wked1_cutscene_1_can",
-			"animation": "forward"
-		},
-		{
-			"time": 6.9,
-			"type": "playSound",
-			"sound": "weekend1/Kick_Can_FORWARD",
-			"volume": 1
-		},
-		{
-			"time": 7.1,
-			"type": "hide",
-			"object": "weekend1/wked1_cutscene_1_can"
-		},
-		{
-			"time": 7.1,
-			"type": "playAnim",
-			"object": "player1",
-			"animation": "intro2",
-			"important": true
-		},
-		{
-			"time": 7.1,
-			"type": "show",
-			"object": "weekend1/spraycanAtlas"
-		},
-		{
-			"time": 7.1,
-			"type": "playAnim",
-			"object": "weekend1/spraycanAtlas",
-			"animation": "go"
-		},
-		{
-			"time": 7.1,
-			"type": "playRandomSound",
-			"sounds": ["weekend1/shot1", "weekend1/shot2", "weekend1/shot3", "weekend1/shot4"],
-			"volume": 1
-		},
-		{
-			"time": 7.1,
-			"type": "cameraPosition",
-			"x": 100,
-			"y": 0,
-			"relativeTo": "player2",
-			"relativeToCamera": true,
-			"movementType": "tween",
-			"tweenTime": 1,
-			"ease": "quadInOut"
-		},
-		{
-			"time": 7.142,
-			"type": "cutsceneEvent",
-			"parameters": {
-				"object": "black2",
-				"alpha": 0.93,
-				"tweenTime": 0
-			}
-		},
-		{
-			"time": 7.183,
-			"type": "cutsceneEvent",
-			"parameters": {
-				"object": "black2",
-				"alpha": 0.86,
-				"tweenTime": 0
-			}
-		},
-		{
-			"time": 7.183,
-			"type": "cutsceneEvent",
-			"parameters": {
-				"object": "black2",
-				"alpha": 0,
-				"tweenTime": 1.4
-			}
-		},
-		{
-			"time": 7.9,
-			"type": "playAnim",
-			"object": "player2",
-			"animation": "laughCutscene"
-		},
-		{
-			"time": 7.9,
-			"type": "playSound",
-			"sound": "weekend1/darnell_laugh",
-			"volume": 0.6
-		},
-		{
-			"time": 8.2,
-			"type": "playAnim",
-			"object": "gf",
-			"animation": "laughCutscene"
-		},
-		{
-			"time": 8.2,
-			"type": "playSound",
-			"sound": "weekend1/nene_laugh",
-			"volume": 0.6
-		},
-		{
-			"time": 10,
-			"type": "endCutscene"
+			"id": "camera",
+			"events": [
+				{
+					"time": 0,
+					"type": "cameraZoom",
+					"zoom": 1.3,
+					"relativeTo": "absolute",
+					"tweenTime": 0
+				},
+				{
+					"time": 0,
+					"type": "cameraPosition",
+					"x": 250,
+					"y": 0,
+					"relativeTo": "player1",
+					"relativeToCamera": true,
+					"movementType": "instant"
+				},
+				{
+					"time": 2,
+					"type": "cameraZoom",
+					"zoom": 0.66,
+					"relativeTo": "absolute",
+					"tweenTime": 2.5,
+					"ease": "quadInOut"
+				},
+				{
+					"time": 2,
+					"type": "cameraPosition",
+					"x": 100,
+					"y": 0,
+					"relativeTo": "player2",
+					"relativeToCamera": true,
+					"movementType": "tween",
+					"tweenTime": 2.5,
+					"ease": "quadInOut"
+				},
+				{
+					"time": 6,
+					"type": "cameraPosition",
+					"x": 180,
+					"y": 0,
+					"relativeTo": "player2",
+					"relativeToCamera": true,
+					"movementType": "tween",
+					"tweenTime": 0.4,
+					"ease": "backOut"
+				},
+				{
+					"time": 7.1,
+					"type": "cameraPosition",
+					"x": 100,
+					"y": 0,
+					"relativeTo": "player2",
+					"relativeToCamera": true,
+					"movementType": "tween",
+					"tweenTime": 1,
+					"ease": "quadInOut"
+				}
+			]
 		}
 	]
 }

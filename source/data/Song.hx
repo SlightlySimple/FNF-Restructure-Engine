@@ -6,7 +6,7 @@ import helpers.Cloner;
 import haxe.ds.ArraySort;
 import flixel.util.FlxStringUtil;
 import lime.app.Application;
-import menus.freeplay.FreeplayMenuSubState;
+import menus.freeplay.FreeplayMusicManager;
 
 using StringTools;
 
@@ -43,12 +43,14 @@ typedef SongData =
 	var ?singerColumns:Array<Int>;
 	var ?gf:String;
 	var ?gfVersion:String;
+	var ?format:String;
 	var stage:String;
 	var ?tracks:Array<Array<Dynamic>>;
 	var ?needsVoices:Null<Bool>;
 	var ?notes:Array<SectionData>;
 	var ?noteType:Array<String>;
 	var ?uiSkin:String;
+	var ?uiFont:String;
 	var ?events:Array<EventData>;
 	var ?music:SongMusicData;
 }
@@ -623,6 +625,9 @@ class Song
 		if (retSong.uiSkin == null || retSong.uiSkin == "")
 			retSong.uiSkin = baseData.uiSkin;
 
+		if (retSong.uiFont == null || retSong.uiFont == "")
+			retSong.uiFont = baseData.uiFont;
+
 		if (retSong.noteType == null || retSong.noteType.length < 1)
 			retSong.noteType = baseData.noteType;
 
@@ -695,6 +700,9 @@ class Song
 
 		if (baseData.uiSkin != null && baseData.uiSkin != "")
 			retSong.uiSkin = baseData.uiSkin;
+
+		if (baseData.uiFont != null && baseData.uiFont != "")
+			retSong.uiFont = baseData.uiFont;
 
 		if (baseData.noteType != null && baseData.noteType.length > 0)
 			retSong.noteType = baseData.noteType;
@@ -833,6 +841,9 @@ class Song
 				}
 			}
 		}
+
+		if (retSong.uiFont == null || retSong.uiFont == "")
+			retSong.uiFont = "vcr";
 
 		if (retSong.uiSkin == null || retSong.uiSkin == "")
 			retSong.uiSkin = "default";
@@ -982,6 +993,10 @@ class Song
 				retSong.scrollSpeeds = [[0, retSong.speed]];
 		}
 
+		var convertFromPsych:Bool = false;
+		if (retSong.format != null && retSong.format.startsWith("psych_v1"))
+			convertFromPsych = true;
+
 		// Do a buncha cleanup on the sections themselves
 		var quickNotes:Array<Array<Float>> = [];
 		for (s in retSong.notes)
@@ -1025,6 +1040,14 @@ class Song
 			var poppers:Array<Array<Dynamic>> = [];
 			for (n in s.sectionNotes)
 			{
+				if (convertFromPsych && !s.mustHitSection)
+				{
+					if (n[1] >= retSong.columns.length / 2)
+						n[1] -= retSong.columns.length / 2;
+					else
+						n[1] += retSong.columns.length / 2;
+				}
+
 				if (n.length > 4)
 				{
 					while (n.length > 4)

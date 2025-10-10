@@ -17,6 +17,7 @@ import data.ObjectData;
 import data.Options;
 import data.converters.BaseGameConverter;
 import data.converters.PsychConverter;
+import data.converters.CodenameConverter;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Stage;
@@ -1617,6 +1618,10 @@ class CharacterEditorState extends BaseEditorState
 							{
 								label: "Psych Engine",
 								action: PsychConverter.convertCharacter
+							},
+							{
+								label: "Codename Engine",
+								action: CodenameConverter.convertCharacter
 							}
 						]
 					},

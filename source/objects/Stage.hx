@@ -71,6 +71,9 @@ class Stage
 				sData = cast Paths.json("stages/" + TitleState.defaultVariables.stage);
 		}
 
+		if (sData.pieces == null)
+			Application.current.window.alert("Stage \"" + id + "\" is in the wrong format", "Alert");
+
 		if (sData.fixes == null)
 			sData.fixes = 0;
 
