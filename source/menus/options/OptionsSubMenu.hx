@@ -476,7 +476,8 @@ class OptionsSubMenuCalibrateOffset extends OptionsSubMenu
 	override public function new()
 	{
 		super();
-		FlxTween.tween(FlxG.sound.music, {volume: 0}, 0.2);
+		if (FlxG.sound.music != null && FlxG.sound.music.playing)
+			FlxTween.tween(FlxG.sound.music, {volume: 0}, 0.2);
 
 		strum = new StrumNote(0, "default");
 		strum.resetPosition(Options.options.downscroll, true, [0]);
@@ -539,7 +540,8 @@ class OptionsSubMenuCalibrateOffset extends OptionsSubMenu
 			soundTest.destroy();
 
 			FlxG.sound.play(Paths.sound('ui/confirmMenu'));
-			FlxTween.tween(FlxG.sound.music, {volume: 0.7}, 0.2);
+			if (FlxG.sound.music != null && FlxG.sound.music.playing)
+				FlxTween.tween(FlxG.sound.music, {volume: 0.7}, 0.2);
 
 			if (exitCallback != null)
 				exitCallback();
