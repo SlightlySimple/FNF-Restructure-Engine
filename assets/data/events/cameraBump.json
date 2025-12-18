@@ -36,7 +36,8 @@
 			"label": "Mode",
 			"infoText": "Whether the values should be the exact zoom, or multiplied by the default zoom amount.",
 			"type": "dropdown",
-			"defaultValue": "absolute",
+			"defaultValue": "multiplied",
+			"compatibilityValue": "absolute",
 			"options": ["absolute", "multiplied"]
 		}
 	]

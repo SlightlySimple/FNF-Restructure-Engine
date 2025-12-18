@@ -1271,8 +1271,24 @@ class StageEditorState extends BaseEditorState
 		addAnimButton.onClicked = function() {
 			if (curStagePiece > -1 && stageData.pieces[curStagePiece].type == "animated")
 			{
-				if (!sparrowExists(stageData.pieces[curStagePiece].asset) && animIndices.text.trim() == "")
+				var isSparrow:Bool = sparrowExists(stageData.pieces[curStagePiece].asset);
+				if (animName.text.trim() == "")
+				{
+					new Notify("The animation name cannot be blank.");
 					return;
+				}
+
+				if (isSparrow && animPrefix.text.trim() == "")
+				{
+					new Notify("The animation prefix cannot be blank.");
+					return;
+				}
+
+				if (!isSparrow && animIndices.text.trim() == "")
+				{
+					new Notify("All animations for tiles pieces must have indices.");
+					return;
+				}
 
 				var newAnim:StageAnimation =
 				{
@@ -2660,7 +2676,7 @@ class StageEditorState extends BaseEditorState
 				for (anim in stageData.pieces[curStagePiece].animations)
 				{
 					pieceAnimList.push(anim.name);
-					if (myStage[curStagePiece].animation.curAnim.name == anim.name)
+					if (myStage[curStagePiece].animation.curAnim != null && myStage[curStagePiece].animation.curAnim.name == anim.name)
 						animData = anim;
 				}
 
@@ -2769,16 +2785,19 @@ class StageEditorState extends BaseEditorState
 				spawnCharacter();
 		}
 
-		var poppers:Array<StagePiece> = [];
-		for (i in 0...stageData.pieces.length)
+		if (stageData.pieces.length > 0)
 		{
-			if (stageData.pieces[i].type == "solid" || stageData.pieces[i].type == "group" || imageExists(stageData.pieces[i].asset))
-				addToStage(i);
-			else
-				poppers.push(stageData.pieces[i]);
+			var poppers:Array<StagePiece> = [];
+			for (i in 0...stageData.pieces.length)
+			{
+				if (stageData.pieces[i].type == "solid" || stageData.pieces[i].type == "group" || imageExists(stageData.pieces[i].asset))
+					addToStage(i);
+				else
+					poppers.push(stageData.pieces[i]);
+			}
+			for (p in poppers)
+				stageData.pieces.remove(p);
 		}
-		for (p in poppers)
-			stageData.pieces.remove(p);
 	}
 
 	function spawnCharacter()
@@ -3401,6 +3420,22 @@ class StageEditorState extends BaseEditorState
 	function postUndoRedo()
 	{
 		pauseUndo = true;
+
+		if (stageData.pieces.length < myStage.length)
+		{
+			selectedStagePieces = [];
+			if (allCharacters.length > 0)
+			{
+				for (i in 0...allCharacters.length)
+					allCharacters[i].setColorTransform(1, 1, 1, 1, 0, 0, 0, 0);
+			}
+
+			if (myStage.length > 0)
+			{
+				for (i in 0...myStage.length)
+					myStage[i].highlightState = 0;
+			}
+		}
 
 		camGame.bgColor = FlxColor.fromRGB(stageData.bgColor[0], stageData.bgColor[1], stageData.bgColor[2]);
 		refreshStage();

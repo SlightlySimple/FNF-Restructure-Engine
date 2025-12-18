@@ -1,7 +1,7 @@
 <root>
 	<tabmenu id="tabMenu">
 		<tab name="Properties">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<checkbox id="visibleInStory" text="Show in Story Mode" infoText="Whether this week should show up in the Story Mode menu."/>
 				<checkbox id="visibleInFreeplay" text="Show in Freeplay" infoText="Whether this week's songs should show up in the Freeplay menu."/>
 				<textbutton id="difficulties" text="Difficulties" image="buttonPopupMenu" infoText="The difficulties the week has. This list only affects Story Mode as songs have their own difficulty lists."/>
@@ -10,7 +10,7 @@
 				<dropdown id="weekToUnlockDropdown" blank="None" allowSearch="true" infoText="The week that, when beaten, will unlock this week."/>
 				<checkbox id="hiddenWhenLockedCheck" text="Hidden When Locked" infoText="If checked, this week will not show up in Story Mode or Freeplay until it is unlocked."/>
 				<checkbox id="startsLockedInFreeplayCheck" text="Starts Locked in Freeplay" infoText="Whether this week starts locked in Freeplay. The week will unlock when it is beaten in Story Mode."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Songs">
 			<vboxscroll y="10">

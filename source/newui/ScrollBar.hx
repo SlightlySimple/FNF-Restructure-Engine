@@ -11,15 +11,15 @@ import data.Options;
 
 class ScrollBar extends FlxSpriteGroup
 {
-	var h:Float = 0;
+	public var h:Float = 0;
 	public var scroll(default, set):Float = 0;
 	public var onChanged:Void->Void = null;
 
 	public var hovered:Bool = false;
 	var pressed:Bool = false;
 
-	var back:FlxSprite;
-	var backAdd:FlxSprite;
+	public var back:FlxSprite;
+	public var backAdd:FlxSprite;
 	var bar:FlxSprite;
 
 	override public function new(x:Float, y:Float, h:Float)

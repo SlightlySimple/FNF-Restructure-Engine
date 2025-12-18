@@ -22,6 +22,13 @@ music = null;
 fadeTimes = [0.8, 0.7];
 bgAlpha = 0.5;
 
+nextEvent = "";
+nextSound = "";
+nextSoundVol = 1;
+nextVoiceline = "";
+
+callback = null;
+
 function new(dialogue)
 {
 	this.cameras = [game.camOther];
@@ -34,8 +41,14 @@ function new(dialogue)
 	dialogueList = Util.splitFile(allDialogue);
 	doingDialogue = true;
 
-	bgFade = new FlxSprite(-200, -200).makeGraphic(Std.int(FlxG.width * 1.3), Std.int(FlxG.height * 1.3), FlxColor.WHITE);
+	bgFade = new FlxSprite().makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.WHITE);
+	bgFade.antialiasing = false;
+	bgFade.active = false;
 	add(bgFade);
+
+	bg = new FlxSprite().makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.TRANSPARENT);
+	bg.active = false;
+	add(bg);
 
 	ports = new StringMap();
 	portNames = [];
@@ -77,6 +90,9 @@ function new(dialogue)
 	defaultSound = FlxG.sound.load(Paths.sound(box.getVar("data").textSound), 0.6);
 	clickSound = box.getVar("data").clickSound;
 	box.getVar("diaText").sounds = [defaultSound];
+
+	voice = new FlxSound();
+	FlxG.sound.list.add(voice);
 }
 
 function update(elapsed)
@@ -88,30 +104,39 @@ function update(elapsed)
 		box.execFunc("enter");
 		continueDialogue();
 
-		bgFade.alpha = 0;
-		if (box.getVar("data").steps > 0)
-			FlxTween.tween(bgFade, {alpha: bgAlpha}, fadeTimes[0], {ease: Util.pixelEase(box.getVar("data").steps)});
+		if (fadeTimes[0] > 0)
+		{
+			bgFade.alpha = 0;
+			bg.alpha = 0;
+
+			if (box.getVar("data").steps > 0)
+			{
+				FlxTween.tween(bgFade, {alpha: bgAlpha}, fadeTimes[0], {ease: Util.pixelEase(box.getVar("data").steps)});
+				FlxTween.tween(bg, {alpha: 1}, fadeTimes[0], {ease: Util.pixelEase(box.getVar("data").steps)});
+			}
+			else
+			{
+				FlxTween.tween(bgFade, {alpha: bgAlpha}, fadeTimes[0]);
+				FlxTween.tween(bg, {alpha: 1}, fadeTimes[0]);
+			}
+		}
 		else
-			FlxTween.tween(bgFade, {alpha: bgAlpha}, fadeTimes[0]);
+		{
+			bgFade.alpha = bgAlpha;
+			bg.alpha = 1;
+		}
 	}
 
 	if (doingDialogue)
 	{
 		if (FlxG.keys.justPressed.BACKSPACE)
 		{
-			if (dialogueProgress + 1 < dialogueList.length)
-			{
-				for (i in dialogueProgress + 1...dialogueList.length)
-				{
-					game.hscriptExec("onDialogueLine", [myDia, i]);
-					game.hscriptExec("onDialogueLineShown", [myDia, i]);
-				}
-			}
+			game.hscriptExec("onDialogueSkipped", [myDia]);
 			if (clickSound != "")
 				PlaySound(clickSound, 0.8);
 			endDialogue();
 		}
-		else if (FlxG.keys.justPressed.ANY)
+		else if (FlxG.keys.justPressed.ENTER || FlxG.keys.justPressed.SPACE)
 		{
 			if (clickSound != "")
 				PlaySound(clickSound, 0.8);
@@ -141,6 +166,15 @@ function continueDialogue()
 		switch (diaSplit[1])
 		{
 			case "music": playMusic(diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4]));
+			case "bg":
+				if (diaSplit[2] == "")
+					bg.makeGraphic(Std.int(FlxG.width), Std.int(FlxG.height), FlxColor.TRANSPARENT);
+				else
+				{
+					bg.loadGraphic(Paths.image(diaSplit[2]));
+					bg.setGraphicSize(FlxG.width, FlxG.height);
+					bg.updateHitbox();
+				}
 			case "bgColor": bgFade.color = FlxColor.fromRGB(Std.parseInt(diaSplit[2]), Std.parseInt(diaSplit[3]), Std.parseInt(diaSplit[4]));
 			case "bgAlpha": bgAlpha = Std.parseFloat(diaSplit[2]); bgFade.alpha = bgAlpha;
 			case "fadeTimes": fadeTimes = [Std.parseFloat(diaSplit[2]), Std.parseFloat(diaSplit[3])];
@@ -159,6 +193,9 @@ function continueDialogue()
 					box.getVar("diaText").sounds = [defaultSound];
 					box.execFunc("enter");
 				}
+			case "event": nextEvent = diaSplit[2];
+			case "sound": nextSound = diaSplit[2]; nextSoundVol = Std.parseFloat(diaSplit[3]);
+			case "voice": nextVoiceline = diaSplit[2];
 		}
 		dialogueProgress++;
 		continueDialogue();
@@ -180,7 +217,27 @@ function continueDialogue()
 				ports[curCharacter].execFunc("setExpression", [diaSplit[1]]);
 				ports[curCharacter].execFunc("enter", [right]);
 			}
+		}
 
+		if (nextSound != "")
+		{
+			PlaySound(nextSound, nextSoundVol);
+			nextSound = "";
+		}
+
+		if (voice.playing)
+			voice.stop();
+
+		if (nextVoiceline != "")
+		{
+			voice.loadEmbedded(Paths.sound(nextVoiceline));
+			voice.play();
+
+			nextVoiceline = "";
+			box.getVar("diaText").sounds = [];
+		}
+		else if (curCharacter != prevCharacter || box.getVar("diaText").sounds.length < 1)
+		{
 			if (ports.exists(curCharacter) && ports[curCharacter].getVar("sounds").length > 0)
 				box.getVar("diaText").sounds = ports[curCharacter].getVar("sounds");
 			else
@@ -198,6 +255,11 @@ function continueDialogue()
 			append = true;
 		box.execFunc("startText", [diaSplit[2], rate, append]);
 		game.hscriptExec("onDialogueLine", [myDia, lineIndex]);
+		if (nextEvent != "")
+		{
+			game.hscriptExec("onDialogueEvent", [myDia, nextEvent]);
+			nextEvent = "";
+		}
 		box.setVar("completeCallback", function() {
 			if (ports.exists(curCharacter))
 				ports[curCharacter].execFunc("playIdle");
@@ -214,23 +276,39 @@ function endDialogue()
 	if (ports.exists(curCharacter))
 		ports[curCharacter].execFunc("exit", []);
 
-	for (m in [bgFade, box])
-	{
-		if (box.getVar("data").steps > 0)
-			FlxTween.tween(m, {alpha: 0}, fadeTimes[1], {ease: Util.pixelEase(box.getVar("data").steps)});
-		else
-			FlxTween.tween(m, {alpha: 0}, fadeTimes[1]);
-	}
-
 	if (music != null)
 		music.fadeOut(0.5, 0, function(twn) { music.stop(); music = null; });
+	if (voice.playing)
+		voice.stop();
 
-	new FlxTimer().start(fadeTimes[1], function(tmr)
+	if (fadeTimes[1] > 0)
+	{
+		for (m in [bg, bgFade, box])
+		{
+			if (box.getVar("data").steps > 0)
+				FlxTween.tween(m, {alpha: 0}, fadeTimes[1], {ease: Util.pixelEase(box.getVar("data").steps)});
+			else
+				FlxTween.tween(m, {alpha: 0}, fadeTimes[1]);
+		}
+
+		new FlxTimer().start(fadeTimes[1], function(tmr) {
+			game.remove(this);
+			if (callback != null)
+				callback();
+			else
+				game.hscriptExec("onDialogueFinished", [myDia]);
+			this.kill();
+		});
+	}
+	else
 	{
 		game.remove(this);
-		game.hscriptExec("onDialogueFinished", [myDia]);
+		if (callback != null)
+			callback();
+		else
+			game.hscriptExec("onDialogueFinished", [myDia]);
 		this.kill();
-	});
+	}
 }
 
 function playMusic(track, volume, fadeTime)

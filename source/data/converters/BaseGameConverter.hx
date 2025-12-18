@@ -965,7 +965,8 @@ class BaseGameConverter
 				if (newEvents.length > 0)
 					File.saveContent(trueSavePath + "/" + eventFile + ".json", ChartEditorState.prepareEventsSave(newEvents));
 
-				new Notify("Successfully converted the song \"" + convertedSongId + "\" from the base game");
+				if (window.subState == null)
+					new Notify("Successfully converted the song \"" + convertedSongId + "\" from the base game");
 			}
 			else
 				new Notify("The file does not end in \"-chart\" or the \"-metadata\" file could not be located");

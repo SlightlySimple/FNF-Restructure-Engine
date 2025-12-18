@@ -73,6 +73,8 @@ class UIControl
 		{
 			e.x = Std.int((270 - e.width) / 2);
 			tab.add(e);
+			if (Std.isOfType(e, VBoxScrollable))
+				tab.tabVBox = cast e;
 		}
 
 		return tab;
@@ -522,7 +524,7 @@ class VBoxScrollable extends FlxSpriteGroup
 		scrollBar.onChanged = function() {
 			scroll = scrollBar.scroll * maxScroll;
 			vbox.y = Std.int(scrollBar.y - scroll);
-			vbox.clipRect = new FlxRect(0, scroll, 5000, h);
+			vbox.clipRect = new FlxRect(0, scroll, 5000, this.h);
 		};
 
 		vbox = new VBox(scrollBar.width + 5);
@@ -530,7 +532,7 @@ class VBoxScrollable extends FlxSpriteGroup
 		add(vbox);
 
 		vbox.modCallback = function() {
-			maxScroll = Math.max(0, vbox.height - h);
+			maxScroll = Math.max(0, vbox.height - this.h);
 			if (maxScroll == 0)
 				scrollBar.visible = false;
 			else
@@ -554,5 +556,23 @@ class VBoxScrollable extends FlxSpriteGroup
 			return 0;
 
 		return Math.min(h, vbox.height);
+	}
+
+	public function setHeight(val:Float)
+	{
+		if (this.h != val)
+		{
+			this.h = val;
+			scrollBar.h = val;
+			scrollBar.back.setGraphicSize(0, Std.int(val));
+			scrollBar.back.scale.x = 1;
+			scrollBar.back.updateHitbox();
+			scrollBar.backAdd.setGraphicSize(0, Std.int(val));
+			scrollBar.backAdd.scale.x = 1;
+			scrollBar.backAdd.updateHitbox();
+			scrollBar.scroll = scrollBar.scroll;
+			repositionAll();
+			vbox.modCallback();
+		}
 	}
 }

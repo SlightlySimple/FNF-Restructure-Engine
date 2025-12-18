@@ -1,6 +1,7 @@
 package editors.stage;
 
 import flixel.system.FlxAssets.FlxGraphicAsset;
+import flixel.util.FlxColor;
 import flixel.addons.display.FlxBackdrop;
 import objects.AnimatedSprite;
 
@@ -45,6 +46,7 @@ class StageEditorPiece extends AnimatedSprite
 	{
 		if (highlightState != v)
 		{
+			var _color:FlxColor = color;
 			var _alpha:Float = alpha;
 			switch (v)
 			{
@@ -52,6 +54,7 @@ class StageEditorPiece extends AnimatedSprite
 				case 1: setColorTransform(1, 1, 1, 1, 0, Std.int(255 * 0.15), 0, 0);
 				case 2: setColorTransform(1, 1, 1, 1, 0, Std.int(255 * 0.25), 0, 0);
 			}
+			color = _color;
 			alpha = _alpha;
 		}
 		return highlightState = v;

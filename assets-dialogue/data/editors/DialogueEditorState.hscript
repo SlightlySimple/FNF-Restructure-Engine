@@ -3,8 +3,13 @@ import helpers.DeepEquals;
 import helpers.Cloner;
 import newui.TopMenu;
 import newui.ColorPicker;
+import newui.Draggable;
+import newui.VBox;
+import newui.Label;
+import newui.InputText;
 import FileBrowser;
 
+curBG = "";
 curCharacter = "";
 curBox = "";
 
@@ -14,10 +19,20 @@ function create()
 	state.filenameNew = "New Dialogue File";
 
 	var bg = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.GRAY);
+	bg.active = false;
 	add(bg);
 
+	bgImage = new FlxSprite();
+	bgImage.active = false;
+	bgImage.alpha = 0.001;
+	add(bgImage);
+
+	voice = new FlxSound();
+	FlxG.sound.list.add(voice);
+	musVol = FlxG.sound.music.volume;
+
 	if (state.isNew)
-		dialogueData = {fadeTimes: [0.8, 0.7], lines: [{character: "bf", expression: "normal", text: "", append: false, right: true, bgColor: [255, 255, 255], bgAlpha: 0.5, box: "default", mood: "normal", rate: 0.04, music: ["none", 1, 0]}]};
+		dialogueData = {fadeTimes: [0.8, 0.7], lines: [{character: "bf", expression: "normal", text: "", append: false, right: true, bg: "", bgColor: [255, 255, 255], bgAlpha: 0.5, box: "default", mood: "normal", rate: 0.04, sound: ["", 1], voice: "", music: ["none", 1, 0]}]};
 	else
 	{
 		var dialogueLines = StringTools.replace(Paths.text(state.id),"\r","").split("\n");
@@ -26,10 +41,14 @@ function create()
 		var music = ["none", 1, 0];
 		var right = true;
 		var rate = 0.04;
+		var bgImage = "";
 		var bgColor = [255, 255, 255];
 		var bgAlpha = 0.5;
 		var box = "default";
 		var mood = "normal";
+		var sound = ["", 1];
+		var event = "";
+		var voiceLine = "";
 		for (l in dialogueLines)
 		{
 			var diaSplit = l.split("\t");
@@ -43,13 +62,16 @@ function create()
 				{
 					case "flip": right = !right;
 					case "music": music = [diaSplit[2], Std.parseFloat(diaSplit[3]), Std.parseFloat(diaSplit[4])];
+					case "bg": bgImage = diaSplit[2];
 					case "bgColor": bgColor = [Std.parseInt(diaSplit[2]), Std.parseInt(diaSplit[3]), Std.parseInt(diaSplit[4])];
 					case "bgAlpha": bgAlpha = Std.parseFloat(diaSplit[2]);
 					case "fadeTimes": dialogueData.fadeTimes = [Std.parseFloat(diaSplit[2]), Std.parseFloat(diaSplit[3])];
 					case "box": box = diaSplit[2];
 					case "mood": mood = diaSplit[2];
-					case "flip": right = !right;
 					case "rate": rate = Std.parseFloat(diaSplit[2]);
+					case "sound": sound = [diaSplit[2], Std.parseFloat(diaSplit[3])];
+					case "event": event = diaSplit[2];
+					case "voice": voiceLine = diaSplit[2];
 				}
 			}
 			else
@@ -57,7 +79,10 @@ function create()
 				var append = false;
 				if (diaSplit.length > 3 && diaSplit[3] == "append")
 					append = true;
-				dialogueData.lines.push({character: curCharacter, expression: diaSplit[1], text: diaSplit[2], append: append, right: right, bgColor: bgColor.copy(), bgAlpha: bgAlpha, box: box, mood: mood, rate: rate, music: [].concat(music)});
+				dialogueData.lines.push({character: curCharacter, expression: diaSplit[1], text: diaSplit[2], append: append, right: right, bg: bgImage, bgColor: bgColor.copy(), bgAlpha: bgAlpha, box: box, mood: mood, rate: rate, sound: [].concat(sound), event: event, voice: voiceLine, music: [].concat(music)});
+				sound = ["", 1];
+				event = "";
+				voiceLine = "";
 			}
 		}
 	}
@@ -72,6 +97,34 @@ function create()
 	port = null;
 
 	updateDialogue();
+
+
+
+	dialogueInputBox = new Draggable(340, 50, "dialogueInputBox");
+	add(dialogueInputBox);
+
+	var vbox = new VBox(5, 5);
+	vbox.spacing = 5;
+
+	var dialogueInputLabel = new Label("Dialogue Input");
+	vbox.add(dialogueInputLabel);
+
+	var dialogueInput = new InputText(0, 0, 610);
+	dialogueInput.infoText = "The text that should display on the current line of dialogue.";
+	dialogueInput.text = dialogueData.lines[line].text;
+	dialogueInput.condition = function() { return dialogueData.lines[line].text; }
+	dialogueInput.callback = function(text, action) {
+		box.execFunc("startText", [text, 0, false]);
+		box.execFunc("proceed");
+	}
+	dialogueInput.focusLost = function() {
+		dialogueData.lines[line].text = dialogueInput.text;
+		updateDialogue();
+		box.execFunc("proceed");
+	}
+	vbox.add(dialogueInput);
+
+	dialogueInputBox.add(vbox);
 
 
 
@@ -109,19 +162,6 @@ function create()
 		}
 	}
 
-	var diaLine = state.element("diaLine");
-	diaLine.text = dialogueData.lines[line].text;
-	diaLine.condition = function() { return dialogueData.lines[line].text; }
-	diaLine.callback = function(text, action) {
-		box.execFunc("startText", [text, 0, false]);
-		box.execFunc("proceed");
-	}
-	diaLine.focusLost = function() {
-		dialogueData.lines[line].text = diaLine.text;
-		updateDialogue();
-		box.execFunc("proceed");
-	}
-
 	var diaLineAppend = state.element("diaLineAppend");
 	diaLineAppend.condition = function() { return dialogueData.lines[line].append; }
 	diaLineAppend.onClicked = function() { dialogueData.lines[line].append = diaLineAppend.checked; }
@@ -136,6 +176,54 @@ function create()
 	var bgAlpha = state.element("bgAlpha");
 	bgAlpha.condition = function() { return dialogueData.lines[line].bgAlpha; }
 	bgAlpha.onChanged = function() { dialogueData.lines[line].bgAlpha = bgAlpha.value; }
+
+	var bgImageInput = state.element("bgImageInput");
+	bgFloodFill = state.element("bgFloodFill");
+	bgImageInput.text = dialogueData.lines[line].bg;
+	bgImageInput.condition = function() { return dialogueData.lines[line].bg; }
+	bgImageInput.focusLost = function() {
+		if (bgFloodFill.checked && line < dialogueData.lines.length - 1)
+		{
+			var oldBG = dialogueData.lines[line].bg;
+			var i = line;
+			while (i < dialogueData.lines.length)
+			{
+				if (dialogueData.lines[i].bg != oldBG)
+					break;
+				dialogueData.lines[i].bg = bgImageInput.text;
+				i++;
+			}
+		}
+		else
+			dialogueData.lines[line].bg = bgImageInput.text;
+		updateBG();
+	}
+
+	var bgImageButton = state.element("bgImageButton");
+	bgImageButton.onClicked = function() {
+		var file = new FileBrowser();
+		file.loadCallback = function(fullPath) {
+			var fileArray = StringTools.replace(fullPath,'\\','/').split('/');
+			if (fileArray.contains("images"))
+			{
+				while (fileArray[0] != "images")
+					fileArray.shift();
+				fileArray.shift();
+
+				var bgAsset = fileArray.join("/").split('.png')[0];
+				if (Paths.imageExists(bgAsset))
+				{
+					bgImageInput.text = bgAsset;
+					bgImageInput.focusLost();
+				}
+				else
+					new Notify("The file you have selected can not be found. It is likely in the wrong location.");
+			}
+			else
+				new Notify("The file you have selected is not a loadable image.");
+		}
+		file.load("png", "png");
+	};
 
 	var fadeInTime = state.element("fadeInTime");
 	fadeInTime.condition = function() { return dialogueData.fadeTimes[0]; }
@@ -209,14 +297,80 @@ function create()
 		updatePort();
 	}
 
+	var eventInput = state.element("eventInput");
+	eventInput.text = dialogueData.lines[line].event;
+	eventInput.condition = function() { return dialogueData.lines[line].event; }
+	eventInput.focusLost = function() {
+		dialogueData.lines[line].event = eventInput.text;
+	}
+
+	var soundList = Paths.listFilesSub("sounds/", ".ogg");
+	soundList.unshift("");
+	soundDropdown = state.element("soundDropdown");
+	soundDropdown.valueList = soundList;
+	soundDropdown.value = dialogueData.lines[line].sound[0];
+	soundDropdown.condition = function() { return dialogueData.lines[line].sound[0]; }
+	soundDropdown.onChanged = function() {
+		dialogueData.lines[line].sound[0] = soundDropdown.value;
+	}
+
+	soundVolStepper = state.element("soundVolStepper");
+	soundVolStepper.condition = function() { return dialogueData.lines[line].sound[1]; }
+	soundVolStepper.onChanged = function() { dialogueData.lines[line].sound[1] = soundVolStepper.value; }
+
+	voiceLineDropdown = state.element("voiceLineDropdown");
+	voiceLineDropdown.valueList = soundList;
+	voiceLineDropdown.value = dialogueData.lines[line].voice;
+	voiceLineDropdown.condition = function() { return dialogueData.lines[line].voice; }
+	voiceLineDropdown.onChanged = function() {
+		dialogueData.lines[line].voice = voiceLineDropdown.value;
+	}
+
+	var voiceLinePlay = state.element("voiceLinePlay");
+	voiceLinePlay.onClicked = function() {
+		if (voiceLineDropdown.value != "") {
+			FlxG.sound.music.volume = 0.1;
+			if (voice.playing)
+				voice.stop();
+			voice.loadEmbedded(Paths.sound(voiceLineDropdown.value));
+			voice.play();
+			voice.onComplete = function() {
+				FlxG.sound.music.fadeIn(0.5, 0.1, musVol);
+			};
+		}
+	}
+
+	var voiceLineStop = state.element("voiceLineStop");
+	voiceLineStop.onClicked = function() {
+		if (voice.playing)
+		{
+			voice.stop();
+			FlxG.sound.music.fadeIn(0.5, 0.1, musVol);
+		}
+	}
+
 	var musicList = Paths.listFilesSub("music/", ".ogg");
 	musicList.unshift("none");
 	musicDropdown = state.element("musicDropdown");
+	musicFloodFill = state.element("musicFloodFill");
 	musicDropdown.valueList = musicList;
 	musicDropdown.value = dialogueData.lines[line].music[0];
 	musicDropdown.condition = function() { return dialogueData.lines[line].music[0]; }
 	musicDropdown.onChanged = function() {
-		dialogueData.lines[line].music[0] = musicDropdown.value;
+		if (musicFloodFill.checked && line < dialogueData.lines.length - 1)
+		{
+			var oldMusic = dialogueData.lines[line].music[0];
+			var i = line;
+			while (i < dialogueData.lines.length)
+			{
+				if (dialogueData.lines[i].music[0] != oldMusic)
+					break;
+				dialogueData.lines[i].music[0] = musicDropdown.value;
+				i++;
+			}
+		}
+		else
+			dialogueData.lines[line].music[0] = musicDropdown.value;
 	}
 
 	var musicVolumeStepper = state.element("musicVolumeStepper");
@@ -302,6 +456,17 @@ function create()
 							insert(state.members.indexOf(topmenu), state.infoBox);
 					},
 					icon: "bullet"
+				},
+				{
+					label: "Dialogue Input Panel",
+					condition: function() { return state.members.contains(dialogueInputBox); },
+					action: function() {
+						if (state.members.contains(dialogueInputBox))
+							remove(dialogueInputBox, true);
+						else
+							insert(state.members.indexOf(topmenu), dialogueInputBox);
+					},
+					icon: "bullet"
 				}
 			]
 		}
@@ -332,6 +497,7 @@ function updateLineText()
 
 function updateDialogue()
 {
+	updateBG();
 	box.execFunc("startText", [dialogueData.lines[line].text, dialogueData.lines[line].rate, false]);
 }
 
@@ -414,6 +580,23 @@ function updateBox()
 	box.execFunc("playIdle");
 }
 
+function updateBG()
+{
+	if (curBG != dialogueData.lines[line].bg)
+	{
+		curBG = dialogueData.lines[line].bg;
+		if (dialogueData.lines[line].bg == "")
+			bgImage.alpha = 0.001;
+		else
+		{
+			bgImage.alpha = 1;
+			bgImage.loadGraphic(Paths.image(dialogueData.lines[line].bg));
+			bgImage.setGraphicSize(FlxG.width, FlxG.height);
+			bgImage.updateHitbox();
+		}
+	}
+}
+
 function changeLine(direction)
 {
 	line += direction;
@@ -482,11 +665,12 @@ function _save(browse)
 	var data = [];
 
 	if (!DeepEquals.deepEquals(dialogueData.fadeTimes, [0.8, 0.7]))
-		data.push("!setting	fadeTimes\t" + Std.string(dialogueData.fadeTimes[0]) + "\t" + Std.string(dialogueData.fadeTimes[1]));
+		data.push("!setting\tfadeTimes\t" + Std.string(dialogueData.fadeTimes[0]) + "\t" + Std.string(dialogueData.fadeTimes[1]));
 
 	var music = "none";
 	var right = true;
 	var rate = 0.04;
+	var bg = "";
 	var bgColor = [255, 255, 255];
 	var bgAlpha = 0.5;
 	var box = "default";
@@ -497,6 +681,12 @@ function _save(browse)
 		{
 			data.push("!setting\tmusic\t" + l.music[0] + "\t" + Std.string(l.music[1]) + "\t" + Std.string(l.music[2]));
 			music = l.music[0];
+		}
+
+		if (l.bg != bg)
+		{
+			data.push("!setting\tbg\t" + l.bg);
+			bg = l.bg;
 		}
 
 		if (!DeepEquals.deepEquals(l.bgColor, bgColor))
@@ -534,6 +724,15 @@ function _save(browse)
 			data.push("!setting\tflip");
 			right = l.right;
 		}
+
+		if (l.event != "")
+			data.push("!setting\tevent\t" + l.event);
+
+		if (l.sound[0] != "")
+			data.push("!setting\tsound\t" + l.sound[0] + "\t" + Std.string(l.sound[1]));
+
+		if (l.voice != "")
+			data.push("!setting\tvoice\t" + l.voice);
 
 		if (l.append)
 			data.push(l.character + "\t" + l.expression + "\t" + l.text + "\tappend");

@@ -1,5 +1,6 @@
 package menus.freeplay;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
 
@@ -25,16 +26,19 @@ class FreeplayAlbum extends FlxSpriteGroup
 	{
 		super(0, 0);
 
-		cover = new FlxSprite(951, 282, Paths.image("ui/freeplay/albums/volume1/art"));
+		cover = new FlxSprite(951, 282, Paths.image("ui/freeplay/albums/volume1/volume1"));
 		cover.active = false;
 		cover.angle = 10;
 		add(cover);
 
-		title = new AnimatedSprite(947, 491, Paths.tiles("ui/freeplay/albums/volume1/title", 1, 2));
-		title.active = false;
-		title.animation.add("idle", [0, 1], 0);
-		title.animation.play("idle");
+		title = new AnimatedSprite(FlxG.width - 355, 500, Paths.sparrow("ui/freeplay/albums/volume1/volume1-text"));
+		title.addAnim("idle", "idle", 24, true);
+		title.addAnim("switch", "switch", 24, false);
+		title.playAnim("idle");
 		add(title);
+		title.animation.finishCallback = function(name) {
+			if (name == "switch") title.playAnim("idle");
+		};
 	}
 
 	override public function update(elapsed:Float)
@@ -55,9 +59,6 @@ class FreeplayAlbum extends FlxSpriteGroup
 				cover.x = x + animFrames[animFrame][0] - (cover.width / 2);
 				cover.y = y + animFrames[animFrame][1] - (cover.height / 2);
 				cover.angle = animFrames[animFrame][2];
-				title.x = x + animFrames[animFrame][3] - (title.width / 2);
-				title.y = y + animFrames[animFrame][4] - (title.height / 2);
-				title.animation.curAnim.curFrame = Std.int(animFrames[animFrame][5]);
 			}
 
 			animFrameProgress += elapsed;
@@ -79,7 +80,7 @@ class FreeplayAlbum extends FlxSpriteGroup
 	{
 		if (val != album)
 		{
-			if (val.trim() != "" && Paths.imageExists("ui/freeplay/albums/" + val + "/art"))
+			if (val.trim() != "" && Paths.imageExists("ui/freeplay/albums/" + val + "/" + val))
 			{
 				if (visible)
 					doAnim("switch");
@@ -87,11 +88,12 @@ class FreeplayAlbum extends FlxSpriteGroup
 					doAnim("enter");
 
 				visible = true;
-				cover.loadGraphic(Paths.image("ui/freeplay/albums/" + val + "/art"));
+				cover.loadGraphic(Paths.image("ui/freeplay/albums/" + val + "/" + val));
 				cover.updateHitbox();
-				title.frames = Paths.tiles("ui/freeplay/albums/" + val + "/title", 1, 2);
-				title.animation.add("idle", [0, 1], 0);
-				title.animation.play("idle");
+				title.frames = Paths.sparrow("ui/freeplay/albums/" + val + "/" + val + "-text");
+				title.addAnim("idle", "idle", 24, true);
+				title.addAnim("switch", "switch", 24, false);
+				title.playAnim("switch");
 				title.updateHitbox();
 			}
 			else

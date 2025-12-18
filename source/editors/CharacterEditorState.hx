@@ -104,6 +104,8 @@ class CharacterEditorState extends BaseEditorState
 	var otherCharacterDropdown:DropdownMenu;
 	var otherCharAnimDropdown:DropdownMenu;
 
+	var attributes:VBoxScrollable;
+	var idlesSlot:VBox;
 	var firstAnimDropdown:DropdownMenu;
 
 	var animName:InputText;
@@ -746,48 +748,17 @@ class CharacterEditorState extends BaseEditorState
 			}));
 		}
 
-		var idles:TextButton = cast element("idles");
-		idles.onClicked = function() {
-			var window:PopupWindow = null;
-			var vbox:VBox = new VBox(35, 35);
+		attributes = cast element("attributes");
+		idlesSlot = cast element("idlesSlot");
+		idlesRefresh();
 
-			var menu:VBoxScrollable = new VBoxScrollable(0, 0, 500);
-			var scroll:VBox = menu.vbox;
-
-			for (i in 0...characterData.idles.length)
-			{
-				var animHbox:HBox = new HBox();
-				var anim:DropdownMenu = new DropdownMenu(0, 0, characterData.idles[i], charAnimList, true);
-				anim.onChanged = function() { characterData.idles[i] = anim.value; }
-				animHbox.add(anim);
-				var _remove:Button = new Button(0, 0, "buttonTrash");
-				_remove.onClicked = function() {
-					characterData.idles.splice(i, 1);
-					window.close();
-					new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
-				}
-				animHbox.add(_remove);
-				scroll.add(animHbox);
-			}
-
+		var addIdleButton:TextButton = cast element("addIdleButton");
+		addIdleButton.onClicked = function() {
 			if (characterData.idles.length > 0)
-				vbox.add(menu);
-
-			var _add:TextButton = new TextButton(0, 0, "Add");
-			_add.onClicked = function() {
-				if (characterData.idles.length > 0)
-					characterData.idles.push(characterData.idles[characterData.idles.length-1]);
-				else
-					characterData.idles.push(charAnimList[0]);
-				window.close();
-				new FlxTimer().start(0.02, function(tmr:FlxTimer) { idles.onClicked(); });
-			}
-			vbox.add(_add);
-
-			var accept:TextButton = new TextButton(0, 0, "Accept", function() { window.close(); });
-			vbox.add(accept);
-
-			window = PopupWindow.CreateWithGroup(vbox);
+				characterData.idles.push(characterData.idles[characterData.idles.length-1]);
+			else
+				characterData.idles.push(charAnimList[0]);
+			idlesRefresh();
 		}
 
 		var firstAnimList:Array<String> = [""];
@@ -817,6 +788,7 @@ class CharacterEditorState extends BaseEditorState
 			else if (charAnimList.contains("firstDeath"))
 				characterData.firstAnimation = "firstDeath";
 			updateBaseFrameWidth();
+			idlesRefresh();
 		};
 
 		var charDanceSpeed:Stepper = cast element("charDanceSpeed");
@@ -2045,6 +2017,7 @@ class CharacterEditorState extends BaseEditorState
 				characterData.idles = ["idle"];
 			}
 			updateBaseFrameWidth();
+			idlesRefresh();
 			playAnim(characterData.firstAnimation, true);
 		}
 		reloadAnimations();
@@ -2506,6 +2479,31 @@ class CharacterEditorState extends BaseEditorState
 					sprite.offset.x -= Math.round(((baseFrameSize[0] - sprite.frameWidth) * sprite.scale.x) / 2);
 			}
 		}
+	}
+
+	function idlesRefresh()
+	{
+		idlesSlot.forEachAlive(function(element:FlxSprite) {
+			element.kill();
+			element.destroy();
+		});
+		idlesSlot.clear();
+
+		for (i in 0...characterData.idles.length)
+		{
+			var animHbox:HBox = new HBox();
+			var anim:DropdownMenu = new DropdownMenu(0, 0, characterData.idles[i], charAnimList, true);
+			anim.onChanged = function() { characterData.idles[i] = anim.value; }
+			idlesSlot.add(anim);
+			var _remove:TextButton = new TextButton(0, 0, "Remove");
+			_remove.onClicked = function() {
+				characterData.idles.splice(i, 1);
+				new FlxTimer().start(0.02, function(tmr) { idlesRefresh(); });
+			}
+			idlesSlot.add(_remove);
+		}
+
+		attributes.repositionAll();
 	}
 
 	function updateBaseFrameWidth()

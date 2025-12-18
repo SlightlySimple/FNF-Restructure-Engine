@@ -11,6 +11,7 @@ import openfl.ui.Mouse;
 import openfl.ui.MouseCursor;
 import data.Options;
 
+import newui.UIControl;
 import newui.Button;
 
 class TabMenu extends FlxSpriteGroup
@@ -28,12 +29,17 @@ class TabMenu extends FlxSpriteGroup
 	public var onTabChanged:Void->Void = null;
 
 	var dragging:Bool = false;
+	var resizing:Bool = false;
+	var sizeY:Float;
+	var minHeight:Float = 100;
+	var maxHeight:Float;
 
 	override public function new(x:Float, y:Float)
 	{
 		super(x, y);
 
 		back = new FlxSprite(0, 60, Paths.image("ui/editors/menuBG"));
+		maxHeight = back.height;
 		tabLabel = new FlxSprite(Paths.image("ui/editors/tabLabel"));
 
 		var tabLeft:Button = new Button(0, 0, "tabLeft", function() { cycleTab(-1); });
@@ -113,6 +119,20 @@ class TabMenu extends FlxSpriteGroup
 			if (!Options.mousePressed())
 				dragging = false;
 		}
+		else if (resizing)
+		{
+			@:privateAccess
+			UIControl.cursor = MouseCursor.__RESIZE_NS;
+			sizeY += FlxG.mouse.deltaY;
+			back.setGraphicSize(0, Std.int(Math.max(minHeight, Math.min(maxHeight, Math.min(FlxG.height - back.y, sizeY)))));
+			back.scale.x = 1;
+			back.updateHitbox();
+			for (grp in tabGroups)
+				grp.tabHeight = back.height - 33;
+
+			if (!Options.mousePressed())
+				resizing = false;
+		}
 		else if (tabLabel.overlapsPoint(FlxG.mouse.getWorldPosition(camera, tabLabel._point), true, camera))
 		{
 			UIControl.cursor = MouseCursor.HAND;
@@ -124,11 +144,33 @@ class TabMenu extends FlxSpriteGroup
 			if (Options.mouseJustPressed(true) && !DropdownMenu.isOneActive)
 				new TabMenuSubState(this);
 		}
+		else if (back.overlapsPoint(FlxG.mouse.getWorldPosition(camera, back._point), true, camera) && FlxG.mouse.getWorldPosition(camera, back._point).y >= back.y + back.height - 20)
+		{
+			@:privateAccess
+			UIControl.cursor = MouseCursor.__RESIZE_NS;
+			UIControl.infoText = "Click + Drag to resize this menu.";
+
+			if (Options.mouseJustPressed())
+			{
+				resizing = true;
+				sizeY = back.height;
+			}
+		}
 	}
 }
 
 class TabGroup extends FlxSpriteGroup
 {
+	public var tabHeight(default, set):Float = 550;
+	public var tabVBox:VBoxScrollable = null;
+
+	function set_tabHeight(val:Float):Float
+	{
+		if (tabVBox != null)
+			tabVBox.setHeight(val);
+
+		return tabHeight = val;
+	}
 }
 
 class TabMenuSubState extends FlxSubState

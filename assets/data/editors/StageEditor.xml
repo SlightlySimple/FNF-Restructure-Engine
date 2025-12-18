@@ -30,7 +30,7 @@
 			</vboxscroll>
 		</tab>
 		<tab name="Pieces">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<label text="ID:"/>
 				<input id="pieceId" infoText="A unique identifier for this piece to be used by the game and by scripts. If left blank, the Asset will be the ID. Has no effect on characters."/>
 				<label text="Type:"/>
@@ -41,7 +41,7 @@
 				<textbutton id="addPieceBehindCharacters" text="Add Behind Characters" image="LONG" infoText="Add a new piece to the stage, placing it behind every character but in front of everything else."/>
 				<textbutton id="insertPieceButton" text="Insert Piece" image="LONG" infoText="Add a new piece to the stage, placing it directly behind the currently selected piece."/>
 				<textbutton id="deletePieceButton" text="Delete Piece" image="LONG" infoText="Remove the currently selected piece from the stage."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Piece Properties">
 			<vboxscroll y="10" id="pieceProperties">
@@ -204,8 +204,8 @@
 						</hbox>
 						<textbutton id="addAnimButton" text="Add/Update Animation" image="LONG" infoText="Add a new animation to the piece, or replace an animation with the sane name."/>
 						<label text="Current Animation:"/>
-						<dropdown id="curAnimDropdown" allowSearch="true" infoText="The animation the piece is currently playing in the stage editor"/>
-						<textbutton id="deleteAnimButton" text="Remove Animation" image="LONG"/>
+						<dropdown id="curAnimDropdown" allowSearch="true" infoText="The animation the piece is currently playing in the stage editor."/>
+						<textbutton id="deleteAnimButton" text="Remove Animation" image="LONG" infoText="Remove the animation the piece is currently playing from the piece."/>
 						<label text="Initial Animation:"/>
 						<dropdown id="firstAnimDropdown" allowSearch="true" infoText="The animation the piece plays when the stage is initially loaded."/>
 						<textbutton id="beatAnimButton" text="Idle Animations" image="buttonPopupMenu" infoText="An animation that will play on every beat of the song. This can also be a list of multiple animations that will be played one after the other. If an animation is in the list twice, it will be allowed to interrupt itself."/>

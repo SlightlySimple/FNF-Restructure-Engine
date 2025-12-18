@@ -938,7 +938,10 @@ class PlayState extends MusicBeatState
 							tracks[i].time = tracks[0].time - songData.tracks[i][2] - songVariantOffset;
 					}
 				}
-				songProgress = tracks[0].time + totalOffset;
+				if (tracks[0].time + totalOffset <= songProgress)
+					songProgress += elapsed * 1000 * playbackRate;
+				else
+					songProgress = tracks[0].time + totalOffset;
 			}
 			else if (!restarting)
 				songProgress += elapsed * 1000 * playbackRate;

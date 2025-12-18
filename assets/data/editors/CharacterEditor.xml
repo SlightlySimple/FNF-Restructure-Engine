@@ -59,7 +59,7 @@
 			</vboxscroll>
 		</tab>
 		<tab name="Attributes">
-			<vbox y="10">
+			<vboxscroll y="10" id="attributes">
 				<hbox>
 					<checkbox id="charAntialias" text="Antialiasing" infoText="Whether the character is smoothed out. Disable this for pixel characters."/>
 					<checkbox id="charFlip" text="Flip X" infoText="Whether the character is flipped horizontally. Does not affect offsets."/>
@@ -82,11 +82,14 @@
 					<button id="healthbarColorSwatch" image="buttonColorSwatch" infoText="Change the color of the health bar using a color swatch."/>
 					<button id="healthbarColorPicker" image="buttonColorPicker" infoText="Pick the color of the health bar from anywhere on the screen."/>
 				</hbox>
-				<textbutton id="idles" text="Idle Animations" image="buttonPopupMenu" infoText="An animation that will play on every beat of the song. This can also be a list of multiple animations that will be played one after the other. If an animation is in the list twice, it will be allowed to interrupt itself."/>
+				<label text="Idle Animations:"/>
+				<vbox id="idlesSlot">
+				</vbox>
+				<textbutton id="addIdleButton" text="Add Idle Animation" image="LONG" infoText="Add an animation to the list of idle animations. If an animation is in the list twice, it will be allowed to interrupt itself."/>
 				<label text="Initial Animation:"/>
 				<dropdown id="firstAnimDropdown" allowSearch="true" infoText="The animation the character plays when they're initially loaded."/>
 				<textbutton id="autoAnimButton" text="Auto-Assign Animations" image="LONG" infoText="Automatically fills in the Idle Animations and Initial Animation based on the animations present in the animation list."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Adv. Properties">
 			<vboxscroll y="10">
@@ -155,7 +158,7 @@
 			</vboxscroll>
 		</tab>
 		<tab name="Anim. Properties">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<label text="Offsets:"/>
 				<hbox>
 					<stepper id="animOffsetX" text="X:" infoText="The horizontal position of this animation."/>
@@ -172,10 +175,10 @@
 				<checkbox id="animImportant" text="Prevents Idle" infoText="If checked, this animation will never be interrupted by the idle animation."/>
 				<label text="Next Animation:"/>
 				<dropdown id="animNextDropdown" blank="None" allowSearch="true" infoText="An animation to always play immediately after this one finishes."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Anim. Preview">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<label id="curFrameText" text="Frame: 0"/>
 				<textbutton id="toggleAnimButton" text="Toggle"/>
 				<hbox>
@@ -186,10 +189,10 @@
 					<textbutton id="firstFrame" text="First"/>
 					<textbutton id="lastFrame" text="Last"/>
 				</hbox>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Offsets">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<stepper id="offsetStepper" text="Value:" decimals="3"/>
 				<hbox>
 					<textbutton id="offsetAddX" text="Add X" infoText="Add the above value to the horizontal offset of every animation."/>
@@ -214,7 +217,7 @@
 						<togglebutton id="alignmentBottom" text="Bottom" image="SHORT" infoText="How the character's offsets are aligned relative to the character's default animation."/>
 					</hbox>
 				</if>
-			</vbox>
+			</vboxscroll>
 		</tab>
 	</tabmenu>
 </root>

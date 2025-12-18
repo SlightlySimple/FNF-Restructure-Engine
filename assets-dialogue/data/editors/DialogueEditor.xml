@@ -13,9 +13,7 @@
 					<textbutton id="addLine" text="Add" infoText="Add a new line of dialogue after the current one."/>
 					<textbutton id="removeLine" text="Remove" infoText="Remove the current line of dialogue."/>
 				</hbox>
-				<label text="Dialogue:"/>
-				<input id="diaLine" infoText="The text that should display on the current line of dialogue."/>
-				<checkbox id="diaLineAppend" text="Append Line" infoText="If this is checked, the current line will be added to the end of the previous one instead of replacing it."/>
+				<checkbox id="diaLineAppend" text="Append Current Line" infoText="If this is checked, the current line will be added to the end of the previous one instead of replacing it."/>
 				<label text="Character:"/>
 				<dropdown id="characterDropdown" blank="None" infoText="The character that should say the current line of dialogue."/>
 				<label text="Expression:"/>
@@ -25,12 +23,29 @@
 					<togglebutton id="sideLeft" text="Left" infoText="Put the character on the left side of the dialogue box."/>
 					<togglebutton id="sideRight" text="Right" infoText="Put the character on the right side of the dialogue box."/>
 				</hbox>
+				<label text="Voice Line:"/>
+				<dropdown id="voiceLineDropdown" allowSearch="true" blank="None" infoText="An optional voice line to play on the current line of dialogue."/>
+				<hbox>
+					<textbutton id="voiceLinePlay" text="Play" infoText="Play the currently selected voiceline."/>
+					<textbutton id="voiceLineStop" text="Stop" infoText="Stop playing the currently selected voiceline."/>
+				</hbox>
+				<label text="Sound:"/>
+				<dropdown id="soundDropdown" allowSearch="true" blank="None" infoText="An optional sound to play on the current line of dialogue."/>
+				<stepper id="soundVolStepper" text="Volume:" step="0.05" min="0" decimals="3" infoText="The volume at which to play the above sound."/>
+				<label text="Event:"/>
+				<input id="eventInput" infoText="If this is not blank, the current line of dialogue will trigger the &quot;onDialogueEvent&quot; function in scripts with the current dialogue and entered event as arguments."/>
 			</vboxscroll>
 		</tab>
 		<tab name="Attributes">
 			<vboxscroll y="10">
 				<textbutton id="bgColor" text="Background Color" image="LONG" infoText="The color of the solid background behind the dialogue."/>
 				<stepper id="bgAlpha" text="Background Alpha:" step="0.05" min="0" max="1" decimals="3" infoText="The transparency of the solid background behind the dialogue."/>
+				<label text="Background Image:"/>
+				<hbox>
+					<input id="bgImageInput" width="200" infoText="An optional image to show as the background behind the dialogue."/>
+					<button id="bgImageButton" image="buttonLoad" infoText="Browse for a background image."/>
+				</hbox>
+				<checkbox id="bgFloodFill" text="Flood Fill" checked="true" infoText="If this is checked, changing the background image will cause it to affect every following line where the background was the same."/>
 				<stepper id="fadeInTime" text="Fade In Time:" step="0.05" min="0" decimals="3" infoText="The amount of time it takes the background to fade in, in seconds."/>
 				<stepper id="fadeOutTime" text="Fade Out Time:" step="0.05" min="0" decimals="3" infoText="The amount of time it takes the dialogue to fade out, in seconds."/>
 				<label text="Box:"/>
@@ -39,7 +54,8 @@
 				<dropdown id="moodDropdown" infoText="The style the dialogue box should use on the current line of dialogue."/>
 				<stepper id="rateStepper" text="Text Rate:" step="0.01" min="0" decimals="3" infoText="How fast the dialogue should show. A higher number means the dialogue shows slower."/>
 				<label text="Music:"/>
-				<dropdown id="musicDropdown" allowSearch="true" infoText="The music that should start on the current line of dialogue, or &quot;none&quot; to stop the music."/>
+				<dropdown id="musicDropdown" allowSearch="true" infoText="The music that should be playing on the current line of dialogue, or &quot;none&quot; to stop the music."/>
+				<checkbox id="musicFloodFill" text="Flood Fill" checked="true" infoText="If this is checked, changing the music will cause it to affect every following line where the music was the same."/>
 				<stepper id="musicVolumeStepper" text="Volume:" step="0.05" min="0" max="1" decimals="3" infoText="The volume the music should play at."/>
 				<stepper id="musicTimeStepper" text="Fade Time:" step="0.05" min="0" decimals="3" infoText="The time it takes to fade the music in or out, in seconds."/>
 			</vboxscroll>

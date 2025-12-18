@@ -103,6 +103,12 @@ class PsychConverter
 		var btnHbox:HBox = new HBox();
 
 		var convert:TextButton = new TextButton(0, 0, "Convert", function() {
+			if (imageInput.text.replace("\\", "/") == finalImageInput.text.replace("\\", "/"))
+			{
+				new Notify("The old and new character sprite sheet folders should not be the same folder");
+				return;
+			}
+
 			var pathArray:Array<String> = jsonInput.text.replace('\\','/').split('/');
 			var convertedCharacterId:String = pathArray[pathArray.length - 1];
 

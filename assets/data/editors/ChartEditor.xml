@@ -46,7 +46,7 @@
 			</vboxscroll>
 		</tab>
 		<tab name="Visuals">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<textbutton id="charactersButton" text="Characters" image="buttonPopupMenu" infoText='All characters that appear on the stage and their note types. "Note Types" refers to a comma-separated list of types that, if a note is this type, will cause the associated character to sing it.'/>
 				<label text="Stage:"/>
 				<dropdown id="stageDropdown" allowSearch="true" infoText="The stage that the song takes place on."/>
@@ -55,10 +55,10 @@
 				<dropdown id="uiSkinDropdown" blank="Default" allowSearch="true" infoText="The skin that the countdown and rating/combo popups should use."/>
 				<label text="UI Font:"/>
 				<dropdown id="uiFontDropdown" allowSearch="true" infoText="The font that all text in the song's UI should use (score, judgement counter, etc.)"/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Music">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<label text="Pause Menu:"/>
 				<dropdown id="pauseDropdown" blank="Default" allowSearch="true" infoText="The music that plays in the pause menu."/>
 				<label text="Game Over:"/>
@@ -67,10 +67,10 @@
 				<dropdown id="gameOverEndDropdown" blank="Default" allowSearch="true" infoText="The music that plays when restarting the song in the game over screen."/>
 				<label text="Results Screen:"/>
 				<dropdown id="resultsDropdown" blank="Default" allowSearch="true" infoText="The music that plays in the results screen."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Adv. Properties">
-			<vbox y="10">
+			<vboxscroll y="10">
 				<label text="Metadata File:"/>
 				<input id="metaFileInput" infoText="The file where certain song properties that are shared between charts of different difficulties are saved. Leave this blank if you do not wish to have any properties shared between chart difficulties."/>
 				<label text="Events File:"/>
@@ -78,7 +78,7 @@
 				<checkbox id="useMustHitCheckbox" text='Use "Must Hit Section"' infoText="Whether or not to use the base Friday Night Funkin system for section camera characters. It's recommended to uncheck this if the chart's strumlines have different numbers of notes."/>
 				<checkbox id="notetypeOverridesCamCheckbox" text="Notetypes Control Camera" infoText="If checked, when a section's default note type changes who is singing (for example, gfSing) and that section's camera focus character is the one who would normally sing, the camera will instead focus on the note type's singer."/>
 				<textbutton id="columnDivisionNamesButton" text="Chart Side Names" image="buttonPopupMenu" infoText="The names of the chart's sides/strumlines as they're shown in the Freeplay Sandbox."/>
-			</vbox>
+			</vboxscroll>
 		</tab>
 		<tab name="Section">
 			<vboxscroll y="10" id="sectionTab">
